@@ -1,8 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_warranty_warranty,warranty.warranty,model_warranty_warranty,,1,1,1,1
-access_dev_repair_warranty_task,access_dev_repair_warranty_task,model_dev_repair_warranty_task,base.group_user,1,1,1,1
-access_warranty_details,access_warranty_details,model_warranty_details,base.group_user,1,1,1,1
-access_warranty_analysis,access_warranty_analysis,model_warranty_analysis,base.group_user,1,1,1,1
-access_warranty_history,access_warranty_history,model_warranty_history,base.group_user,1,1,1,1
-access_warranty_history_report,access_warranty_history_report,model_warranty_history_report,base.group_user,1,1,1,1
-access_warranty_policy,access_warranty_policy,model_warranty_policy,base.group_user,1,1,1,1
