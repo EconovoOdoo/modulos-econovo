@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<!--
+Copyright (C) 2015 DevIntelle Consulting Service Pvt.Ltd (<http://www.devintellecs.com>).
+
+For Module Support : devintelle@gmail.com  or Skype : devintelle 
+ -->
+<odoo>
+        <!--Email template -->
+        <record id="warranty_expiry_reminder_template" model="mail.template">
+            <field name="name">Warranty Expiry Reminder</field>
+            <field name="email_from">{{object.company_id.email}}</field>
+            <field name="subject">Warranty Expiry Reminder</field>
+            <field name="email_to">{{object.email}}</field>
+            <field name="model_id" ref="dev_warranty_management.model_warranty_warranty"/>
+            <field name="auto_delete" eval="True"/>
+            <field name="body_html" type="html">
+            <div>
+                <p>Dear <b> <span t-esc="object.customer_id.name" /> </b>,</p>
+                <p>Hope you doing well </p> 
+                <p>Your Order : <b> <span t-esc="object.sale_id.name" /> </b> </p> 
+               	<p>Product : <b> <span t-esc="object.product_id.name" /> </b> Expiry On <b> <span t-esc="object.end_date" /> </b>   </p>
+               	<br/><br/> 
+               	Your product is expired, Now for Renewal to Administrator 
+            </div>
+        </field>
+         </record>
+</odoo>
+        
+      
+        
+        
+    

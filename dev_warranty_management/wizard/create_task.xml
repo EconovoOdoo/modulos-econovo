@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Copyright (C) 2015 DevIntelle Consulting Service Pvt.Ltd (<http://www.devintellecs.com>).
+
+For Module Support : devintelle@gmail.com  or Skype : devintelle
+ -->
+<odoo>
+        <record id="dev_repair_warranty_task_view" model="ir.ui.view">
+            <field name="name">Create Task</field>
+            <field name="model">dev.repair.warranty.task</field>
+            <field name="arch" type="xml">
+                <form string="Wizard">
+                      <group>
+                            <group>
+                                 <field name="name" required="1"/>
+                                 <field name="date_deadline"/>
+                                 <field name="project_id"/>
+                            </group>
+                            <group>
+                                 <field name="partner_id"  />
+                                 <field name="user_id"/>
+                                 <field name="tag_ids" widget="many2many_tags"/>
+                            </group>
+                      </group>
+                      <separator string="Description"/>
+                      <field name="description"/>
+                      <footer>
+                           <button name="create_task" string="Create Task" class="oe_highlight"  type="object"/>
+                           <button string="Cancel" class="btn-secondary" special="cancel"/>
+                      </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_repair_warranty_task_view" model="ir.actions.act_window">
+            <field name="name">Create Task </field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">dev.repair.warranty.task</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+</odoo>

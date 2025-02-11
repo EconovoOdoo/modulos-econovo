@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_mrp_bom_tree_consolidation_tree" model="ir.ui.view">
+        <field name="name">mrp.bom.tree.consolidation.tree</field>
+        <field name="model">mrp.bom.tree.consolidation</field>
+        <field name="arch" type="xml">
+            <tree import="false" create="false" edit="false" delete="false" duplicate="false" default_order="level,bom_id" decoration-danger="needs_refresh">
+                <field name="level"/>
+                <field name="parent_bom_id" optional="hide"/>
+                <field name="bom_id" widget="many2one" options="{'no_create': True}" context="{'form_view_ref': 'mrp.bom_form_view'}"/>
+                <field name="component_id" widget="many2one" options="{'no_create': True}" context="{'form_view_ref': 'product.product_form_view'}"/>
+                <field name="quantity"/>
+                <field name="uom_id"/>
+                <field name="price"/>
+                <field name="cost"/>
+                <field name="total_operation_time_main"/>
+                <field name="total_operation_time"/>
+                <field name="last_update"/>
+                <field name="needs_refresh" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_mrp_bom_tree_consolidation" model="ir.actions.act_window">
+        <field name="name">Resumen de Componentes Consolidados</field>
+        <field name="res_model">mrp.bom.tree.consolidation</field>
+        <field name="view_mode">tree</field>
+        <field name="target">current</field>
+    </record>
+</odoo>

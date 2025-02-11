@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_mrp_bom_form_inherit" model="ir.ui.view">
+        <field name="name">mrp.bom.form.inherit</field>
+        <field name="model">mrp.bom</field>
+        <field name="inherit_id" ref="mrp.mrp_bom_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//label[@for='produce_delay']" position="before">                
+                <!-- Campo Tiempo total de operaciones -->
+                <label for="total_operation_time_main" string="Tiempo total de operaciones de esta ldm"/>
+                <div>
+                    <field name="total_operation_time_main" widget="float_time" class="oe_inline"/> mm:ss
+                </div>
+                <label for="total_operation_time" string="Tiempo total de operaciones + operaciones hijas"/>
+                <div>
+                    <field name="total_operation_time" widget="float_time" class="oe_inline"/> mm:ss
+                    <button name="action_recompute_total_operation_time" string="Recalcular tiempo" type="object" class="oe_link pt-0" help="Recalcular el tiempo total de las operaciones de los componentes hijos."/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

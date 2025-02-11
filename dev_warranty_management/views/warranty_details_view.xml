@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Copyright (C) 2015 DevIntelle Consulting Service Pvt.Ltd (<http://www.devintellecs.com>).
+
+For Module Support : devintelle@gmail.com  or Skype : devintelle 
+ -->
+<odoo>
+    <record id="view_warranty_details_views_form" model="ir.ui.view">
+        <field name="name">view.warranty.details.views.form</field>
+        <field name="model">warranty.details</field>
+        <field name="arch" type="xml">
+            <form string="Warranty Details">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name" required="1"/>
+                            <field name="waranty_type"  />
+                            <field name="waranty_charges" widget="monetary" invisible="waranty_type != 'paid'"/>
+                            <field name="warranty_period" required="1" />
+                        </group>
+                        <group>
+                            <field name="allow_warranty_renewal"/>
+                            <field name="renewal_time" invisible="allow_warranty_renewal != True"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_warranty_details_views_tree" model="ir.ui.view">
+        <field name="name">view.warranty.details.views.tree</field>
+        <field name="model">warranty.details</field>
+        <field name="arch" type="xml">
+            <tree string="Warranty Details Tree">
+                <field name="name" />
+                <field name="warranty_period" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_warranty_details_views_filter" model="ir.ui.view">
+        <field name="name">view.warranty.details.views.filter</field>
+        <field name="model">warranty.details</field>
+        <field name="arch" type="xml">
+            <search string="Search Warranty Details">
+                <field name="name" />
+                <separator/>
+            </search>
+        </field>
+    </record>
+
+
+    <record id="action_warranty_details_views" model="ir.actions.act_window">
+        <field name="name">Warranty</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">warranty.details</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                Click to add a Warranty Details.
+            </p>
+        </field>
+    </record>
+
+    <!--  Menu Items-->
+    <menuitem name="Warranty" id="menu_warranty_details_views" parent="dev_warranty_management.menu_parent_warranty_config"
+              action="action_warranty_details_views" sequence="3"/>
+</odoo>

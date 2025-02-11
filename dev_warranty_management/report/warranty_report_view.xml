@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Copyright (C) 2018 DevIntelle Consulting Service Pvt.Ltd (<http://www.devintellecs.com>).
+
+For Module Support : devintelle@gmail.com  or Skype : devintelle
+ -->
+<odoo>
+    <template id="dev_warranty_report_body">
+        <t t-call="web.external_layout">
+            <div class="page" style="font-size: 14px;">
+                <h2 style="font-weight: bold;text-align:center;">
+                    <span >Warranty # </span>
+                    <span t-field="o.number"></span>
+                </h2>
+
+                <table width="100%" style="font-size: 16px;margin-top: 20px;">
+                    <td>
+                       <!-- <b>Number</b>&#160;:&#160;
+                        <span t-field="o.name"/>-->
+                    </td>
+                    <td style="text-align:right;">
+                        <b>Status</b>&#160;:&#160;
+                        <span t-field="o.state"/>
+                    </td>
+                </table>
+                     <table width="100%" style="margin-top: 20px;">
+                    <tr style="line-height: 20px;">
+                        <td width="15%">
+                            <b>Customer</b>
+                        </td>
+                        <td width="5%">:</td>
+                        <td width="35%">
+                            <span t-field="o.customer_id"/>
+                        </td>
+                        <td width="15%">
+                            <b>Date</b>
+                        </td>
+                        <td width="5%">:</td>
+                        <td width="30%">
+                            <span t-field="o.date" t-options='{"format": "dd/MM/yyyy"}'/>
+                        </td>
+                    </tr>
+                    <tr style="line-height: 20px;">
+                        <td width="15%">
+                            <b>Mobile</b>
+                        </td>
+                        <td width="5%">:</td>
+                        <td width="30%">
+                            <span t-field="o.mobile"/>
+                        </td>
+                        <td width="15%">
+                            <b>Product</b>
+                        </td>
+                        <td width="5%">:</td>
+                        <td width="30%">
+                            <span t-field="o.product_id"/>
+                        </td>
+                    </tr>
+                    <tr style="line-height: 20px;">
+                        <td width="15%">
+                            <b>Email</b>
+                        </td>
+                        <td width="5%">:</td>
+                        <td width="30%">
+                            <span t-field="o.email"/>
+                        </td>
+                        <td width="15%">
+                            <b>Quantity</b>
+                        </td>
+                        <td width="5%">:</td>
+                        <td width="30%">
+                            <span t-field="o.quantity"/>
+                        </td>
+                    </tr>
+                    <tr style="line-height: 20px;">
+                        <td width="15%">
+                            <b>Sale Order</b>
+                        </td>
+                        <td width="5%">:</td>
+                        <td width="30%">
+                            <span t-field="o.sale_id"/>
+                        </td>
+                        <td width="15%">
+                            <b>Unit Of Measure</b>
+                        </td>
+                        <td width="5%">:</td>
+                        <td width="30%">
+                            <span t-field="o.uom_id"/>
+                        </td>
+                    </tr>
+                    <tr style="line-height: 20px;">
+                        <td width="15%">
+                            <b>Source</b>
+                        </td>
+                        <td width="5%">:</td>
+                        <td width="30%">
+                            <span t-field="o.warranty_source"/>
+                        </td>
+                        <td width="15%">
+                            <b>Serial No</b>
+                        </td>
+                        <td width="5%">:</td>
+                        <td width="30%">
+                            <span t-field="o.serial_no_id"/>
+                        </td>
+                    </tr>
+                </table>
+                   
+                    <div class="col-lg-12" style='margin-top:20px;margin-bottom:20px;'>
+                                        <h4 id="details">Warranty Details</h4>
+                    </div>
+                    <table width="100%" style="margin-top: 20px;">
+                    <tr style="line-height: 20px;">
+                        <td width="15%">
+                            <b>Warranty</b>
+                        </td>
+                        <td width="5%">:</td>
+                        <td width="35%">
+                            <span t-field="o.warranty_details_id"/>
+                        </td>
+                        <td width="15%">
+                            <b>Warranty Period<br/>(In Months)</b>
+                        </td>
+                        <td width="5%">:</td>
+                        <td width="30%">
+                            <span t-field="o.warranty_period"/>
+                        </td>
+                    </tr>
+                    <tr style="line-height: 20px;">
+                        <td width="15%">
+                            <b>Warranty Type </b>
+                        </td>
+                        <td width="5%">:</td>
+                        <td width="30%">
+                            <span t-field="o.waranty_type"/>
+                        </td>
+                        <td width="15%">
+                            <b>Start Date</b>
+                        </td>
+                        <td width="5%">:</td>
+                        <td width="30%">
+                          <span t-field="o.start_date" t-options='{"format": "dd/MM/yyyy"}'/>
+                        </td>
+                    </tr>
+                    <tr style="line-height: 20px;">
+                        <td width="15%">
+                            <b>Paid Charges</b>
+                        </td>
+                        <td width="5%">:</td>
+                        <td width="30%">
+                            <span t-field="o.waranty_charges"/>
+                        </td>
+                        <td width="15%">
+                            <b>End Date</b>
+                        </td>
+                        <td width="5%">:</td>
+                        <td width="30%">
+                            <span t-field="o.end_date" t-options='{"format": "dd/MM/yyyy"}'/>
+                        </td>
+                    </tr>
+                    
+                </table>
+            <t t-if="o.ticket_ids">
+                    <p style="font-weight: bold;font-size: 14px;margin-bottom: 5px;margin-top: 20px;">
+                       Claim History
+                    </p>
+                    <table width="100%" style="table-layout: fixed;" class="table table-condensed">
+                        <tr style="word-wrap: break-word;line-height: 12px;">
+                            <td width="26%" style="text-align: left;border-bottom: 2px solid black;border-top: 1px solid white;">
+                                <b>Subject</b>
+                            </td>
+                            <td width="26%" style="text-align: left;border-bottom: 2px solid black;border-top: 1px solid white;">
+                                <b>Customer</b>
+                            </td>
+                            <td width="18%"
+                                style="text-align: left;border-bottom: 2px solid black;border-top: 1px solid white;">
+                                <b>Product</b>
+                            </td>
+                            <td width="10%"
+                                style="text-align: left;border-bottom: 2px solid black;border-top: 1px solid white;">
+                                <b>Issue</b>
+                            </td>
+                            <td width="17%"
+                                style="text-align: left;border-bottom: 2px solid black;border-top: 1px solid white;">
+                                <b>Priority</b>
+                            </td>
+                        </tr>
+                        <tr t-foreach="o.ticket_ids" t-as="line"
+                            style="word-wrap: break-word;line-height: 12px;">
+                            <td>
+                                <span t-field="line.name"/>
+                            </td>
+                            <td>
+                                <span t-field="line.partner_id"/>
+                            </td>
+                            <td>
+                                <span t-field="line.product_id"/>
+                            </td>
+                            <td >
+                                <span t-field="line.ticket_type_id"/>
+                            </td>
+                            <td >
+                                <span t-field="line.priority" widget="priority"/>
+                            </td>
+                        </tr>
+                    </table>
+                </t>
+                 <t t-if="o.warranty_history_ids">
+                    <p style="font-weight: bold;font-size: 14px;margin-bottom: 5px;margin-top: 20px;">
+                       Warranty History
+                    </p>
+                    <table width="100%" style="table-layout: fixed;" class="table table-condensed">
+                        <tr style="word-wrap: break-word;line-height: 12px;">
+                            <td width="25%" style="text-align: left;border-bottom: 2px solid black;border-top: 1px solid white;">
+                                <b>Warranty</b>
+                            </td>
+                            <td width="25%" style="text-align: left;border-bottom: 2px solid black;border-top: 1px solid white;">
+                                <b>Start Date</b>
+                            </td>
+                            <td width="25%" style="text-align: left;border-bottom: 2px solid black;border-top: 1px solid white;">
+                                <b>End Date</b>
+                            </td>
+                            
+                        </tr>
+                        <tr t-foreach="o.warranty_history_ids" t-as="line"
+                            style="word-wrap: break-word;line-height: 12px;">
+                            <td>
+                                <span t-field="line.base_warranty_id"/>
+                            </td>
+                            <td>
+                                <span t-field="line.start_date" t-options='{"format": "dd/MM/yyyy"}'/>
+                            </td>
+                            <td>
+                                <span t-field="line.end_date" t-options='{"format": "dd/MM/yyyy"}'/>
+                            </td>
+                            
+                        </tr>
+                    </table>
+                </t>
+            </div>
+        </t>
+    </template>
+
+    <template id="dev_warranty_report_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="dev_warranty_management.dev_warranty_report_body"/>
+            </t>
+        </t>
+    </template>
+</odoo>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Copyright (C) 2015 DevIntelle Consulting Service Pvt.Ltd (<http://www.devintellecs.com>).
+
+For Module Support : devintelle@gmail.com  or Skype : devintelle
+ -->
+<odoo>
+
+
+
+    <!--Action-->
+    <record id="action_today_exp_warranty" model="ir.actions.act_window">
+        <field name="name">Today Expired Warranty</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">warranty.warranty</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('end_date', '=', context_today().strftime('%Y-%m-%d'))]</field>
+        <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Click to Create Warranty Registration.
+              </p>
+            </field>
+    </record>
+    <record id="action_warranty_expired" model="ir.actions.act_window">
+        <field name="name">Expired Warranty</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">warranty.warranty</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('state','=','expire')]</field>
+        <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Click to Create Warranty Registration.
+              </p>
+            </field>
+    </record>
+
+    <!--Menus-->
+    
+    <menuitem name="Today Expired"
+              id="menu_today_exp_warranty"
+              parent="menu_sum_warranty_management"
+              action="action_today_exp_warranty"
+              sequence="2"/>
+    
+    <menuitem name="Expired Warranty"
+              id="menu_Expired_warranty"
+              parent="menu_sum_warranty_management"
+              action="action_warranty_expired"
+              sequence="3"/>
+  
+    
+</odoo>

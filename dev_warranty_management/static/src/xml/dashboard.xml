@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <div t-name="HelpdeskeDashboardAction" class="o_invoice_dashboard">
+	    <div class="o_form_view" style="background:#f9f9f9 !important;">
+	        <div class="helpdesk_dashboard_container mt-5">
+	        	<div class="col-md-12 ">
+				    <div class="row mb-5 filter-header">
+				    </div>
+				    <div style="overflow: scroll;height: 600px">
+			    		<div class="row activity_count_boxes">
+					    </div>
+					    <div class="container-fluid">
+				            <div class="row">
+				                <div class="card shadow col-md-12 p-0 m-0">
+								    <div class="helpdesk-table-container">
+								    </div>
+								</div>
+							</div>
+						</div>
+				    </div>
+				</div>
+			</div>
+	    </div>
+	</div>
+
+	<t t-name="HelpdeskRows">
+        <div class="p-3 py-3 d-flex flex-row align-items-center justify-content-between ">
+            <h6 class="m-0 font-weight-bold h3 chart_heading" t-att-title="list_view_name">
+            	<t t-esc="table_title"/>
+            </h6>
+        </div>
+        <div class="card-body table-responsive MaxTableContent">
+            <t t-if="helpdesk_lines and helpdesk_lines.length">
+            	<table id="ListViewTable" class="table table-hover">
+	                <thead>
+	                    <tr>
+	                        <th>
+	                            Number
+	                        </th>
+	                        <th>
+	                            Subject
+	                        </th>
+	                        <th>
+	                            Customer
+	                        </th>
+	                        <th>
+	                            Sale Order
+	                        </th>
+	                        <th>
+	                            Team
+	                        </th>
+	                        <th>
+	                            Team Leader
+	                        </th>
+	                        <th>
+	                            Date
+	                        </th>
+	                        
+	                        <th></th>
+	                    </tr>
+	                </thead>
+	                <tbody>
+	                	<t t-if="helpdesk_lines and helpdesk_lines.length">
+	                     <t t-foreach="helpdesk_lines" t-as="row">
+	                         <tr t-att-data-record-id="row.id">
+	                             <td>
+	                                 <t t-esc="row.number"/>
+	                             </td>
+	                             <td>
+	                                 <t t-esc="row.name"/>
+	                             </td>
+	                             <td>
+	                             	<t t-if="row.partner_id and row.partner_id.length">
+	                             		<t t-esc="row.partner_id[1]"/>
+	                             	</t>
+	                             </td>
+	                             <td>
+	                             	<t t-if="row.sale_id">
+	                             		 <t t-esc="row.sale_id[1]"/>
+	                             	</t>
+	                             </td>
+	                             <td>
+	                             	<t t-if="row.team_id">
+	                             		 <t t-esc="row.team_id[1]"/>
+	                             	</t>
+	                             </td>
+	                             <td>
+	                             	<t t-if="row.user_id">
+	                             		 <t t-esc="row.user_id[1]"/>
+	                             	</t>
+	                             </td>
+	                             <td>
+	                                 <t t-if="row.create_date">
+	                             		 <t t-esc="row.create_date"/>
+	                             	</t>
+	                             </td>
+<!--	                             <td>-->
+<!--	                             		 <t t-esc="row.overdue_days"/>-->
+<!--	                             </td>-->
+<!--	                             -->
+<!--	                             <td>-->
+<!--	                                 <t t-if="row.amount_total_signed">-->
+<!--	                             		 <t t-esc="row.amount_total_signed"/>-->
+<!--	                             	</t>-->
+<!--	                             </td>-->
+<!--	                             <td>-->
+<!--	                                 <t t-if="row.amount_residual">-->
+<!--	                             		 <t t-esc="row.amount_residual"/>-->
+<!--	                             	</t>-->
+<!--	                             </td>-->
+<!--	                             <td>-->
+<!--	                                 <t t-if="row.state">-->
+<!--	                             		 <t t-esc="row.state"/>-->
+<!--	                             	</t>-->
+<!--	                             </td>-->
+	                             <td>
+								    <button class="btn btn-primary dev-menu-action" role="option" t-att-rec-id="row.id" id="view" type="button">
+        								    	View
+								    </button>
+	                             </td>
+	                         </tr>
+	                     </t>
+	                  </t>
+	                </tbody>
+	            </table>
+            </t>
+            <t t-else="">
+            	<div class="p-3 py-3 d-flex flex-row align-items-center justify-content-between ">
+            		<h6>No Records Found.</h6>
+            	</div>
+            </t>
+        </div>
+	</t>
+
+	<t t-name="HelpdeskCountBoxes">
+        <div class="col-xl-3 col-lg-6">
+            <div class="card invoice-card l-bg-blue-dark">
+                <div class="card-statistic-3 p-4" >
+                    <div class="card-icon card-icon-large"></div>
+                    <div class="mb-4" >
+                        <h5 class="card-title mb-0" style="color:white;">All Tickets</h5>
+                    </div>
+                    <div class="row align-items-center mb-2 d-flex">
+                        <div class="col-8">
+                            <h2 class="d-flex align-items-center mb-0" style="color:white;"  id="unpaid_invoice_count">
+                                <t t-if="response.all_ticket and response.all_ticket.length">
+                                	<t t-esc="response.all_ticket.length"/>
+                                </t>
+                                <t t-else="">
+                                	0
+                                </t>
+                            </h2>
+                        </div>
+                        <div class="col-4 text-right">
+                            <span id="navigate_all_ticket" class="navigate_to"><i class="fa fa-arrow-right" ></i></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-6">
+            <div class="card invoice-card l-bg-orange-dark ">
+                <div class="card-statistic-3 p-4">
+                    <div class="card-icon card-icon-large"></div>
+                    <div class="mb-4">
+                        <h5 class="card-title mb-0" style="color:white;" >Open Ticket</h5>
+                    </div>
+                    <div class="row align-items-center mb-2 d-flex">
+                        <div class="col-8">
+                            <h2 class="d-flex align-items-center mb-0" style="color:white;" id="over_due_invoice_amount">
+                                <t t-if="response.open_tickt and response.open_tickt.length ">
+                                	<t t-esc="response.open_tickt.length"/>
+                                </t>
+                                <t t-else="">
+                                	0
+                                </t>
+                            </h2>
+                        </div>
+                        <div class="col-4 text-right">
+                            <span id="navigate_open_ticket" class="navigate_to"><i class="fa fa-arrow-right" ></i></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-6">
+            <div class="card invoice-card l-bg-cherry">
+                <div class="card-statistic-3 p-4">
+                    <div class="card-icon card-icon-large"></div>
+                    <div class="mb-4">
+                        <h5 class="card-title mb-0" style="color:white;" >Done Tickets</h5>
+                    </div>
+                    <div class="row align-items-center mb-2 d-flex">
+                        <div class="col-8">
+                            <h2 class="d-flex align-items-center mb-0" style="color:white;" id="inpayment_invoice_count">
+                                <t t-if="response.done_ticket and response.done_ticket.length">
+                                	<t t-esc="response.done_ticket.length"/>
+                                </t>
+                                <t t-else="">
+                                	0
+                                </t>
+                            </h2>
+                        </div>
+                        <div class="col-4 text-right">
+                            <span id="navigate_done_ticket" class="navigate_to"><i class="fa fa-arrow-right" ></i></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-6">
+            <div class="card invoice-card l-bg-green-dark ">
+                <div class="card-statistic-3 p-4">
+                    <div class="card-icon card-icon-large"></div>
+                    <div class="mb-4">
+                        <h5 class="card-title mb-0" style="color:white;" >Close Tickets</h5>
+                    </div>
+                    <div class="row align-items-center mb-2 d-flex">
+                        <div class="col-8">
+                            <h2 class="d-flex align-items-center mb-0" style="color:white;" id="paid_invoice_count">
+                                <t t-if="response.close_ticket and response.close_ticket.length">
+                                	<t t-esc="response.close_ticket.length"/>
+                                </t>
+                                <t t-else="">
+                                	0
+                                </t>
+                            </h2>
+                        </div>
+                        <div class="col-4 text-right">
+                            <span id="navigate_close_ticket" class="navigate_to"><i class="fa fa-arrow-right" ></i></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+	</t>
+
+	<t t-name="ActivityFilter">
+<!--		<div class="col-sm-12 box-tools pull-right">-->
+<!--	       <div class="ml-2 pull-right">-->
+            <div class="col-2 float-right" style="margin-left: 700px;">
+	           <select class="users-option form-control pull-left" placeholder="select User">
+	               <option value="0" select="selected">All User</option>
+	               <t t-foreach="users" t-as="user">
+	               		<option t-att-value="user.id"><t t-esc="user.name"/></option>
+	               </t>
+	           </select>
+	       </div>
+	       <div class="col-2 float-right">
+	           <select class="partners-option form-control pull-left" placeholder="select Partner">
+	               <option value="0" select="selected">All Partner</option>
+	               <t t-foreach="partners" t-as="partner">
+	               		<option t-att-value="partner.id"><t t-esc="partner.name"/></option>
+	               </t>
+	           </select>
+	       </div>
+	       <span class="col-2 pull-right">
+	           <select class="date-based-filter form-control pull-left" placeholder="select Range" style="margin-left: - 5px;">
+	               <option value="all" select="selected">All</option>
+	               <option value="today">Today</option>
+	               <option value="yesterday">Yesterday</option>
+	               <option value="current_week">This Week</option>
+	               <option value="last_7_days">Last Seven Days</option>
+	               <option value="last_week">Last Week</option>
+	               <option value="current_month">This Month</option>
+	               <option value="current_year">This Year</option>
+	               <option value="custom_range">Custom Date Range</option>
+	           </select>
+	       </span>
+	   </div>
+	</t>
+
+</templates>

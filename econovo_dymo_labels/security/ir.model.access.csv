@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_econovo_dymo_labels_econovo_dymo_labels,econovo_dymo_labels.econovo_dymo_labels,model_econovo_dymo_labels_econovo_dymo_labels,base.group_user,1,1,1,1

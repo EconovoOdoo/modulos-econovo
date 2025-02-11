@@ -1,0 +1,521 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="portal_warranty" name="Portal My Home : Warranty" inherit_id="portal.portal_my_home" priority="20">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+            <t  t-call="portal.portal_docs_entry">
+                <t t-set="title">Warranty</t>
+                <t t-set="url" t-value="'/my/warranty'"/>
+                <t t-set="placeholder_count" t-value="'warranty_count'"/>
+            </t>
+        </xpath>
+    </template>
+    
+    <template id="portal_my_home_warranty" name="Show Warranty" customize_show="True" inherit_id="portal.portal_my_home" priority="20">
+	    <xpath expr="//div[hasclass('o_portal_docs')]" position="before">
+		<t t-set="portal_client_category_enable" t-value="True"/>
+	    </xpath>
+	    <div id="portal_client_category" position="inside">
+		<t t-call="portal.portal_docs_entry">
+		    <t t-set="icon" t-value="'/dev_warranty_management/static/src/img/folder.svg'" />
+		    <t t-set="title">Warranty</t>
+		    <t t-set="url" t-value="'/my/warranty'"/>
+		    <t t-set="text">Follow, view or print warranty</t>
+		    <t t-set="placeholder_count" t-value="'warranty_count'"/>
+		</t>
+	    </div>
+     </template>
+    
+     <template id="portal_home_Payment" name="Portal layout : Payment menu entries" inherit_id="portal.portal_breadcrumbs" priority="20">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+        
+        
+            <li t-if="page_name == 'warranty' or warranty" t-attf-class="breadcrumb-item #{'active ' if not event else ''}">
+                <a t-if="warranty" t-attf-href="/my/warranty?{{ keep_query() }}">Warranty</a>
+                <t t-else="">Warranty</t>
+            </li>
+			<li t-if="p_name" t-attf-class="breadcrumb-item #{'active ' if not event else ''}">
+					<span t-esc="p_name"/> 
+            </li>
+        </xpath>
+    </template>
+    
+        
+    <template id="portal_my_warranty" name="My Warranty">
+    
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">warranty</t>
+            </t>
+            <t t-if="not warranty">
+                <p>There are currently no warranty for your account.</p>
+            </t>
+            <t t-if="warranty" t-call="portal.portal_table">
+                <t t-foreach="grouped_warranty" t-as="group_warranty">
+                    <thead >
+                        <tr t-attf-class="{{'thead-light' if not groupby == 'none' else ''}}" >
+                            <th t-if="groupby == 'none'">Number</th>
+                            <th t-else="">
+                                <t t-if="groupby == 'company_id'">
+                                    <em class="font-weight-normal text-muted">Company:</em>
+                                    <span t-field="group_warranty[0].sudo().company_id.name"/>
+                                </t>
+                                <t t-if="groupby == 'product_id'">
+                                    <em class="font-weight-normal text-muted">Product:</em>
+                                    <span t-field="group_warranty[0].sudo().product_id.name"/>
+                                </t>
+                            </th>
+                            <th class="text-left">Customer</th>
+                            <th class="text-left">Mobile</th>
+                            <th class="text-left">Sale Order</th>
+                            <th class="text-left">Product</th>
+                             <th class="text-left">Date</th>
+                            <th class="text-left">Start Date</th>
+                            <th class="text-left">End Date</th>
+			   				 <th class="text-left">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    <t t-foreach="group_warranty" t-as="l">
+                        <tr>
+                            <td><a t-att-href="l.get_portal_url()"><t t-esc="l.number"/></a></td>
+                            <td class="text-left"><span t-field="l.customer_id" /></td>
+                            <td class="text-left"><span t-field="l.mobile" /></td>
+                            <td class="text-left"><span t-field="l.sale_id" /></td>
+                            <td class="text-left"><span t-field="l.product_id" /></td>
+                            <td class="text-left"><span t-field="l.date" t-options='{"widget": "date"}' /></td>
+							<td class="text-left"><span t-field="l.start_date" t-options='{"widget": "date"}' /></td>
+							<td class="text-left"><span t-field="l.end_date" t-options='{"widget": "date"}' /></td>
+							<td class="text-left"><span t-field="l.state" /></td>
+                        </tr>
+                    </t>
+                    </tbody>
+                </t>
+            </t>
+        </t>
+    </template>
+    
+	<template id="warranty_portal_template" name="Warranty Portal Template" inherit_id="portal.portal_sidebar" primary="True">
+        <xpath expr="//div[hasclass('o_portal_sidebar')]" position="inside">
+            
+            <div role="dialog" class="modal fade" id="modeledit">
+                <div class="modal-dialog">
+                    <form id="edit_contact" method="POST" t-attf-action="/my/waranty/#{warranty.id}/create_ticket?access_token=#{warranty.access_token}" class="modal-content" enctype="multipart/form-data" >
+                         <style>
+                *{
+                        margin: 0;
+                        padding: 0;
+                    }
+                    .rate {
+                        float: left;
+                        height: 46px;
+                        padding: 0 10px;
+                    }
+                    .rate:not(:checked) > input {
+                        position:absolute;
+                        top:-9999px;
+                    }
+                    .rate:not(:checked) > label {
+                        float:right;
+                        width:1em;
+                        overflow:hidden;
+                        white-space:nowrap;
+                        cursor:pointer;
+                        font-size:30px;
+                        color:#ccc;
+                    }
+                    .rate:not(:checked) > label:before {
+                        content: '★ ';
+                    }
+                    .rate > input:checked ~ label {
+                        color: #ffc700;    
+                    }
+                    .rate:not(:checked) > label:hover,
+                    .rate:not(:checked) > label:hover ~ label {
+                        color: #deb217;  
+                    }
+                    .rate > input:checked + label:hover,
+                    .rate > input:checked + label:hover ~ label,
+                    .rate > input:checked ~ label:hover,
+                    .rate > input:checked ~ label:hover ~ label,
+                    .rate > label:hover ~ input:checked ~ label {
+                        color: #c59b08;
+                    }
+             </style>
+                    
+                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                        <header class="modal-header">
+                            <h4 class="modal-title">Claim Request</h4>
+                            <button type="button" btn-close="close" data-bs-dismiss="modal" aria-label="Close">&amp;times;</button>
+                        </header>
+                        
+                        <main class="modal-body">
+                            <div class="form-group field-login">
+                                <label for="name">Name</label>
+                                <input type="char" class="form-control form-control-sm" readonly="1"
+                                       t-att-value="warranty.customer_id.name" 
+                                       name="name"  />
+                            </div>
+                            <div class="form-group field-login">
+                                <label for="name">Email</label>
+                                <input type="char" class="form-control form-control-sm "
+                                       t-att-value="warranty.email" 
+                                       name="email"  />
+                            </div>
+                            <div class="form-group field-login">
+                                <label for="name">mobile</label>
+                                <input type="char" class="form-control form-control-sm "
+                                       t-att-value="warranty.mobile" 
+                                       name="mobile"  />
+                            </div>
+                            
+                            <div class="form-group field-login">
+                                <label for="type">Type</label>
+                                    <select class="custom-select" name="type" id="type" >
+                                        <option value="">--Select--</option>
+                                        <t t-foreach="ticket_type or []" t-as="type_t">
+                                            <option t-att-value="type_t.id"><t t-esc="type_t.name"/></option>
+                                        </t>
+                                     </select>
+                            </div>
+                            <div class="form-group field-login">
+                                <label for="name">Claim Subject</label>
+                                <input type="char" class="form-control form-control-sm "
+                                       name="claim_subject" required="True"  />
+                            </div>
+                            
+                            <div class="form-group field-login">
+                                <label for="name">Warranty Number</label>
+                                <input type="char" class="form-control form-control-sm" readonly="1"
+                                       t-att-value="warranty.number" 
+                                       name="warranty"  />
+                            </div>
+                            <div class="form-group field-login">
+                                <label for="name">Sale Order</label>
+                                <input type="char" class="form-control form-control-sm" readonly="1"
+                                       t-att-value="warranty.sale_id.name" 
+                                       name="sale_id"  />
+                            </div>
+                            <div class="form-group field-login">
+                                <label for="name">Claim Details</label>
+                                <textarea id="textarea" class="form-control form-control-sm"
+                                 name="claim_details" rows="4" />
+                            </div>
+                            
+                            <div class="form-group field-login">
+                                <label for="name">Attachment</label>
+                                <input type="file" class="input-file" id="attachment_war" name="attachment_war" required="True"/>
+                            </div>
+                          <!--  <div class="form-group field-login">
+                                        <label class="col-lg-3 col-md-4 col-form-label" for="rate">Priority</label>
+                                        <div class="col-lg-7 col-md-8">
+                                            <div class="rate">
+                                                <input type="radio" id="star3" name="rate" value="3" />
+                                                <label for="star3" title="text">3 stars</label>
+                                                <input type="radio" id="star2" name="rate" value="2" />
+                                                <label for="star2" title="text">2 stars</label>
+                                                <input type="radio" id="star1" name="rate" value="1" />
+                                                <label for="star1" title="text">1 star</label>
+                                              </div>
+                                        </div>
+                                    </div>-->
+                            <div class="form-group field-login" style="margin-top:1%;">
+                                        <label class="col-lg-3 col-md-4 col-form-label" for="rate">Priority</label>
+                                        <div class="col-lg-7 col-md-8">
+                                            <div class="rate">
+                                                <input type="radio" id="star3" name="rate" value="3" />
+                                                <label for="star3" title="text">3 stars</label>
+                                                <input type="radio" id="star2" name="rate" value="2" />
+                                                <label for="star2" title="text">2 stars</label>
+                                                <input type="radio" id="star1" name="rate" value="1" />
+                                                <label for="star1" title="text">1 star</label>
+                                              </div>
+                                        </div>
+                                    </div>
+                        </main>
+                        <footer class="modal-footer">
+                            <button type="submit" t-att-id="warranty.id" class="btn btn-primary" ><i class="fa fa-check"></i> Save</button>
+                            <button type="button" class="btn btn-primary" data-dismiss="modal">close</button>
+                        </footer>
+                    </form>
+                </div>
+            </div>
+                
+            
+        
+            <div class="row mt16 o_portal_sale_sidebar">
+			<t t-call="portal.portal_record_sidebar">
+                    <t t-set="classes" t-value="'col-lg-auto d-print-none'"/>
+                    <t t-set="title">
+                        <h2 class="mb-0">Warranty</h2>
+                    </t>
+                    <t t-set="entries">
+                        <ul class="list-group list-group-flush flex-wrap flex-row flex-lg-column">
+                            <li class="list-group-item flex-grow-1">
+                                <div class="o_download_pdf btn-toolbar flex-sm-nowrap">
+                                    <div class="btn-group flex-grow-1 mr-1 mb-1">
+                                        <a class="btn btn-secondary btn-block o_download_btn" t-att-href="warranty.get_portal_url(report_type='pdf', download=True)" title="Download"><i class="fa fa-download"/> Download</a>
+                                    </div>
+                                    <div class="btn-group flex-grow-1 mb-1" style="margin-left:10px;">
+                                        <a class="btn btn-secondary btn-block o_print_btn o_portal_invoice_print" t-att-href="warranty.get_portal_url(report_type='pdf')" id="print_warranty_card_report" title="Print" target="_blank"><i class="fa fa-print"/> Print</a>
+                                    </div>
+                                </div>
+                                <br></br>
+                                <div class="o_download_pdf btn-toolbar flex-sm-nowrap">
+                                    <div class="btn-group flex-grow-1 mr-1 mb-1">
+<!--                                        <a class="btn btn-secondary btn-block o_download_btn" t-att-href="warranty.get_portal_url(report_type='pdf', download=True)" title="Download"><i class="fa fa-download"/> Download</a>-->
+                                        <t t-if="warranty.state == 'running'">
+                                            <a role="button"  class="btn btn-primary float-right" data-bs-toggle="modal" data-bs-target="#modeledit" href="#">Claim Request </a>
+                                        </t>
+                                         <t t-if="warranty.state != 'running'">
+                                            <a role="button"  class="btn btn-primary float-right" data-target="#modeledit" href="#">Claim Only Running State Allow </a>
+                                        </t>
+                                    </div>
+                                </div>
+                                <div class="btn-group flex-grow-1 mr-1 mb-1">
+<!--                                 <a role="button"  class="btn btn-primary float-right" data-toggle="modal" data-target="#modeledit" href="#">Claim Request </a>-->
+                                    </div>
+                            </li>
+                            <li class="navspy list-group-item pl-0 flex-grow-1" t-ignore="true" role="complementary">
+                                <ul class="nav flex-column bs-sidenav">
+                                     
+                                </ul>
+                            </li>
+                             <div t-if="warranty.user_id">
+                                <h6><small class="text-muted">Your contact</small></h6>
+                                <div class="o_portal_contact_details d-flex flex-column gap-2">
+                                    <div class="d-flex justify-content-start align-items-center gap-2">
+                                        <img class="o_avatar o_portal_contact_img rounded" t-att-src="image_data_uri(warranty.user_id.avatar_1024)" alt="Contact"/>
+                                        <div>
+                                            <span t-field="warranty.user_id"
+						t-options='{"widget": "contact", "fields": ["name", "phone"], "no_marker": True}'/>
+                                            <a href="#discussion" class="d-flex align-items-center gap-2 small fw-bold">
+                                            Send message
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </ul>
+                    </t>
+                </t>			
+
+		
+
+                <div id="leave_content" class="col-12 col-lg justify-content-end">
+	                <div t-attf-class="card #{'pb-5' if report_type == 'html' else ''}">
+                        <div t-call="dev_warranty_management.warranty_portal_content"/>
+                    </div>
+
+	                <div id="loan_communication" class="mt-4">
+	                    <h2>Communication</h2>
+	                    <t t-call="portal.message_thread"> 
+ 	                        <t t-set="object" t-value="warranty"/> 
+ 	                    </t> 
+	                </div>
+	            </div>
+            </div>
+        </xpath>
+    </template>
+    
+    <template id="warranty_portal_content" name="Warranty Form">
+         <div id="introduction" t-attf-class="pb-2 pt-3 #{'card-header bg-white' if report_type == 'html' else ''}">
+            <div class="row">
+                    <div class="col-9">
+                        <h2 class="my-0 text-center">
+                            <em t-esc="warranty.number"/>
+                        </h2>
+                    </div>
+                    <div class="col-3" style="background:#875A7B;border-radius:5px">
+                        <h2 class="my-0 text-center" style="padding:3px;font-weight:bold"><em style="text-transform: capitalize;color:#FFF" t-esc="warranty.state"/></h2>
+                    </div>
+                </div>
+            </div>
+        <div t-attf-class="#{'card-body' if report_type == 'html' else ''}">
+            <div id="informations">
+                <div class="row">
+                    <div class="col-lg-6">
+                        <table width="100%">
+                            <tr>
+                                <td width="35%" style="padding:3px"><b>Customer</b></td>
+                                <td width="5%" style="padding:3px">:</td>
+                                <td width="50%" style="padding:3px"><span t-field="warranty.customer_id"/></td>
+                            </tr>
+							<tr>
+                                <td width="35%" style="padding:3px"><b>Mobile</b></td>
+                                <td width="5%" style="padding:3px">:</td>
+                                <td width="50%" style="padding:3px"><span t-field="warranty.mobile"/></td>
+                            </tr>
+							<tr>
+                                <td width="35%" style="padding:3px"><b>Email</b></td>
+                                <td width="5%" style="padding:3px">:</td>
+                                <td width="50%" style="padding:3px"><span t-field="warranty.email"/></td>
+                            </tr>
+                            <tr>
+                                <td width="35%" style="padding:3px"><b>Sale Order</b></td>
+                                <td width="5%" style="padding:3px">:</td>
+                                <td width="50%" style="padding:3px"><span t-field="warranty.sale_id"/></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-lg-6">
+                        <table width="100%">
+							<tr>
+                                <td width="35%" style="padding:3px"><b>Date</b></td>
+                                <td width="5%" style="padding:3px">:</td>
+                                <td width="50%" style="padding:3px"><span t-field="warranty.date"/></td>
+                            </tr>
+							<tr>
+                                <td width="35%" style="padding:3px"><b>Product</b></td>
+                                <td width="5%" style="padding:3px">:</td>
+                                <td width="50%" style="padding:3px"><span t-field="warranty.product_id"/></td>
+                            </tr>
+                            <tr>
+                                <td width="35%" style="padding:3px"><b>Quantity</b></td>
+                                <td width="5%" style="padding:3px">:</td>
+                                <td width="50%" style="padding:3px"><span t-field="warranty.quantity" /></td>
+                            </tr>
+                        </table>
+                    </div>
+                     <div class="col-lg-12" style='margin-top:20px;margin-bottom:20px;'>
+                            <h3 id="details">Warranty Details</h3>
+                     </div>
+                    <div class="col-lg-6">
+                        
+                        <table width="100%">
+                            <tr>
+                                <td width="35%" style="padding:3px"><b>Warranty</b></td>
+                                <td width="5%" style="padding:3px">:</td>
+                                <td width="50%" style="padding:3px"><span t-field="warranty.warranty_details_id"/></td>
+                            </tr>
+							<tr>
+                                <td width="35%" style="padding:3px"><b>Warranty Type</b></td>
+                                <td width="5%" style="padding:3px">:</td>
+                                <td width="50%" style="padding:3px"><span t-field="warranty.waranty_type"/></td>
+                            </tr>
+                            <tr t-if="warranty.waranty_type == 'paid'">
+                                <td width="35%" style="padding:3px"><b>Paid Charges</b></td>
+                                <td width="5%" style="padding:3px">:</td>
+                                <td width="50%" style="padding:3px"><span t-field="warranty.waranty_charges"/></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-lg-6">
+                        <table width="100%">
+                            <tr>
+                                <td width="35%" style="padding:3px"><b>Warranty Period<br></br>(In Months)</b></td>
+                                <td width="5%" style="padding:3px">:</td>
+                                <td width="50%" style="padding:3px"><span t-field="warranty.warranty_period" /></td>
+                            </tr>
+							<tr>
+                                <td width="35%" style="padding:3px"><b>Start Date</b></td>
+                                <td width="5%" style="padding:3px">:</td>
+                                <td width="50%" style="padding:3px"><span t-field="warranty.start_date"/></td>
+                            </tr>
+							<tr>
+                                <td width="35%" style="padding:3px"><b>End Date</b></td>
+                                <td width="5%" style="padding:3px">:</td>
+                                <td width="50%" style="padding:3px"><span t-field="warranty.end_date"/></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                 <section t-if="warranty.ticket_ids" id="claim_history" style="page-break-inside: auto;" class="mt16">
+                    <h3 id="details">Claim History</h3>
+                    <table class="table table-sm" id="claim_history">
+                        <thead class="bg-100">
+                            <tr>
+                                <th width="30%" class="text-left">Subject</th>
+                                <th width="15%"  class="text-left">Customer</th>
+                                <th width="30%" class="text-right">Product Issue</th>
+                                <th width="15%" class="text-right">Tickets Type</th>
+                                <th width="10%" class="text-right">Priority</th>
+                            </tr>
+                        </thead>
+                        <tbody class="loan_tbody">
+                            <t >
+    <!--                            <t t-if="line.state == 'paid'">-->
+                                    <tr t-foreach="warranty.ticket_ids" t-as="line">
+                                       <td class="text-left" id="name"><span t-field="line.name"/></td>
+                                       <td class="text-left" id="partner_id"><span t-field="line.partner_id" /></td>
+                                       <td class="text-right" id="product_id"><span t-field="line.product_id"/></td>
+                                       <td class="text-right" id="ticket_type_id"><span t-field="line.ticket_type_id"/></td>
+                                       <td class="text-right" id="priority"><span t-field="line.priority"/></td>
+                                       
+                                    </tr>
+    <!--                            </t>-->
+                            </t>
+                        </tbody>
+                    </table>
+                </section>
+
+                <section t-if="warranty.warranty_history_ids" id="warranty_history" style="page-break-inside: auto;" class="mt16">
+                    <h3 id="details">Warranty History</h3>
+                    <table class="table table-sm" id="warranty_history">
+                        <thead class="bg-100">
+                            <tr>
+                                <th width="30%" class="text-left">Warranty</th>
+                                <th width="15%"  class="text-center">Start Date</th>
+                                <th width="30%" class="text-center">End Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t>
+                                <tr t-foreach="warranty.warranty_history_ids" t-as="line">
+                                   <td class="text-left" ><span t-field="line.base_warranty_id"/></td>
+                                   <td class="text-center" ><span t-field="line.start_date" /></td>
+                                   <td class="text-center" ><span t-field="line.end_date"/></td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </section>
+
+            </div>
+            
+        </div>
+    </template>
+    
+    <template id="warranty_portal_thank_you" name="Thank You">
+        <t t-call="website.layout">
+                  <div id="wrap">
+                    <div class="oe_structure" id="oe_structure_website_form_contact_us_thanks_1"/>
+                    <div class="container mt-4">
+                        <div class="row">
+                            <div class="col-lg-8 col-xl-6 mr-lg-auto oe_structure">
+                                <section class="pt40 s_text_block pb40 o_colored_level o_cc o_cc1" data-snippet="s_text_block" data-name="Text">
+                                    <div class="container">
+                                        <span class="d-block fa fa-4x fa-thumbs-up mx-auto rounded-circle bg-primary"/><br/>
+                                        <h1 class="text-center">Thank You!</h1>
+                                        <div class="pb16 pt16 s_hr" data-snippet="s_hr" data-name="Separator">
+                                            <hr class="mx-auto border-top w-50 border-dark text-center"/>
+                                        </div>
+                                        <h5 class="text-center">
+                                            <span class="fa fa-check-circle"/>
+                                            <span>Your message has been sent <b>successfully</b></span>
+                                        </h5>
+                                        <p class="text-center">Your Tickets Number :  <b> <span t-esc="ticket_number.number"/> </b> .</p>
+                                        
+                                    </div>
+                                </section>
+                            </div>
+                            <div class="col-lg-4">
+                                <ul class="list-unstyled mb-0 ps-2">
+                                    <li><span t-esc="ticket_number.company_id.name"/></li>
+                                    <li><i class="fa fa-map-marker fa-fw me-2"/><span class="o_force_ltr">3575 Fake Buena Vista Avenue</span></li>
+                                    <li><i class="fa fa-phone fa-fw me-2"/><span class="o_force_ltr">
+                                        <span t-esc="ticket_number.company_id.phone"/> </span></li>
+                                    <li><i class="fa fa-1x fa-fw fa-envelope me-2"/>
+                                        <span t-esc="ticket_number.company_id.email"/>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="oe_structure" id="oe_structure_website_form_contact_us_thanks_2"/>
+                  </div>
+                </t>
+    </template>
+
+
+</odoo>

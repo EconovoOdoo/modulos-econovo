@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Copyright (C) 2015 DevIntelle Consulting Service Pvt.Ltd (<http://www.devintellecs.com>).
+
+For Module Support : devintelle@gmail.com  or Skype : devintelle
+ -->
+<odoo>
+
+     <record id="helpdesk_ticket_warranty_view" model="ir.ui.view">
+        <field name="name">helpdesk.ticket.warranty.view</field>
+        <field name="model">helpdesk.ticket</field>
+        <field name="inherit_id" ref="helpdesk.helpdesk_ticket_view_form"/>
+        <field name="arch" type="xml">
+                <xpath expr="//div[@name='button_box']" position="inside">
+				        <button type="object" name="action_view_warranty"
+                                    class="oe_stat_button"
+                                    icon="fa-th-list" invisible="warranty_id == False" 
+                                     >
+                                     Warranty
+                        </button>
+                        <button type="object" invisible="repair_count == 0"  
+                            name="action_view_repair" class="oe_stat_button" icon="fa-chain" >
+                             <field name="repair_count" widget="statinfo" string="Repair"/>
+                        </button>
+                        <button type="object" invisible="task_count == 0"  
+                            name="view_tasks" class="oe_stat_button" icon="fa-chain" >
+                             <field name="task_count" widget="statinfo" string="Tasks"/>
+                        </button>
+                </xpath>
+               <xpath expr="//header" position="inside">
+                    <button string="Create Repair" name="create_repair_order"  type="object" class="oe_highlight" />
+                    <button string="Create Task" name="%(dev_warranty_management.action_repair_warranty_task_view)d" type="action" class="oe_highlight" />
+                </xpath>
+                <xpath expr="//field[@name='name']" position="before">
+                    <h1> <field name = 'number' readonly="1"/>  </h1>
+                </xpath>
+
+                <xpath expr="//field[@name='partner_id']" position="attributes">
+                    <attribute  name="readonly">partner_id != False</attribute>
+                </xpath>
+        
+                <xpath expr="//page[1]" position="before">
+                        <page name='warranty_details' string='Warranty Details'>
+                                <group>
+                                        <group>
+                                            <field name = 'warranty_id' readonly="1"/>
+                                            <field name = 'sale_id' readonly="1" />
+                                            <field name = 'waranty_type' readonly="1" />
+                                        </group>
+                                        <group>
+                                            <field name = 'start_date' readonly="1" />
+                                            <field name = 'end_date' readonly="1"/>
+                                            <field name = 'product_id' readonly="1" />
+                                        </group>
+                                </group>
+				        </page>
+                </xpath>
+                <xpath expr="//page[@name='description']" position="replace" />
+                
+                <xpath expr="//page[@name='warranty_details']" position="inside">
+                    <field name='description' placeholder="Description....." />
+                </xpath>
+        </field>
+    </record>
+
+    <record id="view_helpdesk_ticket_warranty_inherit_filter" model="ir.ui.view">
+        <field name="name">view.helpdesk.ticket.warranty.inherit.filter</field>
+        <field name="model">helpdesk.ticket</field>
+        <field name="inherit_id" ref="helpdesk.helpdesk_tickets_view_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='stage']" position="after">
+                <filter string="Warranty" name="warranty"  context="{'group_by': 'warranty_id'}"/>
+            </xpath>
+        </field>
+    </record>
+    
+     <record id="action_all_ticket" model="ir.actions.act_window">
+        <field name="name">Warranty Tickets</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">helpdesk.ticket</field>
+        <field name="view_mode">tree,form</field>
+         <field name="domain">[('warranty_id','!=',False)]</field>
+        <field name="context">{'search_default_is_open': True}</field>
+        <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Click to Create Warranty Tickets.
+              </p>
+        </field>
+    </record>
+    
+    <record id="action_my_ticket1" model="ir.actions.act_window">
+        <field name="name">Warranty Tickets</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">helpdesk.ticket</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{'search_default_my_ticket': True, 'search_default_is_open': True}</field>
+        <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Click to Create Warranty Tickets.
+              </p>
+            </field>
+    </record>
+
+    <!--Menus-->
+    
+  <!--  <menuitem name="My Ticket"
+              id="menu_warranty_my_ticket"
+              parent="menu_warranty_ticket"
+              action="action_my_ticket1"
+              sequence="1"/>-->
+
+    <menuitem name="All Ticket"
+              id="menu_warranty_all_ticket"
+              parent="menu_warranty_ticket"
+              action="action_all_ticket"
+              sequence="2"/>
+
+</odoo>

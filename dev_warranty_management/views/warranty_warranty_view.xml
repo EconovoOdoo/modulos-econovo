@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Copyright (C) 2015 DevIntelle Consulting Service Pvt.Ltd (<http://www.devintellecs.com>).
+
+For Module Support : devintelle@gmail.com  or Skype : devintelle
+ -->
+<odoo>
+    <!--kanban-->
+
+    <!--form-->
+    <record id="form_warranty_warranty" model="ir.ui.view">
+        <field name="name">form.warranty.warranty</field>
+        <field name="model">warranty.warranty</field>
+        <field name="arch" type="xml">
+            <form string="Crop Orders">
+                <header>
+                    <button name="action_running" type="object" string="Running" class="oe_highlight" invisible="state != 'draft'"/>
+                    
+			<button name="action_done" type="object"  string="Create Invoice" class="oe_highlight" 
+			invisible="claim_count == 0 or state != 'running' or waranty_type != 'paid'"/>
+                     <button name="action_renewal" type="object" string="Warranty Renewal" class="oe_highlight"
+                      invisible="is_renewed == True or state in ['draft','running', 'cancel','invoiced'] or hide_renewal_button == True"/>
+                    <!--  <button name="action_inv_done" type="object" invisible="state != 'invoiced'"  string="Done" class="oe_highlight"/>-->
+                    <!--  attrs="{'invisible' : ['|', '|',('is_renewed','=',True),('state','not in',['done','close']),('hide_renewal_button','=',True)]}" -->
+                    <field name="is_renewed" invisible="1"/>
+                    <field name="hide_renewal_button" invisible="1"/>
+                       <button name="send_rating_email" string='Send Rating Mail'
+                        type="object" class="oe_highlight" icon="fa-star"
+                        invisible="claim_count == 0 or rating_text != False or state not in ['running','invoiced']"/>
+                    <button name="action_cancel" type="object" string="Cancel" class="oe_highlight" invisible="state != 'running'" />
+                    <button name="action_draft" type="object" string="Reset To Draft" class="oe_highlight" invisible="state != 'cancel'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,running,cancel,expire" />
+                </header>
+
+                
+                <sheet>
+                   <div class="oe_button_box" name="button_box">
+                        <button name="action_view_sale_order" type="object" class="oe_stat_button" icon="fa-bitbucket" invisible="sale_id == False">
+                            <div class="o_stat_info" >
+                                    <span class="o_stat_text">Sale Order</span>
+                            </div>
+                        </button>
+                        <button name="action_view_all_claim" type="object" class="oe_stat_button" icon="fa-bitbucket"
+                         invisible="claim_count == 0">
+                          <!--  <div class="o_stat_info" >
+                                    <span class="o_stat_text">View Claim</span>
+                            </div>-->
+                            <field  name="claim_count" widget="statinfo"/>
+                        </button>
+                        <field name="invoice_id" invisible="1"/>
+                        <button name="action_view_invoice" type="object" class="oe_stat_button" icon="fa-bitbucket" invisible="invoice_id == False">
+                            <div class="o_stat_info" >
+                                    <span class="o_stat_text">View Invoice</span>
+                            </div>
+                        </button>
+                        <button type="object" invisible="repair_count == 0"
+                            name="action_view_repair" class="oe_stat_button" icon="fa-chain" >
+                             <field name="repair_count" widget="statinfo" string="Repair"/>
+                        </button>
+                        <button type="object" invisible="task_count == 0"
+                            name="view_tasks" class="oe_stat_button" icon="fa-chain" >
+                             <field name="task_count" widget="statinfo" string="Tasks"/>
+                        </button>
+                        <field name="warranty_renewal_id" invisible='1'/>
+                        <button name="action_view_renewal_warranty" string="Renewal Warranty" type="object" class="oe_stat_button" icon="fa-bitbucket" invisible="warranty_renewal_id == False">
+                            <div class="o_stat_info" >
+                                  <span class="o_stat_text">Renewal Warranty</span>
+                         </div>
+                        </button>
+                    </div>
+                    <h2>
+                            <field name="number" readonly='1'/>
+                    </h2>
+                    <group>
+                        <group>
+                            <field name="customer_id" required="1" readonly="state != 'draft'"/>
+                            <field name="mobile" required="1"  readonly="state != 'draft'"/>
+                            <field name="email"  readonly="state != 'draft'"/>
+                            <field name="sale_id" domain="[('state','in',('done','sale'))]" required="1"  readonly="state != 'draft'"/>
+                            <field name="warranty_renewal"  invisible="1"/>
+                            <field name="warranty_source" invisible="warranty_renewal == False"/>
+                            
+                        </group>
+                        <group>
+                            <field name="date" required="1" readonly="state != 'draft'"/>
+                            <field name="product_id" required="1" readonly="state != 'draft'"/>
+                            <field name="quantity" required="1" readonly="state != 'draft'"/>
+                            <field name="uom_id" required="1" readonly="state != 'draft'"/>
+                            <field name="serial_no_id" domain="[('product_id','=',product_id)]"  readonly="state != 'draft'"/>
+                        </group>
+                    </group>
+                        <group string="Warranty Details">
+                            <group>
+                                <field name="warranty_details_id" force_save="1" required="1" readonly="1"/>
+                                <field name="waranty_type" force_save="1" required="1" readonly="1" />
+                                <field name="waranty_charges" force_save="1" readonly="1" invisible="waranty_type != 'paid'"/>
+                                <field name="policy_id"  required="1" readonly="state != 'draft'" />
+                            </group>
+                            <group>
+                                <field name="warranty_period" force_save="1" required="1" readonly="1"/>
+                                <field name="start_date" force_save="1" required="1" readonly="1"/>
+                                <field name="end_date" force_save="1" required="1" readonly="state != 'draft'"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page name="claim_line" string="Claim History">
+                                <field name='ticket_ids' readonly='True'>
+                                    <tree editable="bottom">
+                                        <field name='name' />
+                                        <field name='partner_id' />
+                                        <field name='product_id' />
+                                        <field name='ticket_type_id' />
+                                        <field name='priority' widget='priority' />
+                                        <field name='user_id' />
+                                        <field name='stage_id' />
+                                    </tree>
+                                </field>
+                            </page>
+                            <page string="Warranty History" >
+                                <field name="warranty_history_ids" readonly="True">
+                                    <tree>
+                                        <field name="base_warranty_id"/>
+                                        <field name="start_date"/>
+                                        <field name="end_date"/>
+                                        <field name="warranty_id" column_invisible="1"/>
+                                    </tree>
+                                    <form>
+                                        <group>
+                                            <field name="base_warranty_id"/>
+                                            <field name="start_date"/>
+                                            <field name="end_date"/>
+                                            <field name="warranty_id" column_invisible="1"/>
+                                        </group>
+                                    </form>
+                                </field>
+                            </page>
+                           <page string='Rating' name="rating"
+					      invisible="not feedback_date">
+					    <group>
+				    	        <group>
+				    	            <field name="feedback_rate"  widget="priority"/>
+				    	            <field name="feedback_date"/>
+				    	        </group>
+				    	        <group>
+				    	            <div colspan="2" class="text-center" name="rating_image_container">
+						        <field name="rating_image" widget="image"/>
+						        <div class="mt4">
+						            <strong><field name="rating_text"/></strong>
+						        </div>
+						    </div>
+				    	        </group>
+			    	    </group>
+			    	    <group string='Review'>
+			    	        <field name="review" nolabel="1"/>
+			    	    </group>
+				</page>
+                            <page string="Notes">
+                                <field name="note" widget="html" placeholder="Description...."/>
+                            </page>
+                        </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"  groups="base.group_user"/>
+                    <field name="message_ids" />
+                </div>
+            </form>
+        </field>
+    </record>
+
+<!--     <record id="kanban_crop_orders" model="ir.ui.view">-->
+<!--        <field name="name">kanban.crop.orders</field>-->
+<!--        <field name="model">crop.orders</field>-->
+<!--        <field name="arch" type="xml">-->
+<!--            <kanban default_group_by="state">-->
+<!--                <field name="id"/>-->
+<!--                <field name="name"/>-->
+<!--                <field name="partner_id"/>-->
+<!--                <field name="crop_id"/>-->
+<!--                <field name="project_id"/>-->
+<!--                <field name="process_start_date"/>-->
+<!--                <field name="expected_delivery_date"/>-->
+<!--                <field name="inspector_id"/>-->
+<!--                <field name="farmer_id"/>-->
+<!--                <field name="company_id"/>-->
+<!--                <templates>-->
+<!--                    <t t-name="kanban-box">-->
+<!--                        <div class="oe_kanban_global_click">-->
+<!--                            <div class="oe_kanban_details">-->
+<!--                                <div name="partner_id">-->
+<!--                                    <b>Name:-</b>-->
+<!--                                    <field name="partner_id"/>-->
+<!--                                </div>-->
+<!--                                <div name="crop_id">-->
+<!--                                    <b>Crop:-</b>-->
+<!--                                    <field name="crop_id"/>-->
+<!--                                </div>-->
+<!--                                <div name="estimated_quantity">-->
+<!--                                    <b>Quantity:-</b>-->
+<!--                                    <field name="estimated_quantity"/>-->
+<!--                                    <field name="uom_id"/>-->
+<!--                                </div>-->
+<!--                                <div name="farmer_id">-->
+<!--                                    <b>Farmer:-</b>-->
+<!--                                    <field name="farmer_id"/>-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </t>-->
+<!--                </templates>-->
+<!--            </kanban>-->
+<!--        </field>-->
+<!--    </record>-->
+
+    <!--tree-->
+    <record id="tree_warranty_warranty" model="ir.ui.view">
+        <field name="name">tree.warranty.warranty</field>
+        <field name="model">warranty.warranty</field>
+        <field name="arch" type="xml">
+            <tree string="Warranty Registration">
+                <field name="number"/>
+                <field name="customer_id"/>
+                <field name="mobile"/>
+                <field name="sale_id"/>
+                <field name="product_id"/>
+                <field name="waranty_type"/>
+                <field name="start_date"/>
+                <field name="end_date"/>
+                <field name="state" widget="badge" decoration-info="state=='draft'" decoration-danger="state=='expire'"
+                                                   decoration-success="state=='done'" decoration-warning="state=='running'" />
+            </tree>
+        </field>
+    </record>
+
+    <!--graph-->
+    <record id="graph_warranty_warranty" model="ir.ui.view">
+        <field name="name">graph.warranty.warranty</field>
+        <field name="model">warranty.warranty</field>
+        <field name="arch" type="xml">
+            <graph string="Warranty Graph">
+                <field name="customer_id"/>
+<!--                <field name="quantity" type="measure"/>-->
+                <field name="state"/>
+            </graph>
+        </field>
+    </record>
+
+<!--pivot-->
+    <record id="pivot_warranty_warranty" model="ir.ui.view">
+        <field name="name">pivot.warranty.warranty</field>
+        <field name="model">warranty.warranty</field>
+        <field name="arch" type="xml">
+            <pivot string="Warranty Pivot">
+                <field name="state" type="row"/>
+                <field name="quantity" type="measure"/>
+                <field name="sale_id" type="col"/>
+                <field name="product_id" type="col"/>
+                <field name="customer_id" type="col"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!--search-->
+    <record id="search_warranty_warranty" model="ir.ui.view">
+        <field name="name">search.warranty.warranty</field>
+        <field name="model">warranty.warranty</field>
+        <field name="arch" type="xml">
+            <search string="Warranty Registration">
+                <field name="number"/>
+                <field name="state"/>
+                <filter name='draft' string="Draft" domain="[('state','=','draft')]"/>
+                <filter name='running' string="running" domain="[('state','=','running')]"/>
+               <!-- <filter name='done' string="Done" domain="[('state','=','done')]"/>-->
+                <group expand="0" string="Group By" colspan="16">
+                    <filter name="customer_id" string="Partner" context="{'group_by':'customer_id'}"/>
+                    <filter name="state" string="State" context="{'group_by':'state'}"/>
+                    <filter name="waranty_type" string="Waranty Type" context="{'group_by':'waranty_type'}"/>
+                    <filter name="sale_order" string="Sale Order" context="{'group_by':'sale_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+
+    <!--Action-->
+    <record id="action_warranty_warranty" model="ir.actions.act_window">
+        <field name="name">Warranty Registration</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">warranty.warranty</field>
+        <field name="view_mode">tree,form,graph,pivot</field>
+        <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Click to Create Warranty Registration.
+              </p>
+            </field>
+    </record>
+
+    <!--Menus-->
+    
+    <menuitem name="Warranty"
+              id="menu_warranty"
+              parent="menu_sum_warranty_management"
+              action="action_warranty_warranty"
+              sequence="1"/>
+</odoo>

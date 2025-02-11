@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Copyright (C) 2015 DevIntelle Consulting Service Pvt.Ltd (<http://www.devintellecs.com>).
+
+For Module Support : devintelle@gmail.com  or Skype : devintelle
+ -->
+<odoo>
+    <record id="dev_warranty_policy_form_view" model="ir.ui.view">
+        <field name="name">dev.warranty.policy.form.view</field>
+        <field name="model">warranty.policy</field>
+        <field name="arch" type="xml">
+            <form string="Warranty Policy">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Policy Details">
+                            <field name="note" widget="html"/>
+                        </page>
+                </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!--tree-->
+    <record id="dev_warranty_policy_tree_view" model="ir.ui.view">
+        <field name="name">dev.warranty.policy.tree.view</field>
+        <field name="model">warranty.policy</field>
+        <field name="arch" type="xml">
+            <tree string="Warranty Policy">
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+
+    <!--Action-->
+    <record id="action_dev_warranty_policy" model="ir.actions.act_window">
+        <field name="name">Policy</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">warranty.policy</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!--Menus-->
+    <menuitem name="Policy"
+              id='menu_action_dev_warranty_policy'
+              parent="menu_parent_warranty_config_policy"
+              action="action_dev_warranty_policy"
+              sequence="1"/>
+</odoo>

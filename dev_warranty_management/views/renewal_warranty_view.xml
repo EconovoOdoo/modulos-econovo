@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Copyright (C) 2015 DevIntelle Consulting Service Pvt.Ltd (<http://www.devintellecs.com>).
+
+For Module Support : devintelle@gmail.com  or Skype : devintelle
+ -->
+<odoo>
+
+   <record id="action_warranty_renewal" model="ir.actions.act_window">
+        <field name="name">Warranty Renewal</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">warranty.warranty</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('warranty_renewal', '=',True)]</field>
+        <field name="context">{'default_warranty_renewal': True}</field>
+        <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Click to Create Warranty Renewal Registration.
+              </p>
+            </field>
+    </record>
+
+    <!--Menus-->
+    
+    <menuitem name="Warranty Renewal"
+              id="menu_warranty_renewal_sub"
+              parent="menu_warranty_renewal_parent"
+              action="action_warranty_renewal"
+              sequence="1"/>
+    
+</odoo>

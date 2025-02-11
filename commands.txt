@@ -1,0 +1,6 @@
+
+-Ejecutar la instacia de Odoo:
+python odoo-bin -r odoo -w odoo --addons-path=addons,econovo -d odoo17 -u bom_components_operations_total_time,mrp_bom_tree_consolidation
+
+-Crear una nueva plantilla para nuevos modulos personalizados:
+python odoo-bin scaffold nombre_modulo econovo(capeta destino)

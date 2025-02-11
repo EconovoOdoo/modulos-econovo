@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Copyright (C) 2015 DevIntelle Consulting Service Pvt.Ltd (<http://www.devintellecs.com>).
+
+For Module Support : devintelle@gmail.com  or Skype : devintelle
+ -->
+
+<odoo>
+      <record id="dev_create_task_warranty_inherit" model="ir.ui.view">
+            <field name="name">dev.create.task.warranty.inherit</field>
+            <field name="model">project.task</field>
+            <field name="inherit_id" ref="project.view_task_form2"/>
+            <field name="arch" type="xml">
+                <xpath expr="//group//group[2]" position="inside">
+                    <field name ="ticket_id" readonly="1" />
+                    <field name ="warranty_id" readonly="1" />
+                </xpath>
+                <xpath expr="//div[hasclass('oe_button_box')]" position="inside">
+                    <button name="view_tickets" string="Ticket" type="object" class="oe_stat_button" icon="fa-external-link" invisible="ticket_counter == 0">
+                         <field  name="ticket_counter" widget="statinfo" />
+                       </button>
+                </xpath>
+            </field>
+      </record>
+
+      <record id="view_project_task_inherit_filter" model="ir.ui.view">
+        <field name="name">view.project.task.inherit.filter</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_search_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='project']" position="after">
+                <filter string="Warranty" name="warranty"  context="{'group_by': 'warranty_id'}"/>
+                <filter string="Ticket" name="ticket"  context="{'group_by': 'ticket_id'}"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

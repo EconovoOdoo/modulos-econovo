@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_mrp_bom_tree_consolidation_read,mrp_bom_tree_consolidation_read,model_mrp_bom_tree_consolidation,base.group_user,1,0,0,0
+access_mrp_bom_tree_consolidation_full,mrp_bom_tree_consolidation_full,model_mrp_bom_tree_consolidation,base.group_system,1,1,1,1
+access_mrp_bom_tree_expanded_read,mrp_bom_tree_expanded_read,model_mrp_bom_tree_expanded,base.group_user,1,0,0,0
+access_mrp_bom_tree_expanded_full,mrp_bom_tree_expanded_full,model_mrp_bom_tree_expanded,base.group_system,1,1,1,1

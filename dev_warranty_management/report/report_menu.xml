@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Copyright (C) 2015 DevIntelle Consulting Service Pvt.Ltd (<http://www.devintellecs.com>).
+
+For Module Support : devintelle@gmail.com  or Skype : devintelle 
+ -->
+<odoo>
+
+    <record id="action_warranty_card_report" model="ir.actions.report">
+        <field name="name">Warranty Card</field>
+        <field name="model">warranty.warranty</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">dev_warranty_management.dev_warranty_card_report_tmpl</field>
+        <field name="report_file">dev_warranty_management.dev_warranty_card_report_tmpl</field>
+        <field name="binding_model_id" ref="dev_warranty_management.model_warranty_warranty"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <record id="action_warranty_report" model="ir.actions.report">
+        <field name="name">Warranty</field>
+        <field name="model">warranty.warranty</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">dev_warranty_management.dev_warranty_report_template</field>
+        <field name="report_file">dev_warranty_management.dev_warranty_report_template</field>
+        <field name="binding_model_id" ref="dev_warranty_management.model_warranty_warranty"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <record id="action_warranty_history_report" model="ir.actions.report">
+        <field name="name">Warranty History</field>
+        <field name="model">warranty.history.report</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">dev_warranty_management.dev_warranty_history_tmpl</field>
+        <field name="report_file">dev_warranty_management.dev_warranty_history_tmpl</field>
+        <field name="binding_type">report</field>
+    </record>
+
+</odoo>
