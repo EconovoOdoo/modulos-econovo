@@ -158,7 +158,6 @@
 
     <template id="report_simple_label_dymo">
         <div class="o_label_sheet o_label_dymo" t-att-style="padding_page">
-            <!-- Aseguramos que la iteración sea sobre "product" en lugar de "quantity" -->
             <t t-set="quantity" t-value="product.quantity"/>
             <t t-foreach="quantity" t-as="prod_id">
                 <t t-set="product" t-value="env['product.template'].browse(int(prod_id))"/>

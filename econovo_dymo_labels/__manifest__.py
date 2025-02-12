@@ -14,5 +14,3 @@
     'installable': True,
     'application': False,
 }
-
-# comantario de prueba para git
