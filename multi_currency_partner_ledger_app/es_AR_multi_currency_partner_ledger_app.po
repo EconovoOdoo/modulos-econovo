@@ -1,0 +1,242 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* multi_currency_partner_ledger_app
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 17.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-02-13 11:36+0000\n"
+"PO-Revision-Date: 2025-02-13 11:44-0300\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: es_AR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 3.5\n"
+
+#. module: multi_currency_partner_ledger_app
+#: model_terms:ir.ui.view,arch_db:multi_currency_partner_ledger_app.report_partnerledger
+msgid "<strong>End Date :</strong>"
+msgstr "<strong>Fecha de finalización :</strong>"
+
+#. module: multi_currency_partner_ledger_app
+#: model_terms:ir.ui.view,arch_db:multi_currency_partner_ledger_app.report_partnerledger
+msgid "<strong>Partner's Account :</strong>"
+msgstr "<strong>Cuenta del Contacto :</strong>"
+
+#. module: multi_currency_partner_ledger_app
+#: model_terms:ir.ui.view,arch_db:multi_currency_partner_ledger_app.report_partnerledger
+msgid "<strong>Start Date :</strong>"
+msgstr "<strong>Fecha de inicio :</strong>"
+
+#. module: multi_currency_partner_ledger_app
+#: model_terms:ir.ui.view,arch_db:multi_currency_partner_ledger_app.report_partnerledger
+msgid "<strong>Target Moves :</strong>"
+msgstr "<strong>Movimientos objetivo :</strong>"
+
+#. module: multi_currency_partner_ledger_app
+#: model_terms:ir.ui.view,arch_db:multi_currency_partner_ledger_app.report_partnerledger
+msgid "Account"
+msgstr "Cuenta"
+
+#. module: multi_currency_partner_ledger_app
+#: model:ir.model.fields.selection,name:multi_currency_partner_ledger_app.selection__multicurrency_partnerledger__target_move__all
+#: model_terms:ir.ui.view,arch_db:multi_currency_partner_ledger_app.report_partnerledger
+msgid "All Entries"
+msgstr "Todas las entradas"
+
+#. module: multi_currency_partner_ledger_app
+#: model:ir.model.fields.selection,name:multi_currency_partner_ledger_app.selection__multicurrency_partnerledger__target_move__posted
+#: model_terms:ir.ui.view,arch_db:multi_currency_partner_ledger_app.report_partnerledger
+msgid "All Posted Entries"
+msgstr "Todas las entradas registradas"
+
+#. module: multi_currency_partner_ledger_app
+#: model_terms:ir.ui.view,arch_db:multi_currency_partner_ledger_app.report_partnerledger
+msgid "Amount In Currency"
+msgstr "Monto en moneda"
+
+#. module: multi_currency_partner_ledger_app
+#: model_terms:ir.ui.view,arch_db:multi_currency_partner_ledger_app.report_partnerledger
+msgid "Balance"
+msgstr "Saldo"
+
+#. module: multi_currency_partner_ledger_app
+#: model_terms:ir.ui.view,arch_db:multi_currency_partner_ledger_app.multi_currency_partner_ledger_wizard
+msgid "Cancel"
+msgstr "Cancelar"
+
+#. module: multi_currency_partner_ledger_app
+#: model_terms:ir.ui.view,arch_db:multi_currency_partner_ledger_app.multi_currency_partner_ledger_wizard
+msgid "Click on <strong> Print </strong> button to print partner ledger report."
+msgstr "Haz clic en el botón <strong> Imprimir </strong> para imprimir el reporte de libro mayor del contacto."
+
+#. module: multi_currency_partner_ledger_app
+#: model:ir.model.fields,field_description:multi_currency_partner_ledger_app.field_multicurrency_partnerledger__company_id
+msgid "Company"
+msgstr "Empresa"
+
+#. module: multi_currency_partner_ledger_app
+#: model:ir.model.fields,field_description:multi_currency_partner_ledger_app.field_multicurrency_partnerledger__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: multi_currency_partner_ledger_app
+#: model:ir.model.fields,field_description:multi_currency_partner_ledger_app.field_multicurrency_partnerledger__create_date
+msgid "Created on"
+msgstr "Creado el"
+
+#. module: multi_currency_partner_ledger_app
+#: model_terms:ir.ui.view,arch_db:multi_currency_partner_ledger_app.report_partnerledger
+msgid "Credit"
+msgstr "Haber"
+
+#. module: multi_currency_partner_ledger_app
+#: model:ir.model.fields,field_description:multi_currency_partner_ledger_app.field_multicurrency_partnerledger__currency_ids
+msgid "Currency"
+msgstr "Moneda"
+
+#. module: multi_currency_partner_ledger_app
+#: model_terms:ir.ui.view,arch_db:multi_currency_partner_ledger_app.report_partnerledger
+msgid "Debit"
+msgstr "Debe"
+
+#. module: multi_currency_partner_ledger_app
+#: model:ir.model.fields,field_description:multi_currency_partner_ledger_app.field_multicurrency_partnerledger__display_name
+msgid "Display Name"
+msgstr "Nombre para mostrar"
+
+#. module: multi_currency_partner_ledger_app
+#: model_terms:ir.ui.view,arch_db:multi_currency_partner_ledger_app.report_partnerledger
+msgid "Due Date"
+msgstr "Fecha de vencimiento"
+
+#. module: multi_currency_partner_ledger_app
+#: model:ir.model.fields,field_description:multi_currency_partner_ledger_app.field_multicurrency_partnerledger__date_to
+msgid "End Date"
+msgstr "Fecha de finalización"
+
+#. module: multi_currency_partner_ledger_app
+#: model:ir.model.fields,field_description:multi_currency_partner_ledger_app.field_multicurrency_partnerledger__id
+msgid "ID"
+msgstr ""
+
+#. module: multi_currency_partner_ledger_app
+#: model_terms:ir.ui.view,arch_db:multi_currency_partner_ledger_app.report_partnerledger
+msgid "JRNL"
+msgstr "Libro Diario"
+
+#. module: multi_currency_partner_ledger_app
+#: model:ir.model.fields,field_description:multi_currency_partner_ledger_app.field_multicurrency_partnerledger__write_uid
+msgid "Last Updated by"
+msgstr "Última actualización por"
+
+#. module: multi_currency_partner_ledger_app
+#: model:ir.model.fields,field_description:multi_currency_partner_ledger_app.field_multicurrency_partnerledger__write_date
+msgid "Last Updated on"
+msgstr "Última actualización el"
+
+#. module: multi_currency_partner_ledger_app
+#: model:ir.actions.act_window,name:multi_currency_partner_ledger_app.multi_currency_partner_ledger_action
+#: model:ir.actions.report,name:multi_currency_partner_ledger_app.multi_currency_partner_ledger
+#: model:ir.ui.menu,name:multi_currency_partner_ledger_app.multi_currency_partner_ledger_id
+#: model_terms:ir.ui.view,arch_db:multi_currency_partner_ledger_app.multi_currency_partner_ledger_wizard
+#: model_terms:ir.ui.view,arch_db:multi_currency_partner_ledger_app.report_partnerledger
+msgid "Partner Ledger"
+msgstr "Libro mayor del contacto"
+
+#. module: multi_currency_partner_ledger_app
+#: model:ir.model.fields,field_description:multi_currency_partner_ledger_app.field_multicurrency_partnerledger__partner_ids
+msgid "Partner's"
+msgstr "Contactos"
+
+#. module: multi_currency_partner_ledger_app
+#: model:ir.model.fields,field_description:multi_currency_partner_ledger_app.field_multicurrency_partnerledger__result_selection
+msgid "Partner's Account"
+msgstr "Cuenta del Contacto"
+
+#. module: multi_currency_partner_ledger_app
+#: model:ir.model.fields.selection,name:multi_currency_partner_ledger_app.selection__multicurrency_partnerledger__result_selection__supplier
+#: model_terms:ir.ui.view,arch_db:multi_currency_partner_ledger_app.report_partnerledger
+msgid "Payable Accounts"
+msgstr "Cuentas por pagar"
+
+#. module: multi_currency_partner_ledger_app
+#: model_terms:ir.ui.view,arch_db:multi_currency_partner_ledger_app.multi_currency_partner_ledger_wizard
+msgid "Print"
+msgstr "Imprimir"
+
+#. module: multi_currency_partner_ledger_app
+#: model_terms:ir.ui.view,arch_db:multi_currency_partner_ledger_app.multi_currency_partner_ledger_wizard
+msgid "Print Partner Ledger"
+msgstr "Imprimir libro mayor del contacto"
+
+#. module: multi_currency_partner_ledger_app
+#: model:ir.model.fields.selection,name:multi_currency_partner_ledger_app.selection__multicurrency_partnerledger__result_selection__customer
+#: model_terms:ir.ui.view,arch_db:multi_currency_partner_ledger_app.report_partnerledger
+msgid "Receivable Accounts"
+msgstr "Cuentas por cobrar"
+
+#. module: multi_currency_partner_ledger_app
+#: model:ir.model.fields.selection,name:multi_currency_partner_ledger_app.selection__multicurrency_partnerledger__result_selection__customer_supplier
+#: model_terms:ir.ui.view,arch_db:multi_currency_partner_ledger_app.report_partnerledger
+msgid "Receivable and Payable Accounts"
+msgstr "Cuentas por cobrar y por pagar"
+
+#. module: multi_currency_partner_ledger_app
+#: model_terms:ir.ui.view,arch_db:multi_currency_partner_ledger_app.report_partnerledger
+msgid "Ref"
+msgstr "Ref"
+
+#. module: multi_currency_partner_ledger_app
+#: model_terms:ir.ui.view,arch_db:multi_currency_partner_ledger_app.multi_currency_partner_ledger_wizard
+msgid "Select Currency"
+msgstr "Seleccionar moneda"
+
+#. module: multi_currency_partner_ledger_app
+#: model_terms:ir.ui.view,arch_db:multi_currency_partner_ledger_app.multi_currency_partner_ledger_wizard
+msgid "Select End Date"
+msgstr "Seleccionar fecha de finalización"
+
+#. module: multi_currency_partner_ledger_app
+#: model_terms:ir.ui.view,arch_db:multi_currency_partner_ledger_app.multi_currency_partner_ledger_wizard
+msgid "Select Partners"
+msgstr "Seleccionar contacto"
+
+#. module: multi_currency_partner_ledger_app
+#: model_terms:ir.ui.view,arch_db:multi_currency_partner_ledger_app.multi_currency_partner_ledger_wizard
+msgid "Select Start Date"
+msgstr "Seleccionar fecha de inicio"
+
+#. module: multi_currency_partner_ledger_app
+#: model:ir.model.fields,field_description:multi_currency_partner_ledger_app.field_multicurrency_partnerledger__reconciled
+msgid "Show Initial Balance"
+msgstr "Mostrar saldo inicial"
+
+#. module: multi_currency_partner_ledger_app
+#: model:ir.model.fields,field_description:multi_currency_partner_ledger_app.field_multicurrency_partnerledger__date_from
+msgid "Start Date"
+msgstr "Fecha de inicio"
+
+#. module: multi_currency_partner_ledger_app
+#: model:ir.model.fields,field_description:multi_currency_partner_ledger_app.field_multicurrency_partnerledger__target_move
+msgid "Target Moves"
+msgstr "Movimientos objetivo"
+
+#. module: multi_currency_partner_ledger_app
+#: model:ir.model,name:multi_currency_partner_ledger_app.model_multicurrency_partnerledger
+msgid "multicurrency.partnerledger"
+msgstr ""
+
+#. module: multi_currency_partner_ledger_app
+#: model_terms:ir.ui.view,arch_db:multi_currency_partner_ledger_app.multi_currency_partner_ledger_wizard
+msgid "or"
+msgstr "o"
+
+#. module: multi_currency_partner_ledger_app
+#: model:ir.model,name:multi_currency_partner_ledger_app.model_report_multi_currency_partner_ledger_app_report_partnerledger
+msgid "report.multi_currency_partner_ledger_app.report_partnerledger"
+msgstr ""
