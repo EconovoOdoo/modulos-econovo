@@ -1,0 +1,1979 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* dev_warranty_management
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 17.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-02-13 14:45+0000\n"
+"PO-Revision-Date: 2025-02-13 14:45+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_template
+msgid "&amp;times;"
+msgstr ""
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_template
+msgid "1 star"
+msgstr "1 Estrella"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_template
+msgid "2 stars"
+msgstr "2 Estrellas"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_template
+msgid "3 stars"
+msgstr "3 Estrellas"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_card_body
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_report_body
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_content
+msgid "<b>Customer</b>"
+msgstr "<b>Cliente</b>"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_report_body
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_content
+msgid "<b>Date</b>"
+msgstr "<b>Fecha</b>"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_report_body
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_content
+msgid "<b>Email</b>"
+msgstr ""
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_card_body
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_report_body
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_content
+msgid "<b>End Date</b>"
+msgstr "<b>Fecha de Finalización</b>"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_history_tmpl_body
+msgid "<b>End Date</b> :"
+msgstr "<b>Fecha de Finalización</b> :"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_report_body
+msgid "<b>Issue</b>"
+msgstr "<b>Problema/Falla</b>"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_report_body
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_content
+msgid "<b>Mobile</b>"
+msgstr "<b>Móvil</b>"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_report_body
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_content
+msgid "<b>Paid Charges</b>"
+msgstr "<b>Cargos Pagados</b>"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_report_body
+msgid "<b>Priority</b>"
+msgstr "<b>Prioridad</b>"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_card_body
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_report_body
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_content
+msgid "<b>Product</b>"
+msgstr "<b>Producto</b>"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_report_body
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_content
+msgid "<b>Quantity</b>"
+msgstr "<b>Cantidad</b>"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_card_body
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_report_body
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_content
+msgid "<b>Sale Order</b>"
+msgstr "<b>Orden de Venta</b>"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_report_body
+msgid "<b>Serial No</b>"
+msgstr "<b>Número de Serie</b>"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_report_body
+msgid "<b>Source</b>"
+msgstr "<b>Origen</b>"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_card_body
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_report_body
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_content
+msgid "<b>Start Date</b>"
+msgstr "<b>Fecha de Inicio</b>"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_history_tmpl_body
+msgid "<b>Start Date</b> :"
+msgstr "<b>Fecha de Inicio</b> :"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_report_body
+msgid "<b>Status</b> :"
+msgstr "<b>Estado</b> :"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_report_body
+msgid "<b>Subject</b>"
+msgstr "<b>Asunto</b>"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_report_body
+msgid "<b>Unit Of Measure</b>"
+msgstr "<b>Unid. Medida</b>"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_report_body
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_content
+msgid "<b>Warranty Period<br/>(In Months)</b>"
+msgstr "<b>Período de Garantía<br/>(En Meses)</b>"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_report_body
+msgid "<b>Warranty Type </b>"
+msgstr "<b>Tipo de Garantía</b>"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_content
+msgid "<b>Warranty Type</b>"
+msgstr "<b>Tipo de Garantía</b>"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_report_body
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_content
+msgid "<b>Warranty</b>"
+msgstr "<b>Garantía</b>"
+
+#. module: dev_warranty_management
+#: model:mail.template,body_html:dev_warranty_management.warranty_expiry_reminder_template
+msgid ""
+"<div>\n"
+"                <p>Dear <b> <span t-esc=\"object.customer_id.name\"></span> </b>,</p>\n"
+"                <p>Hope you doing well </p> \n"
+"                <p>Your Order : <b> <span t-esc=\"object.sale_id.name\"></span> </b> </p> \n"
+"               \t<p>Product : <b> <span t-esc=\"object.product_id.name\"></span> </b> Expiry On <b> <span t-esc=\"object.end_date\"></span> </b>   </p>\n"
+"               \t<br><br> \n"
+"               \tYour product is expired, Now for Renewal to Administrator \n"
+"            </div>\n"
+"        "
+msgstr ""
+"<div>\n"
+"    <p>Estimado/a <b> <span t-esc=\"object.customer_id.name\"></span> </b>,</p>\n"
+"    <p>Esperamos que se encuentre bien.</p>\n"
+"    <p>Su Orden: <b> <span t-esc=\"object.sale_id.name\"></span> </b> </p>\n"
+"    <p>Producto: <b> <span t-esc=\"object.product_id.name\"></span> </b> Expira el <b> <span t-esc=\"object.end_date\"></span> </b></p>\n"
+"    <br><br>\n"
+"    Su producto ha expirado. Ahora, para renovarlo, contacte al Administrador.\n"
+"</div>\n"
+"        "
+
+#. module: dev_warranty_management
+#: model:mail.template,body_html:dev_warranty_management.rating_warrantyy_template1
+msgid ""
+"<div>\n"
+"                <t t-set=\"access_token\" t-value=\"object._rating_get_access_token()\"></t>\n"
+"                <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"590\" style=\"width:100%; margin:0px auto;\">\n"
+"                    <tbody>\n"
+"                        <tr>\n"
+"                            <td valign=\"top\" style=\"font-size: 13px;\">\n"
+"                                Hello\n"
+"                                <b>\n"
+"                                    <span t-out=\"object.customer_id.name or ''\"></span>\n"
+"                                </b>,\n"
+"                                <br>\n"
+"                                <br>\n"
+"                                Please take a moment to rate our services related to the Warranty \"\n"
+"                                <strong>\n"
+"                                    <span t-out=\"object.number\"></span>\n"
+"                                </strong>\n"
+"                                \"\n"
+"                            </td>\n"
+"                        </tr>\n"
+"                        <tr>\n"
+"                            <td style=\"text-align: center;\">\n"
+"                                <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"590\" summary=\"o_mail_notification\" style=\"width:100%; margin: 32px 0px 32px 0px;\">\n"
+"                                    <tr>\n"
+"                                        <td style=\"font-size: 13px;\">\n"
+"                                            <strong>Tell us how you feel about our service</strong>\n"
+"                                            <br>\n"
+"                                            <span style=\"text-color: #888888\">(click on one of these smileys)</span>\n"
+"                                        </td>\n"
+"                                    </tr>\n"
+"                                    <tr>\n"
+"                                        <td style=\"font-size: 13px;\">\n"
+"                                            <table style=\"width:100%;text-align:center;\">\n"
+"                                                <tr>\n"
+"                                                    <td>\n"
+"                                                        <a t-attf-href=\"/rate/{{ access_token }}/5\">\n"
+"                                                            <img alt=\"Satisfied\" src=\"/rating/static/src/img/rating_5.png\" title=\"Satisfied\">\n"
+"                                                        </a>\n"
+"                                                    </td>\n"
+"                                                    <td>\n"
+"                                                        <a t-attf-href=\"/rate/{{ access_token }}/3\">\n"
+"                                                            <img alt=\"Not satisfied\" src=\"/rating/static/src/img/rating_3.png\" title=\"Not satisfied\">\n"
+"                                                        </a>\n"
+"                                                    </td>\n"
+"                                                    <td>\n"
+"                                                        <a t-attf-href=\"/rate/{{ access_token }}/1\">\n"
+"                                                            <img alt=\"Highly Dissatisfied\" src=\"/rating/static/src/img/rating_1.png\" title=\"Highly Dissatisfied\">\n"
+"                                                        </a>\n"
+"                                                    </td>\n"
+"                                                </tr>\n"
+"                                            </table>\n"
+"                                        </td>\n"
+"                                    </tr>\n"
+"                                </table>\n"
+"                            </td>\n"
+"                        </tr>\n"
+"                        <tr>\n"
+"                            <td valign=\"top\" style=\"font-size: 13px;\">\n"
+"                                We appreciate your feedback. It helps us to improve continuously.\n"
+"                                <br>\n"
+"                            </td>\n"
+"                        </tr>\n"
+"                    </tbody>\n"
+"                </table>\n"
+"            </div>\n"
+"        "
+msgstr ""
+"<div>\n"
+"    <t t-set=\"access_token\" t-value=\"object._rating_get_access_token()\"></t>\n"
+"    <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"590\" style=\"width:100%; margin:0px auto;\">\n"
+"        <tbody>\n"
+"            <tr>\n"
+"                <td valign=\"top\" style=\"font-size: 13px;\">\n"
+"                    Hola\n"
+"                    <b>\n"
+"                        <span t-out=\"object.customer_id.name or ''\"></span>\n"
+"                    </b>,\n"
+"                    <br>\n"
+"                    <br>\n"
+"                    Por favor, tómese un momento para calificar nuestros servicios relacionados con la Garantía \"\n"
+"                    <strong>\n"
+"                        <span t-out=\"object.number\"></span>\n"
+"                    </strong>\n"
+"                    \"\n"
+"                </td>\n"
+"            </tr>\n"
+"            <tr>\n"
+"                <td style=\"text-align: center;\">\n"
+"                    <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"590\" summary=\"o_mail_notification\" style=\"width:100%; margin: 32px 0px 32px 0px;\">\n"
+"                        <tr>\n"
+"                            <td style=\"font-size: 13px;\">\n"
+"                                <strong>Cuéntenos cómo se siente acerca de nuestro servicio</strong>\n"
+"                                <br>\n"
+"                                <span style=\"text-color: #888888\">(haga clic en uno de estos emoticonos)</span>\n"
+"                            </td>\n"
+"                        </tr>\n"
+"                        <tr>\n"
+"                            <td style=\"font-size: 13px;\">\n"
+"                                <table style=\"width:100%;text-align:center;\">\n"
+"                                    <tr>\n"
+"                                        <td>\n"
+"                                            <a t-attf-href=\"/rate/{{ access_token }}/5\">\n"
+"                                                <img alt=\"Satisfecho\" src=\"/rating/static/src/img/rating_5.png\" title=\"Satisfecho\">\n"
+"                                            </a>\n"
+"                                        </td>\n"
+"                                        <td>\n"
+"                                            <a t-attf-href=\"/rate/{{ access_token }}/3\">\n"
+"                                                <img alt=\"No satisfecho\" src=\"/rating/static/src/img/rating_3.png\" title=\"No satisfecho\">\n"
+"                                            </a>\n"
+"                                        </td>\n"
+"                                        <td>\n"
+"                                            <a t-attf-href=\"/rate/{{ access_token }}/1\">\n"
+"                                                <img alt=\"Muy insatisfecho\" src=\"/rating/static/src/img/rating_1.png\" title=\"Muy insatisfecho\">\n"
+"                                            </a>\n"
+"                                        </td>\n"
+"                                    </tr>\n"
+"                                </table>\n"
+"                            </td>\n"
+"                        </tr>\n"
+"                    </table>\n"
+"                </td>\n"
+"            </tr>\n"
+"            <tr>\n"
+"                <td valign=\"top\" style=\"font-size: 13px;\">\n"
+"                    Agradecemos su retroalimentación. Nos ayuda a mejorar continuamente.\n"
+"                    <br>\n"
+"                </td>\n"
+"            </tr>\n"
+"        </tbody>\n"
+"    </table>\n"
+"</div>\n"
+"        "
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.portal_my_warranty
+msgid "<em class=\"font-weight-normal text-muted\">Company:</em>"
+msgstr "<em class=\"font-weight-normal text-muted\">Empresa:</em>"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.portal_my_warranty
+msgid "<em class=\"font-weight-normal text-muted\">Product:</em>"
+msgstr "<em class=\"font-weight-normal text-muted\">Producto:</em>"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_template
+msgid "<i class=\"fa fa-check\"/> Save"
+msgstr "<i class=\"fa fa-check\"/> Guardar"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_template
+msgid "<i class=\"fa fa-download\"/> Download"
+msgstr "<i class=\"fa fa-download\"/> Descargar"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_thank_you
+msgid ""
+"<i class=\"fa fa-map-marker fa-fw me-2\"/><span class=\"o_force_ltr\">3575 "
+"Fake Buena Vista Avenue</span>"
+msgstr ""
+"<i class=\"fa fa-map-marker fa-fw me-2\"/><span class=\"o_force_ltr\">3575 "
+"Avenida Fake Buena Vista</span>"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_template
+msgid "<i class=\"fa fa-print\"/> Print"
+msgstr "<i class=\"fa fa-print\"/> Imprimir"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_template
+msgid "<option value=\"\">--Select--</option>"
+msgstr "<option value=\"\">--Seleccionar--</option>"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_template
+msgid "<small class=\"text-muted\">Your contact</small>"
+msgstr "<small class=\"text-muted\">Tu contacto</small>"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_thank_you
+msgid ""
+"<span class=\"fa fa-check-circle\"/>\n"
+"                                            <span>Your message has been sent <b>successfully</b></span>"
+msgstr ""
+"<span class=\"fa fa-check-circle\"/>\n"
+"                                            <span>Tu mensaje ha sido enviado <b>con éxito</b></span>"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.form_warranty_warranty
+msgid "<span class=\"o_stat_text\">Renewal Warranty</span>"
+msgstr "<span class=\"o_stat_text\">Renovación de garantía</span>"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.form_warranty_warranty
+msgid "<span class=\"o_stat_text\">Sale Order</span>"
+msgstr "<span class=\"o_stat_text\">Orden de venta</span>"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.form_warranty_warranty
+msgid "<span class=\"o_stat_text\">View Invoice</span>"
+msgstr "<span class=\"o_stat_text\">Ver factura</span>"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_history_tmpl_body
+msgid "<span>Cancelled</span>"
+msgstr "<span>Cancelado</span>"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_history_tmpl_body
+msgid "<span>Done</span>"
+msgstr "<span>Hecho</span>"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_history_tmpl_body
+msgid "<span>Draft</span>"
+msgstr "<span>Borrador</span>"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_history_tmpl_body
+msgid "<span>Expired</span>"
+msgstr "<span>Vencido</span>"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_history_tmpl_body
+msgid "<span>Invoiced</span>"
+msgstr "<span>Facturado</span>"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_history_tmpl_body
+msgid "<span>Running</span>"
+msgstr "<span>En Curso</span>"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_report_body
+msgid "<span>Warranty # </span>"
+msgstr "<span>Garantía # </span>"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_tracking_page
+msgid "<strong>Customer</strong>"
+msgstr "<strong>Cliente</strong>"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_tracking_page
+msgid "<strong>End Date</strong>"
+msgstr "<strong>Fecha de Finalización</strong>"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_tracking_page
+msgid "<strong>Sale Order</strong>"
+msgstr "<strong>Orden de Venta</strong>"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_tracking_page
+msgid "<strong>Start Date</strong>"
+msgstr "<strong>Fecha de Inicio</strong>"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_tracking_page
+msgid "<strong>Status</strong>"
+msgstr "<strong>Estado</strong>"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_tracking_page
+msgid "<strong>Tracking Information: Warranty Not Found</strong>"
+msgstr "<strong>Información de seguimiento: Garantía no encontrada</strong>"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_tracking_page
+msgid "<strong>Tracking Information:</strong>"
+msgstr "<strong>Información de seguimiento:</strong>"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__access_warning
+msgid "Access warning"
+msgstr "Alerta de Acceso"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__message_needaction
+msgid "Action Needed"
+msgstr "Acción necesaria"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__activity_ids
+msgid "Activities"
+msgstr "Actividades"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__activity_exception_decoration
+msgid "Activity Exception Decoration"
+msgstr "Decoración de Excepción de Actividad"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__activity_state
+msgid "Activity State"
+msgstr "Estado de Actividad"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__activity_type_icon
+msgid "Activity Type Icon"
+msgstr "Tipo de Icono de Actividad"
+
+#. module: dev_warranty_management
+#. odoo-python
+#: code:addons/dev_warranty_management/controller/portal.py:0
+#: code:addons/dev_warranty_management/controller/portal.py:0
+#, python-format
+msgid "All"
+msgstr ""
+
+#. module: dev_warranty_management
+#: model:ir.ui.menu,name:dev_warranty_management.menu_warranty_all_ticket
+msgid "All Ticket"
+msgstr "Todos los Tickets"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_product_product__allow_warranty
+#: model:ir.model.fields,field_description:dev_warranty_management.field_product_template__allow_warranty
+msgid "Allow Warranty"
+msgstr "Permitir Garantia"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_dev_repair_warranty_task__user_id
+msgid "Assigned to"
+msgstr "Asignado a"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_template
+msgid "Attachment"
+msgstr "Archivos Adjuntos"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__message_attachment_count
+msgid "Attachment Count"
+msgstr "Cant. de Archivos Adjuntos"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_repair_warranty_task_view
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.form_warranty_warranty
+msgid "Cancel"
+msgstr "Cancelar"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields.selection,name:dev_warranty_management.selection__warranty_analysis__state__cancel
+#: model:ir.model.fields.selection,name:dev_warranty_management.selection__warranty_history_report__state__cancel
+#: model:ir.model.fields.selection,name:dev_warranty_management.selection__warranty_warranty__state__cancel
+msgid "Cancelled"
+msgstr "Cancelado"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_template
+msgid "Claim Details"
+msgstr "Detalle del reclamo"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_report_body
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.form_warranty_warranty
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_content
+msgid "Claim History"
+msgstr "Historial de reclamos"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_template
+msgid "Claim Only Running State Allow"
+msgstr "Permitir Reclamos Solo en Estado Activo"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_template
+msgid "Claim Request"
+msgstr "Solicitud de reclamo"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_template
+msgid "Claim Subject"
+msgstr "Motivo del reclamo"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__claim_count
+msgid "Claims"
+msgstr "Reclamos"
+
+#. module: dev_warranty_management
+#: model_terms:ir.actions.act_window,help:dev_warranty_management.action_ticket_tag
+msgid "Click to Create Ticket Tags."
+msgstr "Haga clic para crear etiquetas de ticket."
+
+#. module: dev_warranty_management
+#: model_terms:ir.actions.act_window,help:dev_warranty_management.action_warranty_product
+msgid "Click to Create Warranty Product."
+msgstr "Haga clic para crear un producto con garantía."
+
+#. module: dev_warranty_management
+#: model_terms:ir.actions.act_window,help:dev_warranty_management.action_today_exp_warranty
+#: model_terms:ir.actions.act_window,help:dev_warranty_management.action_warranty_expired
+#: model_terms:ir.actions.act_window,help:dev_warranty_management.action_warranty_warranty
+msgid "Click to Create Warranty Registration."
+msgstr "Haga clic para crear un registro de garantía."
+
+#. module: dev_warranty_management
+#: model_terms:ir.actions.act_window,help:dev_warranty_management.action_warranty_renewal
+msgid "Click to Create Warranty Renewal Registration."
+msgstr "Haga clic para crear un registro de renovación de garantía."
+
+#. module: dev_warranty_management
+#: model_terms:ir.actions.act_window,help:dev_warranty_management.action_all_ticket
+#: model_terms:ir.actions.act_window,help:dev_warranty_management.action_my_ticket1
+msgid "Click to Create Warranty Tickets."
+msgstr "Haga clic para crear tickets de garantía."
+
+#. module: dev_warranty_management
+#: model_terms:ir.actions.act_window,help:dev_warranty_management.action_warranty_details_views
+msgid "Click to add a Warranty Details."
+msgstr "Haga clic para añadir detalles de la garantía."
+
+#. module: dev_warranty_management
+#. odoo-javascript
+#: code:addons/dev_warranty_management/static/src/js/main.js:0
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_template
+#, python-format
+msgid "Close"
+msgstr "Cerrar"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.form_warranty_history_report
+msgid "Close Window"
+msgstr "Cerrar ventana"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_template
+msgid "Communication"
+msgstr "Comunicación"
+
+#. module: dev_warranty_management
+#: model:ir.model,name:dev_warranty_management.model_res_company
+msgid "Companies"
+msgstr "Empresas"
+
+#. module: dev_warranty_management
+#. odoo-python
+#: code:addons/dev_warranty_management/controller/portal.py:0
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_analysis__company_id
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__company_id
+#, python-format
+msgid "Company"
+msgstr "Empresa"
+
+#. module: dev_warranty_management
+#: model:ir.model,name:dev_warranty_management.model_res_config_settings
+msgid "Config Settings"
+msgstr "Ajustes de configuración"
+
+#. module: dev_warranty_management
+#: model:ir.ui.menu,name:dev_warranty_management.menu_parent_warranty_config
+msgid "Configuration"
+msgstr "Configuración"
+
+#. module: dev_warranty_management
+#. odoo-javascript
+#: code:addons/dev_warranty_management/static/src/js/main.js:0
+#, python-format
+msgid "Confirm"
+msgstr ""
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_template
+msgid "Contact"
+msgstr "Contacto"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.form_warranty_warranty
+msgid "Create Invoice"
+msgstr "Crear Factura"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.helpdesk_ticket_warranty_view
+msgid "Create Repair"
+msgstr "Crear Reparación"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_repair_warranty_task_view
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.helpdesk_ticket_warranty_view
+msgid "Create Task"
+msgstr "Crear Tarea"
+
+#. module: dev_warranty_management
+#: model:ir.actions.act_window,name:dev_warranty_management.action_repair_warranty_task_view
+msgid "Create Task "
+msgstr "Crear Tarea "
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_dev_repair_warranty_task__create_uid
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_details__create_uid
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_history__create_uid
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_history_report__create_uid
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_policy__create_uid
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_dev_repair_warranty_task__create_date
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_details__create_date
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_history__create_date
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_history_report__create_date
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_policy__create_date
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__create_date
+msgid "Created on"
+msgstr "Creado en"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.form_warranty_warranty
+msgid "Crop Orders"
+msgstr "Recortar Orden"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_analysis__currency_id
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__currency_id
+msgid "Currency"
+msgstr "Moneda"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_dev_repair_warranty_task__partner_id
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_analysis__customer_id
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__customer_id
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_history_tmpl_body
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.portal_my_warranty
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.search_warranty_analysis
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_content
+msgid "Customer"
+msgstr "Cliente"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,help:dev_warranty_management.field_warranty_warranty__access_url
+msgid "Customer Portal URL"
+msgstr "URL del Portal del Cliente"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_helpdesk_ticket__warranty_id
+msgid "Customer Warranty"
+msgstr "Garantía del Cliente"
+
+#. module: dev_warranty_management
+#. odoo-python
+#: code:addons/dev_warranty_management/controller/portal.py:0
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_analysis__date
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__date
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.portal_my_warranty
+#, python-format
+msgid "Date"
+msgstr "Fecha"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_dev_repair_warranty_task__date_deadline
+msgid "Deadline"
+msgstr "Fecha límite"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_dev_repair_warranty_task__description
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_repair_warranty_task_view
+msgid "Description"
+msgstr "Descripción"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.form_warranty_warranty
+msgid "Description...."
+msgstr "Descripción...."
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.helpdesk_ticket_warranty_view
+msgid "Description....."
+msgstr "Descripción....."
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_dev_repair_warranty_task__display_name
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_analysis__display_name
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_details__display_name
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_history__display_name
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_history_report__display_name
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_policy__display_name
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__display_name
+msgid "Display Name"
+msgstr "Nombre para Mostrar"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields.selection,name:dev_warranty_management.selection__warranty_warranty__rating_text__ko
+msgid "Dissatisfied"
+msgstr "Insatisfecho"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields.selection,name:dev_warranty_management.selection__warranty_analysis__state__done
+#: model:ir.model.fields.selection,name:dev_warranty_management.selection__warranty_history_report__state__done
+msgid "Done"
+msgstr "Hecho"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_template
+msgid "Download"
+msgstr "Descargar"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields.selection,name:dev_warranty_management.selection__warranty_analysis__state__draft
+#: model:ir.model.fields.selection,name:dev_warranty_management.selection__warranty_history_report__state__draft
+#: model:ir.model.fields.selection,name:dev_warranty_management.selection__warranty_warranty__state__draft
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.search_warranty_analysis
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.search_warranty_warranty
+msgid "Draft"
+msgstr "Borrador"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_analysis__email
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__email
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_template
+msgid "Email"
+msgstr ""
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_helpdesk_ticket__end_date
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_analysis__end_date
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_history__end_date
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_history_report__end_date
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__end_date
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_history_tmpl_body
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.portal_my_warranty
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.search_warranty_analysis
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_content
+msgid "End Date"
+msgstr "Fecha de Finalización"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_tracking_page
+msgid "Enter Warranty No"
+msgstr "Ingrese el Número de la Garantía"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields.selection,name:dev_warranty_management.selection__warranty_analysis__state__expire
+#: model:ir.model.fields.selection,name:dev_warranty_management.selection__warranty_history_report__state__expire
+#: model:ir.model.fields.selection,name:dev_warranty_management.selection__warranty_warranty__state__expire
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.search_warranty_analysis
+msgid "Expired"
+msgstr "Vencido"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.form_warranty_config_view
+msgid "Expired Mail Notification"
+msgstr "Correo de Notificación de Vencimiento"
+
+#. module: dev_warranty_management
+#: model:ir.actions.act_window,name:dev_warranty_management.action_warranty_expired
+#: model:ir.ui.menu,name:dev_warranty_management.menu_Expired_warranty
+msgid "Expired Warranty"
+msgstr "Garantías Vencidas"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__feedback_date
+msgid "Feedback Date"
+msgstr "Fecha de Comentarios"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.portal_my_home_warranty
+msgid "Follow, view or print warranty"
+msgstr "Seguir, ver o imprimir la garantía"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__message_follower_ids
+msgid "Followers"
+msgstr "Seguidores"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__message_partner_ids
+msgid "Followers (Partners)"
+msgstr "Seguidores (Contactos)"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,help:dev_warranty_management.field_warranty_warranty__activity_type_icon
+msgid "Font awesome icon e.g. fa-tasks"
+msgstr "Icono de Font awesome ejemp. fa-tasks"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields.selection,name:dev_warranty_management.selection__helpdesk_ticket__waranty_type__free
+#: model:ir.model.fields.selection,name:dev_warranty_management.selection__stock_lot__waranty_type__free
+#: model:ir.model.fields.selection,name:dev_warranty_management.selection__warranty_analysis__waranty_type__free
+#: model:ir.model.fields.selection,name:dev_warranty_management.selection__warranty_details__waranty_type__free
+#: model:ir.model.fields.selection,name:dev_warranty_management.selection__warranty_warranty__waranty_type__free
+msgid "Free"
+msgstr "Gratuita"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.search_warranty_analysis
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.search_warranty_warranty
+msgid "Group By"
+msgstr "Agrupar por"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__has_message
+msgid "Has Message"
+msgstr "Tiene mensaje"
+
+#. module: dev_warranty_management
+#. odoo-javascript
+#: code:addons/dev_warranty_management/static/src/js/main.js:0
+#, python-format
+msgid "Helpdesk Dashboard"
+msgstr ""
+
+#. module: dev_warranty_management
+#: model:ir.model,name:dev_warranty_management.model_helpdesk_ticket
+msgid "Helpdesk Ticket"
+msgstr "Ticket de Soporte al Cliente"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__hide_renewal_button
+msgid "Hide renewal button"
+msgstr "Ocultar botón de Renovación"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_dev_repair_warranty_task__id
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_analysis__id
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_details__id
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_history__id
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_history_report__id
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_policy__id
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__id
+msgid "ID"
+msgstr ""
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__activity_exception_icon
+msgid "Icon"
+msgstr "Icono"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,help:dev_warranty_management.field_warranty_warranty__activity_exception_icon
+msgid "Icon to indicate an exception activity."
+msgstr "Icono que indica una Excepción de Actividad."
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,help:dev_warranty_management.field_warranty_warranty__message_needaction
+msgid "If checked, new messages require your attention."
+msgstr "Si está marcado, nuevos mensajes necesitan su atención."
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,help:dev_warranty_management.field_warranty_warranty__message_has_error
+#: model:ir.model.fields,help:dev_warranty_management.field_warranty_warranty__message_has_sms_error
+msgid "If checked, some messages have a delivery error."
+msgstr "Si está marcado, algunos mensajes tiene error de entrega."
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__rating_image
+msgid "Image"
+msgstr "Imagen"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_analysis__invoice_id
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__invoice_id
+msgid "Invoice"
+msgstr "Factura"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields.selection,name:dev_warranty_management.selection__warranty_analysis__state__invoiced
+#: model:ir.model.fields.selection,name:dev_warranty_management.selection__warranty_history_report__state__invoiced
+#: model:ir.model.fields.selection,name:dev_warranty_management.selection__warranty_warranty__state__invoiced
+msgid "Invoiced"
+msgstr "Facturado"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__message_is_follower
+msgid "Is Follower"
+msgstr "Es seguidor"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_helpdesk_ticket__is_warranty_ticket
+msgid "Is Warranty Ticket"
+msgstr "Es un Ticket de Garantia"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__is_renewed
+msgid "Is renewed"
+msgstr "Es Renovación"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_helpdesk_ticket__issue_file
+msgid "Issue File"
+msgstr "Archivo del Problema/Falla"
+
+#. module: dev_warranty_management
+#. odoo-python
+#: code:addons/dev_warranty_management/controller/portal.py:0
+#, python-format
+msgid "Last 30 Days"
+msgstr ""
+
+#. module: dev_warranty_management
+#. odoo-python
+#: code:addons/dev_warranty_management/controller/portal.py:0
+#, python-format
+msgid "Last 7 Days"
+msgstr ""
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_dev_repair_warranty_task__write_uid
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_details__write_uid
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_history__write_uid
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_history_report__write_uid
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_policy__write_uid
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__write_uid
+msgid "Last Updated by"
+msgstr "Actualizado última vez por"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_dev_repair_warranty_task__write_date
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_details__write_date
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_history__write_date
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_history_report__write_date
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_policy__write_date
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__write_date
+msgid "Last Updated on"
+msgstr "Actualizado última vez en"
+
+#. module: dev_warranty_management
+#. odoo-python
+#: code:addons/dev_warranty_management/controller/portal.py:0
+#, python-format
+msgid "Last Week"
+msgstr ""
+
+#. module: dev_warranty_management
+#. odoo-python
+#: code:addons/dev_warranty_management/controller/portal.py:0
+#, python-format
+msgid "Leave viewed by customer"
+msgstr ""
+
+#. module: dev_warranty_management
+#: model:ir.model,name:dev_warranty_management.model_stock_lot
+msgid "Lot/Serial"
+msgstr "Número de Lote/Serie"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__message_has_error
+msgid "Message Delivery error"
+msgstr "Error en la entrega del mensaje"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__message_ids
+msgid "Messages"
+msgstr "Mensajes"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_analysis__mobile
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__mobile
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.portal_my_warranty
+msgid "Mobile"
+msgstr "Celular"
+
+#. module: dev_warranty_management
+#. odoo-python
+#: code:addons/dev_warranty_management/__init__.py:0
+#, python-format
+msgid "Module support Odoo version 17.0"
+msgstr ""
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__my_activity_date_deadline
+msgid "My Activity Deadline"
+msgstr "Fecha Límite de Mi Actividad"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_dev_repair_warranty_task__name
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_details__name
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_policy__name
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_template
+msgid "Name"
+msgstr "Nombre"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__activity_calendar_event_id
+msgid "Next Activity Calendar Event"
+msgstr "Siguiente Actividad en el Calendario de Eventos"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__activity_date_deadline
+msgid "Next Activity Deadline"
+msgstr "Siguiente Fecha Límite de Actividad"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__activity_summary
+msgid "Next Activity Summary"
+msgstr "Resumen de la Siguiente Actividad"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__activity_type_id
+msgid "Next Activity Type"
+msgstr "Tipo de Actividad Siguiente"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields.selection,name:dev_warranty_management.selection__warranty_warranty__rating_text__none
+msgid "No Rating yet"
+msgstr "Sin calificar"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.form_warranty_warranty
+msgid "Notes"
+msgstr "Notas"
+
+#. module: dev_warranty_management
+#. odoo-python
+#: code:addons/dev_warranty_management/controller/portal.py:0
+#: model:ir.model.fields,field_description:dev_warranty_management.field_helpdesk_ticket__number
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_analysis__number
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__number
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_history_tmpl_body
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.portal_my_warranty
+#, python-format
+msgid "Number"
+msgstr "Número"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__message_needaction_counter
+msgid "Number of Actions"
+msgstr "Número de acciones"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__message_has_error_counter
+msgid "Number of errors"
+msgstr "Número de errores"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,help:dev_warranty_management.field_warranty_warranty__message_needaction_counter
+msgid "Number of messages requiring action"
+msgstr "Número de mensajes que requieren acción"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,help:dev_warranty_management.field_warranty_warranty__message_has_error_counter
+msgid "Number of messages with delivery error"
+msgstr "Número de mensajes con error de entrega"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields.selection,name:dev_warranty_management.selection__warranty_warranty__rating_text__ok
+msgid "Okay"
+msgstr "Ok"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields.selection,name:dev_warranty_management.selection__helpdesk_ticket__waranty_type__paid
+#: model:ir.model.fields.selection,name:dev_warranty_management.selection__stock_lot__waranty_type__paid
+#: model:ir.model.fields.selection,name:dev_warranty_management.selection__warranty_analysis__waranty_type__paid
+#: model:ir.model.fields.selection,name:dev_warranty_management.selection__warranty_details__waranty_type__paid
+#: model:ir.model.fields.selection,name:dev_warranty_management.selection__warranty_warranty__waranty_type__paid
+msgid "Paid"
+msgstr "Pagado"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_product_product__waranty_charges
+#: model:ir.model.fields,field_description:dev_warranty_management.field_product_template__waranty_charges
+#: model:ir.model.fields,field_description:dev_warranty_management.field_stock_lot__waranty_charges
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_analysis__waranty_charges
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_details__waranty_charges
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__waranty_charges
+msgid "Paid Charges"
+msgstr "Cargos Pagados"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.search_warranty_warranty
+msgid "Partner"
+msgstr "Contacto"
+
+#. module: dev_warranty_management
+#. odoo-python
+#: code:addons/dev_warranty_management/models/warranty_warranty.py:0
+#, python-format
+msgid ""
+"Please define income account for this product: \"%s\" (id:%d) - or for its "
+"category: \"%s\"."
+msgstr ""
+
+#. module: dev_warranty_management
+#. odoo-javascript
+#: code:addons/dev_warranty_management/static/src/js/main.js:0
+#, python-format
+msgid "Please enter start date and end date"
+msgstr ""
+
+#. module: dev_warranty_management
+#: model:ir.actions.act_window,name:dev_warranty_management.action_dev_warranty_policy
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__policy_id
+#: model:ir.ui.menu,name:dev_warranty_management.menu_action_dev_warranty_policy
+#: model:ir.ui.menu,name:dev_warranty_management.menu_parent_warranty_config_policy
+msgid "Policy"
+msgstr "Política de Garantía"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_policy__note
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__note
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_policy_form_view
+msgid "Policy Details"
+msgstr "Detalle de Política de Garantía"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__access_url
+msgid "Portal Access URL"
+msgstr "URL de Acceso al Portal"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_template
+msgid "Print"
+msgstr "Imprimir"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.form_warranty_history_report
+msgid "Print PDF"
+msgstr "Imprimir PDF"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_content
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_template
+msgid "Priority"
+msgstr "Prioridad"
+
+#. module: dev_warranty_management
+#. odoo-python
+#: code:addons/dev_warranty_management/controller/portal.py:0
+#: model:ir.model,name:dev_warranty_management.model_product_template
+#: model:ir.model.fields,field_description:dev_warranty_management.field_helpdesk_ticket__product_id
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_analysis__product_id
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__product_id
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_history_tmpl_body
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.portal_my_warranty
+#, python-format
+msgid "Product"
+msgstr "Producto"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_content
+msgid "Product Issue"
+msgstr "Problema/Falla del Producto"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_dev_repair_warranty_task__project_id
+msgid "Project"
+msgstr "Proyecto"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_analysis__quantity
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__quantity
+msgid "Quantity"
+msgstr "Cantidad"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__feedback_rate
+msgid "Rate"
+msgstr "Calificar"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__rating_text
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.form_warranty_warranty
+msgid "Rating"
+msgstr "Calificación"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__rating_ids
+msgid "Ratings"
+msgstr "Calificaciones"
+
+#. module: dev_warranty_management
+#. odoo-javascript
+#: code:addons/dev_warranty_management/static/src/js/main.js:0
+#, python-format
+msgid "Register Payment"
+msgstr ""
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_product_product__renewal_time
+#: model:ir.model.fields,field_description:dev_warranty_management.field_product_template__renewal_time
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_details__renewal_time
+msgid "Renewal Time"
+msgstr "Tiempo de Renovación"
+
+#. module: dev_warranty_management
+#. odoo-python
+#: code:addons/dev_warranty_management/models/warranty_warranty.py:0
+#, python-format
+msgid "Renewal Time is Over"
+msgstr ""
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.form_warranty_warranty
+msgid "Renewal Warranty"
+msgstr "Renovación de Garantía"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_analysis__rene_warranty_count
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__rene_warranty_count
+msgid "Renewal Warranty Count"
+msgstr "Cantidad de Renovaciones de Garantía"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__repair_count
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.form_warranty_warranty
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.helpdesk_ticket_warranty_view
+msgid "Repair"
+msgstr "Reparar"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_helpdesk_ticket__repair_count
+msgid "Repair Count"
+msgstr "Cantidad de Reparaciones"
+
+#. module: dev_warranty_management
+#: model:ir.model,name:dev_warranty_management.model_repair_order
+#: model:ir.model.fields,field_description:dev_warranty_management.field_helpdesk_ticket__repair_id
+msgid "Repair Order"
+msgstr "Orden de Reparación"
+
+#. module: dev_warranty_management
+#. odoo-python
+#: code:addons/dev_warranty_management/models/helpdesk_ticket.py:0
+#, python-format
+msgid "Repair Orders"
+msgstr ""
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_helpdesk_ticket__repair_ticket_flag
+msgid "Repair Ticket Flag"
+msgstr "Marca de Ticket de Reparación"
+
+#. module: dev_warranty_management
+#: model:ir.ui.menu,name:dev_warranty_management.menu_warranty_reporting
+msgid "Reporting"
+msgstr "Reportes"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.form_warranty_warranty
+msgid "Reset To Draft"
+msgstr "Restablecer a Borrador"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__activity_user_id
+msgid "Responsible User"
+msgstr "Usuario Responsable"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__review
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.form_warranty_warranty
+msgid "Review"
+msgstr "Revisión"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields.selection,name:dev_warranty_management.selection__warranty_analysis__state__running
+#: model:ir.model.fields.selection,name:dev_warranty_management.selection__warranty_history_report__state__running
+#: model:ir.model.fields.selection,name:dev_warranty_management.selection__warranty_warranty__state__running
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.form_warranty_warranty
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.search_warranty_analysis
+msgid "Running"
+msgstr "En Curso"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__message_has_sms_error
+msgid "SMS Delivery error"
+msgstr "Error de entrega de SMS"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_helpdesk_ticket__sale_id
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_analysis__sale_id
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__sale_id
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_history_tmpl_body
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.portal_my_warranty
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.search_warranty_analysis
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.search_warranty_warranty
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_template
+msgid "Sale Order"
+msgstr "Orden de Venta"
+
+#. module: dev_warranty_management
+#: model:ir.model,name:dev_warranty_management.model_sale_order
+msgid "Sales Order"
+msgstr "Ordenes de Venta"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_analysis__user_id
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__user_id
+msgid "Salesperson"
+msgstr "Vendedor"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields.selection,name:dev_warranty_management.selection__warranty_warranty__rating_text__top
+msgid "Satisfied"
+msgstr "Satisfecho"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.view_warranty_details_views_filter
+msgid "Search Warranty Details"
+msgstr "Buscar Detalles de la Garantía"
+
+#. module: dev_warranty_management
+#. odoo-python
+#: code:addons/dev_warranty_management/controller/portal.py:0
+#, python-format
+msgid "Search in All"
+msgstr ""
+
+#. module: dev_warranty_management
+#. odoo-python
+#: code:addons/dev_warranty_management/controller/portal.py:0
+#, python-format
+msgid "Search in Number"
+msgstr ""
+
+#. module: dev_warranty_management
+#. odoo-python
+#: code:addons/dev_warranty_management/controller/portal.py:0
+#, python-format
+msgid "Search in Sale Order"
+msgstr ""
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__access_token
+msgid "Security Token"
+msgstr "Token de Seguridad"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.form_warranty_warranty
+msgid "Send Rating Mail"
+msgstr "Enviar Correo de Calificación"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_template
+msgid "Send message"
+msgstr "Enviar mensaje"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_analysis__serial_no_id
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__serial_no_id
+msgid "Serial No"
+msgstr "No. Serie"
+
+#. module: dev_warranty_management
+#: model:ir.actions.act_window,name:dev_warranty_management.action_config_warranty
+#: model:ir.ui.menu,name:dev_warranty_management.menu_warranty_config
+msgid "Settings"
+msgstr "Ajustes"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_analysis__warranty_source
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__warranty_source
+msgid "Source"
+msgstr "Origen"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_helpdesk_ticket__start_date
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_analysis__start_date
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_history__start_date
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_history_report__start_date
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__start_date
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_history_tmpl_body
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.portal_my_warranty
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.search_warranty_analysis
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_content
+msgid "Start Date"
+msgstr "Fecha de Inicio"
+
+#. module: dev_warranty_management
+#. odoo-javascript
+#: code:addons/dev_warranty_management/static/src/js/main.js:0
+#, python-format
+msgid "Start date should be less than end date"
+msgstr ""
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.search_warranty_warranty
+msgid "State"
+msgstr "Estado"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_analysis__state
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_history_report__state
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__state
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_history_tmpl_body
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.portal_my_warranty
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.search_warranty_analysis
+msgid "Status"
+msgstr "Estado"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,help:dev_warranty_management.field_warranty_warranty__activity_state
+msgid ""
+"Status based on activities\n"
+"Overdue: Due date is already passed\n"
+"Today: Activity date is today\n"
+"Planned: Future activities."
+msgstr ""
+"Estado basado en actividades\"\n"
+"Vencido: La fecha de vencimiento ya ha pasado.\n"
+"Hoy: La fecha de la actividad es hoy.\n"
+"Planificado: Actividades futuras."
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_content
+msgid "Subject"
+msgstr "Asunto"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_dev_repair_warranty_task__tag_ids
+msgid "Tag"
+msgstr "Etiqueta"
+
+#. module: dev_warranty_management
+#: model:ir.model,name:dev_warranty_management.model_project_task
+msgid "Task"
+msgstr "Tarea"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_helpdesk_ticket__task_count
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__task_count
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.form_warranty_warranty
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.helpdesk_ticket_warranty_view
+msgid "Tasks"
+msgstr "Tareas"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_thank_you
+msgid "Thank You!"
+msgstr "Gracias!"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.portal_my_warranty
+msgid "There are currently no warranty for your account."
+msgstr "Actualmente no hay garantía para su cuenta."
+
+#. module: dev_warranty_management
+#. odoo-python
+#: code:addons/dev_warranty_management/controller/portal.py:0
+#, python-format
+msgid "This Month"
+msgstr ""
+
+#. module: dev_warranty_management
+#. odoo-python
+#: code:addons/dev_warranty_management/controller/portal.py:0
+#, python-format
+msgid "This Week"
+msgstr ""
+
+#. module: dev_warranty_management
+#. odoo-python
+#: code:addons/dev_warranty_management/controller/portal.py:0
+#, python-format
+msgid "This Year"
+msgstr ""
+
+#. module: dev_warranty_management
+#. odoo-javascript
+#. odoo-python
+#: code:addons/dev_warranty_management/models/repair_order.py:0
+#: code:addons/dev_warranty_management/static/src/js/main.js:0
+#: model:ir.model.fields,field_description:dev_warranty_management.field_project_task__ticket_counter
+#: model:ir.model.fields,field_description:dev_warranty_management.field_project_task__ticket_id
+#: model:ir.model.fields,field_description:dev_warranty_management.field_repair_order__repair_ticket_id
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_create_task_warranty_inherit
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.view_project_task_inherit_filter
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.view_warranty_repair_order_filter
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.view_warranty_repair_order_form
+#, python-format
+msgid "Ticket"
+msgstr ""
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_repair_order__repair_ticket_count
+msgid "Ticket Count"
+msgstr "Cantidad de Tickets"
+
+#. module: dev_warranty_management
+#: model:ir.actions.act_window,name:dev_warranty_management.action_ticket_tag
+msgid "Ticket Tags"
+msgstr "Etiquetas de Tickets"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__ticket_ids
+msgid "Tickets"
+msgstr ""
+
+#. module: dev_warranty_management
+#: model:ir.ui.menu,name:dev_warranty_management.menu_warranty_my_ticket
+msgid "Tickets Tags"
+msgstr "Etiquetas de Tickets"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_content
+msgid "Tickets Type"
+msgstr "Tipo de Tickets"
+
+#. module: dev_warranty_management
+#. odoo-python
+#: code:addons/dev_warranty_management/controller/portal.py:0
+#, python-format
+msgid "Today"
+msgstr ""
+
+#. module: dev_warranty_management
+#: model:ir.ui.menu,name:dev_warranty_management.menu_today_exp_warranty
+msgid "Today Expired"
+msgstr "Vencidas hasta Hoy"
+
+#. module: dev_warranty_management
+#: model:ir.actions.act_window,name:dev_warranty_management.action_today_exp_warranty
+msgid "Today Expired Warranty"
+msgstr "Garantías vencidas hasta Hoy"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_tracking_page
+msgid ""
+"Track\n"
+"\t\t\t\t\t\t\t\t\t<i class=\"fa fa-list-alt\"/>"
+msgstr ""
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_template
+msgid "Type"
+msgstr "Tipo"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,help:dev_warranty_management.field_warranty_warranty__activity_exception_decoration
+msgid "Type of the exception activity on record."
+msgstr "Tipo de la actividad de excepción registrada."
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_analysis__uom_id
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__uom_id
+msgid "Unit Of Measure"
+msgstr "Unid. Medida"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.sale_order_warranty_view
+msgid "View Claims"
+msgstr "Ver Reclamos"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.sale_order_warranty_view
+msgid "View Warranty"
+msgstr "Ver Garantía"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.search_warranty_warranty
+msgid "Waranty Type"
+msgstr "Tipo de Garantía"
+
+#. module: dev_warranty_management
+#: model:ir.actions.act_window,name:dev_warranty_management.action_warranty_details_views
+#: model:ir.actions.report,name:dev_warranty_management.action_warranty_report
+#: model:ir.model.fields,field_description:dev_warranty_management.field_product_product__warranty_details_id
+#: model:ir.model.fields,field_description:dev_warranty_management.field_product_template__warranty_details_id
+#: model:ir.model.fields,field_description:dev_warranty_management.field_project_task__warranty_id
+#: model:ir.model.fields,field_description:dev_warranty_management.field_repair_order__warranty_id
+#: model:ir.model.fields,field_description:dev_warranty_management.field_sale_order__warranty_count
+#: model:ir.model.fields,field_description:dev_warranty_management.field_sale_order__warranty_ids
+#: model:ir.model.fields,field_description:dev_warranty_management.field_stock_lot__warranty_details_id
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_analysis__warranty_details_id
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_history__base_warranty_id
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__warranty_details_id
+#: model:ir.ui.menu,name:dev_warranty_management.menu_warranty
+#: model:ir.ui.menu,name:dev_warranty_management.menu_warranty_details_views
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.helpdesk_ticket_warranty_view
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.portal_home_Payment
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.portal_my_home_warranty
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.portal_warranty
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.product_warranty_inherit_view
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.sale_order_warranty_view
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.view_helpdesk_ticket_warranty_inherit_filter
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.view_project_task_inherit_filter
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.view_warranty_repair_order_filter
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_content
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_template
+msgid "Warranty"
+msgstr "Garantías"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_tracking_page
+msgid "Warranty - Tracking"
+msgstr "Seguimiento de la Garantía"
+
+#. module: dev_warranty_management
+#: model:ir.actions.act_window,name:dev_warranty_management.action_dev_warranty_analysis
+#: model:ir.ui.menu,name:dev_warranty_management.menu_dev_warranty_analysis
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.search_warranty_analysis
+msgid "Warranty Analysis"
+msgstr "Análisis de Garantías"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.graph_warranty_analysis
+msgid "Warranty Analysis Graph"
+msgstr "Gráfico de Análisis de Garantías"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.tree_graph_warranty_analysis
+msgid "Warranty Analysis List"
+msgstr "Lista de Análisis de Garantías"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.pivot_warranty_analysis
+msgid "Warranty Analysis Pivot"
+msgstr "Pivot de Análisis de Garantías"
+
+#. module: dev_warranty_management
+#: model:ir.model,name:dev_warranty_management.model_warranty_analysis
+msgid "Warranty Analysis Report"
+msgstr "Reporte de Análisis de Garantías"
+
+#. module: dev_warranty_management
+#. odoo-python
+#: code:addons/dev_warranty_management/models/warranty_warranty.py:0
+#: model:ir.actions.report,name:dev_warranty_management.action_warranty_card_report
+#, python-format
+msgid "Warranty Card"
+msgstr "Tarjeta de Garantía"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_res_company__warranty_create_sale_order_time
+#: model:ir.model.fields,field_description:dev_warranty_management.field_res_config_settings__warranty_create_sale_order_time
+msgid "Warranty Create On Sale Order Confirm"
+msgstr "Crear Garantía al Confirmar la Orden de Venta"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_sale_order__warranty_flag
+msgid "Warranty Created"
+msgstr "Garantía creada"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_report_body
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.form_warranty_warranty
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.helpdesk_ticket_warranty_view
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.view_warranty_details_views_form
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_content
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_stock_lot_inherit_view
+msgid "Warranty Details"
+msgstr "Detalles de la Garantía"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.view_warranty_details_views_tree
+msgid "Warranty Details Tree"
+msgstr "Árbol de Detalles de la Garantía"
+
+#. module: dev_warranty_management
+#: model:ir.actions.server,name:dev_warranty_management.ir_cron_warranty_automatic_expiry_ir_actions_server
+#: model:ir.model.fields,field_description:dev_warranty_management.field_res_company__warranty_expiry_day
+#: model:ir.model.fields,field_description:dev_warranty_management.field_res_config_settings__warranty_expiry_day
+msgid "Warranty Expired"
+msgstr "Garantía Vencida"
+
+#. module: dev_warranty_management
+#: model:ir.actions.server,name:dev_warranty_management.ir_cron_warranty_expiry_reminder_ir_actions_server
+#: model:mail.template,name:dev_warranty_management.warranty_expiry_reminder_template
+#: model:mail.template,subject:dev_warranty_management.warranty_expiry_reminder_template
+msgid "Warranty Expiry Reminder"
+msgstr "Recordatorio de vencimiento de Garantía"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.graph_warranty_warranty
+msgid "Warranty Graph"
+msgstr "Gráfico de Garantía"
+
+#. module: dev_warranty_management
+#: model:ir.actions.act_window,name:dev_warranty_management.action_warranty_history_report_wizard
+#: model:ir.actions.report,name:dev_warranty_management.action_warranty_history_report
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__warranty_history_ids
+#: model:ir.ui.menu,name:dev_warranty_management.menu_warranty_history_report
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_history_tmpl_body
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_report_body
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.form_warranty_history_report
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.form_warranty_warranty
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_content
+msgid "Warranty History"
+msgstr "Historial de Garantías"
+
+#. module: dev_warranty_management
+#: model:ir.model,name:dev_warranty_management.model_warranty_history_report
+msgid "Warranty History Report"
+msgstr "Informe de Historial de Garantía"
+
+#. module: dev_warranty_management
+#: model:ir.ui.menu,name:dev_warranty_management.menu_root_warranty_management
+#: model:ir.ui.menu,name:dev_warranty_management.menu_sum_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.form_warranty_config_view
+msgid "Warranty Management"
+msgstr "Gestión de Garantías"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_template
+msgid "Warranty Number"
+msgstr "Número de Garantía"
+
+#. module: dev_warranty_management
+#. odoo-python
+#: code:addons/dev_warranty_management/models/warranty_details.py:0
+#, python-format
+msgid "Warranty Period must be greater than Zero."
+msgstr ""
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_product_product__warranty_period
+#: model:ir.model.fields,field_description:dev_warranty_management.field_product_template__warranty_period
+#: model:ir.model.fields,field_description:dev_warranty_management.field_stock_lot__warranty_period
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_analysis__warranty_period
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__warranty_period
+msgid "Warranty Period(In Months)"
+msgstr "El período de garantía (en meses)"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_details__warranty_period
+msgid "Warranty Period(In months)"
+msgstr "Período de Garantía (En meses)"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.pivot_warranty_warranty
+msgid "Warranty Pivot"
+msgstr "Pivot de Garantía"
+
+#. module: dev_warranty_management
+#: model:ir.model,name:dev_warranty_management.model_warranty_policy
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_policy_form_view
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_policy_tree_view
+msgid "Warranty Policy"
+msgstr "Políticas de Garantía"
+
+#. module: dev_warranty_management
+#: model:ir.actions.act_window,name:dev_warranty_management.action_warranty_product
+#: model:ir.ui.menu,name:dev_warranty_management.menu_warranty_product
+msgid "Warranty Product"
+msgstr "Productos que incluyen Garantía"
+
+#. module: dev_warranty_management
+#: model:ir.actions.act_window,name:dev_warranty_management.action_warranty_warranty
+#: model:ir.model,name:dev_warranty_management.model_warranty_warranty
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.search_warranty_warranty
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.tree_warranty_warranty
+msgid "Warranty Registration"
+msgstr "Registro de Garantías"
+
+#. module: dev_warranty_management
+#: model:ir.actions.act_window,name:dev_warranty_management.action_warranty_renewal
+#: model:ir.model.fields,field_description:dev_warranty_management.field_product_product__allow_warranty_renewal
+#: model:ir.model.fields,field_description:dev_warranty_management.field_product_template__allow_warranty_renewal
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_analysis__warranty_renewal
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_analysis__warranty_renewal_id
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_details__allow_warranty_renewal
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__warranty_renewal
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__warranty_renewal_id
+#: model:ir.ui.menu,name:dev_warranty_management.menu_warranty_renewal_parent
+#: model:ir.ui.menu,name:dev_warranty_management.menu_warranty_renewal_sub
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.form_warranty_warranty
+msgid "Warranty Renewal"
+msgstr "Renovaciones de Garantías"
+
+#. module: dev_warranty_management
+#: model:ir.model,name:dev_warranty_management.model_report_dev_warranty_management_dev_warranty_report_template
+msgid "Warranty Report"
+msgstr "Informe de Garantía"
+
+#. module: dev_warranty_management
+#: model:ir.ui.menu,name:dev_warranty_management.menu_warranty_ticket
+msgid "Warranty Ticket"
+msgstr "Ticket de Garantías"
+
+#. module: dev_warranty_management
+#: model:ir.actions.act_window,name:dev_warranty_management.action_all_ticket
+#: model:ir.actions.act_window,name:dev_warranty_management.action_my_ticket1
+msgid "Warranty Tickets"
+msgstr "Todos los Tickets"
+
+#. module: dev_warranty_management
+#: model:website.menu,name:dev_warranty_management.menu_dev_warranty_tracking
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_tracking_page
+msgid "Warranty Tracking"
+msgstr "Seguimiento de Garantía"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_helpdesk_ticket__waranty_type
+#: model:ir.model.fields,field_description:dev_warranty_management.field_product_product__waranty_type
+#: model:ir.model.fields,field_description:dev_warranty_management.field_product_template__waranty_type
+#: model:ir.model.fields,field_description:dev_warranty_management.field_stock_lot__waranty_type
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_analysis__waranty_type
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_details__waranty_type
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__waranty_type
+msgid "Warranty Type"
+msgstr "Tipo de Garantía"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_history__warranty_id
+msgid "Warranty(Link)"
+msgstr "Garantía (Enlace)"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.form_warranty_config_view
+msgid "Warranty2"
+msgstr "Garantía 2"
+
+#. module: dev_warranty_management
+#: model:mail.template,name:dev_warranty_management.rating_warrantyy_template1
+msgid "Warranty: Rating Request"
+msgstr "Garantía: Solicitud de Calificación"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,field_description:dev_warranty_management.field_warranty_warranty__website_message_ids
+msgid "Website Messages"
+msgstr "Mensajes del Sitio Web"
+
+#. module: dev_warranty_management
+#: model:ir.model.fields,help:dev_warranty_management.field_warranty_warranty__website_message_ids
+msgid "Website communication history"
+msgstr "Historial de Comunicación del Sitio Web"
+
+#. module: dev_warranty_management
+#: model:ir.model,name:dev_warranty_management.model_dev_repair_warranty_task
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_repair_warranty_task_view
+msgid "Wizard"
+msgstr "Asistente"
+
+#. module: dev_warranty_management
+#. odoo-python
+#: code:addons/dev_warranty_management/controller/portal.py:0
+#, python-format
+msgid "Yesterday"
+msgstr ""
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_thank_you
+msgid "Your Tickets Number :"
+msgstr "Su Número de Tickets:"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.dev_warranty_card_body
+msgid "barcode"
+msgstr "Código de barras"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_template
+msgid "close"
+msgstr "Cerrar"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.search_warranty_analysis
+msgid "done"
+msgstr "Hecho"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_template
+msgid "mobile"
+msgstr "Celular"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.form_warranty_history_report
+msgid "or"
+msgstr "o"
+
+#. module: dev_warranty_management
+#: model:ir.model,name:dev_warranty_management.model_report_dev_warranty_management_dev_warranty_history_tmpl
+msgid "report.dev_warranty_management.dev_warranty_history_tmpl"
+msgstr ""
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.search_warranty_warranty
+msgid "running"
+msgstr "En curso"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.warranty_portal_template
+msgid "text"
+msgstr "Texto"
+
+#. module: dev_warranty_management
+#: model_terms:ir.ui.view,arch_db:dev_warranty_management.portal_my_warranty
+msgid "warranty"
+msgstr "Garantía"
+
+#. module: dev_warranty_management
+#: model:ir.model,name:dev_warranty_management.model_warranty_details
+msgid "warranty.details"
+msgstr ""
+
+#. module: dev_warranty_management
+#: model:ir.model,name:dev_warranty_management.model_warranty_history
+msgid "warranty.history"
+msgstr ""
+
+#. module: dev_warranty_management
+#: model:mail.template,subject:dev_warranty_management.rating_warrantyy_template1
+msgid "{{object.number}} : Rate Our Service and Help Us Serve You Better"
+msgstr ""
+"{{object.number}} : Califique Nuestro Servicio y Ayúdenos a Atenderle Mejor"
