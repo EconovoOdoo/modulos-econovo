@@ -18,6 +18,7 @@
 				                <field name="allow_warranty_renewal" force_save="1"  invisible="allow_warranty == False" readonly="1"/>
 				                <field name="renewal_time" force_save="1"  readonly="1" invisible="allow_warranty == False or allow_warranty_renewal == False"/>
 				                <field name="waranty_type" force_save="1"  readonly="1" invisible="allow_warranty == False"/>
+				                <field name="activation_method" force_save="1"  readonly="1" invisible="allow_warranty == False"/>
 	  <field name="waranty_charges" force_save="1"  readonly="1"  invisible="allow_warranty == False or waranty_type != 'paid'"/>
 				            </group>
 				        </group>

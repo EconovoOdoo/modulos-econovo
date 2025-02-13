@@ -15,6 +15,7 @@ For Module Support : devintelle@gmail.com  or Skype : devintelle
                         <group>
                             <field name="name" required="1"/>
                             <field name="waranty_type"  />
+                            <field name="activation_method"  />
                             <field name="waranty_charges" widget="monetary" invisible="waranty_type != 'paid'"/>
                             <field name="warranty_period" required="1" />
                         </group>
