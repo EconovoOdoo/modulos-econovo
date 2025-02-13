@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<odoo>
-    <!-- Registro para que la nueva opción aparezca en el wizard de impresión -->
-    <record id="product_label_layout_dymo" model="product.label.layout">
-        <field name="print_format">dymo_100x70</field>
-        <field name="report_name">econovo_dymo_labels.report_producttemplatelabel_dymo</field>
-    </record>
-</odoo>
