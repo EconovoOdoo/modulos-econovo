@@ -15,11 +15,14 @@ class warranty_details(models.Model):
     
     name = fields.Char(string="Name")
     warranty_period = fields.Integer(string='Warranty Period(In months)')
-    waranty_type = fields.Selection([('free','Free'),('paid','Paid')],default='free'
-                                    ,string='Warranty Type')
+    waranty_type = fields.Selection([('free','Free'),('paid','Paid')],default='free',string='Warranty Type')
     waranty_charges = fields.Float(string='Paid Charges')
     allow_warranty_renewal = fields.Boolean(string='Warranty Renewal')
     renewal_time = fields.Integer(string='Renewal Time')
+    activation_method = fields.Selection([
+        ('confirm_sale', 'Al confirmar la orden de venta'),
+        ('deliver_product', 'Al confirmar la entrega del producto')
+    ], string='Método de activación', default='confirm_sale')
 
     @api.constrains('warranty_period')
     def onchange_of_periodamount(self):

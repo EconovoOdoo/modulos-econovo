@@ -60,7 +60,10 @@ class warranty_warranty(models.Model):
     hide_renewal_button = fields.Boolean(string="Hide renewal button",compute="compute_hide_renewal_button")
     note = fields.Text(string='Policy Details')
     policy_id = fields.Many2one('warranty.policy',string="Policy")
-    
+    activation_method = fields.Selection([
+        ('confirm_sale', 'Al confirmar la orden de venta'),
+        ('deliver_product', 'Al confirmar la entrega del producto')
+    ], string='Método de activación', default='confirm_sale')
     
     
     @api.onchange('policy_id')
