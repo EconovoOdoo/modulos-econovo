@@ -25,7 +25,7 @@ class ProductLabelLayout(models.TransientModel):
             data.update({
                 'products': products_data,
                 'product_ids': self.product_tmpl_ids.ids,
-                'pricelist': pricelist.id if pricelist else False
+                'pricelist': pricelist.id if pricelist else False  # Asegurar que pricelist esté en el contexto
             })
 
         return xml_id, data
