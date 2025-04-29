@@ -133,7 +133,7 @@
 
                                 <t t-set="quants" t-value="env['stock.quant'].search([('product_id', '=', product.product_variant_id.id), ('quantity', '>', 0)])"/>
                                 <div class="barcode-number">
-                                    <small t-out="product.barcode"/>
+                                    <small t-esc="product.barcode"/>
                                     <t t-if="quants">
                                         <t t-foreach="quants" t-as="quant">
                                             <small class="code-locations" t-esc="quant.location_id.display_name"/>
