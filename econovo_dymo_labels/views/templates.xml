@@ -91,11 +91,14 @@
                 }
 
                 .code-locations {
-                    font-size: 9px;
+                    font-size: 10px;
                     text-align: right;
-                    display: block;
+                    display: inline-block;
                     margin: 0px;
                     line-height: 0.8;
+                    min-width: fit-content;
+                    white-space: nowrap;
+                    overflow: visible;
                 }
 
                 .name-section {
@@ -133,13 +136,16 @@
                                               t-options="{'widget': 'barcode', 'quiet': 0, 'symbology': 'auto', 'img_style': 'width:100%;height:100%'}"/>
                                     </div>
 
-                                    <t t-set="quants" t-value="env['stock.quant'].search([('product_id', '=', product.product_variant_id.id), ('quantity', '>', 0)])"/>
                                     <div class="barcode-number">
                                         <small t-esc="product.barcode"/>
-                                        <t t-if="quants">
-                                            <t t-foreach="quants" t-as="quant">
-                                                <small class="code-locations" t-esc="quant.location_id.display_name"/>
+                                        <t t-set="putaway_rules" t-value="env['stock.putaway.rule'].search([('product_id', '=', product.id)])"/>
+                                        <t t-if="putaway_rules">
+                                            <t t-foreach="putaway_rules" t-as="rule">
+                                                <small class="code-locations" t-esc="rule.location_out_id.display_name"/>
                                             </t>
+                                        </t>
+                                        <t t-else="">
+                                            <small class="code-locations" style="color: red;">(SIN REGLAS DE ALMACENAMIENTO DEFINIDAS)</small>
                                         </t>
                                     </div>
                                 </t>
