@@ -1,0 +1,35 @@
+<templates.xml>
+<odoo>
+    <data>
+        <record id="view_workorder_label_form" model="ir.ui.view">
+            <field name="name">workorder.label.form</field>
+            <field name="model">mrp.workorder.label</field>
+            <field name="arch" type="xml">
+                <form string="Work Order Label">
+                    <sheet>
+                        <group>
+                            <field name="production_date"/>
+                            <field name="display_name"/>
+                            <field name="production_id"/>
+                            <field name="product_id"/>
+                            <field name="needed_by_workorder_ids"/>
+                            <field name="blocked_by_workorder_ids"/>
+                            <field name="quantity_produced"/>
+                            <field name="parent_product_id"/>
+                            <field name="ancestor_product_ids"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_workorder_label" model="ir.actions.act_window">
+            <field name="name">Work Order Labels</field>
+            <field name="res_model">mrp.workorder.label</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <menuitem id="menu_workorder_label" name="Work Order Labels" parent="mrp.menu_mrp_root" action="action_workorder_label"/>
+    </data>
+</odoo>
+</templates.xml>

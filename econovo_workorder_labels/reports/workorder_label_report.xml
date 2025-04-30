@@ -1,0 +1,57 @@
+<report>
+    <field name="name">Work Order Label</field>
+    <field name="model">mrp.workorder</field>
+    <field name="report_type">qweb-pdf</field>
+    <field name="report_file">econovo_workorder_labels.workorder_label_report</field>
+    <field name="binding_model_id" ref="mrp.model_mrp_workorder"/>
+    <field name="binding_type">report</field>
+</report>
+
+<template id="workorder_label_report">
+    <t t-call="web.basic_layout">
+        <t t-foreach="doc_ids" t-as="workorder_id">
+            <t t-set="workorder" t-value="env['mrp.workorder'].browse(workorder_id)"/>
+            <div class="page">
+                <h2>Work Order Label</h2>
+                <table class="table table-bordered">
+                    <tr>
+                        <th>Production Date</th>
+                        <th>Display Name</th>
+                        <th>Production ID</th>
+                        <th>Product ID</th>
+                        <th>Needed By Work Order IDs</th>
+                        <th>Blocked By Work Order IDs</th>
+                        <th>Quantity Produced</th>
+                        <th>Parent Product</th>
+                        <th>Ancestor Product</th>
+                    </tr>
+                    <tr>
+                        <td><t t-esc="workorder.production_date"/></td>
+                        <td><t t-esc="workorder.display_name"/></td>
+                        <td><t t-esc="workorder.id"/></td>
+                        <td><t t-esc="workorder.product_id.id"/></td>
+                        <td>
+                            <t t-foreach="workorder.needed_by_ids" t-as="needed_by">
+                                <t t-esc="needed_by.id"/> <t t-if="not loop.last">, </t>
+                            </t>
+                        </td>
+                        <td>
+                            <t t-foreach="workorder.blocked_by_ids" t-as="blocked_by">
+                                <t t-esc="blocked_by.id"/> <t t-if="not loop.last">, </t>
+                            </t>
+                        </td>
+                        <td><t t-esc="workorder.qty_produced"/></td>
+                        <td><t t-esc="workorder.product_id.parent_id.id"/></td>
+                        <td>
+                            <t t-set="ancestor" t-value="workorder.product_id"/>
+                            <t t-while="ancestor">
+                                <t t-esc="ancestor.id"/> <t t-if="ancestor.parent_id"> &gt; </t>
+                                <t t-set="ancestor" t-value="ancestor.parent_id"/>
+                            </t>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </t>
+    </t>
+</template>

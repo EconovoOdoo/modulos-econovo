@@ -1,0 +1,20 @@
+<workorder_label_layout_data.xml>
+<odoo>
+    <record id="workorder_label_layout" model="product.label.layout">
+        <field name="name">Work Order Label Layout</field>
+        <field name="print_format">dymo_100x70</field>
+        <field name="model_id" ref="mrp.model_mrp_workorder"/>
+        <field name="field_ids" eval="[(6, 0, [
+            ref('mrp.field_mrp_workorder_production_date'),
+            ref('mrp.field_mrp_workorder_display_name'),
+            ref('mrp.field_mrp_workorder_id'),
+            ref('mrp.field_mrp_workorder_product_id'),
+            ref('mrp.field_mrp_workorder_needed_by_ids'),
+            ref('mrp.field_mrp_workorder_blocked_by_ids'),
+            ref('mrp.field_mrp_workorder_qty_produced'),
+            ref('product.field_product_parent_id'),
+            ref('product.field_product_ancestor_ids'),
+        ])]"/>
+    </record>
+</odoo>
+</workorder_label_layout_data.xml>
