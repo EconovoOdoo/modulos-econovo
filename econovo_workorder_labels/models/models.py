@@ -1,30 +1,53 @@
-from odoo import models, fields
+# -*- coding: utf-8 -*-
+
+from odoo import models, fields, api
+from datetime import datetime
+
+class MrpWorkOrder(models.Model):
+    _inherit = 'mrp.workorder'
+    
+    def get_parent_bom_product(self):
+        """Return the immediate parent product"""
+        if self.production_id and self.production_id.bom_id:
+            return self.production_id.bom_id.product_id
+        return False
+    
+    def get_top_bom_ancestor(self):
+        """Return the highest level BOM ancestor"""
+        if not self.production_id or not self.production_id.bom_id:
+            return False
+        
+        current_bom = self.production_id.bom_id
+        top_bom = current_bom
+        
+        # Try to find parent BOMs
+        while True:
+            # Search for any BOM that has current_bom's product as a component
+            parent_bom = self.env['mrp.bom'].search([
+                ('bom_line_ids.product_id', '=', current_bom.product_id.id)
+            ], limit=1)
+            
+            if parent_bom:
+                top_bom = parent_bom
+                current_bom = parent_bom
+            else:
+                break
+                
+        return top_bom.product_id
+        
+    def print_workorder_label(self):
+        """Action to print the label"""
+        self.ensure_one()
+        return self.env.ref('econovo_workorder_labels.action_workorder_label_report').report_action(self)
+
 
 class WorkOrderLabelLayout(models.TransientModel):
-    _inherit = 'mrp.workorder'
-
-    production_date = fields.Datetime(string='Production Date')
-    display_name = fields.Char(string='Display Name', related='name')
-    production_id = fields.Many2one('mrp.production', string='Production ID')
-    product_id = fields.Many2one('product.product', string='Product ID')
-    needed_by_workorder_ids = fields.Many2many('mrp.workorder', string='Needed By Work Orders')
-    blocked_by_workorder_ids = fields.Many2many('mrp.workorder', string='Blocked By Work Orders')
-    quantity_produced = fields.Float(string='Quantity Produced')
-    parent_product_id = fields.Many2one('product.product', string='Parent Product', related='product_id.product_tmpl_id')
-    ancestor_product_ids = fields.Many2many('product.product', string='Ancestor Products', related='product_id.product_tmpl_id.ancestor_ids')
-
-    def _prepare_report_data(self):
-        xml_id, data = super()._prepare_report_data()
-        # Prepare additional data for the report
-        data.update({
-            'production_date': self.production_date,
-            'display_name': self.display_name,
-            'production_id': self.production_id.id,
-            'product_id': self.product_id.id,
-            'needed_by_workorder_ids': self.needed_by_workorder_ids.ids,
-            'blocked_by_workorder_ids': self.blocked_by_workorder_ids.ids,
-            'quantity_produced': self.quantity_produced,
-            'parent_product_id': self.parent_product_id.id,
-            'ancestor_product_ids': self.ancestor_product_ids.ids,
-        })
-        return xml_id, data
+    _name = 'workorder.label.layout'
+    _description = 'Workorder Label Layout'
+    
+    workorder_id = fields.Many2one('mrp.workorder', string='Work Order')
+    label_quantity = fields.Integer('Quantity', default=1)
+    
+    def action_print_label(self):
+        self.ensure_one()
+        return self.env.ref('econovo_workorder_labels.action_workorder_label_report').report_action(self.workorder_id)
