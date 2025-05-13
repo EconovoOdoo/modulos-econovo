@@ -1,0 +1,27 @@
+econovo_dymo_labels/__pycache__/
+# Python bytecode files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv
+.venv/
+.pyc
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+econovo_dymo_labels/models/__pycache__/__init__.cpython-312.pyc
+econovo_dymo_labels/models/__pycache__/models.cpython-312.pyc

@@ -8,10 +8,16 @@
     'license': 'AGPL-3',
     'depends': ['mrp'],
     'data': [
-        'reports/workorder_label_report.xml',
+        'security/ir.model.access.csv',
         'views/templates.xml',
-        'data/workorder_label_layout_data.xml',
+        'reports/workorder_label_report.xml',
     ],
+    'assets': {
+        'web.report_assets_common': [
+            '/econovo_workorder_labels/static/src/scss/workorder_fonts.scss',
+            '/econovo_workorder_labels/static/src/scss/workorder_label_report.scss',
+        ],
+    },
     'installable': True,
     'application': False
 }

@@ -1,92 +1,163 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <record id="paperformat_workorder_label" model="report.paperformat">
-        <field name="name">Workorder Label 100x70mm</field>
-        <field name="default" eval="True"/>
-        <field name="format">custom</field>
-        <field name="page_height">70</field>
-        <field name="page_width">100</field>
-        <field name="orientation">Portrait</field>
-        <field name="margin_top">3</field>
-        <field name="margin_bottom">3</field>
-        <field name="margin_left">3</field>
-        <field name="margin_right">3</field>
-        <field name="header_line" eval="False"/>
-        <field name="header_spacing">0</field>
-        <field name="dpi">203</field>
-    </record>
+    <data>
+        <record id="paperformat_workorder_label" model="report.paperformat">
+            <field name="name">Workorder Label 100x70mm</field>
+            <field name="default" eval="True"/>
+            <field name="format">custom</field>
+            <field name="page_height">70</field>
+            <field name="page_width">100</field>
+            <field name="orientation">Portrait</field>
+            <field name="margin_top">1</field>
+            <field name="margin_bottom">1</field>
+            <field name="margin_left">1</field>
+            <field name="margin_right">1</field>
+            <field name="header_line" eval="False"/>
+            <field name="header_spacing">0</field>
+            <field name="dpi">96</field>
+        </record>
 
-    <record id="action_workorder_label_report" model="ir.actions.report">
-        <field name="name">Workorder Label</field>
-        <field name="model">mrp.workorder</field>
-        <field name="report_type">qweb-pdf</field>
-        <field name="report_name">econovo_workorder_labels.report_workorder_label</field>
-        <field name="report_file">econovo_workorder_labels.report_workorder_label</field>
-        <field name="paperformat_id" ref="paperformat_workorder_label"/>
-        <field name="binding_model_id" ref="mrp.model_mrp_workorder"/>
-        <field name="binding_type">report</field>
-    </record>
-    
-    <template id="report_workorder_label">
-        <t t-call="web.html_container">
-            <t t-foreach="docs" t-as="workorder">
-                <div class="page" style="width: 100mm; height: 70mm;">
-                    <div class="text-center">
-                        <h3>Work Order Label</h3>
-                    </div>
-                    <table class="table table-sm table-bordered">
-                        <tr>
-                            <th>Production Date</th>
-                            <td><span t-field="workorder.date_planned_start"/></td>
-                            <th>Print Date</th>
-                            <td t-esc="context_timestamp(datetime.datetime.now()).strftime('%Y-%m-%d')"/>
-                        </tr>
-                        <tr>
-                            <th>Name</th>
-                            <td colspan="3"><span t-field="workorder.display_name"/></td>
-                        </tr>
-                        <tr>
-                            <th>Production</th>
-                            <td colspan="3"><span t-field="workorder.production_id"/></td>
-                        </tr>
-                        <tr>
-                            <th>Product</th>
-                            <td colspan="3"><span t-field="workorder.product_id"/></td>
-                        </tr>
-                        <tr>
-                            <th>Needed By</th>
-                            <td colspan="3">
-                                <t t-foreach="workorder.needed_by_workorder_ids" t-as="needed">
-                                    <span t-field="needed.name"/><t t-if="not needed_last">, </t>
-                                </t>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Blocked By</th>
-                            <td colspan="3">
-                                <t t-foreach="workorder.blocked_by_workorder_ids" t-as="blocked">
-                                    <span t-field="blocked.name"/><t t-if="not blocked_last">, </t>
-                                </t>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Progress</th>
-                            <td colspan="3">
-                                <span t-field="workorder.qty_produced"/> / 
-                                <span t-field="workorder.qty_producing"/>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Parent</th>
-                            <td colspan="3"><span t-esc="workorder.get_parent_bom_product().name or 'N/A'"/></td>
-                        </tr>
-                        <tr>
-                            <th>Ancestor</th>
-                            <td colspan="3"><span t-esc="workorder.get_top_bom_ancestor().name or 'N/A'"/></td>
-                        </tr>
-                    </table>
+        <record id="action_workorder_label_report" model="ir.actions.report">
+            <field name="name">Workorder Label</field>
+            <field name="model">mrp.workorder</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">econovo_workorder_labels.report_workorder_label</field>
+            <field name="report_file">econovo_workorder_labels.report_workorder_label</field>
+            <field name="paperformat_id" ref="paperformat_workorder_label"/>
+            <field name="binding_model_id" ref="mrp.model_mrp_workorder"/>
+            <field name="binding_type">report</field>
+            <field name="print_report_name">'Etiqueta Operación - %s - OF: %s' % (object.name, object.production_id.name)</field>
+        </record>
+        
+        <template id="report_workorder_label">
+            <t t-call="web.basic_layout">
+                <div class="o_workorder_label_report">
+                    <t t-foreach="docs" t-as="workorder">
+                        <div class="main-container">
+                            <div class="content-container">
+                                <div class="barcode-section">
+                                    <div class="logo-container">
+                                        <img t-att-src="'/web/image/res.company/%s/logo' % env.company.id" class="logo-img"/>
+                                    </div>
+                                    <div class="print-date-container">
+                                        <span class="print-date" t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y %H:%M')"/>
+                                    </div>
+                                    <div class="barcode-wrapper">
+                                        <span t-esc="workorder.product_id.default_code" 
+                                              t-options="{'widget': 'barcode', 'quiet': 0, 'symbology': 'Code128', 'img_style': 'width:100%;height:100%'}"/>
+                                    </div>
+                                </div>
+                                
+                                <div class="code-section">
+                                    <span>[</span>
+                                    <span t-field="workorder.product_id.default_code"/>
+                                    <span>]</span>
+                                </div>
+
+                                <div class="name-section">
+                                    <span t-field="workorder.product_id.name"/>
+                                </div>
+                                
+                                <table class="process-flow">
+                                    <tr>
+                                        <td class="process-prev">
+                                            <span class="process-title">
+                                                <span class="triangle-icon">◄</span> PROCESO ANTERIOR
+                                            </span>
+                                            <t t-if="workorder.blocked_by_workorder_ids">
+                                                <small>
+                                                    <t t-set="blocked_count" t-value="len(workorder.blocked_by_workorder_ids)"/>
+                                                    <t t-set="index" t-value="0"/>
+                                                    <t t-foreach="workorder.blocked_by_workorder_ids" t-as="blocked">
+                                                        <t t-if="index == 0">
+                                                            <span t-field="blocked.name"/>
+                                                            <t t-if="blocked.workcenter_id">
+                                                                (<span t-field="blocked.workcenter_id.name"/>)
+                                                            </t>
+                                                        </t>
+                                                        <t t-set="index" t-value="index + 1"/>
+                                                    </t>
+                                                    <t t-if="blocked_count > 1"> (+<t t-esc="blocked_count - 1"/>)</t>
+                                                </small>
+                                            </t>
+                                        </td>
+                                        <td class="process-current">
+                                            <span class="process-title">
+                                                <span class="triangle-icon">▼</span> PROCESO ACTUAL
+                                            </span>
+                                            <span t-field="workorder.name"/>
+                                            <t t-if="workorder.workcenter_id">
+                                                (<span t-field="workorder.workcenter_id.name"/>)
+                                            </t>
+                                        </td>
+                                        <td class="process-next">
+                                            <span class="process-title">
+                                                PROCESO SIGUIENTE <span class="triangle-icon">►</span>
+                                            </span>
+                                            <t t-if="workorder.needed_by_workorder_ids">
+                                                <small>
+                                                    <t t-set="needed_count" t-value="len(workorder.needed_by_workorder_ids)"/>
+                                                    <t t-set="index" t-value="0"/>
+                                                    <t t-foreach="workorder.needed_by_workorder_ids" t-as="needed">
+                                                        <t t-if="index == 0">
+                                                            <span t-field="needed.name"/>
+                                                            <t t-if="needed.workcenter_id">
+                                                                (<span t-field="needed.workcenter_id.name"/>)
+                                                            </t>
+                                                        </t>
+                                                        <t t-set="index" t-value="index + 1"/>
+                                                    </t>
+                                                    <t t-if="needed_count > 1"> (+<t t-esc="needed_count - 1"/>)</t>
+                                                </small>
+                                            </t>
+                                        </td>
+                                    </tr>
+                                </table>
+                                
+                                <table class="info-table">
+                                    <tr>
+                                        <td class="label">Orden<br/>Fabricacion:</td>
+                                        <td class="label-description">
+                                            <t t-if="workorder.production_id._get_sources()">
+                                                <span class="parent-order">
+                                                    <t t-set="parent_mos" t-value="workorder.production_id._get_sources()"/>
+                                                    <t t-set="parent_count" t-value="len(parent_mos)"/>
+                                                    <t t-set="displayed" t-value="0"/>
+                                                    <t t-foreach="parent_mos" t-as="parent"><t t-if="displayed &lt; 3"><t t-if="displayed > 0">; </t><span t-field="parent.name"/><t t-set="displayed" t-value="displayed + 1"/></t></t>
+                                                    <t t-if="parent_count > 3"> (+<t t-esc="parent_count - 3"/>)</t>
+                                                </span>
+                                            </t>
+                                            <span class="current-order">
+                                                <t t-if="workorder.production_id._get_sources()"><span class="order-arrow">↳</span></t>
+                                                <span t-field="workorder.production_id.name"/>
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">Serie/Lote:</td>
+                                        <td class="label-description">
+                                            <t t-foreach="workorder.finished_lot_id" t-as="lot">
+                                                <span t-field="lot.name"/>
+                                            </t>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">Cantidad:</td>
+                                        <td class="label-description">
+                                            <span t-field="workorder.qty_produced"/> / 
+                                            <span t-field="workorder.qty_producing"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">Inicio-Fin:</td>
+                                        <td class="label-description"><span t-esc="(workorder.date_start.strftime('%d/%m/%Y %H:%M:%S') if workorder.date_start else 'N/A') + ' - ' + (workorder.date_finished and workorder.date_finished.strftime('%d/%m/%Y %H:%M:%S') or 'N/A')"/></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </t>
                 </div>
             </t>
-        </t>
-    </template>
+        </template>
+    </data>
 </odoo>
