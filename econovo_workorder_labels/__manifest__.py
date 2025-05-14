@@ -6,9 +6,9 @@
     'author': 'Jose D. Leonett',
     'website': 'http://josedleonett.github.com',
     'license': 'AGPL-3',
-    'depends': ['mrp'],
-    'data': [
+    'depends': ['mrp'],    'data': [
         'security/ir.model.access.csv',
+        'wizard/workorder_labels_wizard_views.xml',
         'views/templates.xml',
         'reports/workorder_label_report.xml',
     ],

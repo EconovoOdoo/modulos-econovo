@@ -1,2 +1,4 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_workorder_label_layout,access.workorder.label.layout,model_workorder_label_layout,mrp.group_mrp_user,1,1,1,1
+access_workorder_multi_label_layout,access.workorder.multi.label.layout,model_workorder_multi_label_layout,mrp.group_mrp_user,1,1,1,1
+access_workorder_multi_label_line,access.workorder.multi.label.line,model_workorder_multi_label_line,mrp.group_mrp_user,1,1,1,1

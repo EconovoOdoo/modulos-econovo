@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_workorder_multi_label_layout_form" model="ir.ui.view">
+        <field name="name">workorder.multi.label.layout.form</field>
+        <field name="model">workorder.multi.label.layout</field>
+        <field name="arch" type="xml">
+            <form>
+                <div class="o_row">
+                    <field name="workorder_lines" nolabel="1" options="{'full_width': True}">
+                        <tree editable="bottom" decoration-info="label_quantity > 1" editable_width="100%">
+                            <field name="label_quantity" string="Cant. a imprimir"/>
+                            <field name="production_id" string="Orden de fabricación" readonly="1" optional="show"/>
+                            <field name="name" string="Operación" readonly="1" optional="show"/>
+                            <field name="product_id" string="Producto" readonly="1"/>
+                            <field name="workcenter_id" string="Centro de trabajo" readonly="1" optional="show"/>
+                        </tree>
+                    </field>
+                </div>
+                <footer>
+                    <button name="action_print_multi_labels" string="Imprimir" type="object" class="btn-primary" data-hotkey="q"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel" data-hotkey="z"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    
+    <record id="action_print_multiple_workorder_labels" model="ir.actions.server">
+        <field name="name">Imprimir Múltiples Etiquetas</field>
+        <field name="model_id" ref="mrp.model_mrp_workorder"/>
+        <field name="state">code</field>
+        <field name="code">action = model.action_print_multiple_labels()</field>
+        <field name="groups_id" eval="[(4, ref('mrp.group_mrp_user'))]"/>
+    </record>
+    
+    <!-- Acción para agregar la opción al menú de Imprimir -->
+    <record id="action_print_multiple_labels_binding" model="ir.actions.server">
+        <field name="name">Imprimir Múltiples Etiquetas</field>
+        <field name="model_id" ref="mrp.model_mrp_workorder"/>
+        <field name="binding_model_id" ref="mrp.model_mrp_workorder"/>
+        <field name="binding_type">report</field>
+        <field name="state">code</field>
+        <field name="code">action = model.action_print_multiple_labels()</field>
+        <field name="groups_id" eval="[(4, ref('mrp.group_mrp_user'))]"/>
+    </record>
+</odoo>

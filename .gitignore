@@ -25,3 +25,5 @@ var/
 *.egg
 econovo_dymo_labels/models/__pycache__/__init__.cpython-312.pyc
 econovo_dymo_labels/models/__pycache__/models.cpython-312.pyc
+econovo_dymo_labels/models/__pycache__/__init__.cpython-312.pyc
+econovo_dymo_labels/models/__pycache__/models.cpython-312.pyc
