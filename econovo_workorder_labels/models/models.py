@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields, api
-from datetime import datetime
-import logging
-
-_logger = logging.getLogger(__name__)
+from odoo import models, fields
 
 class MrpWorkOrder(models.Model):
     _inherit = 'mrp.workorder'

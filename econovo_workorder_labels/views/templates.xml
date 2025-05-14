@@ -8,7 +8,7 @@
             <field name="inherit_id" ref="mrp.mrp_production_workorder_form_view_inherit"/>
             <field name="arch" type="xml">
                 <xpath expr="//header" position="inside">
-                    <button name="print_workorder_label" string="Imprimir Etiqueta de Proceso" type="object" 
+                    <button name="print_workorder_label" string="Imprimir Etiqueta de la Operación" type="object" 
                             class="oe_highlight" groups="mrp.group_mrp_user"/>
                 </xpath>
             </field>

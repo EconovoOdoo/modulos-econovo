@@ -18,7 +18,7 @@
         </record>
 
         <record id="action_workorder_label_report" model="ir.actions.report">
-            <field name="name">Workorder Label</field>
+            <field name="name">Etiqueta de la Operación</field>
             <field name="model">mrp.workorder</field>
             <field name="report_type">qweb-pdf</field>
             <field name="report_name">econovo_workorder_labels.report_workorder_label</field>
@@ -33,7 +33,7 @@
             <t t-call="web.basic_layout">
                 <div class="o_workorder_label_report">
                     <t t-foreach="docs" t-as="workorder">
-                        <div class="main-container">
+                        <div class="main-container" style="page-break-after: always;">
                             <div class="content-container">
                                 <div class="barcode-section">
                                     <div class="logo-container">

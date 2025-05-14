@@ -1,47 +1,56 @@
-# README for Econovo Workorder Labels
+# Econovo Workorder Labels
 
-## Overview
+## Descripción
 
-The `econovo_workorder_labels` module is designed to facilitate the printing of labels for work orders in Odoo. These labels are formatted to display essential information about each work order, making it easier for users to manage and track production processes.
+El módulo `econovo_workorder_labels` está diseñado para facilitar la impresión de etiquetas personalizadas para órdenes de trabajo en Odoo. Estas etiquetas tienen un formato de 100x70mm específicamente adaptado a los procesos de producción de Econovo, mostrando información esencial sobre cada orden de trabajo y haciendo más fácil la gestión y seguimiento de los procesos productivos.
 
-## Features
+## Características
 
-- Print labels for work orders with the following information:
-  - Production Date
-  - Display Name
-  - Production ID
-  - Product ID
-  - Needed By Work Order IDs
-  - Blocked By Work Order IDs
-  - Quantity Produced
-  - Parent and Ancestor of the Product
+- Impresión de etiquetas para órdenes de trabajo con la siguiente información:
+  - Código de barras del producto (Code128)
+  - Código y nombre del producto
+  - Proceso anterior (workorder bloqueante)
+  - Proceso actual (workorder actual)
+  - Proceso siguiente (workorder dependiente)
+  - Orden de fabricación actual y órdenes padre (si existen)
+  - Serie/Lote del producto
+  - Cantidad producida y a producir
+  - Fechas de inicio y fin de la operación
+  - Logo de la empresa y fecha/hora de impresión
 
-## Installation
+## Formato de Etiqueta
 
-To install the `econovo_workorder_labels` module, follow these steps:
+- Tamaño personalizado: 100x70mm
+- Diseño optimizado para claridad y visibilidad
+- Incluye código de barras del producto
+- Muestra el flujo de trabajo con indicadores visuales para procesos anteriores y siguientes
 
-1. Place the module folder in your Odoo addons directory.
-2. Update the app list in Odoo.
-3. Search for "Econovo Workorder Labels" in the apps menu.
-4. Click on the install button.
+## Instalación
 
-## Usage
+Para instalar el módulo `econovo_workorder_labels`, sigue estos pasos:
 
-Once installed, the module will allow users to generate and print labels for work orders directly from the Odoo interface. Users can access the label printing functionality through the relevant work order views.
+1. Coloca la carpeta del módulo en tu directorio de addons de Odoo.
+2. Actualiza la lista de aplicaciones en Odoo.
+3. Busca "Econovo Workorder Labels" en el menú de aplicaciones.
+4. Haz clic en el botón de instalar.
 
-## Dependencies
+## Uso
 
-This module depends on the following Odoo modules:
-- `mrp` (Manufacturing)
+Una vez instalado, el módulo añade un botón "Imprimir Etiqueta de la Operación" en la vista de formulario de órdenes de trabajo. Los usuarios pueden generar e imprimir etiquetas directamente desde la interfaz de Odoo haciendo clic en este botón.
 
-## Author
+## Dependencias
+
+Este módulo depende de los siguientes módulos de Odoo:
+- `mrp` (Manufactura)
+
+## Autor
 
 Jose D. Leonett
 
-## License
+## Licencia
 
 AGPL-3
 
-## Website
+## Sitio Web
 
 [http://josedleonett.github.com](http://josedleonett.github.com)
