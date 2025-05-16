@@ -2,168 +2,50 @@
 <odoo>
     <template id="report_producttemplatelabel_dymo">
         <t t-call="web.basic_layout">
-            <style type="text/css">
-                @page {
-                    size: 100mm 70mm;
-                    margin: 2mm;
-                }
-
-                .main-container {
-                    width: 100%;
-                    height: 100%;
-                    background-color: white;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                }
-
-                .product-container {
-                    width: 100%;
-                    height: 79mm;
-                    background-color: white;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                }
-
-                .content-container {
-                    width: 100%;
-                    height: 100%;
-                    background-color: white;
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: center;
-                    align-content: space-around;
-                    gap: 5px;
-                }
-
-                .barcode-section {
-                    width: 100%;
-                    height: 47%;
-                    background-color: white;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    position: relative;
-                }
-
-                .logo-container {
-                    position: absolute;
-                    top: -3px;
-                    left: 0;
-                    text-align: center;
-                    height: 25%;
-                }
-
-                .logo-img {
-                    height: 100%;
-                    background-color: white;
-                    padding: 1px;
-                }
-
-                .barcode-wrapper {
-                    padding: 0;
-                    width: 100%;
-                    height: 100%;
-                }
-
-                .barcode-number {
-                    position: absolute;
-                    top: -1px;
-                    right: 0;
-                    text-align: right;
-                }
-
-                .barcode-number small {
-                    background-color: white;
-                    padding: 1px;
-                    display: block;
-                }
-
-                .code-section {
-                    width: 100%;
-                    text-align: center;
-                    color: white;
-                    background-color: black;
-                    font-size: 24px;
-                    font-weight: bold;
-                    line-height: 1.1;
-                }
-
-                .code-locations {
-                    font-size: 10px;
-                    text-align: right;
-                    display: inline-block;
-                    margin: 0px;
-                    line-height: 0.8;
-                    min-width: fit-content;
-                    white-space: nowrap;
-                    overflow: visible;
-                }
-
-                .name-section {
-                    width: 100%;
-                    text-align: center;
-                    background-color: white;
-                    word-wrap: break-word;
-                    word-break: break-word;
-                    font-size: 24px;
-                    line-height: 1.2;
-                    overflow: hidden;
-                    display: -webkit-box;
-                    -webkit-line-clamp: 2;
-                    -webkit-box-orient: vertical;
-                    text-overflow: ellipsis;
-                }
-
-                span {
-                    line-height: 1;
-                }
-            </style>
-
-            <t t-foreach="product_ids" t-as="prod_id">
-                <div class="main-container">
-                    <t t-set="product" t-value="env['product.template'].browse(prod_id)"/>
-                    <div class="product-container">
-                        <div class="content-container">
-                            <div class="barcode-section">
-                                <div class="logo-container">
-                                    <img t-att-src="'/web/image/res.company/%s/logo' % env.company.id" class="logo-img"/>
-                                </div>
-                                <t t-if="product.barcode">
-                                    <div class="barcode-wrapper">
-                                        <span t-field="product.barcode"
-                                              t-options="{'widget': 'barcode', 'quiet': 0, 'symbology': 'auto', 'img_style': 'width:100%;height:100%'}"/>
+            <div class="o_dymo_label_report">
+                <t t-foreach="docs" t-as="o">
+                    <div class="main-container">
+                        <div class="product-container">
+                            <div class="content-container">
+                                <div class="barcode-section">
+                                    <div class="logo-container">
+                                        <img t-att-src="'/web/image/res.company/%s/logo' % env.company.id" class="logo-img"/>
                                     </div>
+                                    <t t-if="o.barcode">
+                                        <div class="barcode-wrapper">
+                                            <span t-field="o.barcode"
+                                                  t-options="{'widget': 'barcode', 'quiet': 0, 'symbology': 'auto', 'img_style': 'width:100%;height:100%'}"/>
+                                        </div>
 
-                                    <div class="barcode-number">
-                                        <small t-esc="product.barcode"/>
-                                        <t t-set="putaway_rules" t-value="env['stock.putaway.rule'].search([('product_id', '=', product.id)])"/>
-                                        <t t-if="putaway_rules">
-                                            <t t-foreach="putaway_rules" t-as="rule">
-                                                <small class="code-locations" t-esc="rule.location_out_id.display_name"/>
+                                        <div class="barcode-number">
+                                            <small t-esc="o.barcode"/>
+                                            <t t-set="putaway_rules" t-value="env['stock.putaway.rule'].search([('product_id', '=', o.id)])"/>
+                                            <t t-if="putaway_rules">
+                                                <t t-foreach="putaway_rules" t-as="rule">
+                                                    <small class="code-locations" t-esc="rule.location_out_id.display_name"/>
+                                                </t>
                                             </t>
-                                        </t>
-                                        <t t-else="">
-                                            <small class="code-locations" style="color: red;">(SIN REGLAS DE ALMACENAMIENTO DEFINIDAS)</small>
-                                        </t>
-                                    </div>
-                                </t>
-                            </div>
+                                            <t t-else="">
+                                                <small class="code-locations" style="color: red;">(SIN REGLAS DE ALMACENAMIENTO DEFINIDAS)</small>
+                                            </t>
+                                        </div>
+                                    </t>
+                                </div>
 
-                            <div class="code-section">
-                                <span>[</span>
-                                <span t-field="product.default_code"/>
-                                <span>]</span>
-                            </div>
+                                <div class="code-section">
+                                    <span>[</span>
+                                    <span t-field="o.default_code"/>
+                                    <span>]</span>
+                                </div>
 
-                            <div class="name-section">
-                                <span t-field="product.name"/>
+                <div class="name-section">
+                                    <span t-field="o.name"/>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </t>
+                </t>
+            </div>
         </t>
     </template>
 

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_product_label_layout_dymo" model="ir.ui.view">
+        <field name="name">product.label.layout.form.dymo</field>
+        <field name="model">product.label.layout</field>
+        <field name="inherit_id" ref="product.product_label_layout_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form/group[last()]" position="after">
+                <div class="alert alert-info mt-3" role="alert" invisible="print_format != 'dymo_100x70'">
+                    <p><strong>Nota:</strong> Este formato está optimizado para impresoras DYMO con tamaño de etiqueta 100x70mm.</p>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

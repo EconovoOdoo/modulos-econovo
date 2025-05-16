@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_product_label_layout_multi" model="ir.ui.view">
+        <field name="name">product.label.layout.form.multi</field>
+        <field name="model">product.label.layout</field>
+        <field name="inherit_id" ref="product.product_label_layout_form"/>
+        <field name="arch" type="xml">
+            <field name="custom_quantity" position="before">
+                <field name="multi_enable"/>
+            </field>
+            
+            <field name="custom_quantity" position="attributes">
+                <attribute name="invisible">multi_enable</attribute>
+            </field>
+            
+            <xpath expr="//form/group[last()]" position="after">
+                <field name="multi_label_line_ids" invisible="not multi_enable" mode="tree">
+                    <tree editable="bottom" create="0" delete="1">
+                        <field name="quantity" string="Cant. a imprimir"/>
+                        <field name="default_code" optional="hide"/>
+                        <field name="barcode" optional="show"/>
+                        <field name="product_id" string='Producto' force_save="1"/>
+                    </tree>
+                </field>
+                <div class="alert alert-info" role="alert" invisible="not multi_enable">
+                    <p><strong>Nota:</strong> Ajuste la cantidad de etiquetas a imprimir para cada producto en la tabla superior.</p>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

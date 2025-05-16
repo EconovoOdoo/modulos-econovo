@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
+    <!-- Definición del formato de papel personalizado -->
     <record id="paperformat_dymo_100x70" model="report.paperformat">
         <field name="name">DYMO 100x70mm</field>
         <field name="format">custom</field>
@@ -11,15 +12,17 @@
         <field name="margin_right">1</field>
         <field name="dpi">96</field>
     </record>
+    
     <!-- Acción del reporte que utiliza la plantilla QWeb definida -->
     <record id="action_report_dymo_labels" model="ir.actions.report">
         <field name="name">DYMO Labels</field>
-        <field name="model">product.template</field>
+        <field name="model">product.product</field>
         <field name="report_type">qweb-pdf</field>
         <field name="report_name">econovo_dymo_labels.report_producttemplatelabel_dymo</field>
         <field name="report_file">econovo_dymo_labels.report_producttemplatelabel_dymo</field>
-        <field name="binding_model_id" ref="product.model_product_template"/>
+        <field name="binding_model_id" ref="product.model_product_product"/>
         <field name="binding_type">report</field>
         <field name="paperformat_id" ref="econovo_dymo_labels.paperformat_dymo_100x70"/>
+        <field name="print_report_name">'Etiquetas 100x70 - %s' % (object.name)</field>
     </record>
 </odoo>
