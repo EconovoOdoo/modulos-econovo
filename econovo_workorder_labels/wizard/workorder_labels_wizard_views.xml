@@ -7,8 +7,8 @@
             <form>
                 <div class="o_row">
                     <field name="workorder_lines" nolabel="1" options="{'full_width': True}">
-                        <tree editable="bottom" decoration-info="label_quantity > 1" editable_width="100%">
-                            <field name="label_quantity" string="Cant. a imprimir"/>
+                        <tree editable="bottom" create="0" delete="1" decoration-info="label_quantity > 1" editable_width="100%">
+                            <field name="label_quantity" string="Cant. a imprimir" sum="Total a imprimir"/>
                             <field name="production_id" string="Orden de fabricación" readonly="1" optional="show"/>
                             <field name="name" string="Operación" readonly="1" optional="show"/>
                             <field name="product_id" string="Producto" readonly="1"/>

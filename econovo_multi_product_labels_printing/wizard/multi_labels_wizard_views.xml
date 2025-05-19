@@ -15,8 +15,8 @@
             
             <xpath expr="//form/group[last()]" position="after">
                 <field name="multi_label_line_ids" invisible="not multi_enable" mode="tree">
-                    <tree editable="bottom" create="0" delete="1">
-                        <field name="quantity" string="Cant. a imprimir"/>
+                    <tree editable="bottom" create="0" delete="1" decoration-info="quantity > 1">
+                        <field name="quantity" string="Cant. a imprimir" sum="Total a imprimir"/>
                         <field name="default_code" optional="hide"/>
                         <field name="barcode" optional="show"/>
                         <field name="product_id" string='Producto' force_save="1"/>
