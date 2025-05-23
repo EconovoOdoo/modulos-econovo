@@ -4,7 +4,7 @@
     'summary': 'Permite imprimir múltiples etiquetas de productos con cantidades personalizadas',
     'category': 'Inventory',
     'author': 'Jose D. Leonett',
-    'website': 'http://josedleonett.github.com',
+    'website': 'https://github.com/josedleonett',
     'license': 'AGPL-3',
     'depends': ['product', 'econovo_dymo_labels'],
     'data': [

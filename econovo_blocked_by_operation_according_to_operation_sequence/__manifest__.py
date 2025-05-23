@@ -12,7 +12,7 @@
         the previous operation in the sequence.
     """,
     'author': 'Jose D. Leonett',
-    'website': 'http://josedleonett.github.com',
+    'website': 'https://github.com/josedleonett',
     'license': 'AGPL-3',
     'depends': ['mrp'],
     'data': [

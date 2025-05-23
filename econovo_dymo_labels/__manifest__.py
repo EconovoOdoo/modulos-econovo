@@ -4,7 +4,7 @@
     'summary': 'Formato de etiquetas DYMO de tamaño personalizado 100x70mm para productos',
     'category': 'Reporting',
     'author': 'Jose D. Leonett',
-    'website': 'http://josedleonett.github.com',
+    'website': 'https://github.com/josedleonett',
     'license': 'AGPL-3',
     'depends': ['product'],
     'data': [
