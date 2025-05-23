@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Wizard Form View -->
+    <record id="view_mrp_bom_set_dependencies_wizard_form" model="ir.ui.view">
+        <field name="name">mrp.bom.set.dependencies.wizard.form</field>
+        <field name="model">mrp.bom.set.dependencies.wizard</field>
+        <field name="arch" type="xml">            <form string="Set Operation Dependencies">
+                <div class="alert alert-warning" role="alert" style="margin-bottom:0px;">
+                    <p><strong>WARNING!</strong></p>
+                    <p>This action will overwrite all existing "Blocked By" definitions for operations in the selected BOMs.</p>
+                    <p>For each BOM, each operation will be configured to be blocked by the previous operation according to sequence order.</p>
+                </div>
+                <group>
+                    <field name="bom_count"/>
+                    <field name="allowed_count"/>
+                    <field name="not_allowed_count"/>
+                    <field name="enable_dependencies" widget="boolean_toggle" invisible="not_allowed_count == 0"/>
+                </group>
+                <div class="alert alert-info" role="alert" style="margin-bottom:0px;" invisible="not_allowed_count == 0 or enable_dependencies">
+                    <p><strong>Note:</strong> <field name="not_allowed_count" class="oe_inline"/> selected BOM(s) do not have the "Operation Dependencies" option set and will not be processed.</p>
+                </div>
+                <footer>
+                    <button string="Confirm" name="confirm_set_dependencies" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

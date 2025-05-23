@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Server action for bulk setting operation dependencies -->    <record id="action_set_operation_dependencies_multi" model="ir.actions.server">
+        <field name="name">Set Dependencies by Sequence</field>
+        <field name="model_id" ref="mrp.model_mrp_bom"/>
+        <field name="binding_model_id" ref="mrp.model_mrp_bom"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+if records:
+    action = {
+        'name': 'Confirm Set Dependencies',
+        'type': 'ir.actions.act_window',
+        'res_model': 'mrp.bom.set.dependencies.wizard',
+        'view_mode': 'form',
+        'target': 'new',
+        'context': {'active_ids': records.ids},
+    }
+    result = action
+        </field>
+    </record>
+</odoo>

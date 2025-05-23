@@ -1,0 +1,27 @@
+<!-- This is a placeholder for a screenshot image. In a real implementation, this would be an actual PNG image. -->
+<!-- For visualization purposes, this SVG creates a simple placeholder image -->
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500" viewBox="0 0 800 500">
+  <rect width="800" height="500" fill="#f5f5f5" />
+  <rect x="50" y="50" width="700" height="400" fill="#fff" stroke="#ddd" />
+  <text x="400" y="80" font-family="Arial" font-size="18" text-anchor="middle" fill="#333">Operations with Dependencies Set</text>
+  
+  <!-- Operation 1 -->
+  <rect x="100" y="120" width="600" height="60" rx="4" fill="#fff" stroke="#ddd" />
+  <text x="120" y="155" font-family="Arial" font-size="14" fill="#333">Operation 1: Assembly Step 1</text>
+  <text x="500" y="155" font-family="Arial" font-size="14" fill="#777">Blocks: None</text>
+  
+  <!-- Operation 2 -->
+  <rect x="100" y="200" width="600" height="60" rx="4" fill="#fff" stroke="#ddd" />
+  <text x="120" y="235" font-family="Arial" font-size="14" fill="#333">Operation 2: Assembly Step 2</text>
+  <text x="500" y="235" font-family="Arial" font-size="14" fill="#777">Blocked by: Operation 1</text>
+  
+  <!-- Operation 3 -->
+  <rect x="100" y="280" width="600" height="60" rx="4" fill="#fff" stroke="#ddd" />
+  <text x="120" y="315" font-family="Arial" font-size="14" fill="#333">Operation 3: Quality Control</text>
+  <text x="500" y="315" font-family="Arial" font-size="14" fill="#777">Blocked by: Operation 2</text>
+  
+  <!-- Operation 4 -->
+  <rect x="100" y="360" width="600" height="60" rx="4" fill="#fff" stroke="#ddd" />
+  <text x="120" y="395" font-family="Arial" font-size="14" fill="#333">Operation 4: Packaging</text>
+  <text x="500" y="395" font-family="Arial" font-size="14" fill="#777">Blocked by: Operation 3</text>
+</svg>

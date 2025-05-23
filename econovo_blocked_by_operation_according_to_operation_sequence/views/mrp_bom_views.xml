@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="mrp_bom_form_view_inherit_operation_dependencies" model="ir.ui.view">
+        <field name="name">mrp.bom.form.view.inherit.operation.dependencies</field>
+        <field name="model">mrp.bom</field>
+        <field name="inherit_id" ref="mrp.mrp_bom_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='operation_ids']" position="before">
+                <div class="oe_inline mb-2" invisible="not allow_operation_dependencies">                    <button name="action_set_operation_dependencies" 
+                            string="Set Dependencies by Sequence" 
+                            type="object" 
+                            class="btn btn-primary" 
+                            help="Automatically configure operation dependencies based on sequence"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

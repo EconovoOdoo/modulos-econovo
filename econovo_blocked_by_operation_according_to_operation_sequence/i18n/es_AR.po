@@ -1,0 +1,172 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* econovo_blocked_by_operation_according_to_operation_sequence
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 17.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-05-23 12:25+0000\n"
+"PO-Revision-Date: 2025-05-23 12:25+0000\n"
+"Last-Translator: \n"
+"Language-Team: Spanish\n"
+"Language: es_AR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: econovo_blocked_by_operation_according_to_operation_sequence
+#: model_terms:ir.ui.view,arch_db:econovo_blocked_by_operation_according_to_operation_sequence.view_mrp_bom_set_dependencies_wizard_form
+msgid "<strong>Note:</strong>"
+msgstr "<strong>Nota:</strong>"
+
+#. module: econovo_blocked_by_operation_according_to_operation_sequence
+#: model_terms:ir.ui.view,arch_db:econovo_blocked_by_operation_according_to_operation_sequence.view_mrp_bom_set_dependencies_wizard_form
+msgid "<strong>WARNING!</strong>"
+msgstr "<strong>¡ADVERTENCIA!</strong>"
+
+#. module: econovo_blocked_by_operation_according_to_operation_sequence
+#: model_terms:ir.ui.view,arch_db:econovo_blocked_by_operation_according_to_operation_sequence.mrp_bom_form_view_inherit_operation_dependencies
+msgid "Automatically configure operation dependencies based on sequence"
+msgstr "Configurar automáticamente las dependencias de operaciones basadas en secuencia"
+
+#. module: econovo_blocked_by_operation_according_to_operation_sequence
+#: model:ir.model.fields,field_description:econovo_blocked_by_operation_according_to_operation_sequence.field_mrp_bom_set_dependencies_wizard__allowed_count
+msgid "BOMs with dependencies allowed"
+msgstr "LdM con dependencias habilitadas"
+
+#. module: econovo_blocked_by_operation_according_to_operation_sequence
+#: model:ir.model.fields,field_description:econovo_blocked_by_operation_according_to_operation_sequence.field_mrp_bom_set_dependencies_wizard__not_allowed_count
+msgid "BOMs without dependencies allowed"
+msgstr "LdM sin dependencias habilitadas"
+
+#. module: econovo_blocked_by_operation_according_to_operation_sequence
+#: model:ir.model,name:econovo_blocked_by_operation_according_to_operation_sequence.model_mrp_bom
+msgid "Bill of Material"
+msgstr "Lista de materiales"
+
+#. module: econovo_blocked_by_operation_according_to_operation_sequence
+#: model_terms:ir.ui.view,arch_db:econovo_blocked_by_operation_according_to_operation_sequence.view_mrp_bom_set_dependencies_wizard_form
+msgid "Cancel"
+msgstr "Cancelar"
+
+#. module: econovo_blocked_by_operation_according_to_operation_sequence
+#: model_terms:ir.ui.view,arch_db:econovo_blocked_by_operation_according_to_operation_sequence.view_mrp_bom_set_dependencies_wizard_form
+msgid "Confirm"
+msgstr "Confirmar"
+
+#. module: econovo_blocked_by_operation_according_to_operation_sequence
+#: model:ir.model.fields,field_description:econovo_blocked_by_operation_according_to_operation_sequence.field_mrp_bom_set_dependencies_wizard__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: econovo_blocked_by_operation_according_to_operation_sequence
+#: model:ir.model.fields,field_description:econovo_blocked_by_operation_according_to_operation_sequence.field_mrp_bom_set_dependencies_wizard__create_date
+msgid "Created on"
+msgstr "Creado el"
+
+#. module: econovo_blocked_by_operation_according_to_operation_sequence
+#: model:ir.model.fields,field_description:econovo_blocked_by_operation_according_to_operation_sequence.field_mrp_bom_set_dependencies_wizard__display_name
+msgid "Display Name"
+msgstr "Nombre mostrado"
+
+#. module: econovo_blocked_by_operation_according_to_operation_sequence
+#: model:ir.model.fields,field_description:econovo_blocked_by_operation_according_to_operation_sequence.field_mrp_bom_set_dependencies_wizard__enable_dependencies
+msgid "Enable Operation Dependencies"
+msgstr "Establecer Dependencias de operación"
+
+#. module: econovo_blocked_by_operation_according_to_operation_sequence
+#: model_terms:ir.ui.view,arch_db:econovo_blocked_by_operation_according_to_operation_sequence.view_mrp_bom_set_dependencies_wizard_form
+msgid ""
+"For each BOM, each operation will be configured to be blocked by the "
+"previous operation according to sequence order."
+msgstr "Para cada LdM, se configurará cada operación para que esté bloqueada por la operación anterior según el orden de la secuencia."
+
+#. module: econovo_blocked_by_operation_according_to_operation_sequence
+#: model:ir.model.fields,field_description:econovo_blocked_by_operation_according_to_operation_sequence.field_mrp_bom_set_dependencies_wizard__id
+msgid "ID"
+msgstr "ID"
+
+#. module: econovo_blocked_by_operation_according_to_operation_sequence
+#: model:ir.model.fields,help:econovo_blocked_by_operation_according_to_operation_sequence.field_mrp_bom_set_dependencies_wizard__enable_dependencies
+msgid ""
+"If checked, operation dependencies will be enabled for the selected BOMs "
+"that don't have this option active"
+msgstr "Si está marcado, se establecerá la opción \"Dependencias de operación\" para las listas de materiales seleccionadas que no tengan esta opción activada"
+
+#. module: econovo_blocked_by_operation_according_to_operation_sequence
+#: model:ir.model.fields,field_description:econovo_blocked_by_operation_according_to_operation_sequence.field_mrp_bom_set_dependencies_wizard__write_uid
+msgid "Last Updated by"
+msgstr "Última actualización por"
+
+#. module: econovo_blocked_by_operation_according_to_operation_sequence
+#: model:ir.model.fields,field_description:econovo_blocked_by_operation_according_to_operation_sequence.field_mrp_bom_set_dependencies_wizard__write_date
+msgid "Last Updated on"
+msgstr "Última actualización el"
+
+#. module: econovo_blocked_by_operation_according_to_operation_sequence
+#. odoo-python
+#: code:addons/econovo_blocked_by_operation_according_to_operation_sequence/models/mrp_bom.py:0
+#, python-format
+msgid ""
+"Operation dependencies are not enabled for this BoM. Please enable them "
+"first."
+msgstr "Las dependencias de operaciones no están habilitadas para esta LdM. Por favor, habilítelas primero."
+
+#. module: econovo_blocked_by_operation_according_to_operation_sequence
+#. odoo-python
+#: code:addons/econovo_blocked_by_operation_according_to_operation_sequence/models/mrp_bom.py:0
+#, python-format
+msgid "Operation dependencies have been set based on sequence."
+msgstr "Las dependencias de operaciones han sido establecidas según la secuencia."
+
+#. module: econovo_blocked_by_operation_according_to_operation_sequence
+#. odoo-python
+#: code:addons/econovo_blocked_by_operation_according_to_operation_sequence/wizards/set_dependencies_wizard.py:0
+#, python-format
+msgid "Operation dependencies have been set for %s BOMs."
+msgstr "Las dependencias de operaciones han sido establecidas para %s LdM."
+
+#. module: econovo_blocked_by_operation_according_to_operation_sequence
+#: model:ir.actions.server,name:econovo_blocked_by_operation_according_to_operation_sequence.action_set_operation_dependencies_multi
+#: model_terms:ir.ui.view,arch_db:econovo_blocked_by_operation_according_to_operation_sequence.mrp_bom_form_view_inherit_operation_dependencies
+msgid "Set Dependencies by Sequence"
+msgstr "Establecer Bloqueado Por según Secuencia de operaciones"
+
+#. module: econovo_blocked_by_operation_according_to_operation_sequence
+#: model_terms:ir.ui.view,arch_db:econovo_blocked_by_operation_according_to_operation_sequence.view_mrp_bom_set_dependencies_wizard_form
+msgid "Set Operation Dependencies"
+msgstr "Establecer Dependencias de Operación"
+
+#. module: econovo_blocked_by_operation_according_to_operation_sequence
+#: model:ir.model,name:econovo_blocked_by_operation_according_to_operation_sequence.model_mrp_bom_set_dependencies_wizard
+msgid "Set Operation Dependencies Wizard"
+msgstr "Asistente para Establecer Dependencias de Operación"
+
+#. module: econovo_blocked_by_operation_according_to_operation_sequence
+#. odoo-python
+#: code:addons/econovo_blocked_by_operation_according_to_operation_sequence/models/mrp_bom.py:0
+#: code:addons/econovo_blocked_by_operation_according_to_operation_sequence/wizards/set_dependencies_wizard.py:0
+#, python-format
+msgid "Success"
+msgstr "Éxito"
+
+#. module: econovo_blocked_by_operation_according_to_operation_sequence
+#: model_terms:ir.ui.view,arch_db:econovo_blocked_by_operation_according_to_operation_sequence.view_mrp_bom_set_dependencies_wizard_form
+msgid ""
+"This action will overwrite all existing \"Blocked By\" definitions for "
+"operations in the selected BOMs."
+msgstr "Esta acción sobreescribirá todas las definiciones existentes de \"Bloqueado por\" para las operaciones en las LdM seleccionadas."
+
+#. module: econovo_blocked_by_operation_according_to_operation_sequence
+#: model:ir.model.fields,field_description:econovo_blocked_by_operation_according_to_operation_sequence.field_mrp_bom_set_dependencies_wizard__bom_count
+msgid "Total BOMs"
+msgstr "Total LdM"
+
+#. module: econovo_blocked_by_operation_according_to_operation_sequence
+#: model_terms:ir.ui.view,arch_db:econovo_blocked_by_operation_according_to_operation_sequence.view_mrp_bom_set_dependencies_wizard_form
+msgid ""
+"selected BOM(s) do not have the \"Operation Dependencies\" option set and "
+"will not be processed."
+msgstr "LdM seleccionada(s) no tiene(n) establecida la opción \"Dependencias de operación\" y no serán procesadas."

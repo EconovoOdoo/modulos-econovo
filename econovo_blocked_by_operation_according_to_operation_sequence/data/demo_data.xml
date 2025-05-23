@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Demo manufacturing operations for a demo BOM -->
+        <record id="demo_operation_1" model="mrp.routing.workcenter">
+            <field name="name">Assembly Step 1</field>
+            <field name="workcenter_id" ref="mrp.mrp_workcenter_3"/>
+            <field name="time_cycle">60</field>
+            <field name="sequence">10</field>
+        </record>
+
+        <record id="demo_operation_2" model="mrp.routing.workcenter">
+            <field name="name">Assembly Step 2</field>
+            <field name="workcenter_id" ref="mrp.mrp_workcenter_3"/>
+            <field name="time_cycle">60</field>
+            <field name="sequence">20</field>
+        </record>
+
+        <record id="demo_operation_3" model="mrp.routing.workcenter">
+            <field name="name">Quality Control</field>
+            <field name="workcenter_id" ref="mrp.mrp_workcenter_1"/>
+            <field name="time_cycle">30</field>
+            <field name="sequence">30</field>
+        </record>
+
+        <record id="demo_operation_4" model="mrp.routing.workcenter">
+            <field name="name">Packaging</field>
+            <field name="workcenter_id" ref="mrp.mrp_workcenter_2"/>
+            <field name="time_cycle">45</field>
+            <field name="sequence">40</field>
+        </record>
+
+        <!-- Demo BOM with operations -->
+        <record id="demo_bom_with_operations" model="mrp.bom">
+            <field name="product_tmpl_id" ref="product.product_product_3_product_template"/>
+            <field name="product_qty">1</field>
+            <field name="allow_operation_dependencies">True</field>
+            <field name="operation_ids" eval="[(6, 0, [
+                ref('demo_operation_1'),
+                ref('demo_operation_2'),
+                ref('demo_operation_3'),
+                ref('demo_operation_4')
+            ])]"/>
+        </record>
+    </data>
+</odoo>

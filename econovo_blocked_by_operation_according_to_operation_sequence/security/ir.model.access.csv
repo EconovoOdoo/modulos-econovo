@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_mrp_bom_set_dependencies,access.mrp.bom.set.dependencies,mrp.model_mrp_bom,mrp.group_mrp_user,1,1,0,0
+access_mrp_bom_set_dependencies_wizard,access.mrp.bom.set.dependencies.wizard,econovo_blocked_by_operation_according_to_operation_sequence.model_mrp_bom_set_dependencies_wizard,mrp.group_mrp_user,1,1,1,1
