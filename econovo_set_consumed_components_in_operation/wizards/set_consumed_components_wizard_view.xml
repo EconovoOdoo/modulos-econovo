@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Wizard Form View -->
+    <record id="view_set_consumed_components_wizard_form" model="ir.ui.view">
+        <field name="name">set.consumed.components.wizard.form</field>
+        <field name="model">set.consumed.components.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Set Component Consumption in Operations">
+                <div class="alert alert-warning" role="alert" style="margin-bottom:0px;">
+                    <p><strong>WARNING!</strong></p>
+                    <p>This action will overwrite the current operation assignment for ALL components in the selected BOMs.</p>
+                    <p>All components in each BOM will be set to be consumed in the specified operation.</p>
+                </div>
+                <group>
+                    <group>
+                        <field name="bom_count"/>
+                        <field name="boms_with_operations_count"/>
+                        <field name="boms_without_operations_count"/>
+                    </group>
+                    <group>
+                        <field name="consumption_type" widget="radio"/>
+                        <field name="operation_sequence" 
+                               invisible="consumption_type != 'specific_sequence'"
+                               required="consumption_type == 'specific_sequence'"/>
+                    </group>
+                </group>
+                <div class="alert alert-info" role="alert" style="margin-bottom:0px;" 
+                     invisible="boms_without_operations_count == 0">
+                    <p><strong>Note:</strong> <field name="boms_without_operations_count" class="oe_inline"/> 
+                    selected BOM(s) do not have operations defined and will be skipped.</p>
+                </div>
+                <footer>
+                    <button string="Confirm" name="confirm_set_consumed_components" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

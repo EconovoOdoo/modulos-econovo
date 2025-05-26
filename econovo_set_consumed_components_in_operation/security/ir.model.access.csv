@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_set_consumed_components_wizard,access.set.consumed.components.wizard,econovo_set_consumed_components_in_operation.model_set_consumed_components_wizard,mrp.group_mrp_user,1,1,1,1

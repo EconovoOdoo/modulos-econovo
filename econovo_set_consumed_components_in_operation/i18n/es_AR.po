@@ -1,0 +1,203 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* econovo_set_consumed_components_in_operation
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 17.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-05-26 11:13+0000\n"
+"PO-Revision-Date: 2025-05-26 11:13+0000\n"
+"Last-Translator: \n"
+"Language-Team: Spanish\n"
+"Language: es_AR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: econovo_set_consumed_components_in_operation
+#: model_terms:ir.ui.view,arch_db:econovo_set_consumed_components_in_operation.view_set_consumed_components_wizard_form
+msgid "<strong>Note:</strong>"
+msgstr "<strong>Nota:</strong>"
+
+#. module: econovo_set_consumed_components_in_operation
+#: model_terms:ir.ui.view,arch_db:econovo_set_consumed_components_in_operation.view_set_consumed_components_wizard_form
+msgid "<strong>WARNING!</strong>"
+msgstr "<strong>¡ADVERTENCIA!</strong>"
+
+#. module: econovo_set_consumed_components_in_operation
+#: model_terms:ir.ui.view,arch_db:econovo_set_consumed_components_in_operation.view_set_consumed_components_wizard_form
+msgid ""
+"All components in each BOM will be set to be consumed in the specified "
+"operation."
+msgstr "Todos los componentes en cada LdM se establecerán para ser consumidos en la operación especificada."
+
+#. module: econovo_set_consumed_components_in_operation
+#: model:ir.model.fields,field_description:econovo_set_consumed_components_in_operation.field_set_consumed_components_wizard__boms_with_operations_count
+msgid "BOMs with operations"
+msgstr "LdM con operaciones"
+
+#. module: econovo_set_consumed_components_in_operation
+#: model:ir.model.fields,field_description:econovo_set_consumed_components_in_operation.field_set_consumed_components_wizard__boms_without_operations_count
+msgid "BOMs without operations"
+msgstr "LdM sin operaciones"
+
+#. module: econovo_set_consumed_components_in_operation
+#: model:ir.model,name:econovo_set_consumed_components_in_operation.model_mrp_bom
+msgid "Bill of Material"
+msgstr "Lista de materiales"
+
+#. module: econovo_set_consumed_components_in_operation
+#: model_terms:ir.ui.view,arch_db:econovo_set_consumed_components_in_operation.view_set_consumed_components_wizard_form
+msgid "Cancel"
+msgstr "Cancelar"
+
+#. module: econovo_set_consumed_components_in_operation
+#. odoo-python
+#: code:addons/econovo_set_consumed_components_in_operation/wizards/set_consumed_components_wizard.py:0
+#, python-format
+msgid "Components consumption set for %s BOMs (%s components total)."
+msgstr "Consumo de componentes establecido para %s LdM (%s componentes en total)."
+
+#. module: econovo_set_consumed_components_in_operation
+#: model_terms:ir.ui.view,arch_db:econovo_set_consumed_components_in_operation.view_set_consumed_components_wizard_form
+msgid "Confirm"
+msgstr "Confirmar"
+
+#. module: econovo_set_consumed_components_in_operation
+#: model:ir.model.fields.selection,name:econovo_set_consumed_components_in_operation.selection__set_consumed_components_wizard__consumption_type__first_operation
+msgid "Consume in first operation"
+msgstr "Consumir en la primera operación"
+
+#. module: econovo_set_consumed_components_in_operation
+#: model:ir.model.fields.selection,name:econovo_set_consumed_components_in_operation.selection__set_consumed_components_wizard__consumption_type__last_operation
+msgid "Consume in last operation"
+msgstr "Consumir en la última operación"
+
+#. module: econovo_set_consumed_components_in_operation
+#: model:ir.model.fields.selection,name:econovo_set_consumed_components_in_operation.selection__set_consumed_components_wizard__consumption_type__specific_sequence
+msgid "Consume in specific operation sequence"
+msgstr "Consumir en secuencia de operación específica"
+
+#. module: econovo_set_consumed_components_in_operation
+#: model:ir.model.fields,field_description:econovo_set_consumed_components_in_operation.field_set_consumed_components_wizard__consumption_type
+msgid "Consumption Type"
+msgstr "Tipo de Consumo"
+
+#. module: econovo_set_consumed_components_in_operation
+#: model:ir.model.fields,field_description:econovo_set_consumed_components_in_operation.field_set_consumed_components_wizard__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: econovo_set_consumed_components_in_operation
+#: model:ir.model.fields,field_description:econovo_set_consumed_components_in_operation.field_set_consumed_components_wizard__create_date
+msgid "Created on"
+msgstr "Creado el"
+
+#. module: econovo_set_consumed_components_in_operation
+#: model:ir.model.fields,field_description:econovo_set_consumed_components_in_operation.field_set_consumed_components_wizard__display_name
+msgid "Display Name"
+msgstr "Nombre mostrado"
+
+#. module: econovo_set_consumed_components_in_operation
+#: model:ir.model.fields,field_description:econovo_set_consumed_components_in_operation.field_set_consumed_components_wizard__id
+msgid "ID"
+msgstr "ID"
+
+#. module: econovo_set_consumed_components_in_operation
+#: model:ir.model.fields,field_description:econovo_set_consumed_components_in_operation.field_set_consumed_components_wizard__write_uid
+msgid "Last Updated by"
+msgstr "Última actualización por"
+
+#. module: econovo_set_consumed_components_in_operation
+#: model:ir.model.fields,field_description:econovo_set_consumed_components_in_operation.field_set_consumed_components_wizard__write_date
+msgid "Last Updated on"
+msgstr "Última actualización el"
+
+#. module: econovo_set_consumed_components_in_operation
+#. odoo-python
+#: code:addons/econovo_set_consumed_components_in_operation/wizards/set_consumed_components_wizard.py:0
+#, python-format
+msgid "No components were processed."
+msgstr "No se procesaron componentes."
+
+#. module: econovo_set_consumed_components_in_operation
+#: model:ir.model.fields,field_description:econovo_set_consumed_components_in_operation.field_set_consumed_components_wizard__operation_sequence
+msgid "Operation Sequence"
+msgstr "Secuencia de Operación"
+
+#. module: econovo_set_consumed_components_in_operation
+#. odoo-python
+#: code:addons/econovo_set_consumed_components_in_operation/wizards/set_consumed_components_wizard.py:0
+#, python-format
+msgid "Operation sequence must be greater than 0."
+msgstr "La secuencia de operación debe ser mayor que 0."
+
+#. module: econovo_set_consumed_components_in_operation
+#. odoo-python
+#: code:addons/econovo_set_consumed_components_in_operation/wizards/set_consumed_components_wizard.py:0
+#, python-format
+msgid "Operation with sequence %s not found in BOM %s"
+msgstr "Operación con secuencia %s no encontrada en LdM %s"
+
+#. module: econovo_set_consumed_components_in_operation
+#. odoo-python
+#: code:addons/econovo_set_consumed_components_in_operation/wizards/set_consumed_components_wizard.py:0
+#, python-format
+msgid "Please specify the operation sequence number."
+msgstr "Por favor especifique el número de secuencia de la operación."
+
+#. module: econovo_set_consumed_components_in_operation
+#: model:ir.model.fields,help:econovo_set_consumed_components_in_operation.field_set_consumed_components_wizard__operation_sequence
+msgid "Sequence number of the operation where components will be consumed"
+msgstr "Número de secuencia de la operación donde se consumirán los componentes"
+
+#. module: econovo_set_consumed_components_in_operation
+#: model:ir.actions.server,name:econovo_set_consumed_components_in_operation.action_set_consumed_components_multi
+#: model_terms:ir.ui.view,arch_db:econovo_set_consumed_components_in_operation.view_set_consumed_components_wizard_form
+msgid "Set Component Consumption in Operations"
+msgstr "Establecer Consumo de Componentes en Operaciones"
+
+#. module: econovo_set_consumed_components_in_operation
+#: model:ir.model,name:econovo_set_consumed_components_in_operation.model_set_consumed_components_wizard
+msgid "Set Consumed Components in Operation Wizard"
+msgstr "Asistente para Establecer Componentes Consumidos en Operación"
+
+#. module: econovo_set_consumed_components_in_operation
+#. odoo-python
+#: code:addons/econovo_set_consumed_components_in_operation/wizards/set_consumed_components_wizard.py:0
+#, python-format
+msgid "Skipped BOMs: %s"
+msgstr "LdM omitidas: %s"
+
+#. module: econovo_set_consumed_components_in_operation
+#. odoo-python
+#: code:addons/econovo_set_consumed_components_in_operation/wizards/set_consumed_components_wizard.py:0
+#, python-format
+msgid "Success"
+msgstr "Éxito"
+
+#. module: econovo_set_consumed_components_in_operation
+#: model_terms:ir.ui.view,arch_db:econovo_set_consumed_components_in_operation.view_set_consumed_components_wizard_form
+msgid ""
+"This action will overwrite the current operation assignment for ALL "
+"components in the selected BOMs."
+msgstr "Esta acción sobreescribirá la asignación de operación actual para TODOS los componentes en las LdM seleccionadas."
+
+#. module: econovo_set_consumed_components_in_operation
+#: model:ir.model.fields,field_description:econovo_set_consumed_components_in_operation.field_set_consumed_components_wizard__bom_count
+msgid "Total BOMs"
+msgstr "Total LdM"
+
+#. module: econovo_set_consumed_components_in_operation
+#. odoo-python
+#: code:addons/econovo_set_consumed_components_in_operation/wizards/set_consumed_components_wizard.py:0
+#, python-format
+msgid "Warning"
+msgstr "Advertencia"
+
+#. module: econovo_set_consumed_components_in_operation
+#: model_terms:ir.ui.view,arch_db:econovo_set_consumed_components_in_operation.view_set_consumed_components_wizard_form
+msgid "selected BOM(s) do not have operations defined and will be skipped."
+msgstr "LdM seleccionada(s) no tiene(n) operaciones definidas y serán omitidas."

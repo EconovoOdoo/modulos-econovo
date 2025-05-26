@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Server action for bulk setting component consumption in operations -->
+    <record id="action_set_consumed_components_multi" model="ir.actions.server">
+        <field name="name">Set Component Consumption in Operations</field>
+        <field name="model_id" ref="mrp.model_mrp_bom"/>
+        <field name="binding_model_id" ref="mrp.model_mrp_bom"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+if records:
+    action = {
+        'name': 'Set Component Consumption in Operations',
+        'type': 'ir.actions.act_window',
+        'res_model': 'set.consumed.components.wizard',
+        'view_mode': 'form',
+        'target': 'new',
+        'context': {'active_ids': records.ids},
+    }
+    result = action
+        </field>
+    </record>
+</odoo>
