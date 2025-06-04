@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>    <!-- Inherit Production Order Form View to show Workcenter Destination Info -->
+    <record id="view_mrp_production_form_inherit" model="ir.ui.view">
+        <field name="name">mrp.production.form.inherit</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_form_view"/>        <field name="arch" type="xml">
+            <!-- Add workcenter destination info in the miscellaneous page near location fields -->            <xpath expr="//page[@name='miscellaneous']//group//field[@name='location_dest_id' and @groups='stock.group_stock_multi_locations']" position="after">                <field name="workcenter_location_dest_id" 
+                       readonly="1"
+                       invisible="not workcenter_location_dest_id"
+                       string="From Workcenter"
+                       groups="stock.group_stock_multi_locations"/>
+            </xpath>
+        </field>
+    </record><!-- Add Workcenter Destination to Production Tree View -->
+    <record id="view_mrp_production_tree_inherit" model="ir.ui.view">
+        <field name="name">mrp.production.tree.inherit</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_tree_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='company_id']" position="after">
+                <field name="workcenter_location_dest_id" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Create a Smart Button to show Workcenter Destination Info -->
+    <record id="view_mrp_production_form_smart_button" model="ir.ui.view">
+        <field name="name">mrp.production.form.smart.button</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+        <field name="arch" type="xml">
+        <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_workcenter_destinations" 
+                        type="object"
+                        class="oe_stat_button" 
+                        icon="fa-map-marker"
+                        invisible="not workcenter_location_dest_id"
+                        groups="stock.group_stock_multi_locations">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_text">Workcenter</span>
+                        <span class="o_stat_text">Destination</span>
+                    </div>
+                </button>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Add search filter for productions using workcenter destinations -->
+    <record id="view_mrp_production_search_inherit" model="ir.ui.view">
+        <field name="name">mrp.production.search.inherit</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.view_mrp_production_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='activities_exception']" position="after">
+                <separator/>
+                <filter string="Using Workcenter Destination" 
+                        name="has_workcenter_destination" 
+                        domain="[('workcenter_location_dest_id', '!=', False)]"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

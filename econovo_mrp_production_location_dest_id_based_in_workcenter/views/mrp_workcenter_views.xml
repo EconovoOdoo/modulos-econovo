@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>    <!-- Inherit Workcenter Form View to add Destination Location -->
+    <record id="view_mrp_workcenter_form_inherit" model="ir.ui.view">
+        <field name="name">mrp.workcenter.form.inherit</field>
+        <field name="model">mrp.workcenter</field>
+        <field name="inherit_id" ref="mrp.mrp_workcenter_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='costing']" position="after">
+                <group string="Location Information" name="location_info">
+                    <field name="location_dest_id" 
+                           options="{'no_create': True, 'no_create_edit': True}"/>
+                    <field name="has_custom_destination" invisible="1"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Add Destination Location to Workcenter Tree View -->
+    <record id="view_mrp_workcenter_tree_inherit" model="ir.ui.view">
+        <field name="name">mrp.workcenter.tree.inherit</field>
+        <field name="model">mrp.workcenter</field>
+        <field name="inherit_id" ref="mrp.mrp_workcenter_tree_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='company_id']" position="after">
+                <field name="location_dest_id" optional="hide"/>
+                <field name="has_custom_destination" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Add search filter for workcenters with custom destinations -->
+    <record id="view_mrp_workcenter_search_inherit" model="ir.ui.view">
+        <field name="name">mrp.workcenter.search.inherit</field>
+        <field name="model">mrp.workcenter</field>
+        <field name="inherit_id" ref="mrp.view_mrp_workcenter_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='archived']" position="after">
+                <separator/>
+                <filter string="With Custom Destination" 
+                        name="has_custom_destination" 
+                        domain="[('has_custom_destination', '=', True)]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter string="Destination Location" 
+                            name="group_by_destination" 
+                            domain="[]" 
+                            context="{'group_by': 'location_dest_id'}"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

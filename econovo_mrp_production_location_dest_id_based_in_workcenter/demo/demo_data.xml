@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Demo Locations for different workcenters -->
+        <record id="location_assembly_line" model="stock.location">
+            <field name="name">Assembly Line Finished Goods</field>
+            <field name="location_id" ref="stock.stock_location_stock"/>
+            <field name="usage">internal</field>
+            <field name="company_id" ref="base.main_company"/>
+        </record>
+
+        <record id="location_packaging_area" model="stock.location">
+            <field name="name">Packaging Area</field>
+            <field name="location_id" ref="stock.stock_location_stock"/>
+            <field name="usage">internal</field>
+            <field name="company_id" ref="base.main_company"/>
+        </record>
+
+        <record id="location_quality_control" model="stock.location">
+            <field name="name">Quality Control Hold</field>
+            <field name="location_id" ref="stock.stock_location_stock"/>
+            <field name="usage">internal</field>
+            <field name="company_id" ref="base.main_company"/>
+        </record>
+
+        <!-- Demo Workcenters with destination locations -->
+        <record id="workcenter_assembly" model="mrp.workcenter">
+            <field name="name">Assembly Line</field>
+            <field name="code">ASSEMBLY</field>
+            <field name="location_dest_id" ref="location_assembly_line"/>
+            <field name="time_efficiency">100</field>
+            <field name="default_capacity">1</field>
+            <field name="costs_hour">50.0</field>
+        </record>
+
+        <record id="workcenter_packaging" model="mrp.workcenter">
+            <field name="name">Packaging Station</field>
+            <field name="code">PACK</field>
+            <field name="location_dest_id" ref="location_packaging_area"/>
+            <field name="time_efficiency">100</field>
+            <field name="default_capacity">1</field>
+            <field name="costs_hour">30.0</field>
+        </record>
+
+        <record id="workcenter_quality" model="mrp.workcenter">
+            <field name="name">Quality Control</field>
+            <field name="code">QC</field>
+            <field name="location_dest_id" ref="location_quality_control"/>
+            <field name="time_efficiency">100</field>
+            <field name="default_capacity">1</field>
+            <field name="costs_hour">40.0</field>
+        </record>
+    </data>
+</odoo>
