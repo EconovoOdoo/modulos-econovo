@@ -1,0 +1,16 @@
+[33mcommit 21cc2cc6ce712bf9537a884632d65e64277ac301[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32meconovo_batch_production_assignment[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;31morigin/17.0[m[33m, [m[1;32meconovo_set_consumed_components_in_operation[m[33m, [m[1;32m17.0[m[33m)[m
+Author: Jose D. Leonett <josed.95@gmail.com>
+Date:   Mon May 26 10:19:07 2025 -0300
+
+    feat(econovo_set_consumed_components_in_operation): Add wizard for setting component consumption in operations
+
+econovo_set_consumed_components_in_operation/__init__.py
+econovo_set_consumed_components_in_operation/__manifest__.py
+econovo_set_consumed_components_in_operation/i18n/es_AR.po
+econovo_set_consumed_components_in_operation/models/__init__.py
+econovo_set_consumed_components_in_operation/models/mrp_bom.py
+econovo_set_consumed_components_in_operation/security/ir.model.access.csv
+econovo_set_consumed_components_in_operation/views/server_actions.xml
+econovo_set_consumed_components_in_operation/wizards/__init__.py
+econovo_set_consumed_components_in_operation/wizards/set_consumed_components_wizard.py
+econovo_set_consumed_components_in_operation/wizards/set_consumed_components_wizard_view.xml

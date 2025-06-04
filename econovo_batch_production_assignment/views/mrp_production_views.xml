@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="mrp_production_tree_view_inherit" model="ir.ui.view">
+            <field name="name">mrp.production.tree.inherit</field>
+            <field name="model">mrp.production</field>
+            <field name="inherit_id" ref="mrp.mrp_production_tree_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//tree" position="attributes">
+                    <!-- Ensure multi-select is enabled for batch operations -->
+                    <attribute name="multi_edit">1</attribute>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

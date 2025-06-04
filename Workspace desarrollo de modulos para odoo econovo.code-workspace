@@ -1,0 +1,18 @@
+{
+	"folders": [
+		{
+			"path": "../../.."
+		},
+		{
+			"path": "../../../../ODOO-SRC"
+		}
+	],
+	"settings": {
+		"python.languageServer": "None",
+		"python.envFile": "${workspaceFolder}/.env",
+		"python.autoComplete.extraPaths": [
+			"D:\\Odoo\\ODOO-SRC\\odoo-17\\odoo"
+		],
+		"powershell.cwd": "GITHUB-SRC"
+	}
+}

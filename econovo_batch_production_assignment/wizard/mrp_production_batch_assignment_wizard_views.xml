@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+          <!-- Wizard Form View -->
+        <record id="mrp_production_batch_assignment_wizard_form" model="ir.ui.view">
+            <field name="name">mrp.production.batch.assignment.wizard.form</field>
+            <field name="model">mrp.production.batch.assignment.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Batch Assignment/Unassignment Confirmation">
+                    <div class="alert alert-info" role="alert" style="margin-bottom: 15px;">
+                        <h4>
+                            <i class="fa fa-info-circle"/> 
+                            <span invisible="operation_mode != 'assign'">Assignment Analysis Summary</span>
+                            <span invisible="operation_mode != 'unassign'">Unassignment Analysis Summary</span>
+                        </h4>
+                        <p invisible="operation_mode != 'assign'">
+                            Review the analysis of selected manufacturing orders before proceeding with batch assignment.
+                        </p>
+                        <p invisible="operation_mode != 'unassign'">
+                            Review the analysis of selected manufacturing orders before proceeding with batch unassignment.
+                        </p>
+                    </div>
+                    
+                    <group>
+                        <group string="Operation Mode">
+                            <field name="operation_mode" widget="radio" options="{'horizontal': true}"/>
+                        </group>
+                    </group>
+                    
+                    <group>
+                        <group string="Assignment Categories" invisible="operation_mode != 'assign'">
+                            <field name="fully_assignable_count" readonly="1" 
+                                   widget="integer" 
+                                   decoration-success="fully_assignable_count > 0"/>
+                            <field name="partially_assignable_count" readonly="1" 
+                                   widget="integer" 
+                                   decoration-warning="partially_assignable_count > 0"/>
+                            <field name="already_assigned_count" readonly="1" 
+                                   widget="integer" 
+                                   decoration-info="already_assigned_count > 0"/>
+                            <field name="no_materials_count" readonly="1" 
+                                   widget="integer" 
+                                   decoration-danger="no_materials_count > 0"/>
+                            <field name="invalid_state_count" readonly="1" 
+                                   widget="integer" 
+                                   decoration-muted="invalid_state_count > 0"/>
+                        </group>
+                        <group string="Unassignment Categories" invisible="operation_mode != 'unassign'">
+                            <field name="fully_assignable_count" readonly="1" 
+                                   widget="integer" 
+                                   decoration-success="fully_assignable_count > 0" 
+                                   string="Fully Unreservable"/>
+                            <field name="partially_assignable_count" readonly="1" 
+                                   widget="integer" 
+                                   decoration-warning="partially_assignable_count > 0" 
+                                   string="Partially Unreservable"/>
+                            <field name="no_materials_count" readonly="1" 
+                                   widget="integer" 
+                                   decoration-danger="no_materials_count > 0" 
+                                   string="No Materials to Unreserve"/>
+                            <field name="invalid_state_count" readonly="1" 
+                                   widget="integer" 
+                                   decoration-muted="invalid_state_count > 0"/>
+                        </group>
+                    </group>
+                    
+                    <separator string="Detailed Analysis"/>
+                    
+                    <field name="summary_text" nolabel="1" readonly="1" 
+                           widget="html" 
+                           style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px;"/>                    
+                    
+                    <div class="alert alert-warning" role="alert" 
+                         invisible="operation_mode != 'assign' or partially_assignable_count == 0"
+                         style="margin-top: 15px;">
+                        <h4>
+                            <i class="fa fa-exclamation-triangle"/> Partial Assignment Warning
+                        </h4>
+                        <p>
+                            Some orders will only be partially assigned. This means not all required materials 
+                            are available in stock. You may need to make additional assignments later when 
+                            more materials arrive.
+                        </p>
+                    </div>
+                    
+                    <div class="alert alert-warning" role="alert" 
+                         invisible="operation_mode != 'unassign' or partially_assignable_count == 0"
+                         style="margin-top: 15px;">
+                        <h4>
+                            <i class="fa fa-exclamation-triangle"/> Partial Unassignment Warning
+                        </h4>
+                        <p>
+                            Some orders will only be partially unreserved. This means only some materials 
+                            were previously reserved. The unreservation will remove only those reservations.
+                        </p>
+                    </div>
+                    
+                    <footer>
+                        <button name="action_confirm_assignment" 
+                                string="Confirm Assignment" 
+                                type="object" 
+                                class="btn-primary"
+                                invisible="operation_mode != 'assign' or (fully_assignable_count == 0 and partially_assignable_count == 0)"/>
+                        <button name="action_confirm_assignment" 
+                                string="Confirm Unassignment" 
+                                type="object" 
+                                class="btn-primary"
+                                invisible="operation_mode != 'unassign' or (fully_assignable_count == 0 and partially_assignable_count == 0)"/>
+                        <button name="action_cancel" 
+                                string="Cancel" 
+                                type="object" 
+                                class="btn-secondary"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+          <!-- Wizard Action -->
+        <record id="mrp_production_batch_assignment_wizard_action" model="ir.actions.act_window">
+            <field name="name">Batch Assignment/Unassignment Confirmation</field>
+            <field name="res_model">mrp.production.batch.assignment.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+            <field name="view_id" ref="mrp_production_batch_assignment_wizard_form"/>
+        </record>
+        
+    </data>
+</odoo>

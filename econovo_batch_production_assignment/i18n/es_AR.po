@@ -1,0 +1,764 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* econovo_batch_production_assignment
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 17.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-05-30 16:15+0000\n"
+"PO-Revision-Date: 2025-05-30 16:15+0000\n"
+"Last-Translator: Jose D. Leonett\n"
+"Language-Team: Econovo\n"
+"Language: es_AR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: econovo_batch_production_assignment
+#: model:ir.model.fields,help:econovo_batch_production_assignment.field_mrp_production__state
+msgid ""
+" * Draft: The MO is not confirmed yet.\n"
+" * Confirmed: The MO is confirmed, the stock rules and the reordering of the components are trigerred.\n"
+" * In Progress: The production has started (on the MO or on the WO).\n"
+" * To Close: The production is done, the MO has to be closed.\n"
+" * Done: The MO is closed, the stock moves are posted. \n"
+" * Cancelled: The MO has been cancelled, can't be confirmed anymore."
+msgstr ""
+" * Borrador: la orden de fabricación aún no está confirmada.\n"
+" * Confirmado: la orden de fabricación está confirmada, las reglas de stock y el reabastecimiento de los componentes se activan.\n"
+" * En proceso: la producción comenzó (en la orden de fabricación o en la orden de trabajo).\n"
+" * A cerrar: la producción terminó, se debe cerrar la orden de fabricación.\n"
+" * Listo: se cerró la orden de fabricación, los movimientos de stock se registran.\n"
+" * Cancelado: se canceló la orden de fabricación, ya no se puede confirmar."
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/wizard/mrp_production_batch_assignment_wizard.py:0
+#, python-format
+msgid "... and %s more"
+msgstr "... y %s más"
+
+#. module: econovo_batch_production_assignment
+#: model_terms:ir.ui.view,arch_db:econovo_batch_production_assignment.mrp_production_batch_assignment_wizard_form
+msgid "<i class=\"fa fa-exclamation-triangle\"/> Partial Assignment Warning"
+msgstr "<i class=\"fa fa-exclamation-triangle\"/> Advertencia de asignación parcial"
+
+#. module: econovo_batch_production_assignment
+#: model_terms:ir.ui.view,arch_db:econovo_batch_production_assignment.mrp_production_batch_assignment_wizard_form
+msgid "<i class=\"fa fa-exclamation-triangle\"/> Partial Unassignment Warning"
+msgstr "<i class=\"fa fa-exclamation-triangle\"/> Advertencia de anulación de asignación parcial"
+
+#. module: econovo_batch_production_assignment
+#: model_terms:ir.ui.view,arch_db:econovo_batch_production_assignment.mrp_production_batch_assignment_wizard_form
+msgid ""
+"<i class=\"fa fa-info-circle\"/> \n"
+"                            <span invisible=\"operation_mode != 'assign'\">Assignment Analysis Summary</span>\n"
+"                            <span invisible=\"operation_mode != 'unassign'\">Unassignment Analysis Summary</span>"
+msgstr ""
+"<i class=\"fa fa-info-circle\"/> \n"
+"                            <span invisible=\"operation_mode != 'assign'\">Resumen de Análisis de Asignación</span>\n"
+"                            <span invisible=\"operation_mode != 'unassign'\">Resumen de Análisis de Desasignación</span>"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/models/mrp_production.py:0
+#, python-format
+msgid "All materials already assigned"
+msgstr "Todos los materiales ya están asignados"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/models/mrp_production.py:0
+#, python-format
+msgid "All materials available and ready"
+msgstr "Todos los materiales disponibles y listos"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/models/mrp_production.py:0
+#, python-format
+msgid "All materials reserved and ready to unreserve"
+msgstr "Todos los materiales reservados y listos para desreservar"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/wizard/mrp_production_batch_assignment_wizard.py:0
+#: model:ir.model.fields,field_description:econovo_batch_production_assignment.field_mrp_production_batch_assignment_wizard__already_assigned_count
+#, python-format
+msgid "Already Assigned"
+msgstr "Ya Asignados"
+
+#. module: econovo_batch_production_assignment
+#: model:ir.model.fields.selection,name:econovo_batch_production_assignment.selection__mrp_production_batch_assignment_wizard__operation_mode__assign
+msgid "Assignment"
+msgstr "Asignación"
+
+#. module: econovo_batch_production_assignment
+#: model_terms:ir.ui.view,arch_db:econovo_batch_production_assignment.mrp_production_batch_assignment_wizard_form
+msgid "Assignment Categories"
+msgstr "Categorías de Asignación"
+
+#. module: econovo_batch_production_assignment
+#: model:ir.model.fields,field_description:econovo_batch_production_assignment.field_mrp_production_batch_assignment_wizard__summary_text
+msgid "Assignment Summary"
+msgstr "Resumen de Asignación"
+
+#. module: econovo_batch_production_assignment
+#: model:ir.actions.server,name:econovo_batch_production_assignment.action_batch_production_wizard
+msgid "Batch Assign/Unassign Materials"
+msgstr "Asignar/Desasignar Ordenes por Lotes"
+
+#. module: econovo_batch_production_assignment
+#: model:ir.actions.act_window,name:econovo_batch_production_assignment.mrp_production_batch_assignment_wizard_action
+#: model_terms:ir.ui.view,arch_db:econovo_batch_production_assignment.mrp_production_batch_assignment_wizard_form
+msgid "Batch Assignment/Unassignment Confirmation"
+msgstr "Confirmación de Asignación/Desasignación por Lotes"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/models/mrp_production.py:0
+#, python-format
+msgid "Batch Material Assignment Result"
+msgstr "Resultado de Asignación de Ordenes por Lotes"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/models/mrp_production.py:0
+#, python-format
+msgid "Batch Material Unassignment"
+msgstr "Desasignación de Ordenes por Lotes"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/models/mrp_production.py:0
+#, python-format
+msgid "Batch Material Unassignment - No Changes"
+msgstr "Desasignación de Ordenes por Lotes - Sin Cambios"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/models/mrp_production.py:0
+#, python-format
+msgid "Batch Material Unassignment - Partial Success"
+msgstr "Desasignación de Ordenes por Lotes - Éxito Parcial"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/models/mrp_production.py:0
+#, python-format
+msgid "Batch Material Unassignment - Success"
+msgstr "Anulación de asignación de Ordenes por lotes - Exitosa"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/wizard/mrp_production_batch_assignment_wizard.py:0
+#, python-format
+msgid "Batch Unassignment Results"
+msgstr "Resultados de anulación de asignación por lotes"
+
+#. module: econovo_batch_production_assignment
+#: model_terms:ir.ui.view,arch_db:econovo_batch_production_assignment.mrp_production_batch_assignment_wizard_form
+msgid "Cancel"
+msgstr "Cancelar"
+
+#. module: econovo_batch_production_assignment
+#: model:ir.model.fields.selection,name:econovo_batch_production_assignment.selection__mrp_production__state__cancel
+msgid "Cancelled"
+msgstr "Cancelado"
+
+#. module: econovo_batch_production_assignment
+#: model_terms:ir.ui.view,arch_db:econovo_batch_production_assignment.mrp_production_batch_assignment_wizard_form
+msgid "Confirm Assignment"
+msgstr "Confirmar asignación"
+
+#. module: econovo_batch_production_assignment
+#: model_terms:ir.ui.view,arch_db:econovo_batch_production_assignment.mrp_production_batch_assignment_wizard_form
+msgid "Confirm Unassignment"
+msgstr "Confirmar anulación de asignación"
+
+#. module: econovo_batch_production_assignment
+#: model:ir.model.fields.selection,name:econovo_batch_production_assignment.selection__mrp_production__state__confirmed
+msgid "Confirmed"
+msgstr "Confirmado"
+
+#. module: econovo_batch_production_assignment
+#: model:ir.model.fields,field_description:econovo_batch_production_assignment.field_mrp_production_batch_assignment_wizard__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: econovo_batch_production_assignment
+#: model:ir.model.fields,field_description:econovo_batch_production_assignment.field_mrp_production_batch_assignment_wizard__create_date
+msgid "Created on"
+msgstr "Creado el"
+
+#. module: econovo_batch_production_assignment
+#: model_terms:ir.ui.view,arch_db:econovo_batch_production_assignment.mrp_production_batch_assignment_wizard_form
+msgid "Detailed Analysis"
+msgstr "Análisis Detallado"
+
+#. module: econovo_batch_production_assignment
+#: model:ir.model.fields,field_description:econovo_batch_production_assignment.field_mrp_production_batch_assignment_wizard__display_name
+msgid "Display Name"
+msgstr "Nombre a Mostrar"
+
+#. module: econovo_batch_production_assignment
+#: model:ir.model.fields.selection,name:econovo_batch_production_assignment.selection__mrp_production__state__done
+msgid "Done"
+msgstr "Listo"
+
+#. module: econovo_batch_production_assignment
+#: model:ir.model.fields.selection,name:econovo_batch_production_assignment.selection__mrp_production__state__draft
+msgid "Draft"
+msgstr "Borrador"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/models/mrp_production.py:0
+#: code:addons/econovo_batch_production_assignment/models/mrp_production.py:0
+#, python-format
+msgid "Error"
+msgstr "Error"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/wizard/mrp_production_batch_assignment_wizard.py:0
+#, python-format
+msgid "Error categorizing production %s: %s"
+msgstr "Error al categorizar la producción %s: %s"
+
+#. module: econovo_batch_production_assignment
+#: model:ir.model.fields,field_description:econovo_batch_production_assignment.field_mrp_production__move_finished_ids
+msgid "Finished Moves"
+msgstr "Movimientos Terminados"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/wizard/mrp_production_batch_assignment_wizard.py:0
+#: model:ir.model.fields,field_description:econovo_batch_production_assignment.field_mrp_production_batch_assignment_wizard__fully_assignable_count
+#, python-format
+msgid "Fully Assignable"
+msgstr "Totalmente Asignable"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/wizard/mrp_production_batch_assignment_wizard.py:0
+#: model_terms:ir.ui.view,arch_db:econovo_batch_production_assignment.mrp_production_batch_assignment_wizard_form
+#, python-format
+msgid "Fully Unreservable"
+msgstr "Totalmente anulable reserva"
+
+#. module: econovo_batch_production_assignment
+#: model:ir.model.fields,field_description:econovo_batch_production_assignment.field_mrp_production_batch_assignment_wizard__id
+msgid "ID"
+msgstr "ID"
+
+#. module: econovo_batch_production_assignment
+#: model:ir.model.fields.selection,name:econovo_batch_production_assignment.selection__mrp_production__state__progress
+msgid "In Progress"
+msgstr "En proceso"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/wizard/mrp_production_batch_assignment_wizard.py:0
+#: model:ir.model.fields,field_description:econovo_batch_production_assignment.field_mrp_production_batch_assignment_wizard__invalid_state_count
+#, python-format
+msgid "Invalid State"
+msgstr "Estado Inválido"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/models/mrp_production.py:0
+#, python-format
+msgid "Invalid state for assignment (must be Confirmed or In Progress)"
+msgstr "Estado inválido para asignación (debe estar confirmado o en proceso)"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/models/mrp_production.py:0
+#, python-format
+msgid "Invalid state for unassignment (must be Confirmed or In Progress)"
+msgstr "Estado inválido para desasignación (debe estar confirmado o en proceso)"
+
+#. module: econovo_batch_production_assignment
+#: model:ir.model.fields,field_description:econovo_batch_production_assignment.field_mrp_production_batch_assignment_wizard__write_uid
+msgid "Last Updated by"
+msgstr "Última Actualización por"
+
+#. module: econovo_batch_production_assignment
+#: model:ir.model.fields,field_description:econovo_batch_production_assignment.field_mrp_production_batch_assignment_wizard__write_date
+msgid "Last Updated on"
+msgstr "Última Actualización el"
+
+#. module: econovo_batch_production_assignment
+#: model:ir.model,name:econovo_batch_production_assignment.model_mrp_production_batch_assignment_wizard
+msgid "Manufacturing Order Batch Assignment Wizard"
+msgstr "Asistente de asignación por lotes de órdenes de fabricación"
+
+#. module: econovo_batch_production_assignment
+#: model:ir.model.fields,field_description:econovo_batch_production_assignment.field_mrp_production_batch_assignment_wizard__production_ids
+msgid "Manufacturing Orders"
+msgstr "Órdenes de fabricación"
+
+#. module: econovo_batch_production_assignment
+#: model:ir.model.fields,field_description:econovo_batch_production_assignment.field_mrp_production__name
+msgid "Name"
+msgstr "Nombre"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/wizard/mrp_production_batch_assignment_wizard.py:0
+#: model:ir.model.fields,field_description:econovo_batch_production_assignment.field_mrp_production_batch_assignment_wizard__no_materials_count
+#, python-format
+msgid "No Materials to Assign"
+msgstr "Sin materiales para asignar"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/wizard/mrp_production_batch_assignment_wizard.py:0
+#: model_terms:ir.ui.view,arch_db:econovo_batch_production_assignment.mrp_production_batch_assignment_wizard_form
+#, python-format
+msgid "No Materials to Unreserve"
+msgstr "Sin materiales para anular asignación"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/wizard/mrp_production_batch_assignment_wizard.py:0
+#: code:addons/econovo_batch_production_assignment/wizard/mrp_production_batch_assignment_wizard.py:0
+#, python-format
+msgid "No Orders to Process"
+msgstr "Sin Órdenes para Procesar"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/wizard/mrp_production_batch_assignment_wizard.py:0
+#, python-format
+msgid "No manufacturing orders can be processed for assignment."
+msgstr "No se pueden procesar órdenes de fabricación para asignación."
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/wizard/mrp_production_batch_assignment_wizard.py:0
+#, python-format
+msgid ""
+"No manufacturing orders have material reservations that can be unassigned."
+msgstr ""
+"Ninguna orden de fabricación tiene asignación de ordenes que puedan ser desasignadas."
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/wizard/mrp_production_batch_assignment_wizard.py:0
+#, python-format
+msgid "No manufacturing orders to process."
+msgstr "No hay órdenes de fabricación para procesar."
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/models/mrp_production.py:0
+#, python-format
+msgid "No materials available for assignment"
+msgstr "No hay materiales disponibles para asignación"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/models/mrp_production.py:0
+#, python-format
+msgid "No materials reserved for unassignment"
+msgstr "No hay materiales reservados para desasignación"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/models/mrp_production.py:0
+#, python-format
+msgid "No production orders have been selected for batch assignment."
+msgstr "No se han seleccionado órdenes de fabricación para asignación por lotes."
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/models/mrp_production.py:0
+#, python-format
+msgid "No production orders have been selected for batch unassignment."
+msgstr "No se han seleccionado órdenes de fabricación para desasignación por lotes."
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/models/mrp_production.py:0
+#: code:addons/econovo_batch_production_assignment/models/mrp_production.py:0
+#, python-format
+msgid "No production orders have been selected."
+msgstr "No se han seleccionado órdenes de fabricación."
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/models/mrp_production.py:0
+#, python-format
+msgid ""
+"No production orders in valid state for material assignment (must be "
+"Confirmed or In Progress)."
+msgstr ""
+"No hay órdenes de fabricación en estado válido para asignación de materiales "
+"(deben estar confirmadas o en proceso)."
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/models/mrp_production.py:0
+#, python-format
+msgid ""
+"No production orders in valid state for material unassignment (must be "
+"Confirmed or In Progress)."
+msgstr ""
+"No hay órdenes de fabricación en estado válido para desasignación de materiales "
+"(deben estar confirmadas o en proceso)."
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/models/mrp_production.py:0
+#, python-format
+msgid "No raw material moves found for unassignment"
+msgstr "No se encontraron movimientos de materia prima para desasignación"
+
+#. module: econovo_batch_production_assignment
+#: model:ir.model.fields,field_description:econovo_batch_production_assignment.field_mrp_production_batch_assignment_wizard__operation_mode
+#: model_terms:ir.ui.view,arch_db:econovo_batch_production_assignment.mrp_production_batch_assignment_wizard_form
+msgid "Operation Mode"
+msgstr "Modo de operación"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/wizard/mrp_production_batch_assignment_wizard.py:0
+#: model:ir.model.fields,field_description:econovo_batch_production_assignment.field_mrp_production_batch_assignment_wizard__partially_assignable_count
+#, python-format
+msgid "Partially Assignable"
+msgstr "Parcialmente Asignable"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/wizard/mrp_production_batch_assignment_wizard.py:0
+#: model_terms:ir.ui.view,arch_db:econovo_batch_production_assignment.mrp_production_batch_assignment_wizard_form
+#, python-format
+msgid "Partially Unreservable"
+msgstr "Parcialmente anulable reserva"
+
+#. module: econovo_batch_production_assignment
+#: model:ir.model,name:econovo_batch_production_assignment.model_mrp_production
+msgid "Production Order"
+msgstr "Orden de fabricación"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/models/mrp_production.py:0
+#, python-format
+msgid ""
+"Production order must be in Confirmed or In Progress state for unassignment"
+msgstr ""
+"La orden de fabricación debe estar en estado confirmado o en proceso para desasignación"
+
+#. module: econovo_batch_production_assignment
+#: model:ir.model.fields,field_description:econovo_batch_production_assignment.field_mrp_production__move_raw_ids
+msgid "Raw Material Moves"
+msgstr "Movimientos de Materia Prima"
+
+#. module: econovo_batch_production_assignment
+#: model_terms:ir.ui.view,arch_db:econovo_batch_production_assignment.mrp_production_batch_assignment_wizard_form
+msgid ""
+"Review the analysis of selected manufacturing orders before proceeding with "
+"batch assignment."
+msgstr ""
+"Revisar el análisis de las órdenes de fabricación seleccionadas antes de continuar "
+"con la asignación por lotes."
+
+#. module: econovo_batch_production_assignment
+#: model_terms:ir.ui.view,arch_db:econovo_batch_production_assignment.mrp_production_batch_assignment_wizard_form
+msgid ""
+"Review the analysis of selected manufacturing orders before proceeding with "
+"batch unassignment."
+msgstr ""
+"Revisar el análisis de las órdenes de fabricación seleccionadas antes de continuar "
+"con la desasignación por lotes."
+
+#. module: econovo_batch_production_assignment
+#: model:ir.model.fields,field_description:econovo_batch_production_assignment.field_mrp_production__show_allocation
+msgid "Show Allocation"
+msgstr "Mostrar asignación"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/models/mrp_production.py:0
+#, python-format
+msgid "Some materials available"
+msgstr "Algunos materiales disponibles"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/models/mrp_production.py:0
+#, python-format
+msgid "Some materials reserved"
+msgstr "Algunos materiales reservados"
+
+#. module: econovo_batch_production_assignment
+#: model_terms:ir.ui.view,arch_db:econovo_batch_production_assignment.mrp_production_batch_assignment_wizard_form
+msgid ""
+"Some orders will only be partially assigned. This means not all required materials \n"
+"                            are available in stock. You may need to make additional assignments later when \n"
+"                            more materials arrive."
+msgstr ""
+"Algunas órdenes solo serán asignadas parcialmente. Esto significa que no todos los materiales requeridos \n"
+"                            están disponibles en stock. Podría ser necesario realizar asignaciones adicionales más tarde cuando \n"
+"                            lleguen más materiales."
+
+#. module: econovo_batch_production_assignment
+#: model_terms:ir.ui.view,arch_db:econovo_batch_production_assignment.mrp_production_batch_assignment_wizard_form
+msgid ""
+"Some orders will only be partially unreserved. This means only some materials \n"
+"                            were previously reserved. The unreservation will remove only those reservations."
+msgstr ""
+"Algunas órdenes solo tendrán reservas anuladas parcialmente. Esto significa que solo algunos materiales \n"
+"                            fueron previamente reservados. La anulación de reserva removerá únicamente esas reservas."
+
+#. module: econovo_batch_production_assignment
+#: model:ir.model.fields,field_description:econovo_batch_production_assignment.field_mrp_production__state
+msgid "State"
+msgstr "Estado"
+
+#. module: econovo_batch_production_assignment
+#: model:ir.model.fields,help:econovo_batch_production_assignment.field_mrp_production__show_allocation
+msgid ""
+"Technical Field used to decide whether the button \"Allocation\" should be "
+"displayed."
+msgstr ""
+"Campo técnico usado para decidir si el botón \"Asignación\" debe ser "
+"mostrado."
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/wizard/mrp_production_batch_assignment_wizard.py:0
+#, python-format
+msgid "These orders already have materials assigned."
+msgstr "Estas órdenes ya tienen materiales asignados."
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/wizard/mrp_production_batch_assignment_wizard.py:0
+#, python-format
+msgid ""
+"These orders are not in a valid state for processing (must be Confirmed or "
+"In Progress)."
+msgstr ""
+"Estas órdenes no están en un estado válido para procesamiento (deben estar "
+"confirmadas o en proceso)."
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/wizard/mrp_production_batch_assignment_wizard.py:0
+#, python-format
+msgid "These orders have all materials available and ready to assign."
+msgstr "Estas órdenes tienen todos los materiales disponibles y listos para asignar."
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/wizard/mrp_production_batch_assignment_wizard.py:0
+#, python-format
+msgid "These orders have all materials reserved and ready to unreserve."
+msgstr "Estas órdenes tienen todos los materiales reservados y listos para anular asignación."
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/wizard/mrp_production_batch_assignment_wizard.py:0
+#, python-format
+msgid "These orders have no materials available for assignment."
+msgstr "Estas órdenes no tienen materiales disponibles para asignación."
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/wizard/mrp_production_batch_assignment_wizard.py:0
+#, python-format
+msgid "These orders have no materials reserved for unreservation."
+msgstr "Estas órdenes no tienen materiales reservados para anular asignación."
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/wizard/mrp_production_batch_assignment_wizard.py:0
+#, python-format
+msgid "These orders have some materials available but not all."
+msgstr "Estas órdenes tienen algunos materiales disponibles pero no todos."
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/wizard/mrp_production_batch_assignment_wizard.py:0
+#, python-format
+msgid "These orders have some materials reserved but not all."
+msgstr "Estas órdenes tienen algunos materiales reservados pero no todos."
+
+#. module: econovo_batch_production_assignment
+#: model:ir.model.fields.selection,name:econovo_batch_production_assignment.selection__mrp_production_batch_assignment_wizard__operation_mode__unassign
+msgid "Unassignment"
+msgstr "Anulación de asignación"
+
+#. module: econovo_batch_production_assignment
+#: model_terms:ir.ui.view,arch_db:econovo_batch_production_assignment.mrp_production_batch_assignment_wizard_form
+msgid "Unassignment Categories"
+msgstr "Categorías de anulación de asignación"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/models/mrp_production.py:0
+#: code:addons/econovo_batch_production_assignment/models/mrp_production.py:0
+#, python-format
+msgid "Unknown status"
+msgstr "Estado desconocido"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/models/mrp_production.py:0
+#: code:addons/econovo_batch_production_assignment/models/mrp_production.py:0
+#, python-format
+msgid "Warning"
+msgstr "Advertencia"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/wizard/mrp_production_batch_assignment_wizard.py:0
+#, python-format
+msgid "[SUCCESS] Successfully unassigned materials from %d order(s) (%d material(s) total)"
+msgstr "[ÉXITO] Se anularon exitosamente las asignaciones de materiales de %d orden(es) (%d material(es) en total)"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/wizard/mrp_production_batch_assignment_wizard.py:0
+#, python-format
+msgid "[INFO] %d order(s) had no material reservations to unassign"
+msgstr "[INFO] %d orden(es) no tenían asignación de ordenes para anular"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/wizard/mrp_production_batch_assignment_wizard.py:0
+#, python-format
+msgid "[WARNING] %d order(s) failed to unassign"
+msgstr "[ADVERTENCIA] %d orden(es) fallaron al anular asignación"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/models/mrp_production.py:0
+#, python-format
+msgid "[SUCCESS] %d order(s) completely unassigned"
+msgstr "[ÉXITO] %d orden(es) completamente desasignadas"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/models/mrp_production.py:0
+#, python-format
+msgid "[WARNING] %d order(s) partially unassigned"
+msgstr "[ADVERTENCIA] %d orden(es) parcialmente desasignadas"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/models/mrp_production.py:0
+#, python-format
+msgid "[INFO] %d order(s) had no materials to unassign"
+msgstr "[INFO] %d orden(es) no tenían materiales para desasignar"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/models/mrp_production.py:0
+#, python-format
+msgid "[BLOCKED] %d order(s) in invalid state"
+msgstr "[BLOQUEADO] %d orden(es) en estado inválido"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/models/mrp_production.py:0
+#, python-format
+msgid "[ERROR] %d order(s) with processing errors"
+msgstr "[ERROR] %d orden(es) con errores de procesamiento"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/models/mrp_production.py:0
+#, python-format
+msgid "Error details:"
+msgstr "Detalles del error:"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/models/mrp_production.py:0
+#, python-format
+msgid "... and %d more errors"
+msgstr "... y %d errores más"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/models/mrp_production.py:0
+#, python-format
+msgid "Batch Material Unassignment - Partial Success"
+msgstr "Anulación de asignación de Ordenes por lotes - Éxito parcial"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/models/mrp_production.py:0
+#, python-format
+msgid "Batch Material Unassignment - Success"
+msgstr "Anulación de asignación de Ordenes por lotes - Éxito"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/models/mrp_production.py:0
+#, python-format
+msgid "Batch Material Unassignment - No Changes"
+msgstr "Anulación de asignación de Ordenes por lotes - Sin cambios"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/wizard/mrp_production_batch_assignment_wizard.py:0
+#, python-format
+msgid "Batch Unassignment Results"
+msgstr "Resultados de la anulación de asignación por lotes"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/wizard/mrp_production_batch_assignment_wizard.py:0
+#, python-format
+msgid "No orders were processed"
+msgstr "No se procesaron órdenes"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/wizard/mrp_production_batch_assignment_wizard.py:0
+#, python-format
+msgid "No manufacturing orders have material reservations that can be unassigned."
+msgstr "Ninguna orden de fabricación tiene asignación de ordenes que puedan ser anuladas."
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/models/mrp_production.py:0
+#, python-format
+msgid "No production orders in valid state for material unassignment (must be Confirmed or In Progress)."
+msgstr "No hay órdenes de producción en estado válido para anular asignación de materiales (deben estar Confirmadas o En proceso)."
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/models/mrp_production.py:0
+#, python-format
+msgid "No production orders have been selected."
+msgstr "No se han seleccionado órdenes de producción."
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/models/mrp_production.py:0
+#, python-format
+msgid "No material reservations to unassign"
+msgstr "No hay asignación de ordenes para anular"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/models/mrp_production.py:0
+#, python-format
+msgid "material(s) unassigned successfully"
+msgstr "material(es) desasignado(s) exitosamente"
+
+#. module: econovo_batch_production_assignment
+#. odoo-python
+#: code:addons/econovo_batch_production_assignment/models/mrp_production.py:0
+#, python-format
+msgid "Unexpected error: %s"
+msgstr "Error inesperado: %s"
