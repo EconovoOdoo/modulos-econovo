@@ -10,19 +10,6 @@ _logger = logging.getLogger(__name__)
 class MrpProduction(models.Model):
     _inherit = 'mrp.production'
 
-    # Define missing attributes
-    move_finished_ids = fields.One2many('stock.move', 'production_id', string='Finished Moves')
-    move_raw_ids = fields.One2many('stock.move', 'raw_material_production_id', string='Raw Material Moves')
-    show_allocation = fields.Boolean(string='Show Allocation')
-    name = fields.Char(string='Name')
-    state = fields.Selection([
-        ('draft', 'Draft'),
-        ('confirmed', 'Confirmed'),
-        ('progress', 'In Progress'),
-        ('done', 'Done'),
-        ('cancel', 'Cancelled')
-    ], string='State')
-
     def batch_production_assignment(self):
         """
         Apply batch material assignment to multiple selected production orders.

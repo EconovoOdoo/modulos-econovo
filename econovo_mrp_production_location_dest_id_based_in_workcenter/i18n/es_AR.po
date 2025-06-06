@@ -1,0 +1,72 @@
+#. module: econovo_mrp_production_location_dest_id_based_in_workcenter
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_production_location_dest_id_based_in_workcenter.view_mrp_production_form_smart_button
+msgid ""
+"<span class=\"o_stat_text\">Workcenter</span>\n"
+"                        <span class=\"o_stat_text\">Destination</span>"
+msgstr ""
+"<span class=\"o_stat_text\">Centro de trabajo</span>\n"
+"                        <span class=\"o_stat_text\">Destino</span>"
+
+#. module: econovo_mrp_production_location_dest_id_based_in_workcenter
+#: model:ir.model.fields,field_description:econovo_mrp_production_location_dest_id_based_in_workcenter.field_mrp_workcenter__location_dest_id
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_production_location_dest_id_based_in_workcenter.view_mrp_workcenter_search_inherit
+msgid "Destination Location"
+msgstr "Ubicación de destino"
+
+#. module: econovo_mrp_production_location_dest_id_based_in_workcenter
+#: model:ir.model.fields,help:econovo_mrp_production_location_dest_id_based_in_workcenter.field_mrp_production__workcenter_location_dest_id
+msgid "Destination location determined by the workcenter configuration"
+msgstr "Ubicación de destino determinada por la configuración del centro de trabajo"
+
+#. module: econovo_mrp_production_location_dest_id_based_in_workcenter
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_production_location_dest_id_based_in_workcenter.view_mrp_production_form_inherit
+msgid "From Workcenter"
+msgstr "Desde centro de trabajo"
+
+#. module: econovo_mrp_production_location_dest_id_based_in_workcenter
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_production_location_dest_id_based_in_workcenter.view_mrp_workcenter_search_inherit
+msgid "Group By"
+msgstr "Agrupar por"
+
+#. module: econovo_mrp_production_location_dest_id_based_in_workcenter
+#: model:ir.model.fields,field_description:econovo_mrp_production_location_dest_id_based_in_workcenter.field_mrp_workcenter__has_custom_destination
+msgid "Has Custom Destination"
+msgstr "Tiene destino personalizado"
+
+#. module: econovo_mrp_production_location_dest_id_based_in_workcenter
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_production_location_dest_id_based_in_workcenter.view_mrp_workcenter_form_inherit
+msgid "Location Information"
+msgstr "Información de ubicación"
+
+#. module: econovo_mrp_production_location_dest_id_based_in_workcenter
+#: model:ir.model.fields,help:econovo_mrp_production_location_dest_id_based_in_workcenter.field_mrp_workcenter__location_dest_id
+msgid ""
+"Location where finished products from this work center should be stored. If "
+"not set, the default location from the operation type will be used."
+msgstr ""
+"Ubicación donde se almacenarán los productos terminados de este centro de trabajo. Si "
+"no se establece, se utilizará la ubicación predeterminada del tipo de operación."
+
+#. module: econovo_mrp_production_location_dest_id_based_in_workcenter
+#: model:ir.model.fields,help:econovo_mrp_production_location_dest_id_based_in_workcenter.field_mrp_workcenter__has_custom_destination
+msgid ""
+"Technical field indicating if this workcenter has a custom destination "
+"location"
+msgstr ""
+"Campo técnico que indica si este centro de trabajo tiene una ubicación de destino "
+"personalizada"
+
+#. module: econovo_mrp_production_location_dest_id_based_in_workcenter
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_production_location_dest_id_based_in_workcenter.view_mrp_production_search_inherit
+msgid "Using Workcenter Destination"
+msgstr "Usando destino del centro de trabajo"
+
+#. module: econovo_mrp_production_location_dest_id_based_in_workcenter
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_production_location_dest_id_based_in_workcenter.view_mrp_workcenter_search_inherit
+msgid "With Custom Destination"
+msgstr "Con destino personalizado"
+
+#. module: econovo_mrp_production_location_dest_id_based_in_workcenter
+#: model:ir.model.fields,field_description:econovo_mrp_production_location_dest_id_based_in_workcenter.field_mrp_production__workcenter_location_dest_id
+msgid "Workcenter Destination"
+msgstr "Destino del centro de trabajo"
