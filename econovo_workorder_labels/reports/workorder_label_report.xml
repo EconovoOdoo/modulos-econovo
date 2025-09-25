@@ -119,16 +119,21 @@
                                         <td class="label">Orden<br/>Fabricacion:</td>
                                         <td class="label-description">
                                             <t t-if="workorder.production_id._get_sources()">
-                                                <span class="parent-order">
-                                                    <t t-set="parent_mos" t-value="workorder.production_id._get_sources()"/>
-                                                    <t t-set="parent_count" t-value="len(parent_mos)"/>
-                                                    <t t-set="displayed" t-value="0"/>
-                                                    <t t-foreach="parent_mos" t-as="parent"><t t-if="displayed &lt; 3"><t t-if="displayed > 0">; </t><span t-field="parent.name"/><t t-set="displayed" t-value="displayed + 1"/></t></t>
-                                                    <t t-if="parent_count > 3"> (+<t t-esc="parent_count - 3"/>)</t>
-                                                </span>
+                                                <t t-set="parent_mos" t-value="workorder.production_id._get_sources()"/>
+                                                <t t-set="parent_count" t-value="len(parent_mos)"/>
+                                                <t t-set="displayed" t-value="0"/>
+                                                <t t-foreach="parent_mos" t-as="parent">
+                                                    <t t-if="displayed &lt; 2">
+                                                        <span class="parent-order" style="display: block;">·<span t-field="parent.name"/> - <span t-field="parent.product_id"/></span>
+                                                        <t t-set="displayed" t-value="displayed + 1"/>
+                                                    </t>
+                                                </t>
+                                                <t t-if="parent_count > 2">
+                                                    <span class="parent-order" style="display: block;">(+<t t-esc="parent_count - 2"/> más)</span>
+                                                </t>
                                             </t>
-                                            <span class="current-order">
-                                                <t t-if="workorder.production_id._get_sources()"><span class="order-arrow">↳</span></t>
+                                            <span class="current-order" style="display: block; margin-top: 2px;">
+                                                <t t-if="workorder.production_id._get_sources()"><span class="order-arrow">↳ </span></t>
                                                 <span t-field="workorder.production_id.name"/>
                                             </span>
                                         </td>
