@@ -58,9 +58,9 @@
                                     <span t-field="workorder.product_id.name"/>
                                 </div>
                                 
-                                <table class="process-flow">
-                                    <tr>
-                                        <td class="process-prev">
+                                <div class="process-flow">
+                                    <div class="process-row">
+                                        <div class="process-prev">
                                             <span class="process-title">
                                                 <span class="triangle-icon">◄</span> PROCESO ANTERIOR
                                             </span>
@@ -80,8 +80,8 @@
                                                     <t t-if="blocked_count > 1"> (+<t t-esc="blocked_count - 1"/>)</t>
                                                 </small>
                                             </t>
-                                        </td>
-                                        <td class="process-current">
+                                        </div>
+                                        <div class="process-current">
                                             <span class="process-title">
                                                 <span class="triangle-icon">▼</span> PROCESO ACTUAL
                                             </span>
@@ -89,8 +89,8 @@
                                             <t t-if="workorder.workcenter_id">
                                                 (<span t-field="workorder.workcenter_id.name"/>)
                                             </t>
-                                        </td>
-                                        <td class="process-next">
+                                        </div>
+                                        <div class="process-next">
                                             <span class="process-title">
                                                 PROCESO SIGUIENTE <span class="triangle-icon">►</span>
                                             </span>
@@ -110,14 +110,14 @@
                                                     <t t-if="needed_count > 1"> (+<t t-esc="needed_count - 1"/>)</t>
                                                 </small>
                                             </t>
-                                        </td>
-                                    </tr>
-                                </table>
+                                        </div>
+                                    </div>
+                                </div>
                                 
-                                <table class="info-table">
-                                    <tr>
-                                        <td class="label">Orden<br/>Fabricacion:</td>
-                                        <td class="label-description">
+                                <div class="info-table">
+                                    <div class="info-row">
+                                        <div class="label">Orden<br/>Fabricacion:</div>
+                                        <div class="label-description">
                                             <t t-if="workorder.production_id._get_sources()">
                                                 <span class="parent-order">
                                                     <t t-set="parent_mos" t-value="workorder.production_id._get_sources()"/>
@@ -131,28 +131,41 @@
                                                 <t t-if="workorder.production_id._get_sources()"><span class="order-arrow">↳</span></t>
                                                 <span t-field="workorder.production_id.name"/>
                                             </span>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="label">Serie/Lote:</td>
-                                        <td class="label-description">
-                                            <t t-foreach="workorder.finished_lot_id" t-as="lot">
-                                                <span t-field="lot.name"/>
+                                        </div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="label">Plan:</div>
+                                        <div class="label-description">
+                                            <t t-if="workorder.production_id.plan_id">
+                                                <span class="plan-value" t-field="workorder.production_id.plan_id.name"/>
                                             </t>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="label">Cantidad:</td>
-                                        <td class="label-description">
-                                            <span t-field="workorder.qty_produced"/> / 
-                                            <span t-field="workorder.qty_producing"/>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="label">Inicio-Fin:</td>
-                                        <td class="label-description"><span t-esc="(workorder.date_start.strftime('%d/%m/%Y %H:%M:%S') if workorder.date_start else 'N/A') + ' - ' + (workorder.date_finished and workorder.date_finished.strftime('%d/%m/%Y %H:%M:%S') or 'N/A')"/></td>
-                                    </tr>
-                                </table>
+                                            <t t-else="">
+                                                <span class="plan-value">N/A</span>
+                                            </t>
+                                        </div>
+                                    </div>
+                                    <div class="info-row quantity-row">
+                                        <div class="quantity-left-group">
+                                            <div class="quantity-label">Cantidad:</div>
+                                            <div class="quantity-value">
+                                                <span t-field="workorder.qty_produced"/> / 
+                                                <span t-field="workorder.qty_producing"/>
+                                            </div>
+                                        </div>
+                                        <t t-if="workorder.finished_lot_id">
+                                            <div class="lot-right-group">
+                                                <div class="lot-label">Serie/Lote:</div>
+                                                <div class="lot-value">
+                                                    <span t-field="workorder.finished_lot_id.name"/>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="label">Inicio-Fin:</div>
+                                        <div class="label-description"><span t-esc="(workorder.date_start.strftime('%d/%m/%Y %H:%M:%S') if workorder.date_start else 'N/A') + ' - ' + (workorder.date_finished and workorder.date_finished.strftime('%d/%m/%Y %H:%M:%S') or 'N/A')"/></div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </t>

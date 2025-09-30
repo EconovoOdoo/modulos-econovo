@@ -124,23 +124,32 @@
 
     .info-table {
         width: 100%;
-        border-collapse: collapse;
-        border-spacing: 0;
         margin-top: 0;
         margin-bottom: 0;
+        display: flex;
+        flex-direction: column;
+        border: 1px solid black;
+        border-collapse: separate;
     }
 
-    .info-table tr {
+    .info-row {
         margin: 0;
         padding: 0;
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid black;
     }
     
-    .info-table td {
+    .info-row:last-child {
+        border-bottom: none;
+    }
+    
+    .info-table .label,
+    .info-table .label-description {
         padding: 2px 3px;
         font-size: 9pt;
         line-height: 1;
         margin: 0;
-        vertical-align: middle;
         white-space: normal;
         height: auto;
     }
@@ -148,8 +157,11 @@
     .info-table .label {
         font-family: 'DejaVuSansMono', monospace;
         font-weight: normal;
+        min-width: 25mm;
         width: fit-content;
         white-space: normal;
+        flex-shrink: 0;
+        border-right: 1px solid black;
     }
 
     .info-table .label span {
@@ -159,7 +171,57 @@
     .info-table .label-description {
         font-family: 'JetBrainsMono', monospace;
         font-weight: bold;
-        width: 100%;
+        flex: 1;
+        padding: 2px;
+        padding-left: 5px;
+    }
+
+    /* Flexbox space-between layout for quantity row */
+    .quantity-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .quantity-left-group {
+        display: flex;
+        align-items: center;
+    }
+    
+    .lot-right-group {
+        display: flex;
+        align-items: center;
+    }
+    
+    .quantity-label, .lot-label {
+        font-family: 'DejaVuSansMono', monospace;
+        font-weight: normal;
+        font-size: 9pt;
+        line-height: 1;
+        margin: 0;
+        white-space: normal;
+        height: auto;
+        padding: 2px 3px;
+        border-right: 1px solid #000;
+    }
+    
+    .quantity-label {
+        min-width: 25mm;
+    }
+    
+    .lot-label {
+        border-left: 1px solid #000;
+        min-width: 15mm;
+    }
+    
+    .quantity-value, .lot-value {
+        font-family: 'JetBrainsMono', monospace;
+        font-weight: bold;
+        font-size: 9pt;
+        line-height: 1;
+        margin: 0;
+        white-space: normal;
+        height: auto;
         padding: 2px;
         padding-left: 5px;
     }
@@ -183,6 +245,16 @@
         font-weight: bold;
         display: block;
         margin: 0px;
+        max-height: fit-content;
+    }
+    
+    .plan-value {
+        font-family: 'JetBrainsMono', monospace;
+        font-size: 18px;
+        font-weight: bold;
+        display: block;
+        margin: 0px;
+        max-height: fit-content;
     }
     
     .order-arrow {
@@ -194,13 +266,24 @@
 
     .process-flow {
         width: 100%;
-        border-collapse: collapse;
         margin-bottom: 0px;
+        display: flex;
+        flex-direction: column;
+        border: 1px solid black;
     }
     
-    .process-flow td {
+    .process-row {
+        display: flex;
+        width: 100%;
+    }
+    
+    .process-prev,
+    .process-current,
+    .process-next {
         padding: 2px 4px;
-        vertical-align: top;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
     }
     
     .process-prev {
@@ -210,6 +293,7 @@
         font-size: 12px;
         text-align: left;
         color: black;
+        border-right: 1px solid black;
     }
     
     .process-current {
@@ -218,6 +302,7 @@
         width: 40%;
         font-size: 12px;
         text-align: center;
+        border-right: 1px solid black;
     }
 
     .process-current span,
