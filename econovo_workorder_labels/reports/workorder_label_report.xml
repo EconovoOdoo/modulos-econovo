@@ -119,22 +119,42 @@
                                         <div class="label">Orden<br/>Fabricacion:</div>
                                         <div class="label-description">
                                             <t t-if="workorder.production_id._get_sources()">
-                                                <t t-set="parent_mos" t-value="workorder.production_id._get_sources()"/>
-                                                <t t-set="parent_count" t-value="len(parent_mos)"/>
-                                                <t t-set="displayed" t-value="0"/>
-                                                <t t-foreach="parent_mos" t-as="parent">
-                                                    <t t-if="displayed &lt; 2">
-                                                        <span class="parent-order" style="display: block;">·<span t-field="parent.name"/> - <span t-field="parent.product_id"/></span>
-                                                        <t t-set="displayed" t-value="displayed + 1"/>
+                                                <span class="parent-order">
+                                                    <t t-set="parent_mos" t-value="workorder.production_id._get_sources()"/>
+                                                    <t t-set="parent_count" t-value="len(parent_mos)"/>
+                                                    <t t-set="displayed" t-value="0"/>
+                                                    <t t-foreach="parent_mos" t-as="parent">
+                                                        <t t-if="displayed &lt; 2">
+                                                            <t t-if="displayed > 0"><br/></t>
+                                                            <t t-set="order_name" t-value="parent.name"/>
+                                                            <t t-set="product_name" t-value="parent.product_id.display_name"/>
+                                                            <t t-set="full_text" t-value="'·' + order_name + ' ' + product_name"/>
+
+                                                            <!-- Desde aca se ajusta la cantidad de caracteres que se muestran en las operaciones padre de la Etiqueta -->
+                                                            <t t-if="len(full_text) > 58">
+                                                                <span t-esc="full_text[:57] + '…'"/>
+                                                            </t>
+                                                            <t t-else="">
+                                                                <span t-esc="full_text"/>
+                                                            </t>
+                                                            
+                                                            <t t-set="displayed" t-value="displayed + 1"/>
+                                                        </t>
                                                     </t>
-                                                </t>
-                                                <t t-if="parent_count > 2">
-                                                    <span class="parent-order" style="display: block;">(+<t t-esc="parent_count - 2"/> más)</span>
-                                                </t>
+                                                    <t t-if="parent_count > 2">
+                                                        <br/>(+<t t-esc="parent_count - 2"/> más)
+                                                    </t>
+                                                </span>
                                             </t>
-                                            <span class="current-order" style="display: block; margin-top: 2px;">
-                                                <t t-if="workorder.production_id._get_sources()"><span class="order-arrow">↳ </span></t>
-                                                <span t-field="workorder.production_id.name"/>
+                                            <span class="current-order">
+                                                <div class="current-order-text">
+                                                    <t t-if="workorder.production_id._get_sources()"><span class="order-arrow">↳</span></t>
+                                                    <span t-field="workorder.production_id.name"/>
+                                                </div>
+                                                <div class="current-order-barcode">
+                                                    <span t-esc="workorder.production_id.name" 
+                                                          t-options="{'widget': 'barcode', 'quiet': 0, 'symbology': 'Code128', 'img_style': 'width:100%;height:100%'}"/>
+                                                </div>
                                             </span>
                                         </div>
                                     </div>
