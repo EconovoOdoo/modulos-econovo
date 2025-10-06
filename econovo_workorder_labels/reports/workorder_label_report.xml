@@ -116,6 +116,23 @@
                                 
                                 <div class="info-table">
                                     <div class="info-row">
+                                        <div class="label">Plan:</div>
+                                        <div class="label-description">
+                                            <t t-if="workorder.production_id.plan_id">
+                                                <t t-set="plan_name" t-value="workorder.production_id.plan_id.name"/>
+                                                <t t-if="len(plan_name) > 34">
+                                                    <span class="plan-value" t-esc="plan_name[:34] + '…'"/>
+                                                </t>
+                                                <t t-else="">
+                                                    <span class="plan-value" t-esc="plan_name"/>
+                                                </t>
+                                            </t>
+                                            <t t-else="">
+                                                <span class="plan-value">N/A</span>
+                                            </t>
+                                        </div>
+                                    </div>
+                                    <div class="info-row">
                                         <div class="label">Orden<br/>Fabricacion:</div>
                                         <div class="label-description">
                                             <t t-if="workorder.production_id._get_sources()">
@@ -158,17 +175,6 @@
                                             </span>
                                         </div>
                                     </div>
-                                    <div class="info-row">
-                                        <div class="label">Plan:</div>
-                                        <div class="label-description">
-                                            <t t-if="workorder.production_id.plan_id">
-                                                <span class="plan-value" t-field="workorder.production_id.plan_id.name"/>
-                                            </t>
-                                            <t t-else="">
-                                                <span class="plan-value">N/A</span>
-                                            </t>
-                                        </div>
-                                    </div>
                                     <div class="info-row quantity-row">
                                         <div class="quantity-left-group">
                                             <div class="quantity-label">Cantidad:</div>
@@ -189,6 +195,29 @@
                                     <div class="info-row">
                                         <div class="label">Inicio-Fin:</div>
                                         <div class="label-description"><span t-esc="(workorder.date_start.strftime('%d/%m/%Y %H:%M:%S') if workorder.date_start else 'N/A') + ' - ' + (workorder.date_finished and workorder.date_finished.strftime('%d/%m/%Y %H:%M:%S') or 'N/A')"/></div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="label">Usuario:</div>
+                                        <div class="label-description">
+                                            <t t-if="workorder.last_working_user_id">
+                                                <t t-set="user_name" t-value="workorder.last_working_user_id.name"/>
+                                                <t t-if="len(user_name) > 15">
+                                                    <span t-esc="user_name[:15] + '…'"/>
+                                                </t>
+                                                <t t-else="">
+                                                    <span t-esc="user_name"/>
+                                                </t>
+                                            </t>
+                                            <t t-else="">
+                                                <t t-set="user_name" t-value="env.user.name"/>
+                                                <t t-if="len(user_name) > 15">
+                                                    <span t-esc="user_name[:15] + '…'"/>
+                                                </t>
+                                                <t t-else="">
+                                                    <span t-esc="user_name"/>
+                                                </t>
+                                            </t>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
