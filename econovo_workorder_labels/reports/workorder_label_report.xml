@@ -121,7 +121,7 @@
                                             <t t-if="workorder.production_id.plan_id">
                                                 <t t-set="plan_name" t-value="workorder.production_id.plan_id.name"/>
                                                 <t t-if="len(plan_name) > 34">
-                                                    <span class="plan-value" t-esc="plan_name[:34] + '…'"/>
+                                                    <span class="plan-value" t-esc="plan_name[:33] + '…'"/>
                                                 </t>
                                                 <t t-else="">
                                                     <span class="plan-value" t-esc="plan_name"/>
@@ -148,8 +148,8 @@
                                                             <t t-set="full_text" t-value="'·' + order_name + ' ' + product_name"/>
 
                                                             <!-- Desde aca se ajusta la cantidad de caracteres que se muestran en las operaciones padre de la Etiqueta -->
-                                                            <t t-if="len(full_text) > 58">
-                                                                <span t-esc="full_text[:57] + '…'"/>
+                                                            <t t-if="len(full_text) > 56">
+                                                                <span t-esc="full_text[:55] + '…'"/>
                                                             </t>
                                                             <t t-else="">
                                                                 <span t-esc="full_text"/>
@@ -201,8 +201,8 @@
                                         <div class="label-description">
                                             <t t-if="workorder.last_working_user_id">
                                                 <t t-set="user_name" t-value="workorder.last_working_user_id.name"/>
-                                                <t t-if="len(user_name) > 15">
-                                                    <span t-esc="user_name[:15] + '…'"/>
+                                                <t t-if="len(user_name) > 30">
+                                                    <span t-esc="user_name[:30] + '…'"/>
                                                 </t>
                                                 <t t-else="">
                                                     <span t-esc="user_name"/>
@@ -210,8 +210,8 @@
                                             </t>
                                             <t t-else="">
                                                 <t t-set="user_name" t-value="env.user.name"/>
-                                                <t t-if="len(user_name) > 15">
-                                                    <span t-esc="user_name[:15] + '…'"/>
+                                                <t t-if="len(user_name) > 31">
+                                                    <span t-esc="user_name[:30] + '…'"/>
                                                 </t>
                                                 <t t-else="">
                                                     <span t-esc="user_name"/>

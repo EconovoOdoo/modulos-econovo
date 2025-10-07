@@ -1,6 +1,6 @@
 {
     'name': 'Econovo Workorder Labels',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.1.0',
     'summary': 'Impresión de etiquetas de órdenes de trabajo de tamaño personalizado 100x70mm para productos Econovo',
     'category': 'Reporting',
     'author': 'Jose D. Leonett',

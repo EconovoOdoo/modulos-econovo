@@ -1,56 +1,104 @@
-# Econovo Workorder Labels
+# Etiquetas para Órdenes de Trabajo - Econovo
 
-## Descripción
+## ¿Qué hace este módulo?
 
-El módulo `econovo_workorder_labels` está diseñado para facilitar la impresión de etiquetas personalizadas para órdenes de trabajo en Odoo. Estas etiquetas tienen un formato de 100x70mm específicamente adaptado a los procesos de producción de Econovo, mostrando información esencial sobre cada orden de trabajo y haciendo más fácil la gestión y seguimiento de los procesos productivos.
+Este módulo te permite **imprimir etiquetas** para las órdenes de trabajo directamente desde Odoo. Las etiquetas son perfectas para el área de producción ya que muestran toda la información importante que los operarios necesitan conocer sobre cada tarea.
 
-## Características
+## ¿Para qué sirve?
 
-- Impresión de etiquetas para órdenes de trabajo con la siguiente información:
-  - Código de barras del producto (Code128)
-  - Código y nombre del producto
-  - Proceso anterior (workorder bloqueante)
-  - Proceso actual (workorder actual)
-  - Proceso siguiente (workorder dependiente)
-  - Orden de fabricación actual y órdenes padre (si existen)
-  - Serie/Lote del producto
-  - Cantidad producida y a producir
-  - Fechas de inicio y fin de la operación
-  - Logo de la empresa y fecha/hora de impresión
+🏭 **En el área de producción**: Los operarios pueden escanear códigos de barras y ver rápidamente qué están fabricando
+📋 **Seguimiento de procesos**: Cada etiqueta muestra qué proceso viene antes y después
+📊 **Control de calidad**: Información clara sobre cantidades y especificaciones
+👥 **Gestión de personal**: Saber quién trabajó en cada operación
 
-## Formato de Etiqueta
+## ¿Qué información contiene cada etiqueta?
 
-- Tamaño personalizado: 100x70mm
-- Diseño optimizado para claridad y visibilidad
-- Incluye código de barras del producto
-- Muestra el flujo de trabajo con indicadores visuales para procesos anteriores y siguientes
+Cada etiqueta impresa incluye:
+
+### 📦 **Información del Producto**
+- Nombre y código del producto que se está fabricando
+- Código de barras para escanear fácilmente
+
+### 🔄 **Flujo de Trabajo**
+- **Proceso anterior**: Qué operación debe completarse antes
+- **Proceso actual**: La operación que se está realizando ahora
+- **Proceso siguiente**: Qué operación viene después
+
+### 📋 **Detalles de Producción**
+- Plan de producción asignado
+- Orden de fabricación principal y órdenes relacionadas
+- Cantidades: cuánto se ha producido y cuánto falta
+- Número de serie o lote (si aplica)
+
+### 📅 **Información de Tiempo**
+- Cuándo empezó y terminó la operación
+- Fecha y hora de impresión de la etiqueta
+
+### 👤 **Responsable**
+- Quién fue la última persona que trabajó en esta operación
+- Si nadie ha trabajado aún, muestra quién imprimió la etiqueta
+
+### 🏢 **Identificación**
+- Logo de la empresa
+- Código de barras de la orden de fabricación para seguimiento
+
+## ¿Cómo usar el módulo?
+
+### Imprimir una etiqueta
+
+1. Ve a **Fabricación** → **Órdenes de Trabajo**
+2. Abre la orden de trabajo que necesitas
+3. Haz clic en el botón **"Imprimir Etiqueta de la Operación"**
+4. La etiqueta se genera automáticamente y está lista para imprimir
+
+### Tamaño de las etiquetas
+
+Las etiquetas están diseñadas para impresoras de etiquetas estándar:
+- **Tamaño**: 100mm x 70mm
+- **Formato**: Listo para impresoras de etiquetas adhesivas
+- **Calidad**: Diseño claro y fácil de leer
 
 ## Instalación
 
-Para instalar el módulo `econovo_workorder_labels`, sigue estos pasos:
+### ¿Quién puede instalar esto?
 
-1. Coloca la carpeta del módulo en tu directorio de addons de Odoo.
-2. Actualiza la lista de aplicaciones en Odoo.
-3. Busca "Econovo Workorder Labels" en el menú de aplicaciones.
-4. Haz clic en el botón de instalar.
+Este módulo debe ser instalado por el **administrador del sistema** o la **persona encargada de IT**. 
 
-## Uso
+### Pasos para la instalación
 
-Una vez instalado, el módulo añade un botón "Imprimir Etiqueta de la Operación" en la vista de formulario de órdenes de trabajo. Los usuarios pueden generar e imprimir etiquetas directamente desde la interfaz de Odoo haciendo clic en este botón.
+1. El administrador coloca el módulo en el servidor de Odoo
+2. Actualiza la lista de aplicaciones
+3. Busca "Etiquetas para Órdenes de Trabajo" y lo instala
+4. ¡Listo! El botón de impresión aparecerá automáticamente
 
-## Dependencias
+## Beneficios para tu empresa
 
-Este módulo depende de los siguientes módulos de Odoo:
-- `mrp` (Manufactura)
+✅ **Menos errores**: La información clara previene confusiones en producción
+✅ **Mayor eficiencia**: Los operarios no pierden tiempo buscando información
+✅ **Mejor trazabilidad**: Cada etiqueta incluye códigos de barras para seguimiento
+✅ **Control de calidad**: Información detallada sobre cantidades y especificaciones
+✅ **Comunicación clara**: El flujo de trabajo es visible para todos
 
-## Autor
+## Preguntas Frecuentes
 
-Jose D. Leonett
+### ¿Funciona con cualquier impresora?
+Sí, funciona con impresoras normales y con impresoras de etiquetas. El tamaño está optimizado para etiquetas adhesivas de 100x70mm.
 
-## Licencia
+### ¿Puedo personalizar la información?
+El módulo está diseñado específicamente para Econovo, pero un desarrollador puede modificar qué información se muestra.
 
-AGPL-3
+### ¿Se puede imprimir varias etiquetas a la vez?
+Sí, puedes seleccionar múltiples órdenes de trabajo e imprimir todas sus etiquetas de una vez.
 
-## Sitio Web
+### ¿Funciona sin internet?
+Sí, una vez instalado, funciona completamente dentro de tu sistema Odoo local.
 
-[http://josedleonett.github.com](http://josedleonett.github.com)
+## Soporte y Contacto
+
+**Desarrollado por**: Jose D. Leonett
+**Sitio web**: [https://github.com/josedleonett](https://github.com/josedleonett)
+**Licencia**: AGPL-3 (Software libre)
+
+---
+
+*Este módulo ha sido desarrollado específicamente para optimizar los procesos de producción de Econovo, mejorando la comunicación y eficiencia en el área de manufactura.*
