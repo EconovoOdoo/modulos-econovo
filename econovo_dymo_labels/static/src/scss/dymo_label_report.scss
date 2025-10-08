@@ -35,12 +35,22 @@
 
     .barcode-section {
         width: 100%;
-        height: 47%;
+        height: 25%;
         background-color: white;
         display: flex;
         justify-content: center;
         align-items: center;
         position: relative;
+    }
+
+    /* Ajustar barcode-wrapper cuando hay información de picking */
+    .barcode-wrapper {
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 
     .logo-container {
@@ -57,17 +67,12 @@
         padding: 1px;
     }
 
-    .barcode-wrapper {
-        padding: 0;
-        width: 100%;
-        height: 100%;
-    }
-
     .barcode-number {
         position: absolute;
         top: -1px;
         right: 0;
         text-align: right;
+        z-index: 10;
     }
 
     .barcode-number small {
@@ -84,7 +89,14 @@
         font-size: 24px;
         font-weight: bold;
         line-height: 1.1;
-    }    .code-locations {
+        padding: 0;
+    }
+    
+    .code-section span {
+        line-height: 1.1;
+    }
+    
+    .code-locations {
         font-size: 10px;
         text-align: right;
         display: inline-block;
@@ -102,13 +114,41 @@
         word-wrap: break-word;
         word-break: break-word;
         font-size: 24px;
-        line-height: 1.2;
+        line-height: 1;
         overflow: hidden;
-        display: -webkit-box;
-        line-clamp: 2;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        text-overflow: ellipsis;
+        height: auto;
+        max-height: 3em;
+        display: block;
+    }
+
+    .name-section span {
+        line-height: 1;
+        margin-bottom: 2px;
+    }
+
+    /* Estilos específicos para las secciones de picking */
+    .picking-barcode-section {
+        height: auto;
+        min-height: 45px;
+        margin-top: 0;
+        margin-bottom: 0;
+        
+        .barcode-wrapper {
+            height: 45px;
+        }
+        
+        /* No mostrar logo ni números en el barcode de picking */
+        .logo-container,
+        .barcode-number {
+            display: none;
+        }
+    }
+
+    .picking-code-section {
+        /* Hereda todos los estilos de .code-section automáticamente */
+        margin-top: 0;
+        margin-bottom: 0;
+        font-size: 16px;
     }
     
     /* Estilos para la impresión de múltiples etiquetas */
@@ -123,5 +163,36 @@
     .main-container {
         page-break-inside: avoid;
         break-inside: avoid;
+    }
+
+    /* Ajustes para impresión cuando hay información de picking */
+    @media print {
+        .picking-barcode-section .barcode-wrapper {
+            height: 45px;
+        }
+        
+        .picking-code-section {
+            font-size: 20px;
+        }
+    }
+
+    /* Estilos para template alternativo (report_simple_label_dymo) */
+    .product-name-label {
+        line-height: 100%;
+        background-color: transparent;
+        padding-top: 1px;
+    }
+
+    .error-message {
+        color: red;
+    }
+
+    .barcode-no-padding {
+        padding: 0;
+    }
+
+    .barcode-label {
+        height: 1.7em;
+        background-color: transparent;
     }
 }

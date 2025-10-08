@@ -26,7 +26,7 @@
                                                 </t>
                                             </t>
                                             <t t-else="">
-                                                <small class="code-locations" style="color: red;">(SIN REGLAS DE ALMACENAMIENTO DEFINIDAS)</small>
+                                                <small class="code-locations error-message">(SIN REGLAS DE ALMACENAMIENTO DEFINIDAS)</small>
                                             </t>
                                         </div>
                                     </t>
@@ -37,10 +37,32 @@
                                     <span t-field="o.default_code"/>
                                     <span>]</span>
                                 </div>
-
-                <div class="name-section">
-                                    <span t-field="o.name"/>
+                                <div class="name-section">
+                                    <t t-set="product_name" t-value="o.name"/>
+                                    <t t-if="len(product_name) > 84">
+                                        <span t-esc="product_name[:83] + '…'"/>
+                                    </t>
+                                    <t t-else="">
+                                        <span t-esc="product_name"/>
+                                    </t>
                                 </div>
+                                
+                                <!-- Source operation information (only when available from picking) -->
+                                <t t-if="source_picking_info">
+                                    <t t-foreach="source_picking_info" t-as="picking_name">
+                                        <div class="barcode-section picking-barcode-section">
+                                            <div class="barcode-wrapper">
+                                                <span t-esc="picking_name"
+                                                      t-options="{'widget': 'barcode', 'quiet': 0, 'symbology': 'auto', 'img_style': 'width:100%;height:100%'}"/>
+                                            </div>
+                                        </div>
+                                        <div class="code-section picking-code-section">
+                                            <span>[</span>
+                                            <span t-esc="picking_name"/>
+                                            <span>]</span>
+                                        </div>
+                                    </t>
+                                </t>
                             </div>
                         </div>
                     </div>
@@ -69,14 +91,14 @@
                 <div class="o_label_full" t-att-style="table_style">
                     <div class="text-start o_label_small_barcode">
                         <t t-if="product.barcode">
-                            <div t-out="product.barcode" style="padding:0"
+                            <div t-out="product.barcode" class="barcode-no-padding"
                                  t-options="{'widget': 'barcode', 'quiet': 0, 'symbology': 'auto', 'img_style': barcode_size}"/>
-                            <div class="o_label_name" style="height:1.7em;background-color: transparent;">
+                            <div class="o_label_name barcode-label">
                                 <span t-out="product.barcode"/>
                             </div>
                         </t>
                     </div>
-                    <div class="o_label_name" style="line-height: 100%;background-color: transparent;padding-top: 1px;">
+                    <div class="o_label_name product-name-label">
                         <span t-field="product.name"/>
                     </div>
                     <div class="o_label_left_column">
