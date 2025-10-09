@@ -59,18 +59,8 @@
                                 <t t-set="putaway_rules" t-value="env['stock.putaway.rule'].search([('product_id', '=', o.id)])"/>
                                 <t t-if="putaway_rules">
                                     <t t-foreach="putaway_rules" t-as="rule">
-                                        <div class="location-container">
-                                            <!-- Columna izquierda: DataMatrix (solo si existe barcode) -->
-                                            <div class="location-barcode-col">
-                                                <t t-if="rule.location_out_id.barcode">
-                                                    <span t-esc="rule.location_out_id.barcode"
-                                                          t-options="{'widget': 'barcode', 'quiet': 0, 'symbology': 'QR', 'img_style': 'width:85px;height:85px'}"/>
-                                                </t>
-                                            </div>
-                                            <!-- Columna derecha: Nombre de ubicación -->
-                                            <div class="location-text-col">
-                                                <span t-esc="rule.location_out_id.display_name"/>
-                                            </div>
+                                        <div class="location-text-section">
+                                            <span t-esc="rule.location_out_id.display_name"/>
                                         </div>
                                     </t>
                                 </t>

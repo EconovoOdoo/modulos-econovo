@@ -151,44 +151,26 @@
         font-size: 16px;
     }
     
-    /* Estilos específicos para las secciones de ubicaciones - Layout tipo tabla */
-    .location-container {
-        display: flex;
-        align-items: center;
+    /* Estilos para sección de ubicaciones - Solo texto */
+    .location-text-section {
         margin-top: 2px;  /* Quiet zone - zona silenciosa blanca */
         margin-bottom: 0;
-        gap: 8px;
         padding: 0;
-    }
-
-    .location-barcode-col {
-        width: 85px;  /* Ancho fijo para QR de 85x85px */
-        height: 85px;
-        flex-shrink: 0;
-        display: flex;
-        justify-content: flex-start;
-        align-items: center;
-    }
-
-    .location-text-col {
-        flex: 1;  /* Ocupa todo el ancho restante */
-        padding-left: 8px;
-        font-size: 14px;
+        text-align: center;
+        font-size: 16px;
         font-weight: bold;
         color: black;
         background-color: white;
-        display: flex;
-        align-items: center;
     }
 
     /* Mensaje de error para ubicaciones sin reglas */
     .location-error-message {
-        margin-top: 4mm;
+        margin-top: 2px;
         margin-bottom: 0;
         font-size: 14px;
         color: white;
         text-align: center;
-        padding: 2px 0;
+        padding: 0;
     }
     
     /* Estilos para la impresión de múltiples etiquetas */

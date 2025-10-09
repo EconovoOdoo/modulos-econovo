@@ -1,6 +1,6 @@
 {
     'name': 'Econovo DYMO Labels',
-    'version': '17.0.2.0.0',
+    'version': '17.0.3.0.0',
     'summary': 'Formato de etiquetas DYMO de tamaño personalizado 100x70mm para productos',
     'category': 'Reporting',
     'author': 'Jose D. Leonett',
