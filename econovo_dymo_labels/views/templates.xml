@@ -19,15 +19,6 @@
 
                                         <div class="barcode-number">
                                             <small t-esc="o.barcode"/>
-                                            <t t-set="putaway_rules" t-value="env['stock.putaway.rule'].search([('product_id', '=', o.id)])"/>
-                                            <t t-if="putaway_rules">
-                                                <t t-foreach="putaway_rules" t-as="rule">
-                                                    <small class="code-locations" t-esc="rule.location_out_id.display_name"/>
-                                                </t>
-                                            </t>
-                                            <t t-else="">
-                                                <small class="code-locations error-message">(SIN REGLAS DE ALMACENAMIENTO DEFINIDAS)</small>
-                                            </t>
                                         </div>
                                     </t>
                                 </div>
@@ -62,6 +53,31 @@
                                             <span>]</span>
                                         </div>
                                     </t>
+                                </t>
+                                
+                                <!-- Storage location information -->
+                                <t t-set="putaway_rules" t-value="env['stock.putaway.rule'].search([('product_id', '=', o.id)])"/>
+                                <t t-if="putaway_rules">
+                                    <t t-foreach="putaway_rules" t-as="rule">
+                                        <div class="location-container">
+                                            <!-- Columna izquierda: DataMatrix (solo si existe barcode) -->
+                                            <div class="location-barcode-col">
+                                                <t t-if="rule.location_out_id.barcode">
+                                                    <span t-esc="rule.location_out_id.barcode"
+                                                          t-options="{'widget': 'barcode', 'quiet': 0, 'symbology': 'QR', 'img_style': 'width:85px;height:85px'}"/>
+                                                </t>
+                                            </div>
+                                            <!-- Columna derecha: Nombre de ubicación -->
+                                            <div class="location-text-col">
+                                                <span t-esc="rule.location_out_id.display_name"/>
+                                            </div>
+                                        </div>
+                                    </t>
+                                </t>
+                                <t t-else="">
+                                    <div class="location-error-message">
+                                        <span>(SIN REGLAS DE ALMACENAMIENTO DEFINIDAS)</span>
+                                    </div>
                                 </t>
                             </div>
                         </div>
