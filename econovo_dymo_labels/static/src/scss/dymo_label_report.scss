@@ -129,12 +129,12 @@
     /* Estilos específicos para las secciones de picking */
     .picking-barcode-section {
         height: auto;
-        min-height: 45px;
-        margin-top: 10px;
+        min-height: 40px;
+        margin-top: 20px;
         margin-bottom: 0;
         
         .barcode-wrapper {
-            height: 45px;
+            height: 40px;
         }
         
         /* No mostrar logo ni números en el barcode de picking */

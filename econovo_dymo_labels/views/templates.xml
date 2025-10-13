@@ -55,19 +55,29 @@
                                     </t>
                                 </t>
                                 
-                                <!-- Storage location information -->
-                                <t t-set="putaway_rules" t-value="env['stock.putaway.rule'].search([('product_id', '=', o.id)])"/>
-                                <t t-if="putaway_rules">
-                                    <t t-foreach="putaway_rules" t-as="rule">
-                                        <div class="location-text-section">
-                                            <span t-esc="rule.location_out_id.display_name"/>
-                                        </div>
-                                    </t>
+                                <!-- Storage location information (intelligent context-aware) -->
+                                <t t-set="picking_location" t-value="picking_location_map.get(o.id)"/>
+                                <t t-if="picking_location">
+                                    <!-- Ubicación real desde picking context (más preciso) -->
+                                    <div class="location-text-section">
+                                        <span t-esc="picking_location"/>
+                                    </div>
                                 </t>
                                 <t t-else="">
-                                    <div class="location-error-message">
-                                        <span>(SIN REGLAS DE ALMACENAMIENTO DEFINIDAS)</span>
-                                    </div>
+                                    <!-- Fallback a reglas de putaway tradicionales -->
+                                    <t t-set="putaway_rules" t-value="env['stock.putaway.rule'].search([('product_id', '=', o.id)])"/>
+                                    <t t-if="putaway_rules">
+                                        <t t-foreach="putaway_rules" t-as="rule">
+                                            <div class="location-text-section">
+                                                <span t-esc="rule.location_out_id.display_name"/>
+                                            </div>
+                                        </t>
+                                    </t>
+                                    <t t-else="">
+                                        <div class="location-error-message">
+                                            <span>(SIN REGLAS DE ALMACENAMIENTO DEFINIDAS)</span>
+                                        </div>
+                                    </t>
                                 </t>
                             </div>
                         </div>
