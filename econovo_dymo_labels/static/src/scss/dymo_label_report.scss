@@ -130,7 +130,7 @@
     .picking-barcode-section {
         height: auto;
         min-height: 45px;
-        margin-top: 2px;
+        margin-top: 10px;
         margin-bottom: 0;
         
         .barcode-wrapper {
@@ -165,12 +165,14 @@
 
     /* Mensaje de error para ubicaciones sin reglas */
     .location-error-message {
-        margin-top: 2px;
+        margin-top: 4mm;  /* Quiet zone - igual que location-text-section */
         margin-bottom: 0;
         font-size: 14px;
-        color: white;
+        color: red;  /* Color rojo para que sea visible */
         text-align: center;
-        padding: 0;
+        padding: 2px 0;
+        font-weight: bold;
+        background-color: white;
     }
     
     /* Estilos para la impresión de múltiples etiquetas */
