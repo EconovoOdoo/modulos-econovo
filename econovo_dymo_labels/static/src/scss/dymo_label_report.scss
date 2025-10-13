@@ -43,7 +43,6 @@
         position: relative;
     }
 
-    /* Ajustar barcode-wrapper cuando hay información de picking */
     .barcode-wrapper {
         padding: 0;
         width: 100%;
@@ -126,7 +125,7 @@
         margin-bottom: 2px;
     }
 
-    /* Estilos específicos para las secciones de picking */
+    /* Specific styles for picking sections */
     .picking-barcode-section {
         height: auto;
         min-height: 40px;
@@ -137,7 +136,6 @@
             height: 40px;
         }
         
-        /* No mostrar logo ni números en el barcode de picking */
         .logo-container,
         .barcode-number {
             display: none;
@@ -145,15 +143,15 @@
     }
 
     .picking-code-section {
-        /* Hereda todos los estilos de .code-section automáticamente */
+        /* Inherits all styles from .code-section automatically */
         margin-top: 0;
         margin-bottom: 0;
         font-size: 16px;
     }
     
-    /* Estilos para sección de ubicaciones - Solo texto */
     .location-text-section {
-        margin-top: 2px;  /* Quiet zone - zona silenciosa blanca */
+        /* Quiet zone - white silent zone */
+        margin-top: 2px;
         margin-bottom: 0;
         padding: 0;
         text-align: center;
@@ -163,19 +161,18 @@
         background-color: white;
     }
 
-    /* Mensaje de error para ubicaciones sin reglas */
     .location-error-message {
-        margin-top: 4mm;  /* Quiet zone - igual que location-text-section */
+        /* Quiet zone - same as location-text-section */
+        margin-top: 4mm;
         margin-bottom: 0;
         font-size: 14px;
-        color: red;  /* Color rojo para que sea visible */
+        color: red;
         text-align: center;
         padding: 2px 0;
         font-weight: bold;
         background-color: white;
     }
     
-    /* Estilos para la impresión de múltiples etiquetas */
     .page-break {
         page-break-after: always;
         break-after: page;
@@ -183,16 +180,15 @@
         clear: both;
     }
     
-    /* Asegurarse de que cada etiqueta sea completamente visible */
     .main-container {
         page-break-inside: avoid;
         break-inside: avoid;
     }
 
-    /* Ajustes para impresión cuando hay información de picking */
+    /* Print adjustments when picking information is available */
     @media print {
         .picking-barcode-section .barcode-wrapper {
-            height: 45px;
+            height: 40px;
         }
         
         .picking-code-section {
@@ -200,7 +196,7 @@
         }
     }
 
-    /* Estilos para template alternativo (report_simple_label_dymo) */
+
     .product-name-label {
         line-height: 100%;
         background-color: transparent;

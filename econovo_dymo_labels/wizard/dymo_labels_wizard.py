@@ -23,7 +23,6 @@ class ProductLabelLayout(models.TransientModel):
                 'print_format': self.print_format,
             })
             
-            # Capturar información de picking cuando esté disponible
             move_ids = self.env.context.get('default_move_ids', [])
             source_picking_names = []
             
@@ -32,7 +31,6 @@ class ProductLabelLayout(models.TransientModel):
                 picking_names = moves.mapped('picking_id.name')
                 source_picking_names.extend([name for name in picking_names if name])
             
-            # También intentar obtener desde otros contextos posibles
             if not source_picking_names:
                 picking_ids = self.env.context.get('default_picking_ids', [])
                 if picking_ids:
@@ -40,7 +38,6 @@ class ProductLabelLayout(models.TransientModel):
                     picking_names = pickings.mapped('name')
                     source_picking_names.extend([name for name in picking_names if name])
             
-            # Intentar desde active_id si es un stock.picking
             if not source_picking_names:
                 active_model = self.env.context.get('active_model')
                 active_id = self.env.context.get('active_id')
@@ -50,17 +47,13 @@ class ProductLabelLayout(models.TransientModel):
                     if picking.exists():
                         source_picking_names.append(picking.name)
             
-            # Intentar desde los moves asociados a los productos si estamos en contexto de picking
             if not source_picking_names and hasattr(self, 'move_ids') and self.move_ids:
                 picking_names = self.move_ids.mapped('picking_id.name')
                 source_picking_names.extend([name for name in picking_names if name])
             
-            # Filtrar nombres únicos y válidos
             unique_picking_names = list(set(source_picking_names))
             if unique_picking_names:
                 data['source_picking_info'] = unique_picking_names
-            
-            # Asegurarse de que tenemos los productos correctos
             if self.product_ids:
                 products = self.product_ids
             elif self.product_tmpl_ids:

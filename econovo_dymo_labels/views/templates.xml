@@ -58,13 +58,13 @@
                                 <!-- Storage location information (intelligent context-aware) -->
                                 <t t-set="picking_location" t-value="picking_location_map.get(o.id)"/>
                                 <t t-if="picking_location">
-                                    <!-- Ubicación real desde picking context (más preciso) -->
+                                    <!-- Real location from picking context (more precise) -->
                                     <div class="location-text-section">
                                         <span t-esc="picking_location"/>
                                     </div>
                                 </t>
                                 <t t-else="">
-                                    <!-- Fallback a reglas de putaway tradicionales -->
+                                    <!-- Fallback to traditional putaway rules -->
                                     <t t-set="putaway_rules" t-value="env['stock.putaway.rule'].search([('product_id', '=', o.id)])"/>
                                     <t t-if="putaway_rules">
                                         <t t-foreach="putaway_rules" t-as="rule">
