@@ -64,8 +64,8 @@
                                     </div>
                                 </t>
                                 <t t-else="">
-                                    <!-- Fallback to traditional putaway rules -->
-                                    <t t-set="putaway_rules" t-value="env['stock.putaway.rule'].search([('product_id', '=', o.id)])"/>
+                                    <!-- Fallback to traditional putaway rules filtered by user warehouse -->
+                                    <t t-set="putaway_rules" t-value="env['report.econovo_dymo_labels.report_producttemplatelabel_dymo']._get_putaway_rules_by_user_warehouse(o.id)"/>
                                     <t t-if="putaway_rules">
                                         <t t-foreach="putaway_rules" t-as="rule">
                                             <div class="location-text-section">

@@ -55,6 +55,30 @@ class ReportEconovoDymoLabels(models.AbstractModel):
         return None
 
     @api.model
+    def _get_putaway_rules_by_user_warehouse(self, product_id):
+        """
+        Get putaway rules for a product filtered by user's default warehouse
+        Returns putaway rules only from the warehouse associated with the current user
+        """
+        user_warehouse = self.env.user._get_default_warehouse_id()
+        if not user_warehouse:
+            # No default warehouse found, return all putaway rules for the product
+            return self.env['stock.putaway.rule'].search([('product_id', '=', product_id)])
+        
+        # Filter putaway rules by user's default warehouse
+        # Putaway rules are connected to locations, and locations belong to warehouses
+        warehouse_locations = self.env['stock.location'].search([
+            ('usage', '=', 'internal'),
+            '|', ('warehouse_id', '=', user_warehouse.id),
+                 ('warehouse_id', '=', False)  # Include locations without specific warehouse
+        ])
+        
+        return self.env['stock.putaway.rule'].search([
+            ('product_id', '=', product_id),
+            ('location_out_id', 'in', warehouse_locations.ids)
+        ])
+
+    @api.model
     def _get_report_values(self, docids, data=None):
         """
         Prepare report values for DYMO labels including source picking information when available
