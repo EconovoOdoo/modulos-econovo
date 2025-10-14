@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Custom paper format definition for 100x50 -->
+    <record id="paperformat_dymo_100x50" model="report.paperformat">
+        <field name="name">DYMO 100x50mm</field>
+        <field name="format">custom</field>
+        <field name="page_height">100</field>
+        <field name="page_width">50</field>  <!-- In mm -->
+        <field name="margin_top">1</field>
+        <field name="margin_bottom">1</field>
+        <field name="margin_left">1</field>
+        <field name="margin_right">1</field>
+        <field name="dpi">96</field>
+    </record>
+    
+    <!-- Report action using the QWeb template defined -->
+    <record id="action_report_dymo_labels_100x50" model="ir.actions.report">
+        <field name="name">DYMO Labels 100x50</field>
+        <field name="model">product.product</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">econovo_dymo_labels.dymo_100x50</field>
+        <field name="report_file">econovo_dymo_labels.dymo_100x50</field>
+        <field name="binding_model_id" ref="product.model_product_product"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="econovo_dymo_labels.paperformat_dymo_100x50"/>
+        <field name="print_report_name">'Labels 100x50 - %s' % (object.name)</field>
+    </record>
+</odoo>

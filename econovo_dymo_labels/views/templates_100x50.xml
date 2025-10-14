@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="dymo_100x50">
+        <t t-call="web.basic_layout">
+            <div class="o_dymo_label_report_100x50">
+                <t t-foreach="docs" t-as="o">
+                    <div class="main-container">
+                        <div class="product-container">
+                            <div class="content-container">
+                                <div class="barcode-section">
+                                    <div class="logo-container">
+                                        <img t-att-src="'/web/image/res.company/%s/logo' % env.company.id" class="logo-img"/>
+                                    </div>
+                                    <t t-if="o.barcode">
+                                        <div class="barcode-wrapper">
+                                            <span t-field="o.barcode"
+                                                  t-options="{'widget': 'barcode', 'quiet': 0, 'symbology': 'auto', 'img_style': 'width:100%;height:100%'}"/>
+                                        </div>
+
+                                        <div class="barcode-number">
+                                            <small t-esc="o.barcode"/>
+                                        </div>
+                                    </t>
+                                </div>
+
+                                <div class="code-section">
+                                    <span>[</span>
+                                    <span t-field="o.default_code"/>
+                                    <span>]</span>
+                                </div>
+                                <div class="name-section">
+                                    <t t-set="product_name" t-value="o.name"/>
+                                    <t t-if="len(product_name) > 100">
+                                        <span t-esc="product_name[:99] + '…'"/>
+                                    </t>
+                                    <t t-else="">
+                                        <span t-esc="product_name"/>
+                                    </t>
+                                </div>
+                                
+                                <!-- Source operation information (only when available from picking) -->
+                                <t t-if="source_picking_info">
+                                    <t t-foreach="source_picking_info" t-as="picking_name">
+                                        <div class="barcode-section picking-barcode-section">
+                                            <div class="barcode-wrapper">
+                                                <span t-esc="picking_name"
+                                                      t-options="{'widget': 'barcode', 'quiet': 0, 'symbology': 'auto', 'img_style': 'width:100%;height:100%'}"/>
+                                            </div>
+                                        </div>
+                                        <div class="code-section picking-code-section">
+                                            <span>[</span>
+                                            <span t-esc="picking_name"/>
+                                            <span>]</span>
+                                        </div>
+                                    </t>
+                                </t>
+                                
+                                <!-- Storage location information (intelligent context-aware) -->
+                                <t t-set="picking_location" t-value="picking_location_map.get(o.id)"/>
+                                <t t-if="picking_location">
+                                    <!-- Real location from picking context (more precise) -->
+                                    <div class="location-text-section">
+                                        <span t-esc="picking_location"/>
+                                    </div>
+                                </t>
+                                <t t-else="">
+                                    <!-- Fallback to traditional putaway rules -->
+                                    <t t-set="putaway_rules" t-value="env['stock.putaway.rule'].search([('product_id', '=', o.id)])"/>
+                                    <t t-if="putaway_rules">
+                                        <t t-foreach="putaway_rules" t-as="rule">
+                                            <div class="location-text-section">
+                                                <span t-esc="rule.location_out_id.display_name"/>
+                                            </div>
+                                        </t>
+                                    </t>
+                                    <t t-else="">
+                                        <div class="location-error-message">
+                                            <span>(NO STORAGE RULES DEFINED)</span>
+                                        </div>
+                                    </t>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </t>
+    </template>
+</odoo>

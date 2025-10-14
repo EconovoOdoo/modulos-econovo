@@ -6,15 +6,25 @@ class ProductLabelLayout(models.TransientModel):
     _inherit = 'product.label.layout'
 
     print_format = fields.Selection(
-        selection_add=[('dymo_100x70', 'DYMO Etiqueta 100x70')],
-        ondelete={'dymo_100x70': 'set default'},
+        selection_add=[
+            ('dymo_100x70', 'DYMO Etiqueta 100x70'),
+            ('dymo_100x50', 'DYMO Etiqueta 100x50')
+        ],
+        ondelete={
+            'dymo_100x70': 'set default',
+            'dymo_100x50': 'set default'
+        },
     )
 
     def _prepare_report_data(self):
         xml_id, data = super()._prepare_report_data()
         
-        if self.print_format == 'dymo_100x70':
-            xml_id = 'econovo_dymo_labels.action_report_dymo_labels'
+        if self.print_format in ['dymo_100x70', 'dymo_100x50']:
+            if self.print_format == 'dymo_100x70':
+                xml_id = 'econovo_dymo_labels.action_report_dymo_labels'
+            elif self.print_format == 'dymo_100x50':
+                xml_id = 'econovo_dymo_labels.action_report_dymo_labels_100x50'
+                
             if not data:
                 data = {}
             data.update({
@@ -54,6 +64,7 @@ class ProductLabelLayout(models.TransientModel):
             unique_picking_names = list(set(source_picking_names))
             if unique_picking_names:
                 data['source_picking_info'] = unique_picking_names
+            
             if self.product_ids:
                 products = self.product_ids
             elif self.product_tmpl_ids:

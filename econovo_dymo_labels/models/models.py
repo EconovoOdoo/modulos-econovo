@@ -4,7 +4,7 @@ from odoo import models, fields, api
 
 class ReportEconovoDymoLabels(models.AbstractModel):
     _name = 'report.econovo_dymo_labels.report_producttemplatelabel_dymo'
-    _description = 'Econovo DYMO Labels Report'
+    _description = 'Econovo DYMO Labels Report 100x70'
 
     def _get_real_destination_location(self, product, context_data):
         """
@@ -59,6 +59,10 @@ class ReportEconovoDymoLabels(models.AbstractModel):
         """
         Prepare report values for DYMO labels including source picking information when available
         """
+        # Use active_ids from data if docids is empty
+        if not docids and data and data.get('active_ids'):
+            docids = data['active_ids']
+            
         docs = self.env['product.product'].browse(docids)
         
         picking_location_map = {}
@@ -111,3 +115,20 @@ class ReportEconovoDymoLabels(models.AbstractModel):
             report_data['source_picking_info'] = unique_picking_names
         
         return report_data
+
+
+class ReportEconovoDymoLabels100x50(models.AbstractModel):
+    _name = 'report.econovo_dymo_labels.dymo_100x50'
+    _description = 'Econovo DYMO Labels Report 100x50'
+    _inherit = 'report.econovo_dymo_labels.report_producttemplatelabel_dymo'
+
+    @api.model
+    def _get_report_values(self, docids, data=None):
+        """
+        Inherit from 100x70 report with same logic
+        """
+        # Use active_ids from data if docids is empty
+        if not docids and data and data.get('active_ids'):
+            docids = data['active_ids']
+        
+        return super()._get_report_values(docids, data)
