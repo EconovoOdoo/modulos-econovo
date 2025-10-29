@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_product_template_mo_draft,access_product_template_mo_draft,product.model_product_template,base.group_user,1,1,1,0
+access_res_users_mo_draft,access_res_users_mo_draft,base.model_res_users,base.group_user,1,1,0,0
+access_res_config_settings_mo_draft,access_res_config_settings_mo_draft,base.model_res_config_settings,base.group_system,1,1,1,0

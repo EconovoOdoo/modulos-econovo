@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        
+        <!-- Default Global Configuration -->
+        <!-- Policy: Custom (MTO=Draft, others=Native) -->
+        <record id="default_global_policy" model="ir.config_parameter">
+            <field name="key">econovo_draft_mto_mo.global_policy</field>
+            <field name="value">custom</field>
+        </record>
+        
+        <record id="default_draft_mto" model="ir.config_parameter">
+            <field name="key">econovo_draft_mto_mo.draft_for_mto</field>
+            <field name="value">True</field>
+        </record>
+        
+        <record id="default_draft_mts" model="ir.config_parameter">
+            <field name="key">econovo_draft_mto_mo.draft_for_mts</field>
+            <field name="value">False</field>
+        </record>
+        
+        <record id="default_draft_mps" model="ir.config_parameter">
+            <field name="key">econovo_draft_mto_mo.draft_for_mps</field>
+            <field name="value">False</field>
+        </record>
+        
+        <record id="default_draft_orderpoint" model="ir.config_parameter">
+            <field name="key">econovo_draft_mto_mo.draft_for_orderpoint</field>
+            <field name="value">False</field>
+        </record>
+        
+    </data>
+</odoo>

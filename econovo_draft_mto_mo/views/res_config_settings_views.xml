@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- Add MO Draft Control settings to MRP Settings -->
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.econovo.draft.mto.mo</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="mrp.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//app[@name='mrp']//block[@name='process_operations_setting_container']" position="after">
+                <block title="Manufacturing Order Draft Control" name="mo_draft_control_setting_container">
+                    
+                    <!-- Global Policy Selection -->
+                    <setting string="MO Draft Policy" help="Control when Manufacturing Orders should stay in draft state vs. auto-confirm">
+                        <div class="content-group">
+                            <div class="row mt16">
+                                <label for="mo_draft_global_policy" string="Global Policy" class="col-lg-3 o_light_label"/>
+                                <field name="mo_draft_global_policy" widget="radio" class="col-lg-9"/>
+                            </div>
+                        </div>
+                    </setting>
+                    
+                    <!-- Custom Configuration by Source Type -->
+                    <setting string="Draft by Source Type" 
+                             help="Configure which source types should keep MOs in draft"
+                             invisible="mo_draft_global_policy != 'custom'">
+                        <div class="content-group">
+                            <div class="row mt8">
+                                <label for="mo_draft_mto" class="col-lg-4 o_light_label" string="MTO (Sales Orders)"/>
+                                <field name="mo_draft_mto" class="col-lg-8"/>
+                            </div>
+                            <div class="row mt8">
+                                <label for="mo_draft_mts" class="col-lg-4 o_light_label" string="MTS (Replenishment)"/>
+                                <field name="mo_draft_mts" class="col-lg-8"/>
+                            </div>
+                            <div class="row mt8">
+                                <label for="mo_draft_mps" class="col-lg-4 o_light_label" string="MPS (Master Schedule)"/>
+                                <field name="mo_draft_mps" class="col-lg-8"/>
+                            </div>
+                            <div class="row mt8">
+                                <label for="mo_draft_orderpoint" class="col-lg-4 o_light_label" string="Orderpoint (Reorder Rules)"/>
+                                <field name="mo_draft_orderpoint" class="col-lg-8"/>
+                            </div>
+                        </div>
+                    </setting>
+                    
+                    <!-- Help Section -->
+                    <setting>
+                        <div class="alert alert-info" role="alert">
+                            <h6><i class="fa fa-info-circle"/> Configuration Hierarchy</h6>
+                            <p class="mb-2">Settings can be overridden at three levels:</p>
+                            <ol class="mb-2">
+                                <li><strong>Global:</strong> System-wide default behavior (configured here)</li>
+                                <li><strong>Product:</strong> Product-specific override (Manufacturing tab in product form)</li>
+                                <li><strong>User:</strong> User-specific override (Preferences tab in user form)</li>
+                            </ol>
+                            <p class="mb-0"><em>Each level can override the previous one, giving you maximum flexibility.</em></p>
+                        </div>
+                    </setting>
+                    
+                </block>
+            </xpath>
+        </field>
+    </record>
+    
+</odoo>
