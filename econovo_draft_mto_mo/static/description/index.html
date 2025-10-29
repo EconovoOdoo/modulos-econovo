@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #3498db;
+            margin-top: 30px;
+        }
+        .feature-box {
+            background: #ecf0f1;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        ul li:before {
+            content: "✓ ";
+            color: #27ae60;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+        }
+        .config-example {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>📦 Econovo - Draft MTO/MO Control</h1>
+    
+    <div class="feature-box">
+        <strong>Granular control over Manufacturing Order draft behavior</strong><br>
+        Configure when MOs should stay in draft vs. auto-confirm, based on source type (MTO/MTS/MPS/Orderpoint)
+    </div>
+
+    <h2>🎯 Key Features</h2>
+    <ul>
+        <li>Multi-level configuration hierarchy (Global → Product → User)</li>
+        <li>Support for 4 source types: MTO, MTS, MPS, Orderpoint</li>
+        <li>Maintains all Odoo native behavior (consolidation, validation, traceability)</li>
+        <li>Intuitive UI with radio buttons and visibility rules</li>
+        <li>Zero performance impact - uses cached parameters</li>
+    </ul>
+
+    <h2>📋 Configuration Levels</h2>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Level</th>
+                <th>Location</th>
+                <th>Purpose</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Global</strong></td>
+                <td>Settings → General Settings</td>
+                <td>System-wide default behavior</td>
+            </tr>
+            <tr>
+                <td><strong>Product</strong></td>
+                <td>Product → Manufacturing tab</td>
+                <td>Product-specific exceptions</td>
+            </tr>
+            <tr>
+                <td><strong>User</strong></td>
+                <td>User → Preferences tab</td>
+                <td>User-specific preferences</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>🔧 Example Configuration</h2>
+    
+    <div class="config-example">
+GLOBAL: Custom by Source Type<br>
+  ✓ MTO: Keep Draft (Sales orders need review)<br>
+  ✗ MTS: Auto-confirm (Replenishment is automated)<br>
+  ✗ MPS: Auto-confirm (Planned production)<br>
+  ✗ Orderpoint: Auto-confirm (Min/Max rules)<br>
+<br>
+PRODUCT [Critical Component]:<br>
+  Policy: Always Keep Draft (Requires approval)<br>
+<br>
+USER [Junior Planner]:<br>
+  Policy: Always Keep Draft (Needs supervisor review)
+    </div>
+
+    <h2>✅ Use Cases</h2>
+    
+    <div class="feature-box">
+        <strong>Conservative Company:</strong><br>
+        Review all sales-driven production, auto-confirm replenishment
+    </div>
+    
+    <div class="feature-box">
+        <strong>Critical Product Exception:</strong><br>
+        One regulated product always needs review, others auto-confirm
+    </div>
+    
+    <div class="feature-box">
+        <strong>Junior User Restriction:</strong><br>
+        Junior planners must have supervisor approval, seniors can auto-confirm
+    </div>
+
+    <h2>🚀 Installation</h2>
+    <ol>
+        <li>Copy module to addons directory</li>
+        <li>Update Apps List</li>
+        <li>Install "Econovo - Draft MTO/MO Control"</li>
+        <li>Go to Settings → Configure global policy</li>
+        <li>Optionally configure product/user overrides</li>
+    </ol>
+
+    <h2>📚 Technical Highlights</h2>
+    <ul>
+        <li>100% reliable source type detection using Odoo native fields</li>
+        <li>Preserves MO consolidation for non-MTO flows</li>
+        <li>Maintains quantity validation and traceability</li>
+        <li>Minimal performance overhead (3 lookups per MO)</li>
+        <li>Fully compatible with standard Odoo workflows</li>
+    </ul>
+
+    <h2>👤 Author</h2>
+    <p>
+        <strong>Jose D. Leonett</strong><br>
+        Website: <a href="https://github.com/josedleonett">github.com/josedleonett</a><br>
+        License: AGPL-3<br>
+        Version: 17.0.1.0.0
+    </p>
+
+</body>
+</html>

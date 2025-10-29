@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- Add MO Draft Policy to User Preferences -->
+    <record id="view_users_form_inherit_mo_draft" model="ir.ui.view">
+        <field name="name">res.users.form.inherit.econovo.mo.draft</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='preferences']" position="inside">
+                <group string="Manufacturing Order Preferences" name="mo_draft_preferences">
+                    <field name="mo_draft_policy" widget="radio"/>
+                    
+                    <!-- Custom Configuration - only visible when policy is 'custom' -->
+                    <group invisible="mo_draft_policy != 'custom'" colspan="2">
+                        <group string="Keep Draft for:">
+                            <field name="mo_draft_mto" string="MTO (Sales Orders)"/>
+                            <field name="mo_draft_mts" string="MTS (Replenishment)"/>
+                            <field name="mo_draft_mps" string="MPS (Master Schedule)"/>
+                            <field name="mo_draft_orderpoint" string="Orderpoint (Reorder Rules)"/>
+                        </group>
+                    </group>
+                    
+                    <!-- Help text -->
+                    <div colspan="2" class="alert alert-warning" role="alert" invisible="mo_draft_policy == 'use_global'">
+                        <p class="mb-0">
+                            <i class="fa fa-exclamation-triangle"/> Your personal settings override both global and product configurations.
+                            This affects all Manufacturing Orders you create.
+                        </p>
+                    </div>
+                </group>
+            </xpath>
+        </field>
+    </record>
+    
+    <!-- Also add to user preferences (simple form) -->
+    <record id="view_users_form_simple_modif_inherit_mo_draft" model="ir.ui.view">
+        <field name="name">res.users.form.simple.inherit.econovo.mo.draft</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form_simple_modif"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='preferences']" position="inside">
+                <separator string="Manufacturing Order Preferences" colspan="2"/>
+                <field name="mo_draft_policy" widget="selection"/>
+                
+                <!-- Custom Configuration -->
+                <group invisible="mo_draft_policy != 'custom'" colspan="2">
+                    <field name="mo_draft_mto" string="MTO: Keep Draft"/>
+                    <field name="mo_draft_mts" string="MTS: Keep Draft"/>
+                    <field name="mo_draft_mps" string="MPS: Keep Draft"/>
+                    <field name="mo_draft_orderpoint" string="Orderpoint: Keep Draft"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+    
+</odoo>
