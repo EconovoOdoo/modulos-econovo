@@ -216,3 +216,122 @@ class TestEconovoMrpProductionLocationDestIdBasedInWorkcenter(TransactionCase):
             self.last_dest_location,
             "Workcenter destination field should show the LAST workcenter's location"
         )
+
+    def test_merge_manufacturing_orders_without_null_violation(self):
+        """Test that merging manufacturing orders doesn't cause NULL violation on location_src_id
+        
+        This test validates the fix for the bug where action_merge() caused:
+        psycopg2.errors.NotNullViolation: el valor null para la columna «location_src_id» 
+        de la relación «mrp_production» viola la restricción not null
+        
+        Root cause: When merging MOs, workorders don't exist yet in the new merged MO,
+        so _compute_locations() must fall back to picking_type/warehouse defaults.
+        The fix ensures fallback_loc is always computed, preventing NULL values.
+        """
+        
+        # Create first production order with workcenter routing
+        production_1 = self.env['mrp.production'].create({
+            'product_id': self.product.id,
+            'product_qty': 5.0,
+            'bom_id': self.bom.id,
+        })
+        
+        # Create second production order with same product/BOM
+        production_2 = self.env['mrp.production'].create({
+            'product_id': self.product.id,
+            'product_qty': 3.0,
+            'bom_id': self.bom.id,
+        })
+        
+        # Confirm both production orders to create workorders
+        production_1.action_confirm()
+        production_2.action_confirm()
+        
+        # Verify both have workorders with workcenter destinations BEFORE merge
+        self.assertTrue(
+            production_1.workorder_ids,
+            "Production 1 should have workorders after confirmation"
+        )
+        self.assertTrue(
+            production_2.workorder_ids,
+            "Production 2 should have workorders after confirmation"
+        )
+        self.assertEqual(
+            production_1.location_dest_id,
+            self.custom_dest_location,
+            "Production 1 should use workcenter destination before merge"
+        )
+        self.assertEqual(
+            production_2.location_dest_id,
+            self.custom_dest_location,
+            "Production 2 should use workcenter destination before merge"
+        )
+        
+        # Store original IDs for verification
+        production_ids = production_1 | production_2
+        
+        # CRITICAL TEST: Merge the production orders
+        # This should NOT raise NotNullViolation on location_src_id
+        try:
+            merged_production = production_ids.action_merge()
+            merge_succeeded = True
+        except Exception as e:
+            merge_succeeded = False
+            merge_error = str(e)
+        
+        # Assert merge succeeded without NULL violation
+        self.assertTrue(
+            merge_succeeded,
+            f"Merge should succeed without errors. Got error: {merge_error if not merge_succeeded else 'None'}"
+        )
+        
+        # Get the merged production record
+        if isinstance(merged_production, dict):
+            # action_merge returns action dict, extract production from context
+            merged_prod_id = merged_production.get('res_id')
+            merged_prod = self.env['mrp.production'].browse(merged_prod_id)
+        else:
+            merged_prod = merged_production
+        
+        # Verify locations are NOT NULL (critical assertion for the fix)
+        self.assertTrue(
+            merged_prod.location_src_id,
+            "Merged production MUST have location_src_id (not NULL)"
+        )
+        self.assertTrue(
+            merged_prod.location_dest_id,
+            "Merged production MUST have location_dest_id (not NULL)"
+        )
+        
+        # Verify quantities were properly merged
+        expected_qty = 5.0 + 3.0  # production_1 + production_2
+        self.assertEqual(
+            merged_prod.product_qty,
+            expected_qty,
+            f"Merged production should have combined quantity of {expected_qty}"
+        )
+        
+        # After action_confirm on merged MO, workorders are created
+        # and locations should update to workcenter destinations
+        merged_prod.action_confirm()
+        
+        # Verify workorders exist after confirmation
+        self.assertTrue(
+            merged_prod.workorder_ids,
+            "Merged production should have workorders after confirmation"
+        )
+        
+        # Verify destination location updated to workcenter destination
+        # (validates that workcenter functionality is preserved after merge)
+        self.assertEqual(
+            merged_prod.location_dest_id,
+            self.custom_dest_location,
+            "Merged production should use workcenter destination after workorders created"
+        )
+        
+        # Verify the computed field is correct
+        self.assertEqual(
+            merged_prod.workcenter_location_dest_id,
+            self.custom_dest_location,
+            "Workcenter destination field should be correctly computed"
+        )

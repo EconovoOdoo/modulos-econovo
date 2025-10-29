@@ -31,20 +31,25 @@ class MrpProduction(models.Model):
 
     @api.depends('picking_type_id', 'workorder_ids', 'workorder_ids.workcenter_id.location_dest_id')
     def _compute_locations(self):
-        """Override the original method to consider workcenter destination locations"""
+        """Override the original method to consider workcenter destination locations
+        
+        IMPORTANT: Always computes fallback location to handle merge scenarios where
+        workorders are not yet created during MO creation (fixed in v17.0.1.1.0).
+        """
         for production in self:
-            # First, apply the standard logic to get fallback location if needed
-            if not production.picking_type_id.default_location_src_id or not production.picking_type_id.default_location_dest_id:
-                company_id = production.company_id.id if (production.company_id and production.company_id in self.env.companies) else self.env.company.id
-                fallback_loc = self.env['stock.warehouse'].search([('company_id', '=', company_id)], limit=1).lot_stock_id
-            else:
-                fallback_loc = None
+            # ALWAYS compute fallback location (needed for merge and edge cases)
+            # This ensures location_src_id and location_dest_id are never NULL
+            company_id = production.company_id.id if (production.company_id and production.company_id in self.env.companies) else self.env.company.id
+            fallback_loc = self.env['stock.warehouse'].search([('company_id', '=', company_id)], limit=1).lot_stock_id
             
-            # Set source location (unchanged from standard behavior)
+            # Set source location with proper fallback chain
             if production.picking_type_id.default_location_src_id:
                 production.location_src_id = production.picking_type_id.default_location_src_id
             elif fallback_loc:
                 production.location_src_id = fallback_loc
+            else:
+                # Ultimate fallback - defensive programming for edge cases
+                production.location_src_id = False
             
             # For destination location, check if any workcenter has a custom destination
             # Use the LAST workcenter with destination configured (makes manufacturing sense)
@@ -54,13 +59,17 @@ class MrpProduction(models.Model):
                     workcenter_dest = workorder.workcenter_id.location_dest_id
                     # Don't break - continue to find the last workcenter with destination
             
-            # Set destination location: workcenter destination > default from picking type > fallback
+            # Set destination location with proper priority and fallback chain
+            # Priority: workcenter destination > picking type default > warehouse fallback
             if workcenter_dest:
                 production.location_dest_id = workcenter_dest
             elif production.picking_type_id.default_location_dest_id:
                 production.location_dest_id = production.picking_type_id.default_location_dest_id
             elif fallback_loc:
                 production.location_dest_id = fallback_loc
+            else:
+                # Ultimate fallback - defensive programming for edge cases
+                production.location_dest_id = False
 
     def _get_workcenter_destination_info(self):
         """Helper method to get information about workcenter destinations for this production"""

@@ -1,6 +1,6 @@
 {
     'name': 'Econovo MRP Production Location Dest ID Based in Workcenter',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.1.0',
     'category': 'Manufacturing',
     'summary': 'Set destination location for finished products at workcenter level',
     'description': """

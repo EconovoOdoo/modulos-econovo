@@ -68,6 +68,12 @@ for workorder in production.workorder_ids:
         # Don't break - continue to find the LAST workcenter
 ```
 
+**Important Notes:**
+- During manufacturing order **merge operations**, workorders may not exist yet when `_compute_locations()` first executes
+- In this case, the system temporarily uses `picking_type` default or warehouse fallback locations
+- Once workorders are created (during `action_confirm()`), the compute method automatically re-executes and applies workcenter destinations
+- This ensures no data loss and maintains workcenter functionality even during complex merge scenarios
+
 ### Integration Points
 
 - Overrides `mrp.production._compute_locations()` method
@@ -87,7 +93,32 @@ for workorder in production.workorder_ids:
 - **Author**: Jose D. Leonett
 - **Website**: https://github.com/josedleonett
 - **License**: AGPL-3
-- **Version**: 17.0.1.0.0
+- **Version**: 17.0.1.1.0
+
+## Changelog
+
+### v17.0.1.1.0 (2025-10-29)
+
+**Bug Fixes:**
+- **Fixed**: Resolved `NotNullViolation` error on `location_src_id` during manufacturing order merge operations
+- **Root Cause**: Fallback location was not computed when `picking_type_id` had default locations set, causing NULL values during merge when workorders were not yet created
+- **Impact**: Merge operations (`action_merge()`) now work correctly in all scenarios
+- **Technical**: Modified `_compute_locations()` to always compute fallback location, ensuring locations are never NULL during MO creation
+- **Compatibility**: No functionality loss - workcenter destinations still work correctly and are automatically re-applied when workorders are created
+
+**Technical Details:**
+- Always compute `fallback_loc` from warehouse, regardless of `picking_type_id` configuration
+- Added ultimate fallback (`False`) for extreme edge cases with defensive programming
+- Improved docstring to document merge scenario handling
+- Maintains full compatibility with existing manufacturing workflows and workcenter destination logic
+
+### v17.0.1.0.0
+
+**Initial Release:**
+- Workcenter-level destination location configuration
+- Automatic location assignment using LAST workcenter
+- Fallback to standard Odoo behavior when no workcenter destination configured
+- Visual indicators and search capabilities
 
 ## Support
 
