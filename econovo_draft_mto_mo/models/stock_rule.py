@@ -205,6 +205,11 @@ class StockRule(models.Model):
         
         # 2. Override with PRODUCT settings (if configured)
         product = procurement.product_id.product_tmpl_id
+        _logger.info(
+            "  -> Product '%s' policy: %s (checking if != 'use_global')",
+            product.name,
+            product.mo_draft_policy
+        )
         if product.mo_draft_policy != 'use_global':
             draft_decision = self._get_product_draft_decision(
                 product, source_type
@@ -217,7 +222,14 @@ class StockRule(models.Model):
             )
         
         # 3. Final override with USER settings (if configured)
-        user = self.env.user
+        # Try to get the user from the sales order (if MTO), otherwise use current user
+        user = self._get_responsible_user(procurement)
+        _logger.info(
+            "  -> User '%s' (UID: %s) policy: %s (checking if != 'use_global')",
+            user.name,
+            user.id,
+            user.mo_draft_policy
+        )
         if user.mo_draft_policy != 'use_global':
             draft_decision = self._get_user_draft_decision(
                 user, source_type
@@ -232,6 +244,53 @@ class StockRule(models.Model):
         _logger.info("  -> FINAL DECISION: %s", draft_decision)
         
         return draft_decision
+    
+    def _get_responsible_user(self, procurement):
+        """Get the responsible user for this procurement.
+        
+        Priority:
+        1. Original user from context (the one who clicked "Confirm")
+        2. User from sales order (if MTO from SO)
+        3. Current user executing the action (fallback)
+        
+        Args:
+            procurement: Procurement object with values
+            
+        Returns:
+            res.users: The responsible user
+        """
+        # Priority 1: Check for original user in context
+        original_user_id = self.env.context.get('original_user_id')
+        if original_user_id:
+            original_user = self.env['res.users'].browse(original_user_id)
+            if original_user.exists():
+                _logger.debug(
+                    "Using original user from context '%s' (UID: %s)",
+                    original_user.name,
+                    original_user.id
+                )
+                return original_user
+        
+        # Priority 2: Try to get user from sales order
+        group = procurement.values.get('group_id')
+        if group and hasattr(group, 'sale_id') and group.sale_id:
+            sale_order = group.sale_id
+            if sale_order.user_id:
+                _logger.debug(
+                    "Using sales order user '%s' (UID: %s) from SO %s",
+                    sale_order.user_id.name,
+                    sale_order.user_id.id,
+                    sale_order.name
+                )
+                return sale_order.user_id
+        
+        # Priority 3: Fallback to current user
+        _logger.debug(
+            "Using current user '%s' (UID: %s) - no context or SO user found",
+            self.env.user.name,
+            self.env.user.id
+        )
+        return self.env.user
 
     def _get_procurement_source_type(self, procurement, rule):
         """Identify the source type of procurement.
