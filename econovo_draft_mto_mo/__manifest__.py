@@ -23,6 +23,14 @@ Features:
   - MPS (Master Production Schedule)
   - Orderpoint (Reordering Rules)
 
+Technical Highlights:
+---------------------
+* **User Session Propagation**: Correctly identifies the user who initiated the action
+  (not OdooBot) by capturing and propagating the session user through context
+* **Robust MTO Detection**: Multi-level detection via sale_line_id, procurement group,
+  and route configuration - works regardless of sequence format
+* **Optimized Performance**: Minimal overhead with cached parameters
+
 Maintains all Odoo native behavior:
 ------------------------------------
 * MO consolidation for non-MTO flows

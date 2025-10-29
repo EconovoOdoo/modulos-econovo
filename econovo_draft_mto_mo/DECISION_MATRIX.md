@@ -8,6 +8,33 @@ The module uses a **3-level hierarchy** where each level can override the previo
 Global (Settings) → Product → User
 ```
 
+### ⚠️ Important: User Detection
+
+The module correctly identifies the **responsible user** even when Odoo switches to system users (OdooBot) for background processes.
+
+**User Detection Priority:**
+1. **Session User** (highest): The user who clicked "Confirm" on the Sales Order
+   - Captured in `sale.order.action_confirm()`
+   - Propagated through context as `original_user_id`
+2. **Sales Order User**: The salesperson assigned to the SO (if MTO source)
+3. **Current User** (fallback): The actual user executing the code
+
+**Why This Matters:**
+
+Without this mechanism, user-level policies would always see "OdooBot" instead of the actual person who initiated the action.
+
+**Example:**
+```
+Mitchell Admin clicks "Confirm" on SO S00012
+├─ Odoo creates procurement (as OdooBot in background)
+├─ Module checks context.original_user_id
+├─ Finds Mitchell Admin (UID: 2)
+└─ Applies Mitchell Admin's policy → MO stays DRAFT ✅
+
+Without propagation:
+└─ Would see OdooBot → Wrong policy applied ❌
+```
+
 ## Decision Policies
 
 Each level can be configured with one of these policies:
@@ -139,8 +166,19 @@ Result:
 START: MO needs to be created
     ↓
 ┌───────────────────────────────────────┐
+│ 0. Identify Responsible User          │
+│    Priority:                           │
+│    1. Session user (from context)     │
+│    2. SO user (if MTO)                │
+│    3. Current user (fallback)         │
+└───────────────┬───────────────────────┘
+                ↓
+┌───────────────────────────────────────┐
 │ 1. Detect Source Type                 │
 │    - MTO (from sales?)                │
+│      • Check sale_line_id             │
+│      • Check group.sale_id            │
+│      • Check MTO route                │
 │    - MTS (replenishment?)             │
 │    - MPS (master schedule?)           │
 │    - Orderpoint (reorder rules?)      │
@@ -162,6 +200,7 @@ START: MO needs to be created
                 ↓
 ┌───────────────────────────────────────┐
 │ 4. Check USER Settings                │
+│    (Using identified user, not OdooBot) │
 │    - Policy != use_global?            │
 │      YES → Override (FINAL DECISION)  │
 │      NO → Keep previous decision      │
@@ -195,9 +234,16 @@ You mentioned you have set **Custom** with **MTO=Draft** at all 3 levels. Let's 
 ### Example: Confirming a Sales Order (MTO source)
 
 ```
+┌─ USER IDENTIFICATION ────────────────────────────┐
+│ Mitchell Admin clicks "Confirm" on SO S00012     │
+│ sale.order.action_confirm() captures UID: 2      │
+│ Context: {'original_user_id': 2}                 │
+│ → Identified User: Mitchell Admin (not OdooBot) │
+└──────────────────────────────────────────────────┘
+
 ┌─ DETECTION ─────────────────────────────────────┐
 │ Source: sale.order.action_confirm()             │
-│ Has sale_line_id? YES                            │
+│ Procurement group.sale_id = S00012               │
 │ → Detected as: MTO                               │
 └──────────────────────────────────────────────────┘
 
@@ -214,6 +260,7 @@ You mentioned you have set **Custom** with **MTO=Draft** at all 3 levels. Let's 
 └──────────────────────────────────────────────────┘
 
 ┌─ LEVEL 3: USER ─────────────────────────────────┐
+│ User: Mitchell Admin (UID: 2) from context       │
 │ Policy: custom (not use_global)                  │
 │ MTO checkbox: ✅ TRUE (keep draft)               │
 │ → FINAL DECISION: DRAFT                          │
@@ -221,6 +268,8 @@ You mentioned you have set **Custom** with **MTO=Draft** at all 3 levels. Let's 
 
 ╔══════════════════════════════════════════════════╗
 ║ EXPECTED RESULT: MO should stay in DRAFT state  ║
+║ Log shows: "Using original user from context    ║
+║            'Mitchell Admin' (UID: 2)"            ║
 ╚══════════════════════════════════════════════════╝
 ```
 
@@ -229,7 +278,8 @@ You mentioned you have set **Custom** with **MTO=Draft** at all 3 levels. Let's 
 1. ❌ Module not fully loaded/restarted
 2. ❌ Configuration not saved correctly
 3. ❌ Source type detection failing (detecting as MTS instead of MTO)
-4. ❌ Another module overriding `_run_manufacture` with higher priority
+4. ❌ User propagation not working (check logs for "Using original user")
+5. ❌ Another module overriding `_run_manufacture` with higher priority
 
 ---
 
@@ -249,10 +299,38 @@ print("Product Policy:", product.mo_draft_policy)
 print("Product MTO:", product.mo_draft_mto)
 
 # Check user settings
-user = env.user
+user = env['res.users'].browse(2)  # Replace 2 with actual user ID
+print("User Name:", user.name)
 print("User Policy:", user.mo_draft_policy)
 print("User MTO:", user.mo_draft_mto)
+
+# Test user propagation
+so = env['sale.order'].search([('name', '=', 'S00012')], limit=1)
+print("SO User:", so.user_id.name, "UID:", so.user_id.id)
+print("Current User:", env.user.name, "UID:", env.uid)
 ```
+
+**Check Logs:**
+
+Look for these key log entries when confirming a SO:
+
+```
+Sale Order confirmation initiated by user ID: 2 (Mitchell Admin)
+```
+↓
+```
+Using original user from context 'Mitchell Admin' (UID: 2)
+```
+↓
+```
+-> User 'Mitchell Admin' (UID: 2) policy: custom (checking if != 'use_global')
+```
+
+**If you see "OdooBot" instead of "Mitchell Admin":**
+- ❌ User propagation not working
+- ✅ Check module is fully upgraded
+- ✅ Restart Odoo service
+- ✅ Verify `sale_order.py` is loaded (check logs on startup)
 
 ---
 

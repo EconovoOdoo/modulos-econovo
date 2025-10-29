@@ -108,6 +108,24 @@ Policy: Always Keep Draft
 
 **Result:** All MOs created by this user stay in draft, requiring supervisor review.
 
+**⚠️ Important - User Detection:**
+
+The module identifies the responsible user with the following priority:
+
+1. **Session User** (highest priority): The user who clicked "Confirm" on the Sales Order
+2. **Sales Order User**: The salesperson assigned to the SO (if MTO)
+3. **Current User** (fallback): The user executing the action (may be OdooBot for automated processes)
+
+This ensures that user-level policies apply to the **actual person** initiating the action, not the system user running background processes.
+
+**Example:**
+```
+Mitchell Admin configures: Custom (MTO=Draft)
+Mitchell Admin clicks "Confirm" on SO
+→ The module uses Mitchell Admin's policy, not OdooBot
+→ MO stays in DRAFT as configured
+```
+
 ---
 
 ## Use Cases
@@ -192,13 +210,57 @@ USER [Senior]: Use Global Settings
 
 ## Technical Details
 
+### User Detection & Propagation
+
+The module implements sophisticated user tracking to ensure user-level policies apply correctly:
+
+**Problem Solved:**
+When confirming a Sales Order, Odoo switches execution context to system users (OdooBot) for background processes. This would cause user policies to be ignored.
+
+**Solution:**
+1. **Capture**: `sale.order.action_confirm()` captures the original user ID (session user)
+2. **Propagate**: User ID is passed through context as `original_user_id`
+3. **Retrieve**: `stock.rule._get_responsible_user()` retrieves with priority:
+   - Original user from context (the one who clicked "Confirm")
+   - Sales order user (salesperson assigned to SO)
+   - Current executing user (fallback)
+
+**Code Flow:**
+```python
+# In sale.order.action_confirm()
+current_user_id = self.env.uid  # Capture session user
+return super().with_context(
+    original_user_id=current_user_id  # Propagate through context
+).action_confirm()
+
+# In stock.rule._get_responsible_user()
+original_user_id = self.env.context.get('original_user_id')
+if original_user_id:
+    return self.env['res.users'].browse(original_user_id)
+# Fallback to SO user or current user
+```
+
+**Result:**
+- ✅ User policies apply to the person who initiated the action
+- ✅ Works correctly even with automated/background processes
+- ✅ Proper attribution for audit trails
+
+---
+
 ### Detection Logic
 
 The module reliably detects source types using Odoo's native fields:
 
 ```python
-# MTO Detection
-if rule.route_id == mto_route or procurement.values.get('sale_line_id'):
+# MTO Detection (robust, sequence-independent)
+if procurement.values.get('sale_line_id'):
+    # Direct: SO line linked
+    source_type = 'mto'
+elif group.sale_id:
+    # Via procurement group: SO relationship
+    source_type = 'mto'
+elif rule.route_id == mto_route:
+    # Via route configuration
     source_type = 'mto'
 
 # MPS Detection
@@ -214,16 +276,30 @@ else:
     source_type = 'mts'
 ```
 
+**MTO Detection Priority:**
+1. `sale_line_id` in procurement values (most direct)
+2. Procurement group linked to sales order (reliable for nested MOs)
+3. Route configured as MTO (fallback)
+
+This multi-level detection ensures MTO is correctly identified even when:
+- Sales order sequences don't start with "S"
+- Multiple levels of nested manufacturing orders
+- Custom route configurations
+
 ### Decision Flow
 
 ```
 1. Detect source type (MTO/MTS/MPS/Orderpoint)
-2. Get GLOBAL decision for this source type
-3. IF product has override:
+2. Identify responsible user:
+   a. Original user from context (session user who clicked button)
+   b. Sales order user (if MTO)
+   c. Current user (fallback)
+3. Get GLOBAL decision for this source type
+4. IF product has override:
      Use PRODUCT decision
-4. IF user has override:
-     Use USER decision
-5. Apply decision (draft or confirm)
+5. IF user has override:
+     Use USER decision (from identified user, not OdooBot)
+6. Apply decision (draft or confirm)
 ```
 
 ### Performance
@@ -281,5 +357,16 @@ New Module: Global Policy = "All MOs stay in Draft"
 - Initial release
 - Multi-level configuration hierarchy (Global → Product → User)
 - Support for 4 source types (MTO, MTS, MPS, Orderpoint)
+- **User session propagation**: Captures actual user who confirms SO, not system user
+- **Robust MTO detection**: Multi-level detection via sale_line_id, group.sale_id, and route
+- **Windows compatibility**: ASCII logging for cp1252 encoding
 - Maintains all Odoo native behavior (consolidation, validation, traceability)
 - Comprehensive UI with help texts and visibility rules
+- Detailed debug logging for troubleshooting
+
+### Key Technical Improvements:
+- ✅ User context propagation through `sale.order.action_confirm()`
+- ✅ Priority-based user detection (session → SO → current)
+- ✅ Sequence-independent MTO detection via procurement group relationships
+- ✅ Fixed recordset handling for group_id (no unnecessary browse() calls)
+- ✅ Unicode-safe logging for Windows terminals
