@@ -237,7 +237,10 @@ class StockRule(models.Model):
         """Identify the source type of procurement.
         
         Detection logic (in order of priority):
-        1. MTO: From sales order (has sale_line_id or is MTO route)
+        1. MTO: From sales order - checks:
+           a) Direct sale_line_id in values
+           b) Procurement group linked to sale_id
+           c) MTO route configured
         2. MPS: From Master Production Schedule (origin == 'MPS')
         3. Orderpoint: From reordering rules (has orderpoint_id)
         4. MTS: Default for everything else (stock replenishment)
@@ -250,6 +253,7 @@ class StockRule(models.Model):
             str: 'mto', 'mts', 'mps', or 'orderpoint'
         """
         values = procurement.values
+        origin = procurement.origin or ''
         
         # Detect MTO route
         mto_route = self.env['stock.warehouse']._find_global_route(
@@ -257,19 +261,31 @@ class StockRule(models.Model):
             _('Replenish on Order (MTO)')
         )
         
+        # Check if procurement group is linked to a sale order (most reliable)
+        is_from_sale = False
+        sale_order_ref = None
+        group = values.get('group_id')
+        if group and hasattr(group, 'sale_id') and group.sale_id:
+            is_from_sale = True
+            sale_order_ref = group.sale_id.name
+        
         _logger.debug(
-            "Detecting source type - Rule: %s, MTO Route: %s, Origin: %s, Values keys: %s",
+            "Detecting source type - Rule: %s, MTO Route: %s, Origin: %s, Sale Order: %s, Values keys: %s",
             rule.route_id.name if rule.route_id else "No route",
             mto_route.name if mto_route else "Not found",
-            procurement.origin,
+            origin,
+            sale_order_ref or "None",
             list(values.keys()) if values else []
         )
         
         # Priority order for detection:
-        if rule.route_id == mto_route or values.get('sale_line_id'):
-            _logger.debug("  -> Detected as MTO")
+        # MTO: Check multiple conditions (no dependency on sequence format)
+        if (values.get('sale_line_id') or  # Direct link to sale line
+            is_from_sale or                 # Group linked to sale order
+            rule.route_id == mto_route):    # MTO route
+            _logger.debug("  -> Detected as MTO (from sales order: %s)", sale_order_ref or "via route")
             return 'mto'
-        elif procurement.origin == 'MPS':
+        elif origin == 'MPS':
             _logger.debug("  -> Detected as MPS")
             return 'mps'
         elif values.get('orderpoint_id'):
