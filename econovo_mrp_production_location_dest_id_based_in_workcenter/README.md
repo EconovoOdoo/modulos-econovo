@@ -69,10 +69,11 @@ for workorder in production.workorder_ids:
 ```
 
 **Important Notes:**
-- During manufacturing order **merge operations**, workorders may not exist yet when `_compute_locations()` first executes
-- In this case, the system temporarily uses `picking_type` default or warehouse fallback locations
-- Once workorders are created (during `action_confirm()`), the compute method automatically re-executes and applies workcenter destinations
-- This ensures no data loss and maintains workcenter functionality even during complex merge scenarios
+- During manufacturing order **merge operations**, workorders may not exist yet when the MO is created
+- The `default_get()` method ensures locations have initial values from picking_type or warehouse defaults
+- Once workorders are created (during `action_confirm()`), the `_compute_locations()` method automatically re-executes
+- Workcenter destinations are then applied, overriding the initial default values
+- This two-phase approach ensures no NULL violations while maintaining full workcenter functionality
 
 ### Integration Points
 
@@ -93,23 +94,37 @@ for workorder in production.workorder_ids:
 - **Author**: Jose D. Leonett
 - **Website**: https://github.com/josedleonett
 - **License**: AGPL-3
-- **Version**: 17.0.1.1.0
+- **Version**: 17.0.1.2.0
 
 ## Changelog
 
-### v17.0.1.1.0 (2025-10-29)
+### v17.0.1.2.0 (2025-10-30)
+
+**Bug Fixes:**
+- **Fixed**: Resolved `KeyError: <id>` when editing `location_dest_id` field in workcenter form view
+- **Root Cause**: Native Odoo's `_compute_workorder_count()` method uses `self._ids` which includes `NewId` objects during form onchange. When the method calls `_read_group()`, it returns real database IDs, causing a KeyError when trying to access `result[real_id]` with NewId keys
+- **Solution**: Override `_compute_workorder_count()` method to filter out NewId records before database queries. Only process records with real database IDs and set default values for unsaved records
+- **Impact**: 
+  - ✅ Can now edit `location_dest_id` in both form and list views without errors
+  - ✅ Workorder counts remain accurate for all saved workcenters
+  - ✅ New workcenters show zero counts until saved (expected behavior)
+  - ✅ Handles all edge cases (new records, form edits, list edits)
+  - ⚠️ Contains ~80 lines of Odoo core code (necessary to fix the bug properly)
+- **Alternative Attempted**: Empty `@api.onchange('location_dest_id')` method did not prevent cascade recomputation in Odoo 17 Enterprise. Override was necessary.
+
+### v17.0.1.1.0 (2025-10-30)
 
 **Bug Fixes:**
 - **Fixed**: Resolved `NotNullViolation` error on `location_src_id` during manufacturing order merge operations
-- **Root Cause**: Fallback location was not computed when `picking_type_id` had default locations set, causing NULL values during merge when workorders were not yet created
+- **Root Cause**: Computed fields `_compute_locations()` were not triggered before database INSERT during merge, leaving location fields NULL
+- **Solution**: Added `default_get()` override to ensure location fields always have values during record creation
 - **Impact**: Merge operations (`action_merge()`) now work correctly in all scenarios
-- **Technical**: Modified `_compute_locations()` to always compute fallback location, ensuring locations are never NULL during MO creation
 - **Compatibility**: No functionality loss - workcenter destinations still work correctly and are automatically re-applied when workorders are created
 
 **Technical Details:**
-- Always compute `fallback_loc` from warehouse, regardless of `picking_type_id` configuration
-- Added ultimate fallback (`False`) for extreme edge cases with defensive programming
-- Improved docstring to document merge scenario handling
+- Override `default_get()` method to provide default values for `location_src_id` and `location_dest_id` before database INSERT
+- Always compute fallback location from warehouse when picking_type defaults are not available
+- Compute field `_compute_locations()` still maintains workcenter destination logic after workorders are created
 - Maintains full compatibility with existing manufacturing workflows and workcenter destination logic
 
 ### v17.0.1.0.0

@@ -4,7 +4,9 @@ from odoo import fields, models, api
 
 
 class MrpProduction(models.Model):
-    _inherit = 'mrp.production'    # Add computed field to show which workcenter destination is being used
+    _inherit = 'mrp.production'
+    
+    # Add computed field to show which workcenter destination is being used
     workcenter_location_dest_id = fields.Many2one(
         'stock.location',
         string='Workcenter Destination',
@@ -12,6 +14,46 @@ class MrpProduction(models.Model):
         store=True,
         help="Destination location determined by the workcenter configuration"
     )
+
+    @api.model
+    def default_get(self, fields_list):
+        """Override default_get to ensure location_src_id and location_dest_id have values
+        
+        This fixes NotNullViolation error during merge operations when computed fields
+        are not triggered before database INSERT (v17.0.1.1.0).
+        """
+        res = super(MrpProduction, self).default_get(fields_list)
+        
+        # If location_src_id or location_dest_id are requested but not set, compute defaults
+        if ('location_src_id' in fields_list and not res.get('location_src_id')) or \
+           ('location_dest_id' in fields_list and not res.get('location_dest_id')):
+            
+            # Get picking_type from context or use default
+            picking_type_id = res.get('picking_type_id') or self.env.context.get('default_picking_type_id')
+            
+            if picking_type_id:
+                picking_type = self.env['stock.picking.type'].browse(picking_type_id)
+                
+                # Compute fallback location from warehouse
+                company_id = self.env.company.id
+                fallback_loc = self.env['stock.warehouse'].search([('company_id', '=', company_id)], limit=1).lot_stock_id
+                
+                # Set location_src_id if requested and not set
+                if 'location_src_id' in fields_list and not res.get('location_src_id'):
+                    if picking_type.default_location_src_id:
+                        res['location_src_id'] = picking_type.default_location_src_id.id
+                    elif fallback_loc:
+                        res['location_src_id'] = fallback_loc.id
+                
+                # Set location_dest_id if requested and not set
+                if 'location_dest_id' in fields_list and not res.get('location_dest_id'):
+                    if picking_type.default_location_dest_id:
+                        res['location_dest_id'] = picking_type.default_location_dest_id.id
+                    elif fallback_loc:
+                        res['location_dest_id'] = fallback_loc.id
+        
+        return res
+
 
     @api.depends('workorder_ids.workcenter_id.location_dest_id')
     def _compute_workcenter_location_dest(self):
