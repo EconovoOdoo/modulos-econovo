@@ -94,9 +94,23 @@ for workorder in production.workorder_ids:
 - **Author**: Jose D. Leonett
 - **Website**: https://github.com/josedleonett
 - **License**: AGPL-3
-- **Version**: 17.0.1.2.0
+- **Version**: 17.0.1.3.0
 
 ## Changelog
+
+### v17.0.1.3.0 (2025-10-30)
+
+**Enhancements:**
+- **Added**: Critical synchronization of finished moves `location_dest_id` after split operations
+- **Problem**: During split/backorder creation, `stock.move` records are copied via `copy_data()` with their original `location_dest_id`. Then `_compute_locations()` recalculates the production's `location_dest_id` based on workorder configuration, creating inconsistency between production and moves
+- **Solution**: Implemented `_sync_finished_moves_location()` method that automatically synchronizes finished moves (and their move_lines) when `location_dest_id` changes during `_compute_locations()`
+- **Impact**: 
+  - ✅ **Split operations**: Backorders now have consistent `location_dest_id` across production and moves
+  - ✅ **Stock movements**: Finished products always move to the correct destination location
+  - ✅ **Reservations sync**: `stock.move.line` (reservations) also updated to maintain consistency
+  - ✅ **Automatic**: No user intervention required - happens transparently
+  - ✅ **Safe**: Only updates non-done, non-cancelled moves for main product (not by-products)
+- **Technical**: Enhanced `_compute_locations()` to detect location changes and trigger sync. Added comprehensive documentation for split interaction in `ANALISIS_SPLIT_INTERACCION.md`
 
 ### v17.0.1.2.0 (2025-10-30)
 

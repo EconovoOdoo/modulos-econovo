@@ -77,8 +77,15 @@ class MrpProduction(models.Model):
         
         IMPORTANT: Always computes fallback location to handle merge scenarios where
         workorders are not yet created during MO creation (fixed in v17.0.1.1.0).
+        
+        Enhanced in v17.0.1.3.0: Synchronizes finished moves when location changes.
+        This is critical for split scenarios where moves are copied with old location
+        but production recomputes location based on workorders.
         """
         for production in self:
+            # Store old value to detect changes (critical for split scenarios)
+            old_location_dest = production.location_dest_id
+            
             # ALWAYS compute fallback location (needed for merge and edge cases)
             # This ensures location_src_id and location_dest_id are never NULL
             company_id = production.company_id.id if (production.company_id and production.company_id in self.env.companies) else self.env.company.id
@@ -112,6 +119,56 @@ class MrpProduction(models.Model):
             else:
                 # Ultimate fallback - defensive programming for edge cases
                 production.location_dest_id = False
+            
+            # CRITICAL FIX for splits: Synchronize finished moves if location changed
+            # This ensures moves have the correct destination after split/backorder operations
+            if old_location_dest != production.location_dest_id and production.location_dest_id:
+                production._sync_finished_moves_location()
+
+    def _sync_finished_moves_location(self):
+        """Synchronize finished moves location_dest_id with production's computed location
+        
+        This method is critical after split operations where:
+        1. Moves are copied with their original location_dest_id via copy_data()
+        2. Production recomputes location_dest_id based on workorder configuration
+        3. Result: Inconsistency between production.location_dest_id and move.location_dest_id
+        
+        This sync ensures that finished product moves always reflect the production's
+        final destination location, maintaining consistency especially after splits.
+        
+        Added in v17.0.1.3.0 to fix split scenarios.
+        """
+        self.ensure_one()
+        
+        if not self.location_dest_id:
+            return
+        
+        # Find finished product moves that need updating
+        # Only sync moves for the main product (not by-products) in non-final states
+        finished_moves = self.move_finished_ids.filtered(
+            lambda m: m.product_id == self.product_id and m.state not in ('done', 'cancel')
+        )
+        
+        if not finished_moves:
+            return
+        
+        # Update moves that have different location_dest_id
+        moves_to_update = finished_moves.filtered(
+            lambda m: m.location_dest_id != self.location_dest_id
+        )
+        
+        if moves_to_update:
+            # Update the moves
+            moves_to_update.write({'location_dest_id': self.location_dest_id.id})
+            
+            # Also update move_lines (reservations) if they exist
+            # This is critical for maintaining stock consistency
+            move_lines = moves_to_update.move_line_ids.filtered(
+                lambda ml: ml.state not in ('done', 'cancel')
+            )
+            
+            if move_lines:
+                move_lines.write({'location_dest_id': self.location_dest_id.id})
 
     def _get_workcenter_destination_info(self):
         """Helper method to get information about workcenter destinations for this production"""
