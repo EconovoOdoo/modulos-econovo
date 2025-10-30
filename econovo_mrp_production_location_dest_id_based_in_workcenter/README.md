@@ -94,9 +94,32 @@ for workorder in production.workorder_ids:
 - **Author**: Jose D. Leonett
 - **Website**: https://github.com/josedleonett
 - **License**: AGPL-3
-- **Version**: 17.0.1.3.0
+- **Version**: 17.0.1.4.0
 
 ## Changelog
+
+### v17.0.1.4.0 (2025-10-30)
+
+**Testing:**
+- **Added**: Comprehensive test suite for split/backorder operations with workcenter destinations
+- **Coverage**: 5 critical test cases validating split behavior:
+  1. `test_01_split_preserves_workcenter_destination`: Verifies location_dest_id preservation and recomputation after split
+  2. `test_02_split_with_multiple_workcenters_uses_last`: Validates LAST workcenter destination logic in split scenarios
+  3. `test_03_split_without_workcenter_destination_uses_fallback`: Tests fallback to picking_type default when no workcenter destinations configured
+  4. `test_04_split_moves_location_synchronization`: Validates v17.0.1.3.0 fix - moves synchronized automatically after split
+  5. `test_05_split_with_reservations_consistency`: Ensures move_lines (reservations) maintain consistency with moves and production locations
+- **Technical**: 
+  - New file: `tests/test_split_with_workcenter_destination.py` (~880 lines)
+  - Tagged with `@tagged('post_install', '-at_install')` for CI/CD integration
+  - Uses `TransactionCase` for isolated test execution
+  - Comprehensive setup with multiple workcenters, locations, and routing configurations
+  - Tests validate both split behavior and v17.0.1.3.0 synchronization fix
+- **Quality**: 
+  - ✅ Prevents regressions in split functionality
+  - ✅ Validates critical fix from v17.0.1.3.0
+  - ✅ Documents expected behavior through executable tests
+  - ✅ Enables confident future refactoring
+- **Related**: See `ANALISIS_SPLIT_INTERACCION.md` section 6.2 for test case design rationale
 
 ### v17.0.1.3.0 (2025-10-30)
 
