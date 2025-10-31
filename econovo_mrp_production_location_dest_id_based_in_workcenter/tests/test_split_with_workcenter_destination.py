@@ -67,6 +67,12 @@ class TestSplitWithWorkcenterDestination(TransactionCase):
             'location_dest_id': cls.location_workcenter_c.id,
         })
         
+        # Get manufacturing picking type (needed for location defaults)
+        cls.picking_type = cls.env['stock.picking.type'].search([
+            ('code', '=', 'mrp_operation'),
+            ('warehouse_id', '=', cls.warehouse.id),
+        ], limit=1)
+        
         # Create test product
         cls.product = cls.env['product.product'].create({
             'name': 'Test Product for Split',
@@ -88,26 +94,20 @@ class TestSplitWithWorkcenterDestination(TransactionCase):
             'quantity': 1000.0,
         })
         
-        # Create routing with workcenter that has destination
-        cls.routing_single = cls.env['mrp.routing'].create({
-            'name': 'Single Workcenter Routing',
-        })
-        
-        cls.env['mrp.routing.workcenter'].create({
-            'name': 'Operation With Destination',
-            'routing_id': cls.routing_single.id,
-            'workcenter_id': cls.workcenter_with_dest.id,
-            'time_cycle': 10,
-            'sequence': 10,
-        })
-        
-        # Create BOM with routing (includes component for reservations)
+        # Create BOM with single workcenter operation (includes component for reservations)
         cls.bom_with_dest = cls.env['mrp.bom'].create({
             'product_id': cls.product.id,
             'product_tmpl_id': cls.product.product_tmpl_id.id,
             'product_qty': 1.0,
             'type': 'normal',
-            'routing_id': cls.routing_single.id,
+        })
+        
+        cls.env['mrp.routing.workcenter'].create({
+            'name': 'Operation With Destination',
+            'bom_id': cls.bom_with_dest.id,
+            'workcenter_id': cls.workcenter_with_dest.id,
+            'time_cycle': 10,
+            'sequence': 10,
         })
         
         # Add BOM line for component consumption
@@ -117,14 +117,17 @@ class TestSplitWithWorkcenterDestination(TransactionCase):
             'product_qty': 1.0,
         })
         
-        # Create routing with multiple workcenters
-        cls.routing_multi = cls.env['mrp.routing'].create({
-            'name': 'Multi Workcenter Routing',
+        # Create BOM with multiple workcenters operations
+        cls.bom_multi_dest = cls.env['mrp.bom'].create({
+            'product_id': cls.product.id,
+            'product_tmpl_id': cls.product.product_tmpl_id.id,
+            'product_qty': 1.0,
+            'type': 'normal',
         })
         
         cls.env['mrp.routing.workcenter'].create({
             'name': 'First Operation No Dest',
-            'routing_id': cls.routing_multi.id,
+            'bom_id': cls.bom_multi_dest.id,
             'workcenter_id': cls.workcenter_without_dest.id,
             'time_cycle': 5,
             'sequence': 10,
@@ -132,7 +135,7 @@ class TestSplitWithWorkcenterDestination(TransactionCase):
         
         cls.env['mrp.routing.workcenter'].create({
             'name': 'Second Operation Dest B',
-            'routing_id': cls.routing_multi.id,
+            'bom_id': cls.bom_multi_dest.id,
             'workcenter_id': cls.workcenter_dest_b.id,
             'time_cycle': 10,
             'sequence': 20,
@@ -140,19 +143,10 @@ class TestSplitWithWorkcenterDestination(TransactionCase):
         
         cls.env['mrp.routing.workcenter'].create({
             'name': 'Third Operation Dest C (Last)',
-            'routing_id': cls.routing_multi.id,
+            'bom_id': cls.bom_multi_dest.id,
             'workcenter_id': cls.workcenter_dest_c.id,
             'time_cycle': 15,
             'sequence': 30,
-        })
-        
-        # Create BOM with multi-workcenter routing
-        cls.bom_multi_dest = cls.env['mrp.bom'].create({
-            'product_id': cls.product.id,
-            'product_tmpl_id': cls.product.product_tmpl_id.id,
-            'product_qty': 1.0,
-            'type': 'normal',
-            'routing_id': cls.routing_multi.id,
         })
         
         cls.env['mrp.bom.line'].create({
@@ -161,26 +155,20 @@ class TestSplitWithWorkcenterDestination(TransactionCase):
             'product_qty': 1.0,
         })
         
-        # Create routing without any workcenter destinations
-        cls.routing_no_dest = cls.env['mrp.routing'].create({
-            'name': 'No Workcenter Dest Routing',
-        })
-        
-        cls.env['mrp.routing.workcenter'].create({
-            'name': 'Operation No Destination',
-            'routing_id': cls.routing_no_dest.id,
-            'workcenter_id': cls.workcenter_without_dest.id,
-            'time_cycle': 10,
-            'sequence': 10,
-        })
-        
-        # Create BOM without workcenter destinations
+        # Create BOM without any workcenter destinations
         cls.bom_no_dest = cls.env['mrp.bom'].create({
             'product_id': cls.product.id,
             'product_tmpl_id': cls.product.product_tmpl_id.id,
             'product_qty': 1.0,
             'type': 'normal',
-            'routing_id': cls.routing_no_dest.id,
+        })
+        
+        cls.env['mrp.routing.workcenter'].create({
+            'name': 'Operation No Destination',
+            'bom_id': cls.bom_no_dest.id,
+            'workcenter_id': cls.workcenter_without_dest.id,
+            'time_cycle': 10,
+            'sequence': 10,
         })
         
         cls.env['mrp.bom.line'].create({
@@ -210,6 +198,9 @@ class TestSplitWithWorkcenterDestination(TransactionCase):
             'product_id': self.product.id,
             'product_qty': 10.0,
             'bom_id': self.bom_with_dest.id,
+            'picking_type_id': self.picking_type.id,
+            'location_src_id': self.warehouse.lot_stock_id.id,
+            'location_dest_id': self.warehouse.lot_stock_id.id,  # Will be recomputed by module
         })
         
         # Confirm to create workorders
@@ -238,25 +229,18 @@ class TestSplitWithWorkcenterDestination(TransactionCase):
         )
         
         # Execute split operation (qty=6 stays, qty=4 goes to backorder)
-        split_wizard = self.env['mrp.production.split'].create({
-            'production_id': production.id,
-            'production_split_multi_id': False,
-            'counter': 1,
+        # Bypass wizard due to Odoo 17 bug in _compute_details (passes recordset instead of ID)
+        # Call _split_productions directly - returns [original, backorder1, backorder2, ...]
+        productions_split = production._split_productions({
+            production: [6.0, 4.0]
         })
         
-        split_wizard.split_line_ids = [(0, 0, {
-            'quantity': 6.0,
-            'user_id': self.env.user.id,
-        })]
+        # Get backorder (second element in returned list)
+        backorder = productions_split[1] if len(productions_split) > 1 else self.env['mrp.production']
         
-        # Execute split
-        result = split_wizard.action_split()
-        
-        # Get the backorder MO
-        backorder = self.env['mrp.production'].search([
-            ('backorder_sequence', '>', 0),
-            ('origin', 'like', production.name)
-        ], limit=1, order='id desc')
+        # Assign user and date to backorder (mimicking wizard behavior)
+        backorder.user_id = production.user_id
+        backorder.date_start = production.date_start
         
         self.assertTrue(
             backorder,
@@ -342,6 +326,9 @@ class TestSplitWithWorkcenterDestination(TransactionCase):
             'product_id': self.product.id,
             'product_qty': 10.0,
             'bom_id': self.bom_multi_dest.id,
+            'picking_type_id': self.picking_type.id,
+            'location_src_id': self.warehouse.lot_stock_id.id,
+            'location_dest_id': self.warehouse.lot_stock_id.id,  # Will be recomputed
         })
         
         production.action_confirm()
@@ -353,25 +340,19 @@ class TestSplitWithWorkcenterDestination(TransactionCase):
             "Production should use LAST workcenter destination (C) before split"
         )
         
-        # Execute split
-        split_wizard = self.env['mrp.production.split'].create({
-            'production_id': production.id,
-            'production_split_multi_id': False,
-            'counter': 1,
+        # Execute split (qty=7 and qty=3)
+        # Bypass wizard due to Odoo 17 bug - call _split_productions directly
+        # Returns [original, backorder1, ...]
+        productions_split = production._split_productions({
+            production: [7.0, 3.0]
         })
         
-        split_wizard.split_line_ids = [(0, 0, {
-            'quantity': 7.0,
-            'user_id': self.env.user.id,
-        })]
+        # Get backorder (second element)
+        backorder = productions_split[1] if len(productions_split) > 1 else self.env['mrp.production']
         
-        split_wizard.action_split()
-        
-        # Get backorder
-        backorder = self.env['mrp.production'].search([
-            ('backorder_sequence', '>', 0),
-            ('origin', 'like', production.name)
-        ], limit=1, order='id desc')
+        # Assign user and date to backorder
+        backorder.user_id = production.user_id
+        backorder.date_start = production.date_start
         
         # CRITICAL ASSERTIONS: Both should use location C (last workcenter)
         
@@ -420,6 +401,9 @@ class TestSplitWithWorkcenterDestination(TransactionCase):
             'product_id': self.product.id,
             'product_qty': 10.0,
             'bom_id': self.bom_no_dest.id,
+            'picking_type_id': self.picking_type.id,
+            'location_src_id': self.warehouse.lot_stock_id.id,
+            'location_dest_id': self.warehouse.lot_stock_id.id,  # Should use fallback
         })
         
         production.action_confirm()
@@ -434,25 +418,19 @@ class TestSplitWithWorkcenterDestination(TransactionCase):
             "Production should use picking_type default when no workcenter destination"
         )
         
-        # Execute split
-        split_wizard = self.env['mrp.production.split'].create({
-            'production_id': production.id,
-            'production_split_multi_id': False,
-            'counter': 1,
+        # Execute split (qty=4 and qty=6)
+        # Bypass wizard due to Odoo 17 bug - call _split_productions directly
+        # Returns [original, backorder1, ...]
+        productions_split = production._split_productions({
+            production: [4.0, 6.0]
         })
         
-        split_wizard.split_line_ids = [(0, 0, {
-            'quantity': 4.0,
-            'user_id': self.env.user.id,
-        })]
+        # Get backorder (second element)
+        backorder = productions_split[1] if len(productions_split) > 1 else self.env['mrp.production']
         
-        split_wizard.action_split()
-        
-        # Get backorder
-        backorder = self.env['mrp.production'].search([
-            ('backorder_sequence', '>', 0),
-            ('origin', 'like', production.name)
-        ], limit=1, order='id desc')
+        # Assign user and date to backorder
+        backorder.user_id = production.user_id
+        backorder.date_start = production.date_start
         
         # CRITICAL ASSERTIONS: Both should use fallback
         
@@ -513,6 +491,9 @@ class TestSplitWithWorkcenterDestination(TransactionCase):
             'product_id': self.product.id,
             'product_qty': 10.0,
             'bom_id': self.bom_with_dest.id,
+            'picking_type_id': self.picking_type.id,
+            'location_src_id': self.warehouse.lot_stock_id.id,
+            'location_dest_id': self.warehouse.lot_stock_id.id,  # Will be recomputed
         })
         
         production.action_confirm()
@@ -531,24 +512,19 @@ class TestSplitWithWorkcenterDestination(TransactionCase):
             )
         
         # Execute split
-        split_wizard = self.env['mrp.production.split'].create({
-            'production_id': production.id,
-            'production_split_multi_id': False,
-            'counter': 1,
+        # Execute split (qty=6 and qty=4)
+        # Bypass wizard due to Odoo 17 bug - call _split_productions directly
+        # Returns [original, backorder1, ...]
+        productions_split = production._split_productions({
+            production: [6.0, 4.0]
         })
         
-        split_wizard.split_line_ids = [(0, 0, {
-            'quantity': 6.0,
-            'user_id': self.env.user.id,
-        })]
+        # Get backorder (second element)
+        backorder = productions_split[1] if len(productions_split) > 1 else self.env['mrp.production']
         
-        split_wizard.action_split()
-        
-        # Get backorder
-        backorder = self.env['mrp.production'].search([
-            ('backorder_sequence', '>', 0),
-            ('origin', 'like', production.name)
-        ], limit=1, order='id desc')
+        # Assign user and date to backorder
+        backorder.user_id = production.user_id
+        backorder.date_start = production.date_start
         
         # CRITICAL ASSERTIONS: Verify move synchronization (v17.0.1.3.0)
         
@@ -619,6 +595,9 @@ class TestSplitWithWorkcenterDestination(TransactionCase):
             'product_id': self.product.id,
             'product_qty': 10.0,
             'bom_id': self.bom_with_dest.id,
+            'picking_type_id': self.picking_type.id,
+            'location_src_id': self.warehouse.lot_stock_id.id,
+            'location_dest_id': self.warehouse.lot_stock_id.id,  # Will be recomputed
         })
         
         production.action_confirm()
@@ -638,25 +617,19 @@ class TestSplitWithWorkcenterDestination(TransactionCase):
             lambda m: m.product_id == production.product_id
         )
         
-        # Execute split
-        split_wizard = self.env['mrp.production.split'].create({
-            'production_id': production.id,
-            'production_split_multi_id': False,
-            'counter': 1,
+        # Execute split (qty=6 and qty=4)
+        # Bypass wizard due to Odoo 17 bug - call _split_productions directly
+        # Returns [original, backorder1, ...]
+        productions_split = production._split_productions({
+            production: [6.0, 4.0]
         })
         
-        split_wizard.split_line_ids = [(0, 0, {
-            'quantity': 6.0,
-            'user_id': self.env.user.id,
-        })]
+        # Get backorder (second element)
+        backorder = productions_split[1] if len(productions_split) > 1 else self.env['mrp.production']
         
-        split_wizard.action_split()
-        
-        # Get backorder
-        backorder = self.env['mrp.production'].search([
-            ('backorder_sequence', '>', 0),
-            ('origin', 'like', production.name)
-        ], limit=1, order='id desc')
+        # Assign user and date to backorder
+        backorder.user_id = production.user_id
+        backorder.date_start = production.date_start
         
         # CRITICAL ASSERTIONS: Verify move_lines consistency
         
