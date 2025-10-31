@@ -82,9 +82,17 @@ class TestWorkcenterDestinationFlow(TransactionCase):
             'quantity': 100.0,
         })
         
-        # Create BOM operations
+        # Create BOM first (required in Odoo 17 before creating operations)
+        self.bom_multi = self.env['mrp.bom'].create({
+            'product_tmpl_id': self.product_final.product_tmpl_id.id,
+            'product_qty': 1.0,
+            'type': 'normal',
+        })
+        
+        # Create BOM operations (linked to BOM via bom_id)
         self.operation_cutting = self.env['mrp.routing.workcenter'].create({
             'name': 'Cut Material',
+            'bom_id': self.bom_multi.id,
             'workcenter_id': self.workcenter_cutting.id,
             'time_cycle': 10,
             'sequence': 10,
@@ -92,6 +100,7 @@ class TestWorkcenterDestinationFlow(TransactionCase):
         
         self.operation_assembly = self.env['mrp.routing.workcenter'].create({
             'name': 'Assemble Parts',
+            'bom_id': self.bom_multi.id,
             'workcenter_id': self.workcenter_assembly.id,
             'time_cycle': 20,
             'sequence': 20,
@@ -99,21 +108,10 @@ class TestWorkcenterDestinationFlow(TransactionCase):
         
         self.operation_finishing = self.env['mrp.routing.workcenter'].create({
             'name': 'Finish Product',
+            'bom_id': self.bom_multi.id,
             'workcenter_id': self.workcenter_finishing.id,
             'time_cycle': 15,
             'sequence': 30,
-        })
-        
-        # Create BOM with multiple operations
-        self.bom_multi = self.env['mrp.bom'].create({
-            'product_tmpl_id': self.product_final.product_tmpl_id.id,
-            'product_qty': 1.0,
-            'type': 'normal',
-            'operation_ids': [(6, 0, [
-                self.operation_cutting.id,
-                self.operation_assembly.id,
-                self.operation_finishing.id,
-            ])],
         })
         
         # Add component to BOM
@@ -139,7 +137,15 @@ class TestWorkcenterDestinationFlow(TransactionCase):
             'product_tmpl_id': self.product_final.product_tmpl_id.id,
             'product_qty': 1.0,
             'type': 'normal',
-            'operation_ids': [(6, 0, [self.operation_finishing.id])],
+        })
+        
+        # Create operation for this BOM
+        self.env['mrp.routing.workcenter'].create({
+            'name': 'Finish Product - Simple',
+            'bom_id': bom_simple.id,
+            'workcenter_id': self.workcenter_finishing.id,
+            'time_cycle': 15,
+            'sequence': 10,
         })
         
         # Create manufacturing order
@@ -234,19 +240,20 @@ class TestWorkcenterDestinationFlow(TransactionCase):
     def test_03_fallback_to_picking_type_default(self):
         """Test fallback: MO without workcenter destination uses picking type default"""
         
-        # Create BOM with workcenter that has NO custom destination
-        operation_no_dest = self.env['mrp.routing.workcenter'].create({
-            'name': 'Generic Operation',
-            'workcenter_id': self.workcenter_no_dest.id,
-            'time_cycle': 10,
-            'sequence': 10,
-        })
-        
+        # Create BOM first
         bom_no_dest = self.env['mrp.bom'].create({
             'product_tmpl_id': self.product_final.product_tmpl_id.id,
             'product_qty': 1.0,
             'type': 'normal',
-            'operation_ids': [(6, 0, [operation_no_dest.id])],
+        })
+        
+        # Create operation with workcenter that has NO custom destination
+        self.env['mrp.routing.workcenter'].create({
+            'name': 'Generic Operation',
+            'bom_id': bom_no_dest.id,
+            'workcenter_id': self.workcenter_no_dest.id,
+            'time_cycle': 10,
+            'sequence': 10,
         })
         
         # Ensure picking type has default destination
