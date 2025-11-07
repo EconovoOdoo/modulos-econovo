@@ -125,6 +125,41 @@ class MrpProduction(models.Model):
             if old_location_dest != production.location_dest_id and production.location_dest_id:
                 production._sync_finished_moves_location()
 
+    def button_mark_done(self):
+        """Override to ensure location destinations are properly synchronized before completion
+        
+        CRITICAL FIX for production completion:
+        When marking a production as done, we MUST ensure that finished product moves
+        have the correct destination location BEFORE they are processed.
+        
+        Without this override, the sequence is:
+        1. super().button_mark_done() processes moves with ORIGINAL location_dest_id
+        2. Moves are already 'done' with wrong location (OSEYS/Existencias)
+        3. _compute_locations() triggers but moves are already processed
+        4. Result: Product ends up in wrong location
+        
+        With this override:
+        1. Force recompute locations based on current workorder configuration
+        2. Synchronize ALL finished moves with the computed location
+        3. THEN call super().button_mark_done() to process moves
+        4. Result: Product ends up in correct workcenter destination
+        
+        Added in v17.0.1.5.0 to fix production completion issue.
+        """
+        # Step 1: Force recomputation of locations based on workorders
+        # This ensures we have the most up-to-date location_dest_id
+        for production in self:
+            production._compute_locations()
+        
+        # Step 2: Force synchronization of finished moves BEFORE processing
+        # This is CRITICAL - must happen before super() call
+        for production in self:
+            production._sync_finished_moves_location()
+        
+        # Step 3: Now proceed with standard completion logic
+        # Moves will be processed with correct locations
+        return super(MrpProduction, self).button_mark_done()
+
     def _sync_finished_moves_location(self):
         """Synchronize finished moves location_dest_id with production's computed location
         
@@ -137,6 +172,7 @@ class MrpProduction(models.Model):
         final destination location, maintaining consistency especially after splits.
         
         Added in v17.0.1.3.0 to fix split scenarios.
+        Enhanced in v17.0.1.5.0 to be explicitly called in button_mark_done().
         """
         self.ensure_one()
         
