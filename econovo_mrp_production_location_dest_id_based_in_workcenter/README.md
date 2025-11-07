@@ -68,6 +68,13 @@ for workorder in production.workorder_ids:
         # Don't break - continue to find the LAST workcenter
 ```
 
+**Important Notes:**
+- During manufacturing order **merge operations**, workorders may not exist yet when the MO is created
+- The `default_get()` method ensures locations have initial values from picking_type or warehouse defaults
+- Once workorders are created (during `action_confirm()`), the `_compute_locations()` method automatically re-executes
+- Workcenter destinations are then applied, overriding the initial default values
+- This two-phase approach ensures no NULL violations while maintaining full workcenter functionality
+
 ### Integration Points
 
 - Overrides `mrp.production._compute_locations()` method
@@ -87,7 +94,83 @@ for workorder in production.workorder_ids:
 - **Author**: Jose D. Leonett
 - **Website**: https://github.com/josedleonett
 - **License**: AGPL-3
-- **Version**: 17.0.1.0.0
+- **Version**: 17.0.1.4.0
+
+## Changelog
+
+### v17.0.1.4.0 (2025-10-30)
+
+**Testing:**
+- **Added**: Comprehensive test suite for split/backorder operations with workcenter destinations
+- **Coverage**: 5 critical test cases validating split behavior:
+  1. `test_01_split_preserves_workcenter_destination`: Verifies location_dest_id preservation and recomputation after split
+  2. `test_02_split_with_multiple_workcenters_uses_last`: Validates LAST workcenter destination logic in split scenarios
+  3. `test_03_split_without_workcenter_destination_uses_fallback`: Tests fallback to picking_type default when no workcenter destinations configured
+  4. `test_04_split_moves_location_synchronization`: Validates v17.0.1.3.0 fix - moves synchronized automatically after split
+  5. `test_05_split_with_reservations_consistency`: Ensures move_lines (reservations) maintain consistency with moves and production locations
+- **Technical**: 
+  - New file: `tests/test_split_with_workcenter_destination.py` (~880 lines)
+  - Tagged with `@tagged('post_install', '-at_install')` for CI/CD integration
+  - Uses `TransactionCase` for isolated test execution
+  - Comprehensive setup with multiple workcenters, locations, and routing configurations
+  - Tests validate both split behavior and v17.0.1.3.0 synchronization fix
+- **Quality**: 
+  - ✅ Prevents regressions in split functionality
+  - ✅ Validates critical fix from v17.0.1.3.0
+  - ✅ Documents expected behavior through executable tests
+  - ✅ Enables confident future refactoring
+- **Related**: See `ANALISIS_SPLIT_INTERACCION.md` section 6.2 for test case design rationale
+
+### v17.0.1.3.0 (2025-10-30)
+
+**Enhancements:**
+- **Added**: Critical synchronization of finished moves `location_dest_id` after split operations
+- **Problem**: During split/backorder creation, `stock.move` records are copied via `copy_data()` with their original `location_dest_id`. Then `_compute_locations()` recalculates the production's `location_dest_id` based on workorder configuration, creating inconsistency between production and moves
+- **Solution**: Implemented `_sync_finished_moves_location()` method that automatically synchronizes finished moves (and their move_lines) when `location_dest_id` changes during `_compute_locations()`
+- **Impact**: 
+  - ✅ **Split operations**: Backorders now have consistent `location_dest_id` across production and moves
+  - ✅ **Stock movements**: Finished products always move to the correct destination location
+  - ✅ **Reservations sync**: `stock.move.line` (reservations) also updated to maintain consistency
+  - ✅ **Automatic**: No user intervention required - happens transparently
+  - ✅ **Safe**: Only updates non-done, non-cancelled moves for main product (not by-products)
+- **Technical**: Enhanced `_compute_locations()` to detect location changes and trigger sync. Added comprehensive documentation for split interaction in `ANALISIS_SPLIT_INTERACCION.md`
+
+### v17.0.1.2.0 (2025-10-30)
+
+**Bug Fixes:**
+- **Fixed**: Resolved `KeyError: <id>` when editing `location_dest_id` field in workcenter form view
+- **Root Cause**: Native Odoo's `_compute_workorder_count()` method uses `self._ids` which includes `NewId` objects during form onchange. When the method calls `_read_group()`, it returns real database IDs, causing a KeyError when trying to access `result[real_id]` with NewId keys
+- **Solution**: Override `_compute_workorder_count()` method to filter out NewId records before database queries. Only process records with real database IDs and set default values for unsaved records
+- **Impact**: 
+  - ✅ Can now edit `location_dest_id` in both form and list views without errors
+  - ✅ Workorder counts remain accurate for all saved workcenters
+  - ✅ New workcenters show zero counts until saved (expected behavior)
+  - ✅ Handles all edge cases (new records, form edits, list edits)
+  - ⚠️ Contains ~80 lines of Odoo core code (necessary to fix the bug properly)
+- **Alternative Attempted**: Empty `@api.onchange('location_dest_id')` method did not prevent cascade recomputation in Odoo 17 Enterprise. Override was necessary.
+
+### v17.0.1.1.0 (2025-10-30)
+
+**Bug Fixes:**
+- **Fixed**: Resolved `NotNullViolation` error on `location_src_id` during manufacturing order merge operations
+- **Root Cause**: Computed fields `_compute_locations()` were not triggered before database INSERT during merge, leaving location fields NULL
+- **Solution**: Added `default_get()` override to ensure location fields always have values during record creation
+- **Impact**: Merge operations (`action_merge()`) now work correctly in all scenarios
+- **Compatibility**: No functionality loss - workcenter destinations still work correctly and are automatically re-applied when workorders are created
+
+**Technical Details:**
+- Override `default_get()` method to provide default values for `location_src_id` and `location_dest_id` before database INSERT
+- Always compute fallback location from warehouse when picking_type defaults are not available
+- Compute field `_compute_locations()` still maintains workcenter destination logic after workorders are created
+- Maintains full compatibility with existing manufacturing workflows and workcenter destination logic
+
+### v17.0.1.0.0
+
+**Initial Release:**
+- Workcenter-level destination location configuration
+- Automatic location assignment using LAST workcenter
+- Fallback to standard Odoo behavior when no workcenter destination configured
+- Visual indicators and search capabilities
 
 ## Support
 
