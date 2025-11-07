@@ -1,8 +1,8 @@
-from odoo.tests.common import SavepointCase
+from odoo.tests.common import TransactionCase
 from odoo.exceptions import UserError
 
 
-class TestOperationDependencies(SavepointCase):
+class TestOperationDependencies(TransactionCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
