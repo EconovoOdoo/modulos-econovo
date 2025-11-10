@@ -1,3 +1,6 @@
+# Base module (not needed in cloud repository)
+user_warehouse_restriction/
+
 econovo_dymo_labels/__pycache__/
 # Python bytecode files
 __pycache__/
