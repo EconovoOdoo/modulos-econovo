@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- 
+            Automatically assign the installer user to all warehouses during module installation.
+            
+            This function call is executed once during installation (noupdate="1") to:
+            1. Prevent ValidationError from base module when no users are assigned
+            2. Ensure at least one admin has access to configure warehouses
+            3. Allow smooth installation without manual intervention
+            
+            The function is defined in models/stock_warehouse.py and:
+            - Only runs for administrators (base.group_system)
+            - Uses skip_user_validation context to bypass restrictions
+            - Assigns current user to all existing warehouses
+        -->
+        <function model="stock.warehouse" name="_assign_installer_to_warehouses"/>
+    </data>
+</odoo>

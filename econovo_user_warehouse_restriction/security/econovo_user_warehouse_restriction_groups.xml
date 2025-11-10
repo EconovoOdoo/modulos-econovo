@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        
+        <!-- Group: Warehouse Restriction - Full Control -->
+        <record id="group_warehouse_restriction_full" model="res.groups">
+            <field name="name">Warehouse Restriction - Full Control</field>
+            <field name="category_id" ref="base.module_category_inventory"/>
+            <field name="implied_ids" eval="[(4, ref('user_warehouse_restriction.user_warehouse_restriction_group_user'))]"/>
+            <field name="comment">
+                Users in this group have BOTH source and destination restrictions enforced.
+                
+                - Can only access warehouses they are explicitly assigned to
+                - Cannot transfer stock to warehouses outside their allowed list
+                - Cannot view or modify inventory in unauthorized warehouses
+                
+                Exception: Transit warehouses and locations are accessible to all users
+                in this group to facilitate inter-warehouse collaboration.
+                
+                Use case: Warehouse operators who should only work within their assigned warehouse.
+            </field>
+        </record>
+        
+        <!-- Group: Warehouse Restriction - Source Only -->
+        <record id="group_warehouse_restriction_source_only" model="res.groups">
+            <field name="name">Warehouse Restriction - Source Only</field>
+            <field name="category_id" ref="base.module_category_inventory"/>
+            <field name="implied_ids" eval="[(4, ref('user_warehouse_restriction.user_warehouse_restriction_group_user'))]"/>
+            <field name="comment">
+                Users in this group have ONLY source restrictions enforced.
+                
+                - Can only access inventory in warehouses they are assigned to
+                - CAN transfer stock to ANY destination warehouse (no destination restriction)
+                - Cannot view or modify inventory in unauthorized source warehouses
+                
+                Use case: Regional managers or logistics coordinators who need to redistribute
+                stock from their assigned warehouses to any destination warehouse.
+            </field>
+        </record>
+        
+    </data>
+</odoo>
