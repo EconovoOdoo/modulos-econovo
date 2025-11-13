@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="econovo_barcode_kit.KitGroupedLineComponent" t-inherit="stock_barcode.GroupedLineComponent" t-inherit-mode="extension">
+        
+        <xpath expr="//t[@t-call='stock_barcode.LineTitle']" position="replace">
+            <t t-if="line.is_kit_group">
+                <div class="o_barcode_line_title fw-bold d-flex align-items-center flex-wrap gap-1">
+                    <span class="d-flex align-items-center">
+                        <i class="fa fa-cubes me-2 text-primary" title="Kit/BOM"/>
+                        <span t-esc="line.kit_name"/>
+                    </span>
+                    <span class="badge rounded-pill bg-primary text-white" t-esc="line.component_count + ' components'"/>
+                    <span t-if="line.has_multiple_dest_locations" 
+                          class="badge rounded-pill bg-warning text-dark" 
+                          title="Components go to different destinations">
+                        <i class="fa fa-exclamation-triangle me-1"/> Multiple destinations
+                    </span>
+                </div>
+            </t>
+            <t t-else="">
+                <t t-call="stock_barcode.LineTitle"/>
+            </t>
+        </xpath>
+
+        <xpath expr="//t[@t-call='stock_barcode.LineSourceLocation']" position="replace">
+            <t t-if="line.is_kit_group and line.has_multiple_source_locations and !opened">
+                <div class="o_barcode_line_location_src text-muted fst-italic small d-flex align-items-center">
+                    <i class="fa fa-level-up fa-rotate-90 me-2"/>
+                    <span>
+                        <strong t-esc="line.source_location_count"/> 
+                        <t t-if="line.source_location_count == 1">location</t>
+                        <t t-else=""> locations</t>
+                    </span>
+                </div>
+            </t>
+            <t t-else="">
+                <t t-call="stock_barcode.LineSourceLocation"/>
+            </t>
+        </xpath>
+
+        <xpath expr="//div[@class='o_sublines mb-2 flex-grow-1' and @t-if='opened']" position="replace">
+            <div class="o_sublines mb-2 flex-grow-1" t-if="opened">
+                <t t-if="line.is_kit_group">
+                    <t t-foreach="line.lines" t-as="subline" t-key="subline.virtual_id">
+                        <LineComponent line="subline" displayUOM="props.displayUOM" editLine="props.editLine"/>
+                    </t>
+                </t>
+                <t t-else="">
+                    <t t-foreach="line.lines" t-as="subline" t-key="subline.virtual_id">
+                        <LineComponent line="subline" displayUOM="props.displayUOM" subline="true" editLine="props.editLine"/>
+                    </t>
+                </t>
+            </div>
+        </xpath>
+
+    </t>
+
+</templates>
