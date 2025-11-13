@@ -2,15 +2,18 @@
 
 ## Overview
 
-This module enhances the Odoo 17 stock barcode app to intelligently group kit/BOM components together, providing a cleaner and more intuitive user experience when processing pickings containing kits.
+This module enhances the Odoo 17 stock barcode app to intelligently group kit/BOM components together, providing a cleaner and more intuitive user experience when processing pickings containing kits. **Now with full support for nested grouping** - lot/serial number groups within kit groups!
 
 **Key Features:**
 - Groups kit components regardless of source location (e.g., components in Shelf A, B, C appear as one kit)
+- **Nested lot/serial grouping** - Preserves Odoo's native lot/serial grouping within kit groups
+- Independent collapse/expand for each grouping level (kit → lot groups → individual lines)
 - Displays kit name with component count badge instead of individual component names
 - Hides source location in collapsed view when components are in multiple locations
 - Shows individual component locations when expanded
 - Visual distinction with blue borders and subtle background
 - Warns if kit components go to different destinations
+- Proper completion styling (green background) for completed lines in nested groups
 - Fully compatible with `stock_barcode_mrp` (kit explosion)
 
 ## Problem Solved
@@ -26,13 +29,17 @@ When processing a picking with a kit stored across multiple locations:
 📦 Kit Component 2 (Product B)
    From: Shelf B → To: WH/Stock
    
-📦 Kit Component 3 (Product C)
+📦 Kit Component 3 (Product C - LOT001)
+   From: Shelf C → To: WH/Stock
+   
+📦 Kit Component 3 (Product C - LOT002)
    From: Shelf C → To: WH/Stock
 ```
 
 **Issues:**
 - User doesn't know these are part of the same kit
 - No visual grouping or indication of relationship
+- Lot-tracked products shown separately even when they should be grouped
 - Cluttered interface with many individual lines
 
 ### After (With This Module)
@@ -48,16 +55,26 @@ When processing a picking with a kit stored across multiple locations:
    └─ 📦 Kit Component 2 (Product B)
       From: Shelf B → To: WH/Stock
       
-   └─ 📦 Kit Component 3 (Product C)
+   └─ 📦 Product C  [2 lines]  ← Nested lot group
       From: Shelf C → To: WH/Stock
+      ▼ Click to expand
+      
+      ├─ 📦 Product C - LOT001
+      │  From: Shelf C → To: WH/Stock
+      │
+      └─ 📦 Product C - LOT002
+         From: Shelf C → To: WH/Stock
 ```
 
 **Benefits:**
-- Clear visual grouping with kit name
-- Collapsed view shows component count without clutter
+- Clear visual grouping with kit name at top level
+- Nested lot/serial grouping preserved within kits
+- Each level can be independently collapsed/expanded
+- Collapsed view shows component/line count without clutter
 - Source location abstracted when multiple locations (shows "3 locations")
-- Expand to see individual component details
-- Blue border/background for easy identification
+- Expand to see individual component details or lot numbers
+- Blue border/background for easy kit identification
+- Green completion styling works correctly at all nesting levels
 
 ## Installation
 

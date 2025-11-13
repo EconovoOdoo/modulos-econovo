@@ -11,24 +11,6 @@
   // Use Odoo's primary color with opacity for subtle background
   // Slightly larger left accent for better visual grouping (user preferred)
   border-left: 12px solid var(--primary) !important;
-  // background-color: rgba(var(--primary-rgb), 0.05);
-  // transition: all 0.2s ease-in-out;
-
-  // &:hover {
-  //     background-color: rgba(var(--primary-rgb), 0.08);
-  //     box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-  // }
-
-  // Kit title - inherits primary color
-//   .o_barcode_line_title {
-//     color: var(--primary);
-//     font-weight: 600;
-
-//     .fa-cubes {
-//       color: var(--primary);
-//       opacity: 0.9;
-//     }
-//   }
 
   // Badge styling - uses native Bootstrap badge classes
   .badge {
@@ -72,30 +54,10 @@
 
 // Sublines (individual components) - clean, minimal styling
 .o_barcode_kit_group .o_sublines {
-  // padding-left: 1.25rem;
-  // Subtle dotted border using primary color with low opacity
-  // border-left: 2px dotted rgba(var(--primary-rgb), 0.25);
-  // margin-left: 0.75rem;
-  // margin-top: 0.5rem;
 
   // Individual component lines
   .o_barcode_line {
-    // background-color: transparent;
-    // border-left: none !important;
-    // margin-bottom: 0.375rem;
-    // padding: 0.5rem;
-    // border-radius: 0.25rem;
-    // transition: background-color 0.15s ease;
-
-    // &:hover {
-    //     background-color: rgba(var(--dark-rgb), 0.02);
-    // }
-
-    // If a subline is completed (green) keep green on hover
-    // &.o_line_completed, &.o_line_completed:hover {
-    //     background-color: rgba(var(--success-rgb), 0.05) !important;
-    // }
-
+    
     // Component title - standard text color
     .o_barcode_line_title {
       // font-size: 0.9rem;
@@ -109,6 +71,22 @@
       font-size: 0.85rem;
       opacity: 0.9;
     }
+  }
+
+  // Ensure completed lines inside groups keep their green background
+  // This rule has higher specificity to override parent's o_line_not_completed styles
+  .o_barcode_line.o_line_completed {
+    background: var(--barcode__line--completed, #befdcc) !important;
+
+    .o_barcode_line_summary {
+      background: var(--barcode__line--completed, #befdcc) !important;
+    }
+  }
+
+  // Nested grouped lines (e.g., lot groups inside kits) with completed state
+  .o_barcode_line.o_line_completed .o_barcode_line_summary,
+  .o_barcode_line.o_line_completed .o_sublines .o_barcode_line {
+    background: var(--barcode__line--completed, #befdcc) !important;
   }
 }
 
