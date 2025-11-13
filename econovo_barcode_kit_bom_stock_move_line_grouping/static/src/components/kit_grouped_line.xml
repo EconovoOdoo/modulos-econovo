@@ -41,15 +41,8 @@
 
         <xpath expr="//div[@class='o_sublines mb-2 flex-grow-1' and @t-if='opened']" position="replace">
             <div class="o_sublines mb-2 flex-grow-1" t-if="opened">
-                <t t-if="line.is_kit_group">
-                    <t t-foreach="line.lines" t-as="subline" t-key="subline.virtual_id">
-                        <LineComponent line="subline" displayUOM="props.displayUOM" editLine="props.editLine"/>
-                    </t>
-                </t>
-                <t t-else="">
-                    <t t-foreach="line.lines" t-as="subline" t-key="subline.virtual_id">
-                        <LineComponent line="subline" displayUOM="props.displayUOM" subline="true" editLine="props.editLine"/>
-                    </t>
+                <t t-foreach="line.lines" t-as="subline" t-key="subline.virtual_id">
+                    <KitSublineComponent line="subline" displayUOM="props.displayUOM" editLine="props.editLine"/>
                 </t>
             </div>
         </xpath>

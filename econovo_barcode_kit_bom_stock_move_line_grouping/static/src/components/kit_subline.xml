@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="econovo_barcode_kit.KitSublineComponent">
+        <t t-if="isGrouped">
+            <GroupedLineComponent line="props.line" displayUOM="props.displayUOM" editLine="props.editLine"/>
+        </t>
+        <t t-else="">
+            <LineComponent line="props.line" displayUOM="props.displayUOM" editLine="props.editLine"/>
+        </t>
+    </t>
+
+</templates>

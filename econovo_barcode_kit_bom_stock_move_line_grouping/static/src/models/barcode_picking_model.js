@@ -26,6 +26,32 @@ patch(BarcodePickingModel.prototype, {
         
         return super.groupKey(...arguments);
     },
+    
+    /**
+     * Override toggleSublines to support kit groups in unfoldedLineKeys Set.
+     * @param {Object} line - The line to toggle
+     */
+    toggleSublines(line) {
+        if (!this.unfoldedLineKeys) {
+            this.unfoldedLineKeys = new Set();
+        }
+        
+        const lineKey = this.groupKey(line);
+        
+        if (this.unfoldedLineKeys.has(lineKey)) {
+            this.unfoldedLineKeys.delete(lineKey);
+            this.unfoldLineKey = false;
+        } else {
+            this.unfoldedLineKeys.add(lineKey);
+            this.unfoldLineKey = lineKey;
+        }
+        
+        if (this.unfoldedLineKeys.has(lineKey) && (!this.selectedLine || this.groupKey(this.selectedLine) !== lineKey)) {
+            this.selectLine(line);
+        }
+        
+        this.trigger('update');
+    },
 
     /**
      * Override get groupedLines to force grouping of kit components.
@@ -43,9 +69,7 @@ patch(BarcodePickingModel.prototype, {
                 const move = moveId ? this.cache.getRecord('stock.move', moveId) : null;
                 
                 if (move && move.description_bom_line && move.description_bom_line !== 'EMPTY') {
-                    for (const subline of line.lines) {
-                        kitComponents.push(subline);
-                    }
+                    kitComponents.push(line);
                     continue;
                 }
                 
@@ -65,7 +89,7 @@ patch(BarcodePickingModel.prototype, {
         
         const kitGroups = {};
         for (const component of kitComponents) {
-            const key = this.groupKey(component);
+            const key = component.lines ? this.groupKey(component.lines[0]) : this.groupKey(component);
             if (!kitGroups[key]) {
                 kitGroups[key] = [];
             }
@@ -75,28 +99,53 @@ patch(BarcodePickingModel.prototype, {
         for (const [key, components] of Object.entries(kitGroups)) {
             if (components.length === 0) continue;
             
-            const firstMoveId = Array.isArray(components[0].move_id) ? components[0].move_id[0] : components[0].move_id;
+            const firstComponent = components[0];
+            const firstLine = firstComponent.lines ? firstComponent.lines[0] : firstComponent;
+            const firstMoveId = Array.isArray(firstLine.move_id) ? firstLine.move_id[0] : firstLine.move_id;
             const firstMove = this.cache.getRecord('stock.move', firstMoveId);
             const kitName = firstMove.description_bom_line.replace(/\s*-\s*\d+\/\d+\s*$/, '');
             
-            const uniqueSourceLocs = new Set(components.map(l => l.location_id.id));
-            const uniqueDestLocs = new Set(components.map(l => l.location_dest_id.id));
+            const allSublines = [];
+            const uniqueSourceLocs = new Set();
+            const uniqueDestLocs = new Set();
             
-            const ids = components.map(c => c.id);
-            const virtual_ids = components.map(c => c.virtual_id);
+            for (const component of components) {
+                if (component.lines) {
+                    component.is_nested_in_kit = true;
+                    allSublines.push(component);
+                    for (const subline of component.lines) {
+                        uniqueSourceLocs.add(subline.location_id.id);
+                        uniqueDestLocs.add(subline.location_dest_id.id);
+                    }
+                } else {
+                    allSublines.push(component);
+                    uniqueSourceLocs.add(component.location_id.id);
+                    uniqueDestLocs.add(component.location_dest_id.id);
+                }
+            }
+            
+            const ids = allSublines.map(c => c.id);
+            const virtual_ids = allSublines.map(c => c.virtual_id);
             
             let qtyDemand = 0;
             let qtyDone = 0;
-            for (const component of components) {
-                qtyDemand += this.getQtyDemand(component);
-                qtyDone += this.getQtyDone(component);
+            for (const component of allSublines) {
+                if (component.lines) {
+                    for (const subline of component.lines) {
+                        qtyDemand += this.getQtyDemand(subline);
+                        qtyDone += this.getQtyDone(subline);
+                    }
+                } else {
+                    qtyDemand += this.getQtyDemand(component);
+                    qtyDone += this.getQtyDone(component);
+                }
             }
 
-            const groupedLine = this._groupSublines(components, ids, virtual_ids, qtyDemand, qtyDone);
+            const groupedLine = this._groupSublines(allSublines, ids, virtual_ids, qtyDemand, qtyDone);
             
             groupedLine.is_kit_group = true;
             groupedLine.kit_name = kitName;
-            groupedLine.component_count = components.length;
+            groupedLine.component_count = allSublines.length;
             groupedLine.has_multiple_source_locations = uniqueSourceLocs.size > 1;
             groupedLine.source_location_count = uniqueSourceLocs.size;
             groupedLine.has_multiple_dest_locations = uniqueDestLocs.size > 1;
