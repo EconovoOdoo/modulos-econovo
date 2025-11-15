@@ -40,6 +40,8 @@ class StockWarehouse(models.Model):
              "even if they are not explicitly assigned to it.\n\n"
              "Useful for inter-warehouse transfers where users need to send/receive stock "
              "through a shared transit location without having direct access to other warehouses.\n\n"
+             "CRITICAL: Must enable this for transit warehouses. Without it, stock move lines "
+             "will disappear from pickings when locations change to transit (filtered by Record Rules).\n\n"
              "Example: User1 (WH1) → Transit WH → User2 (WH2)"
     )
 

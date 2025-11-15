@@ -2,26 +2,23 @@
 <odoo>
     <data noupdate="0">
         
-        <!-- Group: Warehouse Restriction - Full Control -->
-        <record id="group_warehouse_restriction_full" model="res.groups">
-            <field name="name">Warehouse Restriction - Full Control</field>
-            <field name="category_id" ref="base.module_category_inventory"/>
-            <field name="implied_ids" eval="[(4, ref('user_warehouse_restriction.user_warehouse_restriction_group_user'))]"/>
-            <field name="comment">
-                Users in this group have BOTH source and destination restrictions enforced.
-                
-                - Can only access warehouses they are explicitly assigned to
-                - Cannot transfer stock to warehouses outside their allowed list
-                - Cannot view or modify inventory in unauthorized warehouses
-                
-                Exception: Transit warehouses and locations are accessible to all users
-                in this group to facilitate inter-warehouse collaboration.
-                
-                Use case: Warehouse operators who should only work within their assigned warehouse.
-            </field>
-        </record>
+        <!-- 
+            GROUP INHERITANCE STRUCTURE:
+            ============================
+            
+            Base (Cybrosys) → Source Only (Econovo) → Full (Econovo)
+            
+            - Base group provides: Record Rules for picking.type, location, warehouse, picking
+            - Source Only adds: Record Rules for quant, move, move.line + source validation
+            - Full adds: Destination validation (inherits all Source Only restrictions)
+            
+            This structure ensures:
+            1. Full users get the most restrictive validation (source + destination)
+            2. Source Only users get medium validation (source only)
+            3. No group conflicts (Full is always more restrictive than Source Only)
+        -->
         
-        <!-- Group: Warehouse Restriction - Source Only -->
+        <!-- Group: Warehouse Restriction - Source Only (Base restriction level) -->
         <record id="group_warehouse_restriction_source_only" model="res.groups">
             <field name="name">Warehouse Restriction - Source Only</field>
             <field name="category_id" ref="base.module_category_inventory"/>
@@ -33,8 +30,35 @@
                 - CAN transfer stock to ANY destination warehouse (no destination restriction)
                 - Cannot view or modify inventory in unauthorized source warehouses
                 
+                Exception: Transit warehouses and locations are accessible to all users
+                in this group to facilitate inter-warehouse collaboration.
+                
                 Use case: Regional managers or logistics coordinators who need to redistribute
                 stock from their assigned warehouses to any destination warehouse.
+                
+                Inheritance: Inherits from user_warehouse_restriction_group_user (base module)
+            </field>
+        </record>
+        
+        <!-- Group: Warehouse Restriction - Full (Source + Destination) (Maximum restriction) -->
+        <record id="group_warehouse_restriction_full" model="res.groups">
+            <field name="name">Warehouse Restriction - Full (Source + Destination)</field>
+            <field name="category_id" ref="base.module_category_inventory"/>
+            <field name="implied_ids" eval="[(4, ref('econovo_user_warehouse_restriction.group_warehouse_restriction_source_only'))]"/>
+            <field name="comment">
+                Users in this group have BOTH source and destination restrictions enforced.
+                
+                - Can only access warehouses they are explicitly assigned to
+                - Cannot transfer stock to warehouses outside their allowed list
+                - Cannot view or modify inventory in unauthorized warehouses
+                
+                Exception: Transit warehouses and locations are accessible to all users
+                in this group to facilitate inter-warehouse collaboration.
+                
+                Use case: Warehouse operators who should only work within their assigned warehouse.
+                
+                Inheritance: Inherits from group_warehouse_restriction_source_only (which inherits from base)
+                This means Full users automatically get all Source Only restrictions PLUS destination validation.
             </field>
         </record>
         

@@ -38,5 +38,7 @@ class StockLocation(models.Model):
              "regardless of their warehouse assignments.\n\n"
              "Useful for creating shared spaces where users from different warehouses "
              "can temporarily store or transfer stock without requiring access to each other's warehouses.\n\n"
+             "CRITICAL: Must enable this for transit locations. Without it, stock move lines "
+             "will be filtered out by Record Rules when picking locations reference transit areas.\n\n"
              "Example: A shared dock location where User1 drops off stock for User2 to pick up."
     )
