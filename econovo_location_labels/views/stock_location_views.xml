@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Add Print Label button to stock.location form view -->
+    <record id="view_location_form_inherit_print_label" model="ir.ui.view">
+        <field name="name">stock.location.form.inherit.print.label</field>
+        <field name="model">stock.location</field>
+        <field name="inherit_id" ref="stock.view_location_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_print_location_label" 
+                        string="Print Label" 
+                        type="object" 
+                        class="oe_stat_button"
+                        icon="fa-print">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_text">Print</span>
+                        <span class="o_stat_text">Location Label</span>
+                    </div>
+                </button>
+            </xpath>
+        </field>
+    </record>
+</odoo>

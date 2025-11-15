@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="report_location_label_100x50">
+        <t t-call="web.basic_layout">
+            <div class="o_location_label_100x50">
+                <t t-foreach="docs" t-as="location">
+                    <div class="main-container">
+                        <div class="location-container">
+                            <div class="content-container">
+                                
+                                <!-- Header with logo and warehouse -->
+                                <div class="header-section">
+                                    <div class="logo-container">
+                                        <img t-att-src="'/web/image/res.company/%s/logo' % env.company.id" class="logo-img"/>
+                                    </div>
+                                    <div class="warehouse-name">
+                                        <span t-esc="location.warehouse_id.name or ''"/>
+                                    </div>
+                                </div>
+                                
+                                <!-- Location Name (LARGE) -->
+                                <div class="location-name-section">
+                                    <span t-esc="location.name"/>
+                                </div>
+                                
+                                <!-- Barcode Section -->
+                                <div class="barcode-section">
+                                    <t t-if="location.barcode">
+                                        <div class="barcode-wrapper">
+                                            <span t-field="location.barcode"
+                                                  t-options="{'widget': 'barcode', 'quiet': 0, 'symbology': 'auto', 'img_style': 'width:100%;height:100%'}"/>
+                                        </div>
+                                        <div class="barcode-number">
+                                            <small t-esc="location.barcode"/>
+                                        </div>
+                                    </t>
+                                    <t t-else="">
+                                        <div class="no-barcode-text">
+                                            <small>(No Barcode)</small>
+                                        </div>
+                                    </t>
+                                </div>
+                                
+                                <!-- Complete Path -->
+                                <div class="complete-path-section">
+                                    <span t-esc="location.complete_name"/>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </t>
+    </template>
+</odoo>
