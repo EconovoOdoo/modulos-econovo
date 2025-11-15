@@ -2,24 +2,14 @@
 <odoo>
     <data>
         
-        <!-- Inherit res.users form view to add cross-warehouse transfer permission -->
-        <record id="view_users_form_inherit_cross_warehouse" model="ir.ui.view">
-            <field name="name">res.users.form.inherit.econovo.cross.warehouse</field>
-            <field name="model">res.users</field>
-            <field name="inherit_id" ref="base.view_users_form"/>
-            <field name="arch" type="xml">
-                <xpath expr="//page[@name='preferences']" position="inside">
-                    <group name="warehouse_permissions" string="Warehouse Permissions">
-                        <field name="allow_cross_warehouse_transfers"/>
-                        <div class="alert alert-warning" role="alert" 
-                             invisible="not allow_cross_warehouse_transfers">
-                            <strong>Warning:</strong> This user can transfer stock to warehouses they don't have direct access to.
-                            This bypasses destination warehouse restrictions while still respecting source limitations.
-                        </div>
-                    </group>
-                </xpath>
-            </field>
-        </record>
+        <!-- Note: This module extends user_warehouse_restriction (Cybrosys Technologies)
+             
+             For warehouse permissions, use the base module's fields:
+             - warehouse.user_ids: Assign users to warehouses
+             - user.allowed_warehouse_ids: View user's assigned warehouses
+             
+             This ensures compatibility with base module Record Rules.
+        -->
         
     </data>
 </odoo>
