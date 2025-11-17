@@ -14,7 +14,7 @@
                                         <img t-att-src="'/web/image/res.company/%s/logo' % env.company.id" class="logo-img"/>
                                     </div>
                                     <div class="warehouse-name">
-                                        <span t-esc="location.warehouse_id.name or ''"/>
+                                        <span t-esc="location.warehouse_id.code or location.warehouse_id.name or ''"/>
                                     </div>
                                 </div>
                                 
