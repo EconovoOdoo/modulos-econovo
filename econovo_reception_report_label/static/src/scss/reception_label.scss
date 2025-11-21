@@ -1,0 +1,258 @@
+/* Econovo Reception Report Label Styles - 100x70mm */
+
+/* Page setup for Dymo Label Sheet */
+@page {
+    size: 100mm 70mm;
+    margin: 2mm;
+}
+
+/* Main container for each label */
+.econovo-reception-label.main-container {
+    width: 100%;
+    height: 100%;
+    font-family: 'JetBrainsMono', monospace;
+    page-break-after: always;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Header Section: Logo + Date */
+.econovo-reception-label .header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 6mm;
+    margin-bottom: 0.5mm;
+    padding: 0 2mm;
+}
+
+.econovo-reception-label .logo {
+    height: 5mm;
+    width: auto;
+    object-fit: contain;
+}
+
+.econovo-reception-label .print-date {
+    font-size: 8pt;
+    font-weight: bold;
+    color: #000;
+}
+
+/* Product Barcode Section */
+.econovo-reception-label .product-barcode-section {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0.5mm;
+    border-bottom: 1.5px solid #000;
+}
+
+.econovo-reception-label .barcode-wrapper {
+    width: 100%;
+    height: 16mm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.econovo-reception-label .barcode-wrapper span {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.econovo-reception-label .barcode-wrapper img,
+.econovo-reception-label .barcode-img {
+    width: 100%;
+    max-height: 16mm;
+    height: auto;
+    object-fit: fill;
+}
+
+.econovo-reception-label .product-code {
+    font-size: 9pt;
+    font-weight: 700;
+    color: #000;
+    margin-top: 0.5mm;
+    text-align: center;
+}
+
+.econovo-reception-label .product-name {
+    font-size: 10pt;
+    font-weight: 600;
+    color: #000;
+    text-align: center;
+    margin-top: 0.5mm;
+    line-height: 1.1;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+}
+
+/* Flow Table */
+.econovo-reception-label .flow-table {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border: 1.5px solid #000;
+    margin: 0 0mm 0.5mm 0mm;
+}
+
+.econovo-reception-label .flow-row {
+    display: flex;
+    // min-height: 10.5mm;
+    height: 100%;
+}
+
+.econovo-reception-label .flow-label {
+    width: 22mm;
+    background-color: white;
+    border-right: 1.5px solid #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10pt;
+    font-weight: 800;
+    color: #000;
+    padding: 1mm;
+    text-align: center;
+}
+
+.econovo-reception-label .flow-value {
+    flex: 1;
+    width: 90mm;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1mm 3mm;
+    gap: 0.5mm;
+    box-sizing: border-box;
+}
+
+.econovo-reception-label .barcode-wrapper-small {
+    width: 98%;
+    max-width: 98%;
+    height: 7mm;
+    min-height: 7mm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.3mm;
+    overflow: hidden;
+}
+
+.econovo-reception-label .barcode-wrapper-small span {
+    display: block;
+    width: 100%;
+    height: 100%;
+    line-height: 0;
+    overflow: hidden;
+}
+
+.econovo-reception-label .barcode-wrapper-small img,
+.econovo-reception-label .barcode-small {
+    width: 100% !important;
+    height: 7mm !important;
+    min-height: 7mm;
+    max-width: 100%;
+    max-height: 7mm;
+    object-fit: fill;
+    display: block;
+    margin: 0;
+    padding: 0;
+}
+
+.econovo-reception-label .operation-name {
+    font-size: 9pt;
+    font-weight: 700;
+    color: #000;
+    text-align: center;
+    padding: 0px 4px;
+    background-color: white;
+
+    p, span, strong, em {
+        line-height: 1;
+    }
+}
+
+.econovo-reception-label .location-text {
+    font-size: 8.5pt;
+    font-weight: 600;
+    color: #000;
+    text-align: center;
+    line-height: 1.2;
+}
+
+.econovo-reception-label .location-parent {
+    font-size: 7.5pt;
+    font-weight: 500;
+    color: #000;
+    display: block;
+    margin-top: 0.5mm;
+}
+
+.econovo-reception-label .flow-divider {
+    height: 1.5px;
+    background-color: #000;
+}
+
+.econovo-reception-label .delivery-info {
+    text-align: center;
+    line-height: 1;
+}
+
+.econovo-reception-label .delivery-ref {
+    font-size: 9pt;
+    font-weight: 700;
+    color: #000;
+    display: block;
+    line-height: 1;
+}
+
+.econovo-reception-label .delivery-partner {
+    font-size: 8.5pt;
+    font-weight: 600;
+    color: #000;
+    display: block;
+    margin-top: 1mm;
+    line-height: 1;
+}
+
+/* Footer Section */
+.econovo-reception-label .footer-section {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 2mm;
+    width: 100%;
+    height: 5mm;
+    min-height: 5mm;
+    max-height: 5mm;
+    font-size: 9pt;
+    font-weight: 700;
+    color: #000;
+    border-top: 1.5px solid #000;
+    padding: 0.5mm 2mm;
+
+    span {
+        display: inline-block;
+        white-space: nowrap;
+    }
+}
+
+.econovo-reception-label .separator {
+    font-size: 10pt;
+    font-weight: 400;
+    color: #000;
+}
+
+.econovo-reception-label .quantity,
+.econovo-reception-label .lot {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
