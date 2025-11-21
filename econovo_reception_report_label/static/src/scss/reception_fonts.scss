@@ -1,0 +1,30 @@
+/* JetBrains Mono Font - Variable Weight */
+@font-face {
+    font-family: 'JetBrainsMono';
+    src: url('/econovo_reception_report_label/static/src/fonts/JetBrainsMono-Variable.ttf') format('truetype');
+    font-weight: 100 800;
+    font-style: normal;
+}
+
+/* Plus Jakarta Sans Font - Variable Weight */
+@font-face {
+    font-family: 'PlusJakartaSans';
+    src: url('/econovo_reception_report_label/static/src/fonts/PlusJakartaSans-Variable.ttf') format('truetype');
+    font-weight: 200 800;
+    font-style: normal;
+}
+
+/* DejaVu Sans Mono Font */
+@font-face {
+    font-family: 'DejaVuSansMono';
+    src: url('/econovo_reception_report_label/static/src/fonts/DejaVuSansMono.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'DejaVuSansMono';
+    src: url('/econovo_reception_report_label/static/src/fonts/DejaVuSansMono-Bold.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+}

@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- Inherit and customize the reception report label template -->
+    <template id="report_reception_report_label_custom" inherit_id="stock.report_reception_report_label">
+        
+        <!-- Replace the entire label content -->
+        <xpath expr="//div[hasclass('o_label_page')]" position="replace">
+            <div class="main-container econovo-reception-label">
+                
+                <!-- Header: Logo + Print Date -->
+                <div class="header-section">
+                    <img src="/econovo_reception_report_label/static/description/icon.png" class="logo" alt="Logo"/>
+                    <span class="print-date" t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%y %H:%M')"/>
+                </div>
+                
+                <!-- Product Barcode Section -->
+                <div class="product-barcode-section">
+                    <div class="barcode-wrapper">
+                        <t t-if="move.product_id.barcode">
+                            <span t-esc="move.product_id.barcode" 
+                                  t-options="{'widget': 'barcode', 'quiet': 0, 'symbology': 'Code128', 'width': 850, 'height': 140, 'img_style': 'width:100%;height:100%'}"/>
+                        </t>
+                    </div>
+                    <div class="product-code">
+                        [<span t-esc="move.product_id.default_code or move.product_id.barcode or ''"/>]
+                    </div>
+                    <div class="product-name" t-esc="move.product_id.name"/>
+                </div>
+                
+                <!-- Flow Table: Origin / Destination / Delivery -->
+                <div class="flow-table">
+                    
+                    <!-- Determine if this is origin or destination move -->
+                    <t t-set="is_incoming" t-value="move.picking_id.picking_type_id.code == 'incoming'"/>
+                    <t t-set="origin_picking" t-value="move.picking_id if is_incoming else (move.move_orig_ids and move.move_orig_ids[0].picking_id or False)"/>
+                    <t t-set="dest_picking" t-value="move.move_dest_ids and move.move_dest_ids[0].picking_id if is_incoming else move.picking_id"/>
+                    
+                    <!-- Row 1: Origin Operation -->
+                    <div class="flow-row">
+                        <div class="flow-label">DE</div>
+                        <div class="flow-value">
+                            <t t-if="origin_picking">
+                                <t t-set="origin_name" t-value="origin_picking.name"/>
+                                <div class="barcode-wrapper-small">
+                                    <span t-esc="origin_name" 
+                                          t-options="{'widget': 'barcode', 'quiet': 0, 'symbology': 'Code128', 'width':700, 'height': 150, 'img_style': 'width:100%;height:100%'}"/>
+                                </div>
+                                <span class="operation-name" t-esc="origin_name"/>
+                            </t>
+                        </div>
+                    </div>
+                    
+                    <div class="flow-divider"></div>
+                    
+                    <!-- Row 2: Destination Operation or Location -->
+                    <div class="flow-row">
+                        <div class="flow-label">RESERVADO PARA</div>
+                        <div class="flow-value">
+                            <t t-if="dest_picking">
+                                <!-- Has destination picking -->
+                                <t t-set="dest_name" t-value="dest_picking.name"/>
+                                <div class="barcode-wrapper-small">
+                                    <span t-esc="dest_name" 
+                                          t-options="{'widget': 'barcode', 'quiet': 0, 'symbology': 'Code128', 'width':700, 'height': 150, 'img_style': 'width:100%;height:100%'}"/>
+                                </div>
+                                <span class="operation-name" t-esc="dest_name"/>
+                            </t>
+                            <t t-else="">
+                                <!-- No destination picking, show location -->
+                                <t t-set="dest_location" t-value="move.location_dest_id"/>
+                                <t t-if="dest_location.usage == 'internal'">
+                                    <span class="location-text" t-esc="dest_location.name"/>
+                                    <t t-if="dest_location.location_id">
+                                        <span class="location-parent"> (<t t-esc="dest_location.location_id.name"/>)</span>
+                                    </t>
+                                </t>
+                                <t t-else="">
+                                    <span class="location-text">Stock</span>
+                                </t>
+                            </t>
+                        </div>
+                    </div>
+                    
+                    <div class="flow-divider"></div>
+                    
+                    <!-- Row 3: Delivery Information -->
+                    <div class="flow-row">
+                        <div class="flow-label">ENTREGAR</div>
+                        <div class="flow-value delivery-info">
+                            <!-- Check for Sale Order -->
+                            <t t-if="dest_picking and dest_picking._fields.get('sale_id') and dest_picking.sale_id">
+                                <span class="delivery-ref">(<t t-esc="dest_picking.sale_id.name"/>)</span>
+                                <span class="delivery-partner" t-esc="dest_picking.sale_id.partner_id.name"/>
+                            </t>
+                            <!-- Check for Manufacturing Order -->
+                            <t t-elif="is_incoming and move.move_dest_ids and move.move_dest_ids[0]._fields.get('raw_material_production_id') and move.move_dest_ids[0].raw_material_production_id">
+                                <span class="delivery-ref">Producción</span>
+                                <span class="delivery-partner" t-esc="move.move_dest_ids[0].raw_material_production_id.name"/>
+                            </t>
+                            <t t-elif="not is_incoming and move._fields.get('raw_material_production_id') and move.raw_material_production_id">
+                                <span class="delivery-ref">Producción</span>
+                                <span class="delivery-partner" t-esc="move.raw_material_production_id.name"/>
+                            </t>
+                            <t t-else="">
+                                <!-- Fallback: show source document or partner -->
+                                <t t-set="source_doc" t-value="source if is_incoming else move.picking_id.origin"/>
+                                <t t-set="partner" t-value="move.picking_id.partner_id"/>
+                                
+                                <t t-if="source_doc">
+                                    <span class="delivery-ref" t-esc="source_doc"/>
+                                </t>
+                                <t t-if="partner">
+                                    <span class="delivery-partner" t-esc="partner.name"/>
+                                </t>
+                            </t>
+                        </div>
+                    </div>
+                    
+                </div>
+                
+                <!-- Footer: Quantity + Lot/Serial -->
+                <div class="footer-section">
+                    <span class="quantity">
+                        <t t-esc="j + 1"/> de <t t-esc="qty"/> 
+                        <t t-esc="move.product_uom.name"/>
+                    </span>
+                    <span class="separator">│</span>
+                    <span class="lot">
+                        <t t-if="move.lot_ids" t-esc="', '.join(move.lot_ids.mapped('name'))"/>
+                        <t t-else="">-</t>
+                    </span>
+                </div>
+                
+            </div>
+        </xpath>
+        
+    </template>
+
+</odoo>
