@@ -32,8 +32,9 @@ The labels are printed when you click "Print Labels" in the reception report wiz
 
 - **Model**: `stock.move`
 - **Inherits**: `stock.report_reception_report_label`
-- **Paper Format**: Dymo Label Sheet (100×70mm)
+- **Paper Format**: Custom 100×70mm (exclusive for reception labels)
 - **Font**: JetBrainsMono (monospace for better barcode readability)
+- **Barcode Engine**: Code128 with custom sizing (product: 850x140px, flow: 700x150px)
 
 ## Author
 

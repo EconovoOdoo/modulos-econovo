@@ -9,13 +9,14 @@
         ===========================================
         
         This module extends the standard Odoo reception report labels with:
-        - Product barcode (large)
-        - Origin operation barcode (picking where received)
-        - Destination operation barcode (picking where will be delivered)
+        - Product barcode (large, 850x140px Code128)
+        - Origin operation barcode (DE row with picking name)
+        - Destination operation barcode (RESERVADO PARA row with picking/location)
         - Delivery information (sale order, manufacturing order, or partner)
-        - Quantity and lot/serial number
+        - Quantity and lot/serial number in horizontal footer
         
-        Layout optimized for Dymo Label Sheet (100x70mm) with JetBrainsMono font.
+        Custom paperformat: 100x70mm thermal labels with 2mm margins.
+        Optimized for wkhtmltopdf with fixed height containers to prevent overflow.
     """,
     'author': 'Jose D. Leonett',
     'website': 'https://github.com/josedleonett',
@@ -24,6 +25,7 @@
         'stock',
     ],
     'data': [
+        'data/paperformat.xml',
         'views/templates.xml',
     ],
     'assets': {
