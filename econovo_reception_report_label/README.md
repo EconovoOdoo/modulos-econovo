@@ -12,15 +12,15 @@ Custom reception report labels for Odoo 17 with enhanced barcode support.
 
 ## Label Layout
 
-The label is optimized for Dymo Label Sheet (100×70mm) and includes:
+The label is optimized for 100×70mm thermal labels and includes:
 
 1. **Header**: Company logo and print date/time
-2. **Product Section**: Large barcode, internal reference, and product name
+2. **Product Section**: Large barcode (850×140px), internal reference, and product name
 3. **Flow Table**: Three-row table showing:
-   - DE (Origin): Source picking operation with barcode
-   - HACIA (Destination): Target picking operation with barcode (or location if no picking)
+   - DE (Origin): Source picking operation with barcode (700×150px)
+   - RESERVADO PARA (Reserved for): Target picking operation with barcode (700×150px)
    - ENTREGAR (Deliver to): Sale order/Manufacturing order/Partner information
-4. **Footer**: Quantity with UoM and lot/serial numbers
+4. **Footer**: Horizontal layout with quantity, UoM, and lot/serial numbers
 
 ## Usage
 
@@ -32,8 +32,16 @@ The labels are printed when you click "Print Labels" in the reception report wiz
 
 - **Model**: `stock.move`
 - **Inherits**: `stock.report_reception_report_label`
-- **Paper Format**: Dymo Label Sheet (100×70mm)
-- **Font**: JetBrainsMono (monospace for better barcode readability)
+- **Paper Format**: 100×70mm thermal label
+- **Barcode Engine**: Code128 via QWeb barcode widget
+  - Product barcode: 850×140px
+  - Flow barcodes (origin/destination): 700×150px
+- **Fonts**: JetBrainsMono, DejaVuSansMono, PlusJakartaSans
+- **Layout**: Fixed heights, overflow:hidden, flexbox with row direction in footer
+- **Optimizations**: 
+  - Removed conflicting width properties to prevent overflow
+  - Reduced line-height to eliminate extra spacing
+  - Footer elements use horizontal layout (flex-direction:row) with 2mm gap
 
 ## Author
 
