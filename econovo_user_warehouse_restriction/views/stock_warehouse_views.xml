@@ -2,20 +2,75 @@
 <odoo>
     <data>
         
-        <!-- Inherit stock.warehouse form view to add transit checkbox -->
-        <record id="view_warehouse_form_inherit_transit" model="ir.ui.view">
-            <field name="name">stock.warehouse.form.inherit.econovo.transit</field>
+        <!-- 
+            ========================================================================
+            STOCK WAREHOUSE FORM VIEW - Permission Matrix
+            ========================================================================
+            
+            Adds "User Permissions" page to warehouse configuration.
+            Displays user_permission_ids One2many for granular permission matrix.
+            Button opens centralized permission matrix view.
+        -->
+        
+        <!-- Inherit stock.warehouse form to add permission matrix page -->
+        <record id="view_warehouse_form_inherit_restriction" model="ir.ui.view">
+            <field name="name">stock.warehouse.form.inherit.econovo.user.restriction</field>
             <field name="model">stock.warehouse</field>
+            <field name="priority" eval="1"/>
             <field name="inherit_id" ref="stock.view_warehouse"/>
             <field name="arch" type="xml">
-                <xpath expr="//field[@name='user_ids']" position="after">
-                    <field name="is_transit_warehouse" 
-                           invisible="user_ids"/>
-                    <div class="alert alert-info" role="alert" 
-                         invisible="not is_transit_warehouse">
-                        <strong>Transit Warehouse:</strong> This warehouse is accessible by all users for transit operations,
-                        regardless of their warehouse assignments. Useful for inter-warehouse transfers.
-                    </div>
+                
+                <!-- Make notebook visible for restricted users -->
+                <xpath expr="//notebook[@colspan='4' and @groups='stock.group_adv_location,stock.group_stock_multi_warehouses']"
+                       position="attributes">
+                    <attribute name="groups">
+                        stock.group_adv_location,stock.group_stock_multi_warehouses,econovo_user_warehouse_restriction.user_warehouse_restriction_group_manager
+                    </attribute>
+                </xpath>
+                
+                <!-- Ensure warehouse config page keeps its original groups -->
+                <xpath expr="//notebook/page[@name='warehouse_config']"
+                       position="attributes">
+                    <attribute name="groups">
+                        stock.group_adv_location,stock.group_stock_multi_warehouses
+                    </attribute>
+                </xpath>
+                
+                <!-- Add "User Permissions" page -->
+                <xpath expr="//notebook" position="inside">
+                    <page string="User Permissions"
+                          groups="econovo_user_warehouse_restriction.user_warehouse_restriction_group_manager"
+                          name="user_permissions" colspan="4">
+                        
+                        <div class="alert alert-info" role="alert">
+                            <strong>Permission Matrix (v2.0):</strong> Configure granular permissions for each user.
+                            Each row defines 10 permission flags for one user in this warehouse.
+                        </div>
+                        
+                        <field name="user_permission_ids" context="{'default_warehouse_id': id}">
+                            <tree editable="bottom">
+                                <field name="warehouse_id" column_invisible="1"/>
+                                <field name="user_id" required="1"/>
+                                <field name="full_control" widget="boolean_toggle"/>
+                                <field name="view_only" widget="boolean_toggle"/>
+                                <field name="allow_as_source" widget="boolean_toggle"/>
+                                <field name="allow_as_destination" widget="boolean_toggle"/>
+                                <field name="allow_inventory_adjustment" widget="boolean_toggle"/>
+                                <field name="allow_create_picking" widget="boolean_toggle"/>
+                                <field name="allow_write_picking" widget="boolean_toggle"/>
+                                <field name="allow_delete_picking" widget="boolean_toggle"/>
+                                <field name="blocked_location_ids" widget="many2many_tags" optional="hide"/>
+                                <field name="allow_transit" widget="boolean_toggle"/>
+                            </tree>
+                        </field>
+                        
+                        <!-- Button to configure permissions in detail -->
+                        <button string="Configure User Permissions"
+                                class="btn btn-primary mt-2"
+                                icon="fa-cog"
+                                type="object" 
+                                name="action_open_users_view"/>
+                    </page>
                 </xpath>
             </field>
         </record>

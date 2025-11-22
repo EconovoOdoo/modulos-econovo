@@ -3,6 +3,14 @@
     <data noupdate="0">
         
         <!-- 
+            ========================================================================
+            SECURITY GROUPS ARCHITECTURE
+            ========================================================================
+            
+            This module consolidates groups from:
+            1. user_warehouse_restriction (Cybrosys Technologies - Base)
+            2. econovo_user_warehouse_restriction (Econovo - Extensions)
+            
             GROUP INHERITANCE STRUCTURE:
             ============================
             
@@ -18,11 +26,108 @@
             3. No group conflicts (Full is always more restrictive than Source Only)
         -->
         
+        <!-- ================================================================== -->
+        <!-- BASE GROUP (from Cybrosys user_warehouse_restriction)             -->
+        <!-- ================================================================== -->
+        
+        <!-- BYPASS GROUP: Unrestricted Access (for Administrators) -->
+        <record id="group_warehouse_unrestricted" model="res.groups">
+            <field name="name">Warehouse - Unrestricted Access (Bypass All)</field>
+            <field name="category_id" ref="base.module_category_hidden"/>
+            <field name="comment">
+                BYPASS GROUP - For System Administrators Only
+                
+                Users in this group have COMPLETE BYPASS of ALL warehouse restrictions:
+                - Record Rules explicitly exclude this group (unrestricted SQL access)
+                - Python Constraints check for this group and skip validation
+                - Same permissions as before module installation
+                
+                This group is automatically assigned to all users with base.group_system.
+                See: base.group_system has this group in implied_ids.
+                
+                DO NOT manually assign this group to non-administrators.
+                This would give them unrestricted access to all warehouses.
+            </field>
+        </record>
+        
+        <!-- Make base.group_system imply unrestricted access -->
+        <record id="base.group_system" model="res.groups">
+            <field name="implied_ids" eval="[(4, ref('econovo_user_warehouse_restriction.group_warehouse_unrestricted'))]"/>
+        </record>
+        
+        <record id="user_warehouse_restriction_group_user" model="res.groups">
+            <field name="name">Restrict Warehouse for Users</field>
+            <field name="category_id" ref="base.module_category_hidden"/>
+            <field name="comment">
+                Base restriction group (from Cybrosys Technologies).
+                
+                Provides foundational warehouse restrictions:
+                - Filters stock.picking.type by warehouse.user_ids
+                - Filters stock.location by user.location_ids (blacklist)
+                - Filters stock.warehouse by user_ids
+                - Filters stock.picking by warehouse assignment
+                
+                CRITICAL - ADMINISTRATOR BYPASS:
+                ================================
+                System Administrators (base.group_system) are AUTOMATICALLY EXCLUDED:
+                - NOT auto-assigned during installation (see hooks.py)
+                - NOT auto-assigned when creating new admin users (see res_users.py)
+                - Python constraints check for base.group_system and skip validation
+                - Record Rules ONLY apply to users WITH this group
+                
+                Result: Administrators have UNRESTRICTED warehouse access by default.
+                
+                WARNING: If you MANUALLY assign this group to an administrator,
+                they WILL be subject to restrictions. This is NOT recommended.
+                Use warehouse.user_ids to grant selective access instead.
+                
+                This group is HIDDEN and automatically assigned when users
+                receive Source Only or Full restriction groups via inheritance.
+                
+                DO NOT assign this group directly to users. Use:
+                - Source Only: For regional managers (source validation only)
+                - Full: For warehouse operators (source + destination validation)
+            </field>
+        </record>
+        
+        <!-- ================================================================== -->
+        <!-- ECONOVO EXTENSION GROUPS                                          -->
+        <!-- ================================================================== -->
+        
+        <!-- Management Groups for Permission Configuration -->
+        <record id="user_warehouse_restriction_group_manager" model="res.groups">
+            <field name="name">Warehouse Permissions Manager</field>
+            <field name="category_id" ref="base.module_category_inventory"/>
+            <field name="implied_ids" eval="[(4, ref('stock.group_stock_manager'))]"/>
+            <field name="comment">
+                Users in this group can CONFIGURE warehouse permissions.
+                
+                Permissions:
+                - Create/modify/delete warehouse.user.permission records
+                - Access centralized permission matrix view
+                - Configure per-warehouse user permissions
+                
+                Use case: Warehouse managers, HR managers who assign user permissions.
+                
+                Note: This group automatically implies stock.group_stock_manager
+                to ensure managers can access configuration menus.
+            </field>
+        </record>
+        
+        <!-- Make stock managers automatically get permission manager access -->
+        <record id="stock.group_stock_manager" model="res.groups">
+            <field name="implied_ids" eval="[(4, ref('econovo_user_warehouse_restriction.user_warehouse_restriction_group_manager'))]"/>
+        </record>
+        
+        <!-- ================================================================== -->
+        <!-- ECONOVO EXTENSION GROUPS                                          -->
+        <!-- ================================================================== -->
+        
         <!-- Group: Warehouse Restriction - Source Only (Base restriction level) -->
         <record id="group_warehouse_restriction_source_only" model="res.groups">
             <field name="name">Warehouse Restriction - Source Only</field>
             <field name="category_id" ref="base.module_category_inventory"/>
-            <field name="implied_ids" eval="[(4, ref('user_warehouse_restriction.user_warehouse_restriction_group_user'))]"/>
+            <field name="implied_ids" eval="[(4, ref('econovo_user_warehouse_restriction.user_warehouse_restriction_group_user'))]"/>
             <field name="comment">
                 Users in this group have ONLY source restrictions enforced.
                 
@@ -36,7 +141,7 @@
                 Use case: Regional managers or logistics coordinators who need to redistribute
                 stock from their assigned warehouses to any destination warehouse.
                 
-                Inheritance: Inherits from user_warehouse_restriction_group_user (base module)
+                Inheritance: Inherits from user_warehouse_restriction_group_user (base group)
             </field>
         </record>
         

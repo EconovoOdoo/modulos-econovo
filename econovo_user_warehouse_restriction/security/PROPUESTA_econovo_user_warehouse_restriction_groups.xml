@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        
+        <!-- 
+            ========================================================================
+            WAREHOUSE RESTRICTION - SECURITY GROUPS ARCHITECTURE
+            ========================================================================
+            
+            INHERITANCE CHAIN (from least to most restrictive):
+            ====================================================
+            
+            Unrestricted (No group) 
+                ↓
+            Base → Read Only → Send Only → Bidirectional → Full Restriction
+            
+            PHILOSOPHY:
+            ===========
+            - Each level INHERITS permissions from parent (implied_ids)
+            - Record Rules use MOST SPECIFIC group (bottom of chain)
+            - Python Constraints check from MOST to LEAST restrictive
+            - Default for new users: FULL RESTRICTION (secure by default)
+            
+            PERMISSION LEVELS:
+            ==================
+            
+            [0] UNRESTRICTED (base.group_system)
+                - Bypass ALL rules (admin experience)
+                - No group assignment needed
+                - Auto-assigned to base.group_system via implied_ids
+            
+            [1] BASE
+                - Activates module features
+                - Filters warehouses by user_ids (Record Rules)
+                - Foundation for all restriction groups
+            
+            [2] READ ONLY
+                - Can view assigned warehouses
+                - CANNOT create/modify inventory operations
+                - Use case: Auditors, consultants, reporting users
+            
+            [3] SEND ONLY (Destination Only)
+                - Can SEND stock to any destination
+                - Can ONLY RECEIVE from assigned warehouses
+                - Use case: Regional distribution centers
+            
+            [4] BIDIRECTIONAL
+                - Can SEND to any warehouse
+                - Can RECEIVE from any warehouse
+                - CANNOT do operations in non-assigned warehouses
+                - Use case: Hub/transit warehouses
+            
+            [5] FULL RESTRICTION (Default)
+                - Source AND Destination must be assigned
+                - Most restrictive level
+                - DEFAULT for new internal users
+                - Use case: Standard warehouse operators
+        -->
+        
+        <!-- ================================================================== -->
+        <!-- LEVEL 0: UNRESTRICTED (Admin Bypass)                             -->
+        <!-- ================================================================== -->
+        
+        <record id="group_warehouse_unrestricted" model="res.groups">
+            <field name="name">Warehouse - Unrestricted Access</field>
+            <field name="category_id" ref="base.module_category_hidden"/>
+            <field name="comment">
+                ADMINISTRATOR BYPASS GROUP
+                
+                Users with this group have COMPLETE BYPASS of ALL warehouse restrictions:
+                - Same permissions as before module installation
+                - Record Rules do NOT apply
+                - Python Constraints skip validation
+                - Auto-assigned to base.group_system (administrators)
+                
+                DO NOT manually assign to non-administrators.
+                This would grant unrestricted warehouse access.
+            </field>
+        </record>
+        
+        <!-- Auto-assign unrestricted to system administrators -->
+        <record id="base.group_system" model="res.groups">
+            <field name="implied_ids" eval="[(4, ref('group_warehouse_unrestricted'))]"/>
+        </record>
+        
+        <!-- ================================================================== -->
+        <!-- LEVEL 1: BASE (Module Activation)                                -->
+        <!-- ================================================================== -->
+        
+        <record id="group_warehouse_base" model="res.groups">
+            <field name="name">Warehouse - Restricted Access</field>
+            <field name="category_id" ref="base.module_category_inventory_inventory"/>
+            <field name="comment">
+                BASE RESTRICTION GROUP
+                
+                Foundation for all warehouse restrictions:
+                - Filters stock.picking.type by warehouse.user_ids
+                - Filters stock.location by user.location_ids (blacklist)
+                - Filters stock.warehouse by user_ids
+                - Filters stock.picking by warehouse assignment
+                
+                All restriction groups (Read Only, Send Only, etc.) inherit from this.
+                
+                IMPORTANT: This group alone provides basic filtering.
+                For advanced restrictions, use specialized groups that inherit from this.
+                
+                ADMINISTRATOR BYPASS:
+                - System admins (base.group_system) are EXCLUDED
+                - NOT auto-assigned during installation (see hooks.py)
+                - Record Rules only apply to users WITH this group
+            </field>
+        </record>
+        
+        <!-- ================================================================== -->
+        <!-- LEVEL 2: READ ONLY                                               -->
+        <!-- ================================================================== -->
+        
+        <record id="group_warehouse_readonly" model="res.groups">
+            <field name="name">Warehouse - Read Only</field>
+            <field name="category_id" ref="base.module_category_inventory_inventory"/>
+            <field name="implied_ids" eval="[(4, ref('group_warehouse_base'))]"/>
+            <field name="comment">
+                READ ONLY ACCESS
+                
+                Inherits: Base
+                
+                Permissions:
+                - Can VIEW all assigned warehouses
+                - Can VIEW inventory, pickings, quants in assigned warehouses
+                - CANNOT create new pickings
+                - CANNOT modify inventory operations
+                - CANNOT create/edit/delete quants
+                
+                Use Cases:
+                - Auditors who need visibility but not modification rights
+                - External consultants reviewing inventory
+                - Reporting/analytics users
+                - Quality control observers
+                
+                Implementation:
+                - Record Rules: read=True, write/create/unlink=False
+                - Python Constraints: Skip (no modification allowed)
+            </field>
+        </record>
+        
+        <!-- ================================================================== -->
+        <!-- LEVEL 3: SEND ONLY (Destination Only)                            -->
+        <!-- ================================================================== -->
+        
+        <record id="group_warehouse_send_only" model="res.groups">
+            <field name="name">Warehouse - Send Only</field>
+            <field name="category_id" ref="base.module_category_inventory_inventory"/>
+            <field name="implied_ids" eval="[(4, ref('group_warehouse_readonly'))]"/>
+            <field name="comment">
+                SEND ONLY ACCESS (Destination Only Restriction)
+                
+                Inherits: Read Only → Base
+                
+                Permissions:
+                - All Read Only permissions +
+                - Can CREATE pickings in assigned warehouses
+                - Can SEND stock to ANY destination (no destination validation)
+                - Can ONLY RECEIVE from assigned warehouses (source validation)
+                - Can do INTERNAL moves within assigned warehouses
+                
+                Restrictions:
+                - CANNOT receive stock FROM non-assigned warehouses
+                - CANNOT remove stock from non-assigned warehouses
+                
+                Use Cases:
+                - Regional distribution centers that send to retail locations
+                - Central warehouses redistributing stock
+                - Suppliers' internal logistics (send to customers)
+                
+                Validation Logic (Python Constraint):
+                =====================================
+                ONLY validate SOURCE warehouse:
+                - WH1 → WH2: ✅ ALLOWED (can send anywhere)
+                - WH2 → WH1: ❌ BLOCKED (cannot receive from WH2)
+                - WH1 → WH1: ✅ ALLOWED (internal moves OK)
+                
+                Example Scenario:
+                ================
+                User assigned to WH_CENTRAL:
+                - WH_CENTRAL → RETAIL_A: ✅ Send products (redistribution)
+                - WH_CENTRAL → RETAIL_B: ✅ Send products (redistribution)
+                - RETAIL_A → WH_CENTRAL: ❌ Cannot pull stock from retail
+                - WH_CENTRAL → WH_CENTRAL: ✅ Internal moves
+            </field>
+        </record>
+        
+        <!-- ================================================================== -->
+        <!-- LEVEL 4: BIDIRECTIONAL                                           -->
+        <!-- ================================================================== -->
+        
+        <record id="group_warehouse_bidirectional" model="res.groups">
+            <field name="name">Warehouse - Bidirectional</field>
+            <field name="category_id" ref="base.module_category_inventory_inventory"/>
+            <field name="implied_ids" eval="[(4, ref('group_warehouse_send_only'))]"/>
+            <field name="comment">
+                BIDIRECTIONAL ACCESS (Send + Receive)
+                
+                Inherits: Send Only → Read Only → Base
+                
+                Permissions:
+                - All Send Only permissions +
+                - Can SEND stock to ANY warehouse (no destination validation)
+                - Can RECEIVE stock FROM any warehouse (no source validation)
+                - Can do cross-warehouse operations as intermediary
+                
+                Restrictions:
+                - CANNOT create pickings in non-assigned warehouses
+                - Source OR Destination must be assigned warehouse
+                
+                Use Cases:
+                - Hub/Transit warehouses that receive and redistribute
+                - Cross-docking facilities
+                - Central logistics coordinators
+                - Inter-warehouse transfer managers
+                
+                Validation Logic (Python Constraint):
+                =====================================
+                Validate that operation involves assigned warehouse:
+                - (Source IN assigned) OR (Dest IN assigned)
+                
+                Examples:
+                ========
+                User assigned to WH_HUB:
+                - WH_HUB → RETAIL_A: ✅ Send (hub distribution)
+                - RETAIL_B → WH_HUB: ✅ Receive (hub consolidation)
+                - WH_HUB → WH_HUB: ✅ Internal moves
+                - RETAIL_A → RETAIL_B: ❌ Neither is assigned warehouse
+                
+                Difference from Send Only:
+                ==========================
+                - Send Only: Can send anywhere, CANNOT receive from non-assigned
+                - Bidirectional: Can send anywhere, CAN receive from anywhere
+            </field>
+        </record>
+        
+        <!-- ================================================================== -->
+        <!-- LEVEL 5: FULL RESTRICTION (Default - Most Restrictive)           -->
+        <!-- ================================================================== -->
+        
+        <record id="group_warehouse_full" model="res.groups">
+            <field name="name">Warehouse - Full Restriction</field>
+            <field name="category_id" ref="base.module_category_inventory_inventory"/>
+            <field name="implied_ids" eval="[(4, ref('group_warehouse_bidirectional'))]"/>
+            <field name="comment">
+                FULL RESTRICTION (Source + Destination Locked)
+                
+                Inherits: Bidirectional → Send Only → Read Only → Base
+                
+                Permissions:
+                - All Bidirectional permissions BUT:
+                - BOTH source AND destination must be assigned warehouses
+                - Most restrictive validation level
+                
+                Restrictions:
+                - CANNOT send to non-assigned warehouses
+                - CANNOT receive from non-assigned warehouses
+                - CANNOT do ANY operation outside assigned warehouses
+                
+                Use Cases:
+                - Standard warehouse operators
+                - Location-specific staff
+                - Users who should NEVER access other warehouses
+                - DEFAULT for all new internal users (secure by default)
+                
+                Validation Logic (Python Constraint):
+                =====================================
+                Validate BOTH source AND destination:
+                - (Source IN assigned) AND (Dest IN assigned)
+                
+                Examples:
+                ========
+                User assigned to WH1 only:
+                - WH1 → WH1: ✅ Internal moves within assigned warehouse
+                - WH1 → WH2: ❌ Destination not assigned
+                - WH2 → WH1: ❌ Source not assigned
+                - WH2 → WH3: ❌ Neither assigned
+                
+                User assigned to WH1 + WH2:
+                - WH1 → WH2: ✅ Both assigned
+                - WH2 → WH1: ✅ Both assigned
+                - WH1 → WH3: ❌ WH3 not assigned
+                
+                Why DEFAULT:
+                ============
+                - Least privilege principle
+                - Prevents accidental cross-warehouse transfers
+                - Administrators must explicitly grant broader access
+                - Secure by default approach
+                
+                To grant broader access:
+                ========================
+                - Assign user to multiple warehouses: Full but multi-WH
+                - Move to Bidirectional: Hub/transit operations
+                - Move to Send Only: Distribution centers
+                - Move to Read Only: Auditors
+            </field>
+        </record>
+        
+    </data>
+</odoo>

@@ -1,15 +1,63 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data>
+    <!-- 
+        ========================================================================
+        RES.USERS FORM VIEWS - Warehouse Permissions
+        ========================================================================
         
-        <!-- Note: This module extends user_warehouse_restriction (Cybrosys Technologies)
-             
-             For warehouse permissions, use the base module's fields:
-             - warehouse.user_ids: Assign users to warehouses
-             - user.allowed_warehouse_ids: View user's assigned warehouses
-             
-             This ensures compatibility with base module Record Rules.
-        -->
-        
-    </data>
+        Adds "Warehouse Permissions" page to user form showing:
+        - warehouse_permission_ids: Permission matrix for this user (all warehouses)
+    -->
+    
+    <!-- Add Warehouse Permissions page to user form -->
+    <record id="view_users_form" model="ir.ui.view">
+        <field name="name">res.users.view.form.inherit.econovo.user.warehouse.restriction</field>
+        <field name="model">res.users</field>
+        <field name="mode">extension</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='security']" position="after">
+                <page name="warehouse_permissions" string="Warehouse Permissions"
+                      groups="econovo_user_warehouse_restriction.user_warehouse_restriction_group_manager">
+                    
+                    <div class="alert alert-info" role="alert">
+                        <strong>Permission Matrix:</strong> Configure granular warehouse access for this user.
+                        Each row defines 10 permission flags for one warehouse.
+                    </div>
+                    
+                    <field name="warehouse_permission_ids" context="{'default_user_id': id}">
+                        <tree editable="bottom">
+                            <field name="user_id" column_invisible="1"/>
+                            <field name="warehouse_id" required="1"/>
+                            <field name="full_control" widget="boolean_toggle"/>
+                            <field name="view_only" widget="boolean_toggle"/>
+                            <field name="allow_as_source" widget="boolean_toggle"/>
+                            <field name="allow_as_destination" widget="boolean_toggle"/>
+                            <field name="allow_inventory_adjustment" widget="boolean_toggle"/>
+                            <field name="allow_create_picking" widget="boolean_toggle"/>
+                            <field name="allow_write_picking" widget="boolean_toggle"/>
+                            <field name="allow_delete_picking" widget="boolean_toggle"/>
+                            <field name="blocked_location_ids" widget="many2many_tags" optional="hide"/>
+                            <field name="allow_transit" widget="boolean_toggle"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+    
+    <!-- Users simple form view inherited -->
+    <record id="view_users_simple_form" model="ir.ui.view">
+        <field name="name">res.users.view.simple.form.econovo.user.warehouse.restriction</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_simple_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='mobile']" position="after">
+                <group>
+                    <field name="warehouse_permission_ids" widget="many2many_tags" readonly="1" 
+                           string="Warehouse Access"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
 </odoo>

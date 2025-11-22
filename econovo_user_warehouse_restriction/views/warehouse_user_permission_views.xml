@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- 
+        ========================================================================
+        WAREHOUSE USER PERMISSION VIEWS - Permission Matrix
+        ========================================================================
+        
+        Views for warehouse.user.permission model - granular permission configuration
+    -->
+    
+    <!-- ====================================================================== -->
+    <!-- TREE VIEW - Permission Matrix (Editable List)                        -->
+    <!-- ====================================================================== -->
+    
+    <record id="warehouse_user_permission_tree_view" model="ir.ui.view">
+        <field name="name">warehouse.user.permission.tree</field>
+        <field name="model">warehouse.user.permission</field>
+        <field name="arch" type="xml">
+            <tree string="User Permissions" editable="bottom" create="true" delete="true">
+                <!-- Core Identification -->
+                <field name="user_id" required="1"/>
+                <field name="warehouse_id" required="1" invisible="context.get('default_warehouse_id')"/>
+                <field name="company_id" optional="hide"/>
+                
+                <!-- Special Modes (Mutually Exclusive) -->
+                <field name="full_control" widget="boolean_toggle"/>
+                <field name="view_only" widget="boolean_toggle"/>
+                
+                <!-- Warehouse-Level Permissions -->
+                <field name="allow_as_source" widget="boolean_toggle"/>
+                <field name="allow_as_destination" widget="boolean_toggle"/>
+                <field name="allow_inventory_adjustment" widget="boolean_toggle"/>
+                
+                <!-- Operation-Level Permissions -->
+                <field name="allow_create_picking" widget="boolean_toggle"/>
+                <field name="allow_write_picking" widget="boolean_toggle"/>
+                <field name="allow_delete_picking" widget="boolean_toggle"/>
+                
+                <!-- Location Restrictions -->
+                <field name="blocked_location_ids" widget="many2many_tags" optional="hide"/>
+                <field name="allow_transit" widget="boolean_toggle"/>
+            </tree>
+        </field>
+    </record>
+    
+    <!-- ====================================================================== -->
+    <!-- FORM VIEW - Detailed Permission Configuration                        -->
+    <!-- ====================================================================== -->
+    
+    <record id="warehouse_user_permission_form_view" model="ir.ui.view">
+        <field name="name">warehouse.user.permission.form</field>
+        <field name="model">warehouse.user.permission</field>
+        <field name="arch" type="xml">
+            <form string="Warehouse User Permission">
+                <sheet>
+                    <group>
+                        <group name="core_info" string="Core Information">
+                            <field name="user_id" required="1"/>
+                            <field name="warehouse_id" required="1"/>
+                            <field name="company_id"/>
+                        </group>
+                        
+                        <group name="special_modes" string="Special Modes">
+                            <field name="full_control" widget="boolean_toggle"/>
+                            <field name="view_only" widget="boolean_toggle"/>
+                        </group>
+                    </group>
+                    
+                    <notebook>
+                        <page name="warehouse_permissions" string="Warehouse Permissions">
+                            <group>
+                                <group name="basic_access" string="Basic Access">
+                                    <field name="allow_as_source" widget="boolean_toggle"/>
+                                    <field name="allow_as_destination" widget="boolean_toggle"/>
+                                    <field name="allow_inventory_adjustment" widget="boolean_toggle"/>
+                                </group>
+                                
+                                <group name="transit" string="Transit Access">
+                                    <field name="allow_transit" widget="boolean_toggle"/>
+                                </group>
+                            </group>
+                        </page>
+                        
+                        <page name="operation_permissions" string="Operation Permissions">
+                            <group>
+                                <group name="picking_operations" string="Picking Operations">
+                                    <field name="allow_create_picking" widget="boolean_toggle"/>
+                                    <field name="allow_write_picking" widget="boolean_toggle"/>
+                                    <field name="allow_delete_picking" widget="boolean_toggle"/>
+                                </group>
+                            </group>
+                        </page>
+                        
+                        <page name="location_restrictions" string="Location Restrictions">
+                            <group>
+                                <group name="blacklist" string="Blocked Locations (Blacklist)">
+                                    <field name="blocked_location_ids" widget="many2many_tags" nolabel="1">
+                                        <tree>
+                                            <field name="complete_name"/>
+                                        </tree>
+                                    </field>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    
+    <!-- ====================================================================== -->
+    <!-- SEARCH VIEW - Filtering and Grouping                                 -->
+    <!-- ====================================================================== -->
+    
+    <record id="warehouse_user_permission_search_view" model="ir.ui.view">
+        <field name="name">warehouse.user.permission.search</field>
+        <field name="model">warehouse.user.permission</field>
+        <field name="arch" type="xml">
+            <search string="Search User Permissions">
+                <!-- Search Fields -->
+                <field name="user_id"/>
+                <field name="warehouse_id"/>
+                
+                <!-- Filters -->
+                <filter name="filter_full_control" string="Full Control" domain="[('full_control', '=', True)]"/>
+                <filter name="filter_view_only" string="View Only" domain="[('view_only', '=', True)]"/>
+                <separator/>
+                <filter name="filter_source_allowed" string="Source Allowed" domain="[('allow_as_source', '=', True)]"/>
+                <filter name="filter_dest_allowed" string="Destination Allowed" domain="[('allow_as_destination', '=', True)]"/>
+                <filter name="filter_inventory_allowed" string="Inventory Allowed" domain="[('allow_inventory_adjustment', '=', True)]"/>
+                <separator/>
+                <filter name="filter_create_allowed" string="Can Create Pickings" domain="[('allow_create_picking', '=', True)]"/>
+                <filter name="filter_write_allowed" string="Can Write Pickings" domain="[('allow_write_picking', '=', True)]"/>
+                <filter name="filter_delete_allowed" string="Can Delete Pickings" domain="[('allow_delete_picking', '=', True)]"/>
+                
+                <!-- Group By -->
+                <group expand="0" string="Group By">
+                    <filter name="group_user" string="User" context="{'group_by': 'user_id'}"/>
+                    <filter name="group_warehouse" string="Warehouse" context="{'group_by': 'warehouse_id'}"/>
+                    <filter name="group_company" string="Company" context="{'group_by': 'company_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    
+    <!-- ====================================================================== -->
+    <!-- ACTIONS                                                               -->
+    <!-- ====================================================================== -->
+    
+    <record id="action_warehouse_user_permission" model="ir.actions.act_window">
+        <field name="name">User Warehouse Permissions</field>
+        <field name="res_model">warehouse.user.permission</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new permission record
+            </p>
+            <p>
+                Configure granular permissions for users to access specific warehouses.<br/>
+                Each record defines 10 permission flags for one user in one warehouse.
+            </p>
+        </field>
+    </record>
+    
+    <!-- ====================================================================== -->
+    <!-- MENU ITEM (under Inventory → Configuration)                          -->
+    <!-- ====================================================================== -->
+    
+    <menuitem
+        id="menu_warehouse_user_permission"
+        name="User Warehouse Permissions"
+        parent="stock.menu_warehouse_config"
+        action="action_warehouse_user_permission"
+        groups="econovo_user_warehouse_restriction.user_warehouse_restriction_group_manager"
+        sequence="99"/>
+
+</odoo>

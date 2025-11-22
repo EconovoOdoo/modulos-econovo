@@ -1,134 +1,162 @@
 # -*- coding: utf-8 -*-
 {
-    'name': 'Econovo - User Warehouse Restriction Extension',
-    'version': '17.0.1.1.0',
-    'category': 'Warehouse',
-    'summary': 'Extends User Warehouse Restriction with Stock Quant/Move controls and flexible restriction levels',
-    'description': """
-Econovo User Warehouse Restriction Extension
-=============================================
+    "name": "Econovo - User Warehouse Restriction",
+    "version": "17.0.1.0.0",
+    "category": "Warehouse",
+    "summary": "Granular warehouse access control with permission matrix (10 flags per user/warehouse)",
+    "description": """
+Econovo User Warehouse Restriction
+===================================
 
-This module extends the base `user_warehouse_restriction` module (Cybrosys Technologies)
-to provide comprehensive warehouse access control with flexible restriction levels and
-transit warehouse support for inter-warehouse collaboration.
+Comprehensive warehouse access control system with granular permission matrix.
 
-Architecture:
--------------
-Base Module Provides:
-    - 1 security group (User Warehouse Restriction)
-    - warehouse.user_ids field (M2M: users assigned to warehouses)
-    - 4 Record Rules for stock.picking.type, stock.location, stock.warehouse, stock.picking
-    - write() validation preventing self-removal from warehouses
+Permission Matrix System:
+--------------------------
+10 granular permission flags per user, per warehouse:
 
-This Extension Adds (via Group Inheritance):
-    - 2 granular groups with inheritance chain:
-      * Source Only (inherits base group) - validates source warehouse only
-      * Full (inherits Source Only) - validates source + destination warehouses
-    - 5 Record Rules filling security gaps: stock.quant, stock.move (x2), stock.move.line (x2)
-    - Transit system: is_transit_warehouse, is_transit_location flags
-    - Python constraint: group-aware validation logic (checks most specific group first)
+**Special Modes:**
+- Full Control: Administrator mode (auto-enables all 10 flags)
+- View Only: Read-only access (blocks all write operations)
 
-Group Inheritance Chain:
-    Base (Cybrosys) → Source Only (Econovo) → Full (Econovo)
+**Warehouse-Level Permissions:**
+- Allow as Source: Use warehouse as stock source (outbound transfers)
+- Allow as Destination: Use warehouse as stock destination (inbound transfers)
+- Allow Inventory Adjustment: Perform inventory adjustments (stock corrections)
 
-Security Enhancements:
----------------------
-The base module restricts access to picking types, locations, warehouses,
-and pickings. This extension adds critical missing restrictions for:
+**Operation-Level Permissions:**
+- Allow Create Picking: Create new pickings (initiate transfers)
+- Allow Write Picking: Modify existing pickings (edit draft transfers)
+- Allow Delete Picking: Delete pickings (cancel transfers)
 
-* **Stock Quants** (inventory adjustments) - Prevents bypass via Inventory menu
-* **Stock Moves** (stock movements) - Controls source/destination with group-specific logic
-* **Stock Move Lines** (detailed operations) - Enforces restrictions at operation level
+**Location Restrictions:**
+- Blocked Locations: Per-warehouse location blacklist (exclude QC, High Value zones)
+- Allow Transit: Bypass transit location restrictions (shared transit areas)
 
 Key Features:
 -------------
+- Granular Control: 10 permission flags per user, per warehouse
+- Per-Warehouse Blacklist: Location restrictions specific to each warehouse
+- Special Modes: Full Control & View Only for quick configuration
+- Transit Control: Per-user transit location bypass
+- Flexible Matrix: Different permissions per warehouse for same user
 
-1. **Two-Level Restriction Groups** (both inherit base group):
-   
-   * **Full (Source + Destination)**: Both source AND destination must be in allowed warehouses
-     - Use case: Warehouse operators who should only work within their assigned warehouse
-     - Validation: Checks BOTH move.location_id AND move.location_dest_id warehouses
-   
-   * **Source Only**: Only source restricted, any destination allowed
-     - Use case: Regional managers redistributing stock from their warehouse to others
-     - Validation: Checks ONLY move.location_id warehouse, destination unrestricted
+Use Cases:
+----------
 
-2. **Transit Warehouse System**:
-   * Mark warehouses as "Transit/Shared" for inter-warehouse collaboration
-   * Mark locations as "Transit/Shared" for temporary stock staging
-   * Enables User1 (WH1) → Transit WH → User2 (WH2) workflows
-   * Blocks direct User1 → WH2 transfers while allowing controlled transit routes
+**Full Control (Single Warehouse):**
+- Scenario: Warehouse operator with complete access to WH1
+- Configuration: full_control=True
+- Result: All 10 permissions enabled for WH1
 
-3. **Cross-Warehouse Access** (use base module field):
-   * Assign users to multiple warehouses via warehouse.user_ids (M2M)
-   * Recommended for managers needing access to multiple warehouses
-   * ⚠️ DO NOT use user.location_ids (from base) - conflicts with warehouse-based restrictions
+**Source Only (Redistribute Stock):**
+- Scenario: Regional manager can redistribute stock FROM WH1
+- Configuration: allow_as_source=True, allow_as_destination=False, allow_create_picking=True
+- Result: Can move stock OUT of WH1, but cannot receive INTO WH1
 
-Technical Implementation:
--------------------------
-* Extends base module via proper inheritance (no base code modification)
-* Three-layer security: Base Record Rules → Econovo Record Rules → Python Constraint
-* Uses Odoo's native ir.rule for SQL-level security (performance optimized)
-* Python constraints for group-aware business logic validation
-* Domain logic: ['|', (allowed_wh), '|', (transit_wh), (transit_loc)]
+**View Only (Auditor):**
+- Scenario: Auditor needs read-only access
+- Configuration: view_only=True
+- Result: Can view all records, cannot create/modify/delete
 
-Security Groups:
-----------------
-* **Warehouse Restriction - Full (Source + Destination)**: Validates both source and destination
-* **Warehouse Restriction - Source Only**: Validates only source, any destination allowed
-  (Both groups automatically inherit: User Warehouse Restriction via implied_ids)
+**Quality Control Restrictions:**
+- Scenario: Warehouse operator cannot access QC zone
+- Configuration: full_control=True, blocked_location_ids=[WH1/QC Zone]
+- Result: Full access to WH1 EXCEPT QC zone
+
+**Multi-Warehouse (Different Permissions):**
+- Scenario: Supervisor with different permissions per warehouse
+- Configuration: WH1 (full_control=True), WH2 (allow_as_source=True), WH3 (view_only=True)
+- Result: Granular control across multiple warehouses
 
 Configuration:
 --------------
-1. Assign users to warehouses via Inventory → Configuration → Warehouses → Allowed Users
-2. Choose restriction level by adding users to appropriate econovo group
-3. Mark warehouses/locations as "Transit" if needed for collaboration
-4. For cross-warehouse access: Add user to warehouse.user_ids of all relevant warehouses
 
-Real-World Scenario:
---------------------
-User1 manages WH1, User2 manages WH2. They need to exchange stock securely:
-- Create Transit Warehouse (TW) and mark as "Transit/Shared"
-- Assign User1 to WH1, User2 to WH2 (via warehouse.user_ids)
-- Both users in "Full (Source + Destination)" group
-- User1: Can transfer WH1 → TW ✅, Cannot transfer WH1 → WH2 ❌
-- User2: Can transfer TW → WH2 ✅, Cannot transfer WH1 → WH2 ❌
-- Result: Secure inter-warehouse collaboration via controlled transit point
+**Method 1: Per-Warehouse Configuration**
+1. Go to Inventory > Configuration > Warehouses
+2. Select a warehouse
+3. Click "User Permissions" tab
+4. Add users with granular permission flags
+
+**Method 2: Centralized Matrix View**
+1. Go to Inventory > Configuration > User Warehouse Permissions
+2. View/edit all permissions in a matrix table
+3. Filter by user, warehouse, or permission flags
+
+Security Architecture:
+----------------------
+
+**Record Rules (8 total):**
+1. warehouse.user.permission - Permission matrix access control
+2. stock.picking.type - Operation types by warehouse permissions
+3. stock.location - Location access restrictions
+4. stock.warehouse - Warehouse access by permission existence
+5. stock.picking - Transfers by warehouse permissions
+6. stock.quant - Inventory quants by warehouse + transit
+7. stock.move - Moves by source/destination permissions
+8. stock.move.line - Move lines by source/destination permissions
+
+**Python Constraints:**
+- stock.move._check_warehouse_transfer_permission()
+  - Hierarchical validation: Warehouse access > Location blacklist > Transit bypass
+  - Uses permission.has_source_permission(), has_destination_permission()
+  - Checks blocked_location_ids with allow_transit bypass
+
+**Domain Restrictions:**
+- stock.picking._onchange_location_id()
+  - Filters source locations (allow_as_source=True)
+  - Filters destination locations (allow_as_destination=True)
+  - Excludes blocked_location_ids from dropdowns
+
+Technical Implementation:
+-------------------------
+
+**Model Extensions:**
+- warehouse.user.permission: Core permission matrix model (10 flags)
+- stock.warehouse: user_permission_ids (One2many)
+- res.users: warehouse_permission_ids (One2many)
+- stock.move: _check_warehouse_transfer_permission constraint
+- stock.picking: _onchange_location_id domain restriction
+
+**Validation Layers:**
+1. Record Rules (SQL-level, performance optimized)
+2. Python Constraints (permission matrix business logic)
+3. Onchange Methods (UI-level domain filtering)
 
 Changelog:
 ----------
-v17.0.1.1.0 (2025-11-15):
-- ADDED: Secure-by-default (least privilege) - Auto-assign Full Restriction to all users
-- ADDED: post_init_hook assigns Full Restriction to existing users on install
-- ADDED: res.users.create() override auto-assigns Full Restriction to new users
-- ADDED: Transit warehouse configuration warnings in docs and field help text
-- FIXED: Documented product lines disappearing issue when transit flag not set
-- IMP: Group inheritance architecture (Full inherits Source Only inherits Base)
 
-v17.0.1.0.1:
-- FIXED: "Source Only" group now validates ONLY source (not destination)
-- FIXED: Renamed "Full Control" → "Full (Source + Destination)" for clarity
-- REMOVED: allow_cross_warehouse_transfers field (incompatible with base Record Rules)
-- ADDED: Documentation for base module interaction and compatibility notes
+v17.0.1.0.0 (2025-11-22) - INITIAL RELEASE:
+- ADDED: warehouse.user.permission model (10 flags per user/warehouse)
+- ADDED: Special modes (Full Control, View Only)
+- ADDED: Per-warehouse location blacklist
+- ADDED: Transit location bypass
+- ADDED: 8 record rules with permission matrix
+- ADDED: Python constraints for warehouse transfer validation
+- ADDED: Centralized permission matrix view
+- ADDED: Per-warehouse permission configuration
 
 Author: Jose D. Leonett
 Website: https://github.com/josedleonett
 License: AGPL-3
 """,
-    'author': 'Jose D. Leonett',
-    'website': 'https://github.com/josedleonett',
-    'license': 'AGPL-3',
-    'depends': ['user_warehouse_restriction', 'stock'],
-    'data': [
-        'security/econovo_user_warehouse_restriction_groups.xml',
-        'security/econovo_user_warehouse_restriction_security.xml',
-        'data/warehouse_user_assignment.xml',
-        'views/stock_warehouse_views.xml',
-        'views/stock_location_views.xml',
-        'views/res_users_views.xml',
+    "author": "Jose D. Leonett",
+    "website": "https://github.com/josedleonett",
+    "license": "AGPL-3",
+    "depends": ["stock_sms", "stock"],
+    "data": [
+        # Security (groups > access > record rules)
+        "security/econovo_user_warehouse_restriction_groups.xml",
+        "security/ir.model.access.csv",
+        "security/econovo_user_warehouse_restriction_security.xml",
+        
+        # Views (warehouse > permissions > users)
+        "views/stock_warehouse_views.xml",
+        "views/warehouse_user_permission_views.xml",
+        "views/stock_location_views.xml",
+        "views/res_users_views.xml",
     ],
-    'post_init_hook': 'post_init_hook',
-    'installable': True,
-    'auto_install': False,
-    'application': False,
+    "post_init_hook": "post_init_hook",
+    "installable": True,
+    "auto_install": False,
+    "application": False,
 }

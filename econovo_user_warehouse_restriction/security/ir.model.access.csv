@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_warehouse_user_permission_admin,warehouse.user.permission.admin,model_warehouse_user_permission,base.group_system,1,1,1,1
+access_warehouse_user_permission_stock_manager,warehouse.user.permission.stock.manager,model_warehouse_user_permission,stock.group_stock_manager,1,1,1,1
+access_warehouse_user_permission_stock_user,warehouse.user.permission.stock.user,model_warehouse_user_permission,stock.group_stock_user,1,0,0,0

@@ -1,66 +1,140 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <!-- 
-        Econovo User Warehouse Restriction - Security Extension
-        ========================================================
+        ========================================================================
+        SECURITY RECORD RULES - Permission Matrix
+        ========================================================================
         
-        This file extends the base user_warehouse_restriction module with:
-        1. Stock quant restrictions (inventory adjustments)
-        2. Stock move and move line restrictions with transit support
-        3. Flexible restriction levels (Full vs Source-Only)
-        4. Transit warehouse/location support for inter-warehouse collaboration
+        Permission matrix validation using warehouse.user.permission model.
+        
+        Record Rules:
+        1. warehouse.user.permission - Permission matrix access control
+        2. stock.picking.type - Operation types by warehouse permissions
+        3. stock.location - Location access restrictions
+        4. stock.warehouse - Warehouse access by permission existence
+        5. stock.picking - Transfers by warehouse permissions
+        6. stock.quant - Inventory quants by warehouse + transit
+        7. stock.move - Moves by source/destination permissions
+        8. stock.move.line - Move lines by source/destination permissions
     -->
+    
+    <!-- ====================================================================== -->
+    <!-- PERMISSION MATRIX ACCESS                                              -->
+    <!-- ====================================================================== -->
+    
+    <!-- RULE 1: Warehouse User Permissions
+         Users can only view their own permission records.
+         Stock managers can see all permission records for configuration.
+         Ensures users cannot escalate their own permissions. -->
+    <record id="warehouse_user_permission_rule_own" model="ir.rule">
+        <field name="name">Warehouse User Permission - Own Records</field>
+        <field name="model_id" ref="model_warehouse_user_permission"/>
+        <field name="domain_force">[('user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('stock.group_stock_user'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+        <field name="active" eval="True"/>
+    </record>
+    
+    <!-- ====================================================================== -->
+    <!-- WAREHOUSE ACCESS RULES                                                -->
+    <!-- ====================================================================== -->
+    
+    <!-- RULE 2: Operation Types (Picking Types)
+         Filters by warehouse.user.permission existence.
+         
+         Users can only see operation types belonging to warehouses where
+         they have permission records (regardless of specific permissions). -->
+    <record id="operation_type_rule_users" model="ir.rule">
+        <field name="name">Operation Type Restrict on Users</field>
+        <field name="model_id" ref="stock.model_stock_picking_type"/>
+        <field name="domain_force">['|', 
+            ('warehouse_id.user_permission_ids.user_id', '=', user.id),
+            ('warehouse_id', '=', False)
+        ]</field>
+        <field name="groups" eval="[(4, ref('econovo_user_warehouse_restriction.user_warehouse_restriction_group_user'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+        <field name="active" eval="True"/>
+    </record>
+    
+    <!-- RULE 3: Stock Locations
+         Users can access all locations.
+         Location-specific restrictions are handled via permission.blocked_location_ids. -->
+    <record id="stock_location_rule_users" model="ir.rule">
+        <field name="name">Stock Location Restrict on Users</field>
+        <field name="model_id" ref="stock.model_stock_location"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('econovo_user_warehouse_restriction.user_warehouse_restriction_group_user'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+        <field name="active" eval="True"/>
+    </record>
+    
+    <!-- RULE 4: Warehouses
+         Filters by warehouse.user_permission_ids existence.
+         
+         Users can only see warehouses where they have permission records. -->
+    <record id="stock_warehouse_rule_users" model="ir.rule">
+        <field name="name">Warehouse Restrict on Users</field>
+        <field name="model_id" ref="stock.model_stock_warehouse"/>
+        <field name="domain_force">['|', 
+            ('user_permission_ids.user_id', '=', user.id),
+            ('user_permission_ids', '=', False)
+        ]</field>
+        <field name="groups" eval="[(4, ref('econovo_user_warehouse_restriction.user_warehouse_restriction_group_user'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+        <field name="active" eval="True"/>
+    </record>
+    
+    <!-- RULE 5: Stock Pickings (Transfers)
+         Filters by warehouse.user_permission_ids existence.
+         
+         Users can only see transfers from warehouses where they have permissions. -->
+    <record id="stock_picking_rule_users" model="ir.rule">
+        <field name="name">Warehouse Transfers Restrict on Users</field>
+        <field name="model_id" ref="stock.model_stock_picking"/>
+        <field name="domain_force">['|', 
+            ('picking_type_id.warehouse_id.user_permission_ids.user_id', '=', user.id),
+            ('picking_type_id.warehouse_id', '=', False)
+        ]</field>
+        <field name="groups" eval="[(4, ref('econovo_user_warehouse_restriction.user_warehouse_restriction_group_user'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+        <field name="active" eval="True"/>
+    </record>
+    
+    <!-- ====================================================================== -->
+    <!-- ADVANCED ACCESS RULES                                                 -->
+    <!-- ====================================================================== -->
 
-    <!-- 
-        STOCK QUANT RESTRICTION WITH TRANSIT SUPPORT
-        =============================================
-        Critical: Without this rule, users can access Inventory Adjustments
-        for ANY warehouse, completely bypassing location/warehouse restrictions.
-        
-        This rule ensures users can only see/modify quants in:
-        - Locations belonging to their allowed warehouses, OR
-        - Locations in transit warehouses, OR
-        - Locations flagged as transit/shared locations
-    -->
+    <!-- RULE 6: Stock Quant Restriction with Transit Support
+         Filters by warehouse.user_permission_ids + transit logic.
+         
+         Users can only see/modify quants in:
+         - Locations belonging to warehouses with permission records
+         - Locations flagged as transit (if allow_transit=True in permission) -->
     <record id="stock_quant_rule_users" model="ir.rule">
         <field name="name">Econovo: Stock Quant Restrict on Users (with Transit)</field>
         <field name="model_id" ref="stock.model_stock_quant"/>
-        <field name="domain_force">['|', '|', 
-            ('location_id.warehouse_id.user_ids', 'in', user.id),
-            ('location_id.warehouse_id.is_transit_warehouse', '=', True),
-            ('location_id.is_transit_location', '=', True)
-        ]</field>
-        <field name="groups" eval="[(4, ref('user_warehouse_restriction.user_warehouse_restriction_group_user'))]"/>
-        <field name="perm_read" eval="True"/>
-        <field name="perm_write" eval="True"/>
-        <field name="perm_create" eval="True"/>
-        <field name="perm_unlink" eval="True"/>
-        <field name="active" eval="True"/>
-    </record>
-
-    <!-- 
-        STOCK MOVE RESTRICTION - FULL CONTROL
-        ======================================
-        For users in the "Full Control" restriction group:
-        - BOTH source AND destination must be in allowed warehouses
-        - Exception: Transit warehouses and locations are allowed
-        
-        Use case: Warehouse operators who should only work within assigned warehouses
-    -->
-    <record id="stock_move_rule_full_restriction" model="ir.rule">
-        <field name="name">Econovo: Stock Move - Full Restriction (Source + Destination)</field>
-        <field name="model_id" ref="stock.model_stock_move"/>
-        <field name="domain_force">['&amp;',
-            '|', '|', 
-                ('location_id.warehouse_id.user_ids', 'in', user.id),
-                ('location_id.warehouse_id.is_transit_warehouse', '=', True),
+        <field name="domain_force">['|', 
+            ('location_id.warehouse_id.user_permission_ids.user_id', '=', user.id),
+            '&amp;',
                 ('location_id.is_transit_location', '=', True),
-            '|', '|', 
-                ('location_dest_id.warehouse_id.user_ids', 'in', user.id),
-                ('location_dest_id.warehouse_id.is_transit_warehouse', '=', True),
-                ('location_dest_id.is_transit_location', '=', True)
+                ('location_id.warehouse_id.user_permission_ids.user_id', '=', user.id)
         ]</field>
-        <field name="groups" eval="[(4, ref('econovo_user_warehouse_restriction.group_warehouse_restriction_full'))]"/>
+        <field name="groups" eval="[(4, ref('econovo_user_warehouse_restriction.user_warehouse_restriction_group_user'))]"/>
         <field name="perm_read" eval="True"/>
         <field name="perm_write" eval="True"/>
         <field name="perm_create" eval="True"/>
@@ -68,25 +142,22 @@
         <field name="active" eval="True"/>
     </record>
 
-    <!-- 
-        STOCK MOVE RESTRICTION - SOURCE ONLY
-        =====================================
-        For users in the "Source Only" restriction group:
-        - ONLY source location must be in allowed warehouses
-        - Destination can be ANY warehouse (no restriction)
-        - Exception: Transit warehouses and locations are allowed
-        
-        Use case: Regional managers who redistribute stock from their warehouses to any destination
-    -->
-    <record id="stock_move_rule_source_only" model="ir.rule">
-        <field name="name">Econovo: Stock Move - Source Only Restriction</field>
+    <!-- RULE 7: Stock Move Restriction
+         Uses warehouse.user_permission_ids.
+         
+         Validation is handled by Python constraint in stock.move
+         using permission.has_source_permission() and has_destination_permission().
+         
+         Record rule filters by warehouse permission existence (source OR destination).
+         Python constraint handles granular allow_as_source/allow_as_destination logic. -->
+    <record id="stock_move_rule_unified" model="ir.rule">
+        <field name="name">Stock Move - Restriction</field>
         <field name="model_id" ref="stock.model_stock_move"/>
-        <field name="domain_force">['|', '|', 
-            ('location_id.warehouse_id.user_ids', 'in', user.id),
-            ('location_id.warehouse_id.is_transit_warehouse', '=', True),
-            ('location_id.is_transit_location', '=', True)
+        <field name="domain_force">['|', 
+            ('location_id.warehouse_id.user_permission_ids.user_id', '=', user.id),
+            ('location_dest_id.warehouse_id.user_permission_ids.user_id', '=', user.id)
         ]</field>
-        <field name="groups" eval="[(4, ref('econovo_user_warehouse_restriction.group_warehouse_restriction_source_only'))]"/>
+        <field name="groups" eval="[(4, ref('econovo_user_warehouse_restriction.user_warehouse_restriction_group_user'))]"/>
         <field name="perm_read" eval="True"/>
         <field name="perm_write" eval="True"/>
         <field name="perm_create" eval="True"/>
@@ -94,53 +165,18 @@
         <field name="active" eval="True"/>
     </record>
 
-    <!-- 
-        STOCK MOVE LINE RESTRICTION - FULL CONTROL
-        ===========================================
-        For users in the "Full Control" restriction group:
-        - BOTH source AND destination must be in allowed warehouses
-        - Exception: Transit warehouses and locations are allowed
-        
-        Move lines represent the detailed operations level in transfers.
-    -->
-    <record id="stock_move_line_rule_full_restriction" model="ir.rule">
-        <field name="name">Econovo: Stock Move Line - Full Restriction (Source + Destination)</field>
+    <!-- RULE 8: Stock Move Line Restriction
+         Uses warehouse.user_permission_ids.
+         
+         Follows same logic as stock.move rule above. -->
+    <record id="stock_move_line_rule_unified" model="ir.rule">
+        <field name="name">Stock Move Line - Restriction</field>
         <field name="model_id" ref="stock.model_stock_move_line"/>
-        <field name="domain_force">['&amp;',
-            '|', '|', 
-                ('location_id.warehouse_id.user_ids', 'in', user.id),
-                ('location_id.warehouse_id.is_transit_warehouse', '=', True),
-                ('location_id.is_transit_location', '=', True),
-            '|', '|', 
-                ('location_dest_id.warehouse_id.user_ids', 'in', user.id),
-                ('location_dest_id.warehouse_id.is_transit_warehouse', '=', True),
-                ('location_dest_id.is_transit_location', '=', True)
+        <field name="domain_force">['|', 
+            ('location_id.warehouse_id.user_permission_ids.user_id', '=', user.id),
+            ('location_dest_id.warehouse_id.user_permission_ids.user_id', '=', user.id)
         ]</field>
-        <field name="groups" eval="[(4, ref('econovo_user_warehouse_restriction.group_warehouse_restriction_full'))]"/>
-        <field name="perm_read" eval="True"/>
-        <field name="perm_write" eval="True"/>
-        <field name="perm_create" eval="True"/>
-        <field name="perm_unlink" eval="True"/>
-        <field name="active" eval="True"/>
-    </record>
-
-    <!-- 
-        STOCK MOVE LINE RESTRICTION - SOURCE ONLY
-        ==========================================
-        For users in the "Source Only" restriction group:
-        - ONLY source location must be in allowed warehouses
-        - Destination can be ANY warehouse (no restriction)
-        - Exception: Transit warehouses and locations are allowed
-    -->
-    <record id="stock_move_line_rule_source_only" model="ir.rule">
-        <field name="name">Econovo: Stock Move Line - Source Only Restriction</field>
-        <field name="model_id" ref="stock.model_stock_move_line"/>
-        <field name="domain_force">['|', '|', 
-            ('location_id.warehouse_id.user_ids', 'in', user.id),
-            ('location_id.warehouse_id.is_transit_warehouse', '=', True),
-            ('location_id.is_transit_location', '=', True)
-        ]</field>
-        <field name="groups" eval="[(4, ref('econovo_user_warehouse_restriction.group_warehouse_restriction_source_only'))]"/>
+        <field name="groups" eval="[(4, ref('econovo_user_warehouse_restriction.user_warehouse_restriction_group_user'))]"/>
         <field name="perm_read" eval="True"/>
         <field name="perm_write" eval="True"/>
         <field name="perm_create" eval="True"/>

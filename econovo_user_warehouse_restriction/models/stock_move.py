@@ -26,108 +26,153 @@ from odoo.exceptions import ValidationError
 class StockMove(models.Model):
     """Extends stock.move to add warehouse transfer validation.
     
-    Validates that users with warehouse restrictions cannot transfer stock
-    to unauthorized warehouses, unless:
-    - The destination/source is a transit warehouse or location
-    - They belong to the 'Source Only' restriction group (only source validated)
-    - They are superuser or system admin
+    v2.0 Architecture (Permission Matrix):
+    - Validates transfers using warehouse.user.permission records
+    - Hierarchical validation: Warehouse access → Location blacklist → Operation permissions
+    - Granular control: 10 permission flags per user/warehouse
+    
+    v1.0 Architecture (deprecated):
+    - Validated using group inheritance (Source Only, Full)
+    - Global location blacklist (user.location_ids)
+    - Binary restriction levels
+    
+    Validation Rules (v2.0):
+    1. Check warehouse access (allow_as_source, allow_as_destination)
+    2. Check location blacklist (blocked_location_ids, allow_transit bypass)
+    3. Check operation permissions (allow_create_picking, allow_write_picking)
+    
+    Superuser/Admin Bypass:
+    - env.su: Automatic bypass
+    - group_warehouse_unrestricted: Explicit bypass (assigned to base.group_system)
     """
     _inherit = 'stock.move'
     
     @api.constrains('location_id', 'location_dest_id')
     def _check_warehouse_transfer_permission(self):
-        """Validates warehouse transfer permissions for restricted users.
+        """Validates warehouse transfer permissions using permission matrix.
         
-        This constraint ensures that users with warehouse restrictions
-        cannot bypass security by selecting unauthorized destinations in transfers.
+        v2.0 Validation Logic:
+        - Uses warehouse.user.permission records instead of groups
+        - Hierarchical: Warehouse access → Location blacklist → Operation
+        - Per-warehouse granular control (10 flags)
         
-        The module extends user_warehouse_restriction (Cybrosys) and adds:
-        - Two restriction levels via group inheritance:
-          * Source Only: Validates source warehouse only
-          * Full (inherits Source Only): Validates source + destination
+        Validation Steps:
+        1. Get user's permission record for source/destination warehouses
+        2. Check allow_as_source permission (if source warehouse exists)
+        3. Check allow_as_destination permission (if destination warehouse exists)
+        4. Validate location blacklist (blocked_location_ids)
+        5. Allow transit bypass (if allow_transit=True)
         
-        Group inheritance chain:
-        Base (Cybrosys) → Source Only (Econovo) → Full (Econovo)
-        
-        Important: Always check most specific group first (Full before Source Only)
-        to ensure users with Full restriction don't bypass destination validation.
-        
-        Note: For cross-warehouse permissions, assign users to multiple warehouses
-        using warehouse.user_ids. This ensures compatibility with base module Record Rules.
+        Special Cases:
+        - Transit locations: Bypass if allow_transit=True in permission
+        - No warehouse: Allow (e.g., supplier → customer locations)
+        - Full Control: Auto-grant all permissions (full_control=True)
+        - View Only: Block all writes (view_only=True)
         
         Raises:
-            ValidationError: When user attempts unauthorized cross-warehouse transfer
+            ValidationError: When user attempts unauthorized transfer
         """
+        PermissionModel = self.env['warehouse.user.permission']
+        
         for move in self:
             user = self.env.user
             
-            # Skip validation for superuser and system admins
-            if self.env.su or user.has_group('base.group_system'):
+            # ================================================================
+            # BYPASS CONDITIONS
+            # ================================================================
+            
+            # Skip validation for superuser
+            if self.env.su:
                 continue
             
-            # Skip validation if user does not have warehouse restriction enabled
-            # Note: Both econovo groups (Source Only and Full) inherit the base group
-            # Full also inherits Source Only, so checking base is sufficient
-            if not user.has_group('user_warehouse_restriction.user_warehouse_restriction_group_user'):
+            # Skip validation for users with unrestricted bypass group
+            # This group is auto-assigned to base.group_system (administrators)
+            if user.has_group('econovo_user_warehouse_restriction.group_warehouse_unrestricted'):
                 continue
             
-            # Get source and destination warehouses
+            # ================================================================
+            # WAREHOUSE IDENTIFICATION
+            # ================================================================
+            
             source_warehouse = move.location_id.warehouse_id
             dest_warehouse = move.location_dest_id.warehouse_id
             
-            # Get user's allowed warehouses
-            allowed_warehouses = self.env['stock.warehouse'].search([
-                ('user_ids', 'in', user.id)
-            ])
+            # ================================================================
+            # SOURCE WAREHOUSE VALIDATION
+            # ================================================================
             
-            # IMPORTANT: Check most specific group first due to inheritance
-            # Full inherits Source Only, so users with Full have BOTH groups
-            # We must check Full FIRST to apply stricter validation
-            
-            # Handle "Full Restriction" group (Source + Destination)
-            # This is the most restrictive group and must be checked FIRST
-            if user.has_group('econovo_user_warehouse_restriction.group_warehouse_restriction_full'):
-                # Validate SOURCE warehouse access (unless it's a transit location)
-                if source_warehouse and source_warehouse not in allowed_warehouses:
-                    # Allow if source is a transit warehouse
-                    if not source_warehouse.is_transit_warehouse:
-                        # Allow if source is a transit location
-                        if not move.location_id.is_transit_location:
-                            raise ValidationError(
-                                f"You do not have permission to transfer stock from warehouse '{source_warehouse.name}'.\n\n"
-                                f"Your allowed warehouses are: {', '.join(allowed_warehouses.mapped('name'))}\n\n"
-                                f"If you need access to additional warehouses, please contact your system administrator."
-                            )
+            if source_warehouse:
+                # Get permission record for source warehouse
+                source_permission = PermissionModel.search([
+                    ('user_id', '=', user.id),
+                    ('warehouse_id', '=', source_warehouse.id)
+                ], limit=1)
                 
-                # Validate DESTINATION warehouse access (unless it's a transit location)
-                if dest_warehouse and dest_warehouse not in allowed_warehouses:
-                    # Allow if destination is a transit warehouse
-                    if not dest_warehouse.is_transit_warehouse:
-                        # Allow if destination is a transit location
-                        if not move.location_dest_id.is_transit_location:
-                            raise ValidationError(
-                                f"You do not have permission to transfer stock to warehouse '{dest_warehouse.name}'.\n\n"
-                                f"Your allowed warehouses are: {', '.join(allowed_warehouses.mapped('name'))}\n\n"
-                                f"If you need access to additional warehouses, please contact your system administrator."
-                            )
-                # Full validation complete, continue to next move
-                continue
+                if not source_permission:
+                    # No permission record = No access
+                    raise ValidationError(
+                        f"You do not have permission to transfer stock FROM warehouse '{source_warehouse.name}'.\n\n"
+                        f"No permission record found for this warehouse.\n"
+                        f"Contact your administrator to grant access."
+                    )
+                
+                # Check if user has source permission
+                if not source_permission.has_source_permission():
+                    raise ValidationError(
+                        f"You do not have permission to use warehouse '{source_warehouse.name}' as SOURCE.\n\n"
+                        f"Permission 'allow_as_source' is disabled for this warehouse.\n"
+                        f"Contact your administrator to grant source access."
+                    )
+                
+                # Check location blacklist (unless transit bypass applies)
+                if source_permission.is_location_blocked(move.location_id):
+                    # Check if transit bypass applies
+                    if move.location_id.is_transit_location and source_permission.allow_transit:
+                        # Transit bypass - allow access
+                        pass
+                    else:
+                        raise ValidationError(
+                            f"You do not have permission to access location '{move.location_id.complete_name}'.\n\n"
+                            f"This location is in your blacklist for warehouse '{source_warehouse.name}'.\n"
+                            f"Contact your administrator to remove the restriction."
+                        )
             
-            # Handle "Source Only" restriction group
-            # This group validates ONLY the source warehouse, allowing any destination
-            # Note: Users with Full group will NOT reach here (already handled above)
-            if user.has_group('econovo_user_warehouse_restriction.group_warehouse_restriction_source_only'):
-                # Validate SOURCE warehouse access (unless it's a transit location)
-                if source_warehouse and source_warehouse not in allowed_warehouses:
-                    # Allow if source is a transit warehouse
-                    if not source_warehouse.is_transit_warehouse:
-                        # Allow if source is a transit location
-                        if not move.location_id.is_transit_location:
-                            raise ValidationError(
-                                f"You do not have permission to transfer stock FROM warehouse '{source_warehouse.name}'.\n\n"
-                                f"Your allowed source warehouses are: {', '.join(allowed_warehouses.mapped('name')) or 'None'}\n\n"
-                                f"If you need access to additional warehouses, please contact your system administrator."
-                            )
-                # Do NOT validate destination for "Source Only" users
-                # This is the key difference from Full restriction
-                continue
+            # ================================================================
+            # DESTINATION WAREHOUSE VALIDATION
+            # ================================================================
+            
+            if dest_warehouse:
+                # Get permission record for destination warehouse
+                dest_permission = PermissionModel.search([
+                    ('user_id', '=', user.id),
+                    ('warehouse_id', '=', dest_warehouse.id)
+                ], limit=1)
+                
+                if not dest_permission:
+                    # No permission record = No access
+                    raise ValidationError(
+                        f"You do not have permission to transfer stock TO warehouse '{dest_warehouse.name}'.\n\n"
+                        f"No permission record found for this warehouse.\n"
+                        f"Contact your administrator to grant access."
+                    )
+                
+                # Check if user has destination permission
+                if not dest_permission.has_destination_permission():
+                    raise ValidationError(
+                        f"You do not have permission to use warehouse '{dest_warehouse.name}' as DESTINATION.\n\n"
+                        f"Permission 'allow_as_destination' is disabled for this warehouse.\n"
+                        f"Contact your administrator to grant destination access."
+                    )
+                
+                # Check location blacklist (unless transit bypass applies)
+                if dest_permission.is_location_blocked(move.location_dest_id):
+                    # Check if transit bypass applies
+                    if move.location_dest_id.is_transit_location and dest_permission.allow_transit:
+                        # Transit bypass - allow access
+                        pass
+                    else:
+                        raise ValidationError(
+                            f"You do not have permission to access location '{move.location_dest_id.complete_name}'.\n\n"
+                            f"This location is in your blacklist for warehouse '{dest_warehouse.name}'.\n"
+                            f"Contact your administrator to remove the restriction."
+                        )
