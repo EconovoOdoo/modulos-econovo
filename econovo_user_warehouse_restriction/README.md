@@ -125,6 +125,22 @@ WH3: view_only=True → Read-only audit
 
 ## ⚙️ Configuration
 
+### Automatic Setup (Installation)
+
+Upon module installation, the system automatically:
+
+1. **Assigns restriction group** to all existing inventory users
+2. **Creates Full Control permissions** for all system administrators
+3. **Auto-assigns group** to all newly created inventory users
+
+**Security Model (Restrictive by Default)**:
+- ✅ Users **WITH** permissions configured: Access granted per matrix
+- ❌ Users **WITHOUT** permissions configured: **NO access to any warehouse**
+- ✅ System Administrators: **Bypass ALL restrictions** (unrestricted access)
+
+**Important**: After installation, you MUST configure permissions for all users. 
+Users without permission records will be locked out of all warehouses.
+
 ### Method 1: Per-Warehouse Configuration
 
 1. Go to **Inventory → Configuration → Warehouses**

@@ -20,6 +20,17 @@
             <field name="inherit_id" ref="stock.view_warehouse"/>
             <field name="arch" type="xml">
                 
+                <!-- Add Smart Button for User Permissions -->
+                <xpath expr="//div[@name='button_box']" position="inside">
+                    <button name="action_open_users_view"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-users"
+                            groups="econovo_user_warehouse_restriction.user_warehouse_restriction_group_manager">
+                        <field name="user_permission_count" widget="statinfo" string="Users"/>
+                    </button>
+                </xpath>
+                
                 <!-- Make notebook visible for restricted users -->
                 <xpath expr="//notebook[@colspan='4' and @groups='stock.group_adv_location,stock.group_stock_multi_warehouses']"
                        position="attributes">
@@ -43,8 +54,9 @@
                           name="user_permissions" colspan="4">
                         
                         <div class="alert alert-info" role="alert">
-                            <strong>Permission Matrix (v2.0):</strong> Configure granular permissions for each user.
+                            <strong>Permission Matrix:</strong> Configure granular permissions for each user.
                             Each row defines 10 permission flags for one user in this warehouse.
+                            <br/><em>Tip: Click the "Users" smart button above for a full-screen view.</em>
                         </div>
                         
                         <field name="user_permission_ids" context="{'default_warehouse_id': id}">
@@ -63,13 +75,6 @@
                                 <field name="allow_transit" widget="boolean_toggle"/>
                             </tree>
                         </field>
-                        
-                        <!-- Button to configure permissions in detail -->
-                        <button string="Configure User Permissions"
-                                class="btn btn-primary mt-2"
-                                icon="fa-cog"
-                                type="object" 
-                                name="action_open_users_view"/>
                     </page>
                 </xpath>
             </field>

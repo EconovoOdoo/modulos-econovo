@@ -43,27 +43,12 @@ class ResUsers(models.Model):
              'Each record defines specific permissions for one warehouse.'
     )
     
-
-    @api.model
-    def create(self, vals):
-        """Enhanced create with cache clearing.
-        
-        Clears caches for performance optimization.
-        
-        Args:
-            vals (dict): Values for new user
-            
-        Returns:
-            res.users: Created user record
-        """
-        self.clear_caches()
-        return super(ResUsers, self).create(vals)
-    
     @api.model_create_multi
     def create(self, vals_list):
-        """Enhanced multi-create with cache clearing.
+        """Enhanced multi-create with automatic restriction group assignment.
         
-        Clears caches for performance optimization when creating multiple users.
+        Automatically assigns warehouse restriction group to new inventory users.
+        System administrators are excluded from auto-assignment.
         
         Args:
             vals_list (list): List of value dicts for new users
@@ -71,8 +56,37 @@ class ResUsers(models.Model):
         Returns:
             res.users: Created user recordset
         """
+        # Create users first
+        users = super(ResUsers, self).create(vals_list)
+        
+        # Get restriction group
+        restriction_group = self.env.ref(
+            'econovo_user_warehouse_restriction.user_warehouse_restriction_group_user',
+            raise_if_not_found=False
+        )
+        
+        if restriction_group:
+            # Get system admin group
+            admin_group = self.env.ref('base.group_system', raise_if_not_found=False)
+            inventory_group = self.env.ref('stock.group_stock_user', raise_if_not_found=False)
+            
+            for user in users:
+                # Only assign to internal users with inventory access
+                # Exclude system administrators
+                is_internal = not user.share
+                has_inventory = inventory_group and inventory_group in user.groups_id
+                is_admin = admin_group and admin_group in user.groups_id
+                
+                if is_internal and has_inventory and not is_admin:
+                    # Auto-assign restriction group
+                    if restriction_group not in user.groups_id:
+                        user.write({'groups_id': [(4, restriction_group.id)]})
+                        _logger.info(
+                            f"Auto-assigned warehouse restriction group to new user: {user.name}"
+                        )
+        
         self.clear_caches()
-        return super(ResUsers, self).create(vals_list)
+        return users
     
     def write(self, vals):
         """Enhanced write with cache clearing.

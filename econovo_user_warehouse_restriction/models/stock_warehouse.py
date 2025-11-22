@@ -37,6 +37,18 @@ class StockWarehouse(models.Model):
              'Example: User A has Full Control, User B can only receive (Destination).'
     )
     
+    user_permission_count = fields.Integer(
+        string='Permission Count',
+        compute='_compute_user_permission_count',
+        help='Number of users with permissions configured for this warehouse.'
+    )
+    
+    @api.depends('user_permission_ids')
+    def _compute_user_permission_count(self):
+        """Compute the count of user permissions for smart button display."""
+        for warehouse in self:
+            warehouse.user_permission_count = len(warehouse.user_permission_ids)
+    
 
 
     @api.model_create_multi
