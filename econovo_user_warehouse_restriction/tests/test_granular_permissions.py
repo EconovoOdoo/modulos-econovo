@@ -845,4 +845,169 @@ class TestGranularPickingPermissions(TransactionCase):
         
         self.assertIn('allow_write_picking', str(context.exception).lower())
 
+    # =========================================================================
+    # CASO 5: blocked_location_ids (Location Blacklist)
+    # =========================================================================
 
+    def test_blocked_location_prevents_move_to_location(self):
+        """Test that user cannot move stock to a blocked location.
+        
+        CASO 5.1: User should be blocked from using blacklisted destination.
+        """
+        # Create a blocked location within warehouse
+        blocked_location = self.env['stock.location'].sudo().create({
+            'name': 'Blocked Test Location',
+            'usage': 'internal',
+            'location_id': self.location_stock.id,
+        })
+        
+        # Create user with blocked location
+        blocked_user = self.env['res.users'].sudo().create({
+            'name': 'Blocked Location Test User',
+            'login': 'blocked_loc_test',
+            'email': 'blocked_loc@test.com',
+            'groups_id': [(6, 0, [
+                self.env.ref('stock.group_stock_user').id,
+            ])],
+        })
+        
+        self.env['warehouse.user.permission'].sudo().create({
+            'user_id': blocked_user.id,
+            'warehouse_id': self.warehouse.id,
+            'allow_create_picking': True,
+            'allow_write_picking': True,
+            'allow_as_source': True,
+            'allow_as_destination': True,
+            'blocked_location_ids': [(4, blocked_location.id)],
+        })
+        
+        # Create quant at stock location
+        self.env['stock.quant'].sudo().create({
+            'product_id': self.product.id,
+            'location_id': self.location_stock.id,
+            'quantity': 100.0,
+        })
+        
+        # Try to create move TO blocked location - should fail
+        with self.assertRaises(UserError) as context:
+            self.env['stock.move'].with_user(blocked_user).create({
+                'name': 'Move to Blocked Location',
+                'product_id': self.product.id,
+                'product_uom_qty': 10,
+                'product_uom': self.product.uom_id.id,
+                'location_id': self.location_stock.id,
+                'location_dest_id': blocked_location.id,
+            })
+        
+        # Error should mention blocked location
+        self.assertTrue(context.exception)
+
+    def test_blocked_location_prevents_move_from_location(self):
+        """Test that user cannot move stock from a blocked location.
+        
+        CASO 5.2: User should be blocked from using blacklisted source.
+        """
+        # Create a blocked location within warehouse
+        blocked_source = self.env['stock.location'].sudo().create({
+            'name': 'Blocked Source Location',
+            'usage': 'internal',
+            'location_id': self.location_stock.id,
+        })
+        
+        # Create user with blocked location
+        blocked_user = self.env['res.users'].sudo().create({
+            'name': 'Blocked Source Test User',
+            'login': 'blocked_source_test',
+            'email': 'blocked_source@test.com',
+            'groups_id': [(6, 0, [
+                self.env.ref('stock.group_stock_user').id,
+            ])],
+        })
+        
+        self.env['warehouse.user.permission'].sudo().create({
+            'user_id': blocked_user.id,
+            'warehouse_id': self.warehouse.id,
+            'allow_create_picking': True,
+            'allow_write_picking': True,
+            'allow_as_source': True,
+            'allow_as_destination': True,
+            'blocked_location_ids': [(4, blocked_source.id)],
+        })
+        
+        # Create quant at blocked location
+        self.env['stock.quant'].sudo().create({
+            'product_id': self.product.id,
+            'location_id': blocked_source.id,
+            'quantity': 100.0,
+        })
+        
+        # Try to create move FROM blocked location - should fail
+        with self.assertRaises(UserError) as context:
+            self.env['stock.move'].with_user(blocked_user).create({
+                'name': 'Move from Blocked Location',
+                'product_id': self.product.id,
+                'product_uom_qty': 10,
+                'product_uom': self.product.uom_id.id,
+                'location_id': blocked_source.id,
+                'location_dest_id': self.location_customer.id,
+            })
+        
+        # Error should be raised
+        self.assertTrue(context.exception)
+
+    def test_non_blocked_location_allows_move(self):
+        """Test that user can move stock to/from non-blocked locations.
+        
+        CASO 5.3: User should be able to use locations not in blacklist.
+        """
+        # Create two locations - one blocked, one not
+        blocked_location = self.env['stock.location'].sudo().create({
+            'name': 'Blocked Location',
+            'usage': 'internal',
+            'location_id': self.location_stock.id,
+        })
+        
+        allowed_location = self.env['stock.location'].sudo().create({
+            'name': 'Allowed Location',
+            'usage': 'internal',
+            'location_id': self.location_stock.id,
+        })
+        
+        # Create user with only one location blocked
+        user = self.env['res.users'].sudo().create({
+            'name': 'Partial Block Test User',
+            'login': 'partial_block_test',
+            'email': 'partial_block@test.com',
+            'groups_id': [(6, 0, [
+                self.env.ref('stock.group_stock_user').id,
+            ])],
+        })
+        
+        self.env['warehouse.user.permission'].sudo().create({
+            'user_id': user.id,
+            'warehouse_id': self.warehouse.id,
+            'allow_create_picking': True,
+            'allow_write_picking': True,
+            'allow_as_source': True,
+            'allow_as_destination': True,
+            'blocked_location_ids': [(4, blocked_location.id)],  # Only block one
+        })
+        
+        # Create quant
+        self.env['stock.quant'].sudo().create({
+            'product_id': self.product.id,
+            'location_id': self.location_stock.id,
+            'quantity': 100.0,
+        })
+        
+        # Should be able to move to allowed location
+        move = self.env['stock.move'].with_user(user).create({
+            'name': 'Move to Allowed Location',
+            'product_id': self.product.id,
+            'product_uom_qty': 10,
+            'product_uom': self.product.uom_id.id,
+            'location_id': self.location_stock.id,
+            'location_dest_id': allowed_location.id,
+        })
+        
+        self.assertTrue(move.exists())
