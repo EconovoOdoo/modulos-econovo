@@ -19,8 +19,8 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ###############################################################################
-from odoo import api, models
-from odoo.exceptions import ValidationError
+from odoo import api, models, _
+from odoo.exceptions import ValidationError, UserError
 
 
 class StockMove(models.Model):
@@ -46,6 +46,57 @@ class StockMove(models.Model):
     - group_warehouse_unrestricted: Explicit bypass (assigned to base.group_system)
     """
     _inherit = 'stock.move'
+
+    def _check_view_only_permission(self):
+        """Check if user has view_only permission for this move's warehouse.
+        
+        Similar to stock.picking._check_view_only_permission but for stock.move.
+        Validates against both source and destination warehouses.
+        
+        Raises:
+            UserError: If user only has view_only permission (no write access)
+        """
+        user = self.env.user
+        
+        # Bypass for superuser/unrestricted users
+        if self.env.su or user.has_group('econovo_user_warehouse_restriction.group_warehouse_unrestricted'):
+            return
+        
+        for move in self:
+            # Get warehouses from move locations
+            source_warehouse = move.location_id.warehouse_id
+            dest_warehouse = move.location_dest_id.warehouse_id
+            
+            # Check both warehouses
+            warehouses_to_check = []
+            if source_warehouse:
+                warehouses_to_check.append(source_warehouse)
+            if dest_warehouse and dest_warehouse != source_warehouse:
+                warehouses_to_check.append(dest_warehouse)
+            
+            for warehouse in warehouses_to_check:
+                # Get user's permission for this warehouse
+                permission = self.env['warehouse.user.permission'].search([
+                    ('user_id', '=', user.id),
+                    ('warehouse_id', '=', warehouse.id)
+                ], limit=1)
+                
+                if permission and permission.view_only and not permission.full_control:
+                    raise UserError(_(
+                        'You do not have permission to modify warehouse "%s".\n\n'
+                        'Permission "view_only" is enabled for this warehouse.\n'
+                        'Contact your administrator to grant write access.'
+                    ) % warehouse.name)
+
+    def write(self, vals):
+        """Override write to check view_only permission."""
+        self._check_view_only_permission()
+        return super(StockMove, self).write(vals)
+
+    def unlink(self):
+        """Override unlink to check view_only permission."""
+        self._check_view_only_permission()
+        return super(StockMove, self).unlink()
     
     @api.constrains('location_id', 'location_dest_id')
     def _check_warehouse_transfer_permission(self):
