@@ -679,3 +679,170 @@ class TestGranularPickingPermissions(TransactionCase):
         # Default should be True
         self.assertTrue(permission.allow_transit)
 
+    # =========================================================================
+    # CASO 4.6: Integration tests - Combined permission scenarios
+    # =========================================================================
+
+    def test_full_control_bypasses_all_granular_permissions(self):
+        """Test that full_control bypasses all granular permission checks.
+        
+        CASO 4.6.1: User with full_control should be able to do everything.
+        """
+        # Create user with full_control
+        full_control_user = self.env['res.users'].sudo().create({
+            'name': 'Full Control Test User',
+            'login': 'full_control_test',
+            'email': 'full_control@test.com',
+            'groups_id': [(6, 0, [
+                self.env.ref('stock.group_stock_user').id,
+            ])],
+        })
+        
+        self.env['warehouse.user.permission'].sudo().create({
+            'user_id': full_control_user.id,
+            'warehouse_id': self.warehouse.id,
+            'full_control': True,
+            # All granular permissions are False
+            'allow_create_picking': False,
+            'allow_write_picking': False,
+            'allow_delete_picking': False,
+            'allow_inventory_adjustment': False,
+        })
+        
+        # Should be able to create picking despite allow_create_picking=False
+        picking = self.env['stock.picking'].with_user(full_control_user).create({
+            'picking_type_id': self.warehouse.out_type_id.id,
+            'location_id': self.location_stock.id,
+            'location_dest_id': self.location_customer.id,
+        })
+        self.assertTrue(picking.exists())
+        
+        # Should be able to modify picking despite allow_write_picking=False
+        picking.with_user(full_control_user).write({'origin': 'Full Control Test'})
+        self.assertEqual(picking.origin, 'Full Control Test')
+        
+        # Should be able to delete picking despite allow_delete_picking=False
+        picking.with_user(full_control_user).unlink()
+        self.assertFalse(picking.exists())
+
+    def test_create_write_workflow(self):
+        """Test create + write workflow for typical user.
+        
+        CASO 4.6.2: User with create and write permissions can complete full workflow.
+        """
+        # Create user with create and write permissions
+        workflow_user = self.env['res.users'].sudo().create({
+            'name': 'Workflow Test User',
+            'login': 'workflow_test',
+            'email': 'workflow@test.com',
+            'groups_id': [(6, 0, [
+                self.env.ref('stock.group_stock_user').id,
+            ])],
+        })
+        
+        self.env['warehouse.user.permission'].sudo().create({
+            'user_id': workflow_user.id,
+            'warehouse_id': self.warehouse.id,
+            'allow_create_picking': True,
+            'allow_write_picking': True,
+            'allow_as_source': True,
+            'allow_as_destination': True,
+        })
+        
+        # Create stock
+        self.env['stock.quant'].sudo().create({
+            'product_id': self.product.id,
+            'location_id': self.location_stock.id,
+            'quantity': 100.0,
+        })
+        
+        # Step 1: Create picking
+        picking = self.env['stock.picking'].with_user(workflow_user).create({
+            'picking_type_id': self.warehouse.out_type_id.id,
+            'location_id': self.location_stock.id,
+            'location_dest_id': self.location_customer.id,
+        })
+        
+        # Step 2: Add move
+        move = self.env['stock.move'].with_user(workflow_user).create({
+            'name': 'Workflow Test Move',
+            'product_id': self.product.id,
+            'product_uom_qty': 10,
+            'product_uom': self.product.uom_id.id,
+            'picking_id': picking.id,
+            'location_id': self.location_stock.id,
+            'location_dest_id': self.location_customer.id,
+        })
+        
+        # Step 3: Confirm and assign
+        picking.with_user(workflow_user).action_confirm()
+        picking.with_user(workflow_user).action_assign()
+        
+        # Step 4: Set quantity and validate
+        move.sudo().quantity = 10.0
+        picking.with_user(workflow_user).button_validate()
+        
+        self.assertEqual(picking.state, 'done')
+
+    def test_create_only_cannot_complete_workflow(self):
+        """Test that create-only user cannot complete full workflow.
+        
+        CASO 4.6.3: User with only create permission cannot validate.
+        """
+        # Create user with only create permission
+        create_only_user = self.env['res.users'].sudo().create({
+            'name': 'Create Only Workflow Test User',
+            'login': 'create_only_workflow_test',
+            'email': 'create_only_workflow@test.com',
+            'groups_id': [(6, 0, [
+                self.env.ref('stock.group_stock_user').id,
+            ])],
+        })
+        
+        self.env['warehouse.user.permission'].sudo().create({
+            'user_id': create_only_user.id,
+            'warehouse_id': self.warehouse.id,
+            'allow_create_picking': True,
+            'allow_write_picking': False,  # Cannot write/validate
+            'allow_as_source': True,
+            'allow_as_destination': True,
+        })
+        
+        # Create stock
+        self.env['stock.quant'].sudo().create({
+            'product_id': self.product.id,
+            'location_id': self.location_stock.id,
+            'quantity': 100.0,
+        })
+        
+        # Step 1: Create picking (should work)
+        picking = self.env['stock.picking'].with_user(create_only_user).create({
+            'picking_type_id': self.warehouse.out_type_id.id,
+            'location_id': self.location_stock.id,
+            'location_dest_id': self.location_customer.id,
+        })
+        self.assertTrue(picking.exists())
+        
+        # Step 2: Add move with sudo (for test setup)
+        move = self.env['stock.move'].sudo().create({
+            'name': 'Create Only Test Move',
+            'product_id': self.product.id,
+            'product_uom_qty': 10,
+            'product_uom': self.product.uom_id.id,
+            'picking_id': picking.id,
+            'location_id': self.location_stock.id,
+            'location_dest_id': self.location_customer.id,
+        })
+        
+        # Step 3: Confirm with sudo
+        picking.sudo().action_confirm()
+        picking.sudo().action_assign()
+        move.sudo().quantity = 10.0
+        
+        # Step 4: Try to validate (should fail)
+        with self.assertRaises(UserError) as context:
+            picking.with_user(create_only_user).button_validate()
+        
+        self.assertIn('allow_write_picking', str(context.exception).lower())
+
+
