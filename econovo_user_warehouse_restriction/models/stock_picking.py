@@ -65,29 +65,144 @@ class StockPicking(models.Model):
                     'Contact your administrator to grant write access.'
                 ) % warehouse.name)
 
+    def _check_granular_permission(self, permission_field, operation_name):
+        """Check if user has specific granular permission for this picking's warehouse.
+        
+        Args:
+            permission_field: String name of the permission field to check
+            operation_name: Human-readable name of the operation for error message
+            
+        Raises:
+            UserError: If user lacks the required permission
+        """
+        user = self.env.user
+        
+        # Bypass for superuser/unrestricted users
+        if self.env.su or user.has_group('econovo_user_warehouse_restriction.group_warehouse_unrestricted'):
+            return
+        
+        for picking in self:
+            # Get warehouse from picking's location
+            warehouse = picking.location_id.warehouse_id or picking.location_dest_id.warehouse_id
+            
+            if not warehouse:
+                continue
+            
+            # Get user's permission for this warehouse
+            permission = self.env['warehouse.user.permission'].search([
+                ('user_id', '=', user.id),
+                ('warehouse_id', '=', warehouse.id)
+            ], limit=1)
+            
+            if not permission:
+                raise UserError(_(
+                    'You do not have permission to %s pickings in warehouse "%s".\n\n'
+                    'No permission record found for this warehouse.\n'
+                    'Contact your administrator to grant access.'
+                ) % (operation_name, warehouse.name))
+            
+            # Check if user has full_control (bypass all granular checks)
+            if permission.full_control:
+                continue
+            
+            # Check specific permission field
+            if not getattr(permission, permission_field, False):
+                raise UserError(_(
+                    'You do not have permission to %s pickings in warehouse "%s".\n\n'
+                    'Permission "%s" is disabled for this warehouse.\n'
+                    'Contact your administrator to grant this permission.'
+                ) % (operation_name, warehouse.name, permission_field))
+
+    @api.model
+    def create(self, vals):
+        """Override create to check allow_create_picking permission."""
+        # Check permission before creating
+        user = self.env.user
+        
+        # Bypass for superuser/unrestricted users
+        if not self.env.su and not user.has_group('econovo_user_warehouse_restriction.group_warehouse_unrestricted'):
+            # Get warehouse from location_id or location_dest_id
+            location_id = vals.get('location_id')
+            location_dest_id = vals.get('location_dest_id')
+            
+            warehouse = False
+            if location_id:
+                location = self.env['stock.location'].browse(location_id)
+                warehouse = location.warehouse_id
+            elif location_dest_id:
+                location = self.env['stock.location'].browse(location_dest_id)
+                warehouse = location.warehouse_id
+            
+            if warehouse:
+                # Get user's permission for this warehouse
+                permission = self.env['warehouse.user.permission'].search([
+                    ('user_id', '=', user.id),
+                    ('warehouse_id', '=', warehouse.id)
+                ], limit=1)
+                
+                if not permission:
+                    raise UserError(_(
+                        'You do not have permission to create pickings in warehouse "%s".\n\n'
+                        'No permission record found for this warehouse.\n'
+                        'Contact your administrator to grant access.'
+                    ) % warehouse.name)
+                
+                # Check if user has full_control (bypass granular checks)
+                if not permission.full_control:
+                    # Check view_only first
+                    if permission.view_only:
+                        raise UserError(_(
+                            'You do not have permission to create pickings in warehouse "%s".\n\n'
+                            'Permission "view_only" is enabled for this warehouse.\n'
+                            'Contact your administrator to grant write access.'
+                        ) % warehouse.name)
+                    
+                    # Check allow_create_picking
+                    if not permission.allow_create_picking:
+                        raise UserError(_(
+                            'You do not have permission to create pickings in warehouse "%s".\n\n'
+                            'Permission "allow_create_picking" is disabled for this warehouse.\n'
+                            'Contact your administrator to grant this permission.'
+                        ) % warehouse.name)
+        
+        return super(StockPicking, self).create(vals)
+
     def write(self, vals):
-        """Override write to check view_only permission."""
+        """Override write to check view_only and allow_write_picking permissions."""
         self._check_view_only_permission()
+        self._check_granular_permission('allow_write_picking', 'modify')
         return super(StockPicking, self).write(vals)
 
     def unlink(self):
-        """Override unlink to check view_only permission."""
+        """Override unlink to check view_only and allow_delete_picking permissions."""
         self._check_view_only_permission()
+        self._check_granular_permission('allow_delete_picking', 'delete')
         return super(StockPicking, self).unlink()
 
     def action_cancel(self):
-        """Override action_cancel to check view_only permission."""
+        """Override action_cancel to check view_only and allow_delete_picking permissions.
+        
+        Note: Canceling is considered a delete operation as per allow_delete_picking field.
+        """
         self._check_view_only_permission()
+        self._check_granular_permission('allow_delete_picking', 'cancel')
         return super(StockPicking, self).action_cancel()
 
     def action_confirm(self):
-        """Override action_confirm to check view_only permission."""
+        """Override action_confirm to check view_only permission.
+        
+        Note: Confirming doesn't require special permission beyond write access.
+        """
         self._check_view_only_permission()
         return super(StockPicking, self).action_confirm()
 
     def button_validate(self):
-        """Override button_validate to check view_only permission."""
+        """Override button_validate to check view_only and allow_write_picking permissions.
+        
+        Note: Validating requires allow_write_picking as per field help text.
+        """
         self._check_view_only_permission()
+        self._check_granular_permission('allow_write_picking', 'validate')
         return super(StockPicking, self).button_validate()
 
     @api.onchange('location_id', 'location_dest_id')
