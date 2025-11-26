@@ -1253,3 +1253,68 @@ class TestGranularPickingPermissions(TransactionCase):
         
         self.assertTrue(move.exists())
 
+    # =========================================================================
+    # CASO 8: Edge cases and security group bypass
+    # =========================================================================
+
+    def test_user_without_any_permission_blocked(self):
+        """Test that user without any warehouse permission is blocked.
+        
+        CASO 8.2: User with no permissions should be blocked from everything.
+        """
+        # Create user without any warehouse permission
+        no_perm_user = self.env['res.users'].sudo().create({
+            'name': 'No Permission Test User',
+            'login': 'no_perm_test',
+            'email': 'no_perm@test.com',
+            'groups_id': [(6, 0, [
+                self.env.ref('stock.group_stock_user').id,
+            ])],
+        })
+        
+        # Do NOT create any warehouse.user.permission for this user
+        
+        # Try to create move - should fail
+        with self.assertRaises(UserError):
+            self.env['stock.move'].with_user(no_perm_user).create({
+                'name': 'No Permission Move',
+                'product_id': self.product.id,
+                'product_uom_qty': 10,
+                'product_uom': self.product.uom_id.id,
+                'location_id': self.location_stock.id,
+                'location_dest_id': self.location_customer.id,
+            })
+
+    def test_inactive_permission_not_considered(self):
+        """Test that inactive permissions are not considered.
+        
+        CASO 8.3: Inactive (archived) permissions should be ignored.
+        """
+        # Create user
+        inactive_perm_user = self.env['res.users'].sudo().create({
+            'name': 'Inactive Permission Test User',
+            'login': 'inactive_perm_test',
+            'email': 'inactive_perm@test.com',
+            'groups_id': [(6, 0, [
+                self.env.ref('stock.group_stock_user').id,
+            ])],
+        })
+        
+        # Create inactive permission
+        self.env['warehouse.user.permission'].sudo().create({
+            'user_id': inactive_perm_user.id,
+            'warehouse_id': self.warehouse.id,
+            'active': False,  # INACTIVE
+            'full_control': True,
+        })
+        
+        # Try to create move - should fail because permission is inactive
+        with self.assertRaises(UserError):
+            self.env['stock.move'].with_user(inactive_perm_user).create({
+                'name': 'Inactive Permission Move',
+                'product_id': self.product.id,
+                'product_uom_qty': 10,
+                'product_uom': self.product.uom_id.id,
+                'location_id': self.location_stock.id,
+                'location_dest_id': self.location_customer.id,
+            })
