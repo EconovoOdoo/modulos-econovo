@@ -429,3 +429,122 @@ class TestGranularPickingPermissions(TransactionCase):
         
         # Should get UserError mentioning allow_delete_picking
         self.assertIn('allow_delete_picking', str(context.exception).lower())
+
+    # =========================================================================
+    # CASO 4.4: allow_inventory_adjustment permission
+    # =========================================================================
+
+    def test_inventory_adjustment_permission_allows_adjust(self):
+        """Test that user with allow_inventory_adjustment can adjust inventory.
+        
+        CASO 4.4.1: User should be able to adjust inventory quantities.
+        """
+        # Create user with inventory adjustment permission
+        inv_user = self.env['res.users'].sudo().create({
+            'name': 'Inventory Adjust Test User',
+            'login': 'inv_adjust_test',
+            'email': 'inv_adjust@test.com',
+            'groups_id': [(6, 0, [
+                self.env.ref('stock.group_stock_user').id,
+            ])],
+        })
+        
+        self.env['warehouse.user.permission'].sudo().create({
+            'user_id': inv_user.id,
+            'warehouse_id': self.warehouse.id,
+            'allow_inventory_adjustment': True,
+            'allow_as_source': True,
+            'allow_as_destination': True,
+        })
+        
+        # Create a quant
+        quant = self.env['stock.quant'].sudo().create({
+            'product_id': self.product.id,
+            'location_id': self.location_stock.id,
+            'quantity': 100.0,
+        })
+        
+        # Should be able to adjust inventory
+        quant.with_user(inv_user).write({
+            'inventory_quantity': 90.0,
+        })
+        
+        self.assertEqual(quant.inventory_quantity, 90.0)
+
+    def test_no_inventory_adjustment_permission_blocks_adjust(self):
+        """Test that user without allow_inventory_adjustment cannot adjust inventory.
+        
+        CASO 4.4.2: User without permission should be blocked.
+        """
+        # Create user without inventory adjustment permission
+        no_inv_user = self.env['res.users'].sudo().create({
+            'name': 'No Inventory Adjust Test User',
+            'login': 'no_inv_adjust_test',
+            'email': 'no_inv_adjust@test.com',
+            'groups_id': [(6, 0, [
+                self.env.ref('stock.group_stock_user').id,
+            ])],
+        })
+        
+        self.env['warehouse.user.permission'].sudo().create({
+            'user_id': no_inv_user.id,
+            'warehouse_id': self.warehouse.id,
+            'allow_inventory_adjustment': False,
+            'allow_as_source': True,
+            'allow_as_destination': True,
+        })
+        
+        # Create a quant
+        quant = self.env['stock.quant'].sudo().create({
+            'product_id': self.product.id,
+            'location_id': self.location_stock.id,
+            'quantity': 100.0,
+        })
+        
+        # Should not be able to adjust inventory
+        with self.assertRaises(UserError) as context:
+            quant.with_user(no_inv_user).write({
+                'inventory_quantity': 90.0,
+            })
+        
+        # Should get UserError mentioning allow_inventory_adjustment
+        self.assertIn('allow_inventory_adjustment', str(context.exception).lower())
+
+    def test_view_only_blocks_inventory_adjustment(self):
+        """Test that view_only user cannot adjust inventory.
+        
+        CASO 4.4.3: View-only user should be blocked from adjusting inventory.
+        """
+        # Create user with view_only
+        view_only_user = self.env['res.users'].sudo().create({
+            'name': 'View Only Inventory Test User',
+            'login': 'view_only_inv_test',
+            'email': 'view_only_inv@test.com',
+            'groups_id': [(6, 0, [
+                self.env.ref('stock.group_stock_user').id,
+            ])],
+        })
+        
+        self.env['warehouse.user.permission'].sudo().create({
+            'user_id': view_only_user.id,
+            'warehouse_id': self.warehouse.id,
+            'view_only': True,
+            # view_only blocks all write operations including inventory adjustment
+        })
+        
+        # Create a quant
+        quant = self.env['stock.quant'].sudo().create({
+            'product_id': self.product.id,
+            'location_id': self.location_stock.id,
+            'quantity': 100.0,
+        })
+        
+        # Should not be able to adjust inventory due to view_only
+        with self.assertRaises(UserError) as context:
+            quant.with_user(view_only_user).write({
+                'inventory_quantity': 90.0,
+            })
+        
+        # Should get UserError mentioning view-only
+        self.assertIn('view-only', str(context.exception).lower())
+
