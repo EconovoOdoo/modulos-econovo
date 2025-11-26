@@ -1114,3 +1114,142 @@ class TestGranularPickingPermissions(TransactionCase):
             picking.with_user(view_user).unlink()
         
         self.assertIn('view', str(context.exception).lower())
+
+    # =========================================================================
+    # CASO 7: allow_as_source / allow_as_destination permissions
+    # =========================================================================
+
+    def test_no_source_permission_blocks_outgoing(self):
+        """Test that user without allow_as_source cannot create outgoing moves.
+        
+        CASO 7.1: User without source permission blocked from shipping out.
+        """
+        # Create user without source permission
+        no_source_user = self.env['res.users'].sudo().create({
+            'name': 'No Source Test User',
+            'login': 'no_source_test',
+            'email': 'no_source@test.com',
+            'groups_id': [(6, 0, [
+                self.env.ref('stock.group_stock_user').id,
+            ])],
+        })
+        
+        self.env['warehouse.user.permission'].sudo().create({
+            'user_id': no_source_user.id,
+            'warehouse_id': self.warehouse.id,
+            'allow_as_source': False,
+            'allow_as_destination': True,
+            'allow_create_picking': True,
+            'allow_write_picking': True,
+        })
+        
+        # Create quant
+        self.env['stock.quant'].sudo().create({
+            'product_id': self.product.id,
+            'location_id': self.location_stock.id,
+            'quantity': 100.0,
+        })
+        
+        # Try to create outgoing move - should fail
+        with self.assertRaises(UserError) as context:
+            self.env['stock.move'].with_user(no_source_user).create({
+                'name': 'Outgoing Move',
+                'product_id': self.product.id,
+                'product_uom_qty': 10,
+                'product_uom': self.product.uom_id.id,
+                'location_id': self.location_stock.id,
+                'location_dest_id': self.location_customer.id,
+            })
+        
+        self.assertIn('source', str(context.exception).lower())
+
+    def test_no_destination_permission_blocks_incoming(self):
+        """Test that user without allow_as_destination cannot create incoming moves.
+        
+        CASO 7.2: User without destination permission blocked from receiving.
+        """
+        # Create user without destination permission
+        no_dest_user = self.env['res.users'].sudo().create({
+            'name': 'No Destination Test User',
+            'login': 'no_dest_test',
+            'email': 'no_dest@test.com',
+            'groups_id': [(6, 0, [
+                self.env.ref('stock.group_stock_user').id,
+            ])],
+        })
+        
+        self.env['warehouse.user.permission'].sudo().create({
+            'user_id': no_dest_user.id,
+            'warehouse_id': self.warehouse.id,
+            'allow_as_source': True,
+            'allow_as_destination': False,
+            'allow_create_picking': True,
+            'allow_write_picking': True,
+        })
+        
+        # Get supplier location
+        supplier_location = self.env.ref('stock.stock_location_suppliers')
+        
+        # Try to create incoming move to warehouse - should fail
+        with self.assertRaises(UserError) as context:
+            self.env['stock.move'].with_user(no_dest_user).create({
+                'name': 'Incoming Move',
+                'product_id': self.product.id,
+                'product_uom_qty': 10,
+                'product_uom': self.product.uom_id.id,
+                'location_id': supplier_location.id,
+                'location_dest_id': self.location_stock.id,
+            })
+        
+        self.assertIn('destination', str(context.exception).lower())
+
+    def test_source_and_destination_allows_internal_transfer(self):
+        """Test that user with both permissions can do internal transfers.
+        
+        CASO 7.3: User with source+destination can move within warehouse.
+        """
+        # Create user with both permissions
+        internal_user = self.env['res.users'].sudo().create({
+            'name': 'Internal Transfer Test User',
+            'login': 'internal_test',
+            'email': 'internal@test.com',
+            'groups_id': [(6, 0, [
+                self.env.ref('stock.group_stock_user').id,
+            ])],
+        })
+        
+        self.env['warehouse.user.permission'].sudo().create({
+            'user_id': internal_user.id,
+            'warehouse_id': self.warehouse.id,
+            'allow_as_source': True,
+            'allow_as_destination': True,
+            'allow_create_picking': True,
+            'allow_write_picking': True,
+        })
+        
+        # Create another internal location
+        internal_dest = self.env['stock.location'].sudo().create({
+            'name': 'Internal Destination',
+            'usage': 'internal',
+            'location_id': self.location_stock.id,
+        })
+        
+        # Create quant
+        self.env['stock.quant'].sudo().create({
+            'product_id': self.product.id,
+            'location_id': self.location_stock.id,
+            'quantity': 100.0,
+        })
+        
+        # Should be able to create internal transfer
+        move = self.env['stock.move'].with_user(internal_user).create({
+            'name': 'Internal Transfer',
+            'product_id': self.product.id,
+            'product_uom_qty': 10,
+            'product_uom': self.product.uom_id.id,
+            'location_id': self.location_stock.id,
+            'location_dest_id': internal_dest.id,
+        })
+        
+        self.assertTrue(move.exists())
+
