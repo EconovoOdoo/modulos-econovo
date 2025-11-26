@@ -94,6 +94,27 @@
         <!-- ECONOVO EXTENSION GROUPS                                          -->
         <!-- ================================================================== -->
         
+        <!-- Restricted User Group (for record rule targeting) -->
+        <record id="user_warehouse_restriction_group_restricted" model="res.groups">
+            <field name="name">Warehouse Restriction - Restricted Users</field>
+            <field name="category_id" ref="base.module_category_hidden"/>
+            <field name="comment">
+                Internal group for security record rules.
+                
+                This group is used to identify users who should see ONLY their own permission records.
+                System administrators (base.group_system) are NOT assigned to this group,
+                allowing them to bypass the "Own Records" restriction.
+                
+                Auto-assigned to:
+                - All inventory users EXCEPT system administrators
+                
+                Used by:
+                - warehouse_user_permission_rule_own (Own Records rule)
+                
+                DO NOT manually assign this group.
+            </field>
+        </record>
+        
         <!-- Management Groups for Permission Configuration -->
         <record id="user_warehouse_restriction_group_manager" model="res.groups">
             <field name="name">Warehouse Permissions Manager</field>
@@ -117,54 +138,6 @@
         <!-- Make stock managers automatically get permission manager access -->
         <record id="stock.group_stock_manager" model="res.groups">
             <field name="implied_ids" eval="[(4, ref('econovo_user_warehouse_restriction.user_warehouse_restriction_group_manager'))]"/>
-        </record>
-        
-        <!-- ================================================================== -->
-        <!-- ECONOVO EXTENSION GROUPS                                          -->
-        <!-- ================================================================== -->
-        
-        <!-- Group: Warehouse Restriction - Source Only (Base restriction level) -->
-        <record id="group_warehouse_restriction_source_only" model="res.groups">
-            <field name="name">Warehouse Restriction - Source Only</field>
-            <field name="category_id" ref="base.module_category_inventory"/>
-            <field name="implied_ids" eval="[(4, ref('econovo_user_warehouse_restriction.user_warehouse_restriction_group_user'))]"/>
-            <field name="comment">
-                Users in this group have ONLY source restrictions enforced.
-                
-                - Can only access inventory in warehouses they are assigned to
-                - CAN transfer stock to ANY destination warehouse (no destination restriction)
-                - Cannot view or modify inventory in unauthorized source warehouses
-                
-                Exception: Transit warehouses and locations are accessible to all users
-                in this group to facilitate inter-warehouse collaboration.
-                
-                Use case: Regional managers or logistics coordinators who need to redistribute
-                stock from their assigned warehouses to any destination warehouse.
-                
-                Inheritance: Inherits from user_warehouse_restriction_group_user (base group)
-            </field>
-        </record>
-        
-        <!-- Group: Warehouse Restriction - Full (Source + Destination) (Maximum restriction) -->
-        <record id="group_warehouse_restriction_full" model="res.groups">
-            <field name="name">Warehouse Restriction - Full (Source + Destination)</field>
-            <field name="category_id" ref="base.module_category_inventory"/>
-            <field name="implied_ids" eval="[(4, ref('econovo_user_warehouse_restriction.group_warehouse_restriction_source_only'))]"/>
-            <field name="comment">
-                Users in this group have BOTH source and destination restrictions enforced.
-                
-                - Can only access warehouses they are explicitly assigned to
-                - Cannot transfer stock to warehouses outside their allowed list
-                - Cannot view or modify inventory in unauthorized warehouses
-                
-                Exception: Transit warehouses and locations are accessible to all users
-                in this group to facilitate inter-warehouse collaboration.
-                
-                Use case: Warehouse operators who should only work within their assigned warehouse.
-                
-                Inheritance: Inherits from group_warehouse_restriction_source_only (which inherits from base)
-                This means Full users automatically get all Source Only restrictions PLUS destination validation.
-            </field>
         </record>
         
     </data>

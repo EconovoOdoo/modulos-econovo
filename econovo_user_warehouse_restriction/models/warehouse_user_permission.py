@@ -68,8 +68,8 @@ class WarehouseUserPermission(models.Model):
         required=True,
         ondelete='cascade',
         index=True,
-        domain=[('groups_id', 'in', [lambda self: self.env.ref('stock.group_stock_user').id])],
-        help='User to whom these permissions are granted.'
+        domain="[('share', '=', False)]",
+        help='User to whom these permissions are granted. Only internal users.'
     )
     
     company_id = fields.Many2one(
@@ -79,6 +79,25 @@ class WarehouseUserPermission(models.Model):
         store=True,
         readonly=True,
         help='Company of the warehouse (automatically set).'
+    )
+    
+    # ========================================================================
+    # BYPASS DETECTION (informational fields)
+    # ========================================================================
+    
+    has_bypass_permissions = fields.Boolean(
+        string='Has Bypass Permissions',
+        compute='_compute_bypass_permissions',
+        store=False,
+        help='Indicates if this user has system-level privileges that bypass '
+             'all warehouse restrictions (e.g., System Administrator).'
+    )
+    
+    bypass_info = fields.Char(
+        string='Bypass Status',
+        compute='_compute_bypass_permissions',
+        store=False,
+        help='Information about bypass permissions active for this user.'
     )
     
     # ========================================================================
@@ -248,6 +267,36 @@ class WarehouseUserPermission(models.Model):
     # ========================================================================
     # COMPUTE METHODS
     # ========================================================================
+    
+    @api.depends('user_id')
+    def _compute_bypass_permissions(self):
+        """Detect if user has system-level bypass permissions.
+        
+        Users with base.group_system or group_warehouse_unrestricted
+        bypass all warehouse restrictions via security rules.
+        """
+        admin_group = self.env.ref('base.group_system', raise_if_not_found=False)
+        unrestricted_group = self.env.ref(
+            'econovo_user_warehouse_restriction.group_warehouse_unrestricted',
+            raise_if_not_found=False
+        )
+        
+        for record in self:
+            has_bypass = False
+            bypass_reason = ''
+            
+            if record.user_id:
+                user_groups = record.user_id.groups_id
+                
+                if admin_group and admin_group in user_groups:
+                    has_bypass = True
+                    bypass_reason = 'System Administrator'
+                elif unrestricted_group and unrestricted_group in user_groups:
+                    has_bypass = True
+                    bypass_reason = 'Unrestricted Access'
+            
+            record.has_bypass_permissions = has_bypass
+            record.bypass_info = bypass_reason if has_bypass else ''
     
     @api.depends('warehouse_id.company_id')
     def _compute_company_id(self):
@@ -433,3 +482,24 @@ class WarehouseUserPermission(models.Model):
         
         # Check if location is in blacklist
         return location in self.blocked_location_ids
+    
+    # ========================================================================
+    # UI ACTIONS
+    # ========================================================================
+    
+    def action_show_bypass_info(self):
+        """Show informational wizard about bypass permissions.
+        
+        Returns:
+            dict: Action to open wizard modal dialog
+        """
+        self.ensure_one()
+        
+        if not self.has_bypass_permissions:
+            return {}
+        
+        # Use wizard modal for clean, professional display
+        return self.env['warehouse.bypass.info.wizard'].action_show_info(
+            user_name=self.user_id.name,
+            bypass_reason=self.bypass_info
+        )

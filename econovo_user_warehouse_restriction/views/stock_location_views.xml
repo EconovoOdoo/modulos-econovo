@@ -8,12 +8,16 @@
             <field name="model">stock.location</field>
             <field name="inherit_id" ref="stock.view_location_form"/>
             <field name="arch" type="xml">
+                <!-- Add checkbox after usage field -->
                 <xpath expr="//field[@name='usage']" position="after">
                     <field name="is_transit_location"/>
-                    <div class="alert alert-info" role="alert" 
+                </xpath>
+                
+                <!-- Add help text using Odoo's native approach -->
+                <xpath expr="//field[@name='is_transit_location']" position="after">
+                    <div class="text-muted fst-italic" colspan="2" 
                          invisible="not is_transit_location">
-                        <strong>Transit Location:</strong> This location is accessible by all users for transit operations,
-                        even if they don't have access to the parent warehouse. Useful for shared dock/staging areas.
+                        ℹ️ This location is accessible by all users for transit operations, even if they don't have access to the parent warehouse. Useful for shared dock/staging areas.
                     </div>
                 </xpath>
             </field>

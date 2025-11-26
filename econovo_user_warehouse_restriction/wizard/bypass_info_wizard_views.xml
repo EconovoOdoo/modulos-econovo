@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- 
+        ========================================================================
+        BYPASS INFO WIZARD - Modal Dialog
+        ========================================================================
+        
+        Displays detailed information about system-level bypass permissions
+        in a clean modal dialog.
+    -->
+    
+    <record id="view_warehouse_bypass_info_wizard_form" model="ir.ui.view">
+        <field name="name">warehouse.bypass.info.wizard.form</field>
+        <field name="model">warehouse.bypass.info.wizard</field>
+        <field name="arch" type="xml">
+            <form string="System-Level Bypass Active">
+                <sheet>
+                    <field name="info_html" nolabel="1"/>
+                </sheet>
+                <footer>
+                    <button string="Close" class="btn-primary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    
+</odoo>

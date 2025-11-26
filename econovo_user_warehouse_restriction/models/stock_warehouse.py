@@ -56,7 +56,7 @@ class StockWarehouse(models.Model):
         """Create warehouses with automatic admin permission assignment.
         
         Automatically assigns Full Control permissions to system administrators
-        when creating new warehouses, preventing lockout scenarios.
+        when creating new warehouses, ensuring UI consistency and documentation.
         
         Args:
             vals_list: List of dictionaries with warehouse values
@@ -66,37 +66,30 @@ class StockWarehouse(models.Model):
         """
         warehouses = super().create(vals_list)
         
-        # Check if warehouse restriction is enabled
-        restriction_enabled = self.env['ir.config_parameter'].sudo().get_param(
-            'econovo_user_warehouse_restriction.group_user_warehouse_restriction',
-            default=False
-        )
-        
-        if restriction_enabled:
-            # Get all system administrators
-            admin_group = self.env.ref('base.group_system', raise_if_not_found=False)
-            if admin_group:
-                admins = self.env['res.users'].search([
-                    ('groups_id', 'in', [admin_group.id]),
-                    ('share', '=', False),  # Internal users only
-                ])
-                
-                # Create permission records for admins with Full Control
-                for warehouse in warehouses:
-                    for admin in admins:
-                        # Check if permission doesn't exist already
-                        existing = self.env['warehouse.user.permission'].search([
-                            ('warehouse_id', '=', warehouse.id),
-                            ('user_id', '=', admin.id)
-                        ], limit=1)
-                        
-                        if not existing:
-                            self.env['warehouse.user.permission'].create({
-                                'warehouse_id': warehouse.id,
-                                'user_id': admin.id,
-                                'full_control': True,
-                                'active': True,
-                            })
+        # Get all system administrators
+        admin_group = self.env.ref('base.group_system', raise_if_not_found=False)
+        if admin_group:
+            admins = self.env['res.users'].search([
+                ('groups_id', 'in', [admin_group.id]),
+                ('share', '=', False),  # Internal users only
+            ])
+            
+            # Create permission records for admins with Full Control
+            for warehouse in warehouses:
+                for admin in admins:
+                    # Check if permission doesn't exist already
+                    existing = self.env['warehouse.user.permission'].search([
+                        ('warehouse_id', '=', warehouse.id),
+                        ('user_id', '=', admin.id)
+                    ], limit=1)
+                    
+                    if not existing:
+                        self.env['warehouse.user.permission'].create({
+                            'warehouse_id': warehouse.id,
+                            'user_id': admin.id,
+                            'full_control': True,
+                            'active': True,
+                        })
         
         return warehouses
 

@@ -22,8 +22,17 @@
                 <field name="warehouse_id" required="1" invisible="context.get('default_warehouse_id')"/>
                 <field name="company_id" optional="hide"/>
                 
+                <!-- Bypass Detection (Hidden fields for button visibility) -->
+                <field name="has_bypass_permissions" column_invisible="1"/>
+                <field name="bypass_info" column_invisible="1"/>
+                
                 <!-- Special Modes (Mutually Exclusive) -->
                 <field name="full_control" widget="boolean_toggle"/>
+                <button name="action_show_bypass_info" 
+                        type="object" 
+                        icon="fa-warning text-warning" 
+                        title="System-Level Bypass Active: This user has administrator privileges that override all warehouse restrictions configured here. Click for details."
+                        invisible="not has_bypass_permissions"/>
                 <field name="view_only" widget="boolean_toggle"/>
                 
                 <!-- Warehouse-Level Permissions -->
@@ -53,6 +62,22 @@
         <field name="arch" type="xml">
             <form string="Warehouse User Permission">
                 <sheet>
+                    <!-- Bypass Warning Alert -->
+                    <div class="alert alert-info" invisible="not has_bypass_permissions" role="alert">
+                        <i class="fa fa-info-circle"/> 
+                        <strong>System-Level Access Detected:</strong> 
+                        This user has <strong><field name="bypass_info" readonly="1" nolabel="1" class="oe_inline"/></strong> privileges 
+                        and can access <strong>all warehouses</strong> regardless of the permissions configured below.
+                        <br/><br/>
+                        <i class="fa fa-arrow-right"/> 
+                        To apply these restrictions, go to: 
+                        <strong>Settings → Users &amp; Companies → Users</strong> → 
+                        Select user → <strong>Access Rights</strong> tab → 
+                        Remove <em>"Administration / Settings"</em> or <em>"Unrestricted Warehouse Access"</em> groups.
+                    </div>
+                    
+                    <field name="has_bypass_permissions" invisible="1"/>
+                    
                     <group>
                         <group name="core_info" string="Core Information">
                             <field name="user_id" required="1"/>

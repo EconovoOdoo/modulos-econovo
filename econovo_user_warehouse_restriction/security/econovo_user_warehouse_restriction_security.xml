@@ -11,30 +11,50 @@
         1. warehouse.user.permission - Permission matrix access control
         2. stock.picking.type - Operation types by warehouse permissions
         3. stock.location - Location access restrictions
-        4. stock.warehouse - Warehouse access by permission existence
+        4. stock.warehouse - Warehouse read-only access by permission existence
         5. stock.picking - Transfers by warehouse permissions
         6. stock.quant - Inventory quants by warehouse + transit
         7. stock.move - Moves by source/destination permissions
         8. stock.move.line - Move lines by source/destination permissions
+        9. stock.valuation.layer - Valuation layers by stock.move permissions
+        10. stock.warehouse.orderpoint - Reordering rules by warehouse permissions
     -->
     
     <!-- ====================================================================== -->
     <!-- PERMISSION MATRIX ACCESS                                              -->
     <!-- ====================================================================== -->
     
-    <!-- RULE 1: Warehouse User Permissions
-         Users can only view their own permission records.
-         Stock managers can see all permission records for configuration.
-         Ensures users cannot escalate their own permissions. -->
+    <!-- RULE 1a: Warehouse User Permissions - Own Records
+         Regular users can only view their own permission records.
+         Ensures users cannot escalate their own permissions.
+         
+         IMPORTANT: Applies to user_warehouse_restriction_group_restricted ONLY.
+         System administrators are NOT in this group, so they bypass this rule. -->
     <record id="warehouse_user_permission_rule_own" model="ir.rule">
         <field name="name">Warehouse User Permission - Own Records</field>
         <field name="model_id" ref="model_warehouse_user_permission"/>
         <field name="domain_force">[('user_id', '=', user.id)]</field>
-        <field name="groups" eval="[(4, ref('stock.group_stock_user'))]"/>
+        <field name="groups" eval="[(4, ref('econovo_user_warehouse_restriction.user_warehouse_restriction_group_restricted'))]"/>
         <field name="perm_read" eval="True"/>
         <field name="perm_write" eval="False"/>
         <field name="perm_create" eval="False"/>
         <field name="perm_unlink" eval="False"/>
+        <field name="active" eval="True"/>
+    </record>
+    
+    <!-- RULE 1b: Warehouse User Permissions - System Administrators Only
+         Only system administrators (Settings/Administration) can view/edit ALL permission records.
+         Inventory Managers must request permissions from system administrators.
+         This rule has higher priority than "Own Records" rule. -->
+    <record id="warehouse_user_permission_rule_manager" model="ir.rule">
+        <field name="name">Warehouse User Permission - System Administrators</field>
+        <field name="model_id" ref="model_warehouse_user_permission"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('base.group_system'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
         <field name="active" eval="True"/>
     </record>
     
@@ -63,12 +83,23 @@
     </record>
     
     <!-- RULE 3: Stock Locations
-         Users can access all locations.
-         Location-specific restrictions are handled via permission.blocked_location_ids. -->
+         Filters by warehouse permissions + non-internal locations.
+         
+         Users can access:
+         - Locations belonging to warehouses where they have permissions
+         - Locations without warehouse assignment (shared/virtual locations)
+         - Non-internal locations (partners, transit, production, scrap, etc.)
+         
+         This enables proper transfer operations while maintaining security.
+         Non-internal locations are necessary for receipts, deliveries, and production. -->
     <record id="stock_location_rule_users" model="ir.rule">
-        <field name="name">Stock Location Restrict on Users</field>
+        <field name="name">Stock Location - Restriction</field>
         <field name="model_id" ref="stock.model_stock_location"/>
-        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="domain_force">['|', '|',
+            ('warehouse_id.user_permission_ids.user_id', '=', user.id),
+            ('warehouse_id', '=', False),
+            ('usage', '!=', 'internal')
+        ]</field>
         <field name="groups" eval="[(4, ref('econovo_user_warehouse_restriction.user_warehouse_restriction_group_user'))]"/>
         <field name="perm_read" eval="True"/>
         <field name="perm_write" eval="True"/>
@@ -77,22 +108,25 @@
         <field name="active" eval="True"/>
     </record>
     
-    <!-- RULE 4: Warehouses
+    <!-- RULE 4: Warehouses - Read-Only Access
          Filters by warehouse.user_permission_ids existence.
          
-         Users can only see warehouses where they have permission records. -->
+         Users can READ warehouses where they have permission records.
+         This allows them to:
+         - View warehouse names in forms and lists
+         - Select warehouses in dropdowns (orderpoints, pickings, etc.)
+         - Access warehouse-related views without errors
+         
+         Write/Create/Unlink permissions are DENIED to prevent configuration changes. -->
     <record id="stock_warehouse_rule_users" model="ir.rule">
-        <field name="name">Warehouse Restrict on Users</field>
+        <field name="name">Warehouse Read-Only - Restriction</field>
         <field name="model_id" ref="stock.model_stock_warehouse"/>
-        <field name="domain_force">['|', 
-            ('user_permission_ids.user_id', '=', user.id),
-            ('user_permission_ids', '=', False)
-        ]</field>
+        <field name="domain_force">[('user_permission_ids.user_id', '=', user.id)]</field>
         <field name="groups" eval="[(4, ref('econovo_user_warehouse_restriction.user_warehouse_restriction_group_user'))]"/>
         <field name="perm_read" eval="True"/>
-        <field name="perm_write" eval="True"/>
-        <field name="perm_create" eval="True"/>
-        <field name="perm_unlink" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
         <field name="active" eval="True"/>
     </record>
     
@@ -176,6 +210,44 @@
             ('location_id.warehouse_id.user_permission_ids.user_id', '=', user.id),
             ('location_dest_id.warehouse_id.user_permission_ids.user_id', '=', user.id)
         ]</field>
+        <field name="groups" eval="[(4, ref('econovo_user_warehouse_restriction.user_warehouse_restriction_group_user'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+        <field name="active" eval="True"/>
+    </record>
+
+    <!-- RULE 9: Stock Valuation Layer Restriction
+         Uses stock.move restriction logic.
+         
+         Users can only see valuation layers for moves they have access to.
+         Prevents access errors when opening valuation layer forms. -->
+    <record id="stock_valuation_layer_rule_users" model="ir.rule">
+        <field name="name">Stock Valuation Layer - Restriction</field>
+        <field name="model_id" ref="stock_account.model_stock_valuation_layer"/>
+        <field name="domain_force">['|', '|',
+            ('stock_move_id.location_id.warehouse_id.user_permission_ids.user_id', '=', user.id),
+            ('stock_move_id.location_dest_id.warehouse_id.user_permission_ids.user_id', '=', user.id),
+            ('stock_move_id', '=', False)
+        ]</field>
+        <field name="groups" eval="[(4, ref('econovo_user_warehouse_restriction.user_warehouse_restriction_group_user'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+        <field name="active" eval="True"/>
+    </record>
+
+    <!-- RULE 10: Reordering Rules (Orderpoints) Restriction
+         Filters by warehouse permission existence.
+         
+         Users can only see/create reordering rules for warehouses they have access to.
+         This enables users to manage inventory automation within their assigned warehouses. -->
+    <record id="stock_warehouse_orderpoint_rule_users" model="ir.rule">
+        <field name="name">Reordering Rules - Restriction</field>
+        <field name="model_id" ref="stock.model_stock_warehouse_orderpoint"/>
+        <field name="domain_force">[('warehouse_id.user_permission_ids.user_id', '=', user.id)]</field>
         <field name="groups" eval="[(4, ref('econovo_user_warehouse_restriction.user_warehouse_restriction_group_user'))]"/>
         <field name="perm_read" eval="True"/>
         <field name="perm_write" eval="True"/>

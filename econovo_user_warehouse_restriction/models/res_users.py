@@ -47,8 +47,13 @@ class ResUsers(models.Model):
     def create(self, vals_list):
         """Enhanced multi-create with automatic restriction group assignment.
         
-        Automatically assigns warehouse restriction group to new inventory users.
-        System administrators are excluded from auto-assignment.
+        Automatically assigns warehouse restriction groups to new inventory users.
+        Two groups are assigned:
+        1. user_warehouse_restriction_group_user (base restriction)
+        2. user_warehouse_restriction_group_restricted (for "Own Records" rule)
+        
+        System administrators are excluded from the restricted group,
+        allowing them to see all permission records.
         
         Args:
             vals_list (list): List of value dicts for new users
@@ -59,13 +64,17 @@ class ResUsers(models.Model):
         # Create users first
         users = super(ResUsers, self).create(vals_list)
         
-        # Get restriction group
+        # Get restriction groups
         restriction_group = self.env.ref(
             'econovo_user_warehouse_restriction.user_warehouse_restriction_group_user',
             raise_if_not_found=False
         )
+        restricted_group = self.env.ref(
+            'econovo_user_warehouse_restriction.user_warehouse_restriction_group_restricted',
+            raise_if_not_found=False
+        )
         
-        if restriction_group:
+        if restriction_group and restricted_group:
             # Get system admin group
             admin_group = self.env.ref('base.group_system', raise_if_not_found=False)
             inventory_group = self.env.ref('stock.group_stock_user', raise_if_not_found=False)
@@ -78,11 +87,21 @@ class ResUsers(models.Model):
                 is_admin = admin_group and admin_group in user.groups_id
                 
                 if is_internal and has_inventory and not is_admin:
-                    # Auto-assign restriction group
+                    groups_to_add = []
+                    
+                    # Auto-assign base restriction group
                     if restriction_group not in user.groups_id:
-                        user.write({'groups_id': [(4, restriction_group.id)]})
+                        groups_to_add.append(restriction_group.id)
+                    
+                    # Auto-assign restricted group (for "Own Records" rule)
+                    if restricted_group not in user.groups_id:
+                        groups_to_add.append(restricted_group.id)
+                    
+                    if groups_to_add:
+                        user.write({'groups_id': [(4, gid) for gid in groups_to_add]})
                         _logger.info(
-                            f"Auto-assigned warehouse restriction group to new user: {user.name}"
+                            f"Auto-assigned warehouse restriction groups to new user: {user.name} "
+                            f"(Groups: {len(groups_to_add)})"
                         )
         
         self.clear_caches()

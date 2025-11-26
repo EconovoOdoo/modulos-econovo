@@ -63,7 +63,17 @@
                             <tree editable="bottom">
                                 <field name="warehouse_id" column_invisible="1"/>
                                 <field name="user_id" required="1"/>
+                                
+                                <!-- Bypass Detection (Hidden fields for button visibility) -->
+                                <field name="has_bypass_permissions" column_invisible="1"/>
+                                <field name="bypass_info" column_invisible="1"/>
+                                
                                 <field name="full_control" widget="boolean_toggle"/>
+                                <button name="action_show_bypass_info" 
+                                        type="object" 
+                                        icon="fa-warning text-warning" 
+                                        title="System-Level Bypass Active: This user has administrator privileges that override all warehouse restrictions configured here. Click for details."
+                                        invisible="not has_bypass_permissions"/>
                                 <field name="view_only" widget="boolean_toggle"/>
                                 <field name="allow_as_source" widget="boolean_toggle"/>
                                 <field name="allow_as_destination" widget="boolean_toggle"/>

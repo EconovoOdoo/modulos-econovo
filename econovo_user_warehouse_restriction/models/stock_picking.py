@@ -12,7 +12,8 @@
 #    GENERAL PUBLIC LICENSE (AGPL v3).
 #
 ###############################################################################
-from odoo import api, models
+from odoo import api, models, _
+from odoo.exceptions import UserError
 
 
 class StockPicking(models.Model):
@@ -31,6 +32,63 @@ class StockPicking(models.Model):
     handle the actual access control at database level.
     """
     _inherit = 'stock.picking'
+
+    def _check_view_only_permission(self):
+        """Check if user has view_only permission for this picking's warehouse.
+        
+        Raises:
+            UserError: If user only has view_only permission (no write access)
+        """
+        user = self.env.user
+        
+        # Bypass for superuser/unrestricted users
+        if self.env.su or user.has_group('econovo_user_warehouse_restriction.group_warehouse_unrestricted'):
+            return
+        
+        for picking in self:
+            # Get warehouse from picking's location
+            warehouse = picking.location_id.warehouse_id or picking.location_dest_id.warehouse_id
+            
+            if not warehouse:
+                continue
+            
+            # Get user's permission for this warehouse
+            permission = self.env['warehouse.user.permission'].search([
+                ('user_id', '=', user.id),
+                ('warehouse_id', '=', warehouse.id)
+            ], limit=1)
+            
+            if permission and permission.view_only and not permission.full_control:
+                raise UserError(_(
+                    'You do not have permission to modify warehouse "%s".\n\n'
+                    'Permission "view_only" is enabled for this warehouse.\n'
+                    'Contact your administrator to grant write access.'
+                ) % warehouse.name)
+
+    def write(self, vals):
+        """Override write to check view_only permission."""
+        self._check_view_only_permission()
+        return super(StockPicking, self).write(vals)
+
+    def unlink(self):
+        """Override unlink to check view_only permission."""
+        self._check_view_only_permission()
+        return super(StockPicking, self).unlink()
+
+    def action_cancel(self):
+        """Override action_cancel to check view_only permission."""
+        self._check_view_only_permission()
+        return super(StockPicking, self).action_cancel()
+
+    def action_confirm(self):
+        """Override action_confirm to check view_only permission."""
+        self._check_view_only_permission()
+        return super(StockPicking, self).action_confirm()
+
+    def button_validate(self):
+        """Override button_validate to check view_only permission."""
+        self._check_view_only_permission()
+        return super(StockPicking, self).button_validate()
 
     @api.onchange('location_id', 'location_dest_id')
     def _onchange_location_id(self):

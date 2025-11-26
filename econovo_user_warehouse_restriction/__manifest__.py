@@ -144,10 +144,15 @@ License: AGPL-3
     "license": "AGPL-3",
     "depends": ["stock_sms", "stock"],
     "data": [
-        # Security (groups > access > record rules)
+        # Security (groups first)
         "security/econovo_user_warehouse_restriction_groups.xml",
-        "security/ir.model.access.csv",
         "security/econovo_user_warehouse_restriction_security.xml",
+        
+        # Wizards (must be loaded before access rights)
+        "wizard/bypass_info_wizard_views.xml",
+        
+        # Access rights (after models are loaded)
+        "security/ir.model.access.csv",
         
         # Views (warehouse > permissions > users)
         "views/stock_warehouse_views.xml",
@@ -159,4 +164,5 @@ License: AGPL-3
     "installable": True,
     "auto_install": False,
     "application": False,
+    "license": "AGPL-3",
 }
