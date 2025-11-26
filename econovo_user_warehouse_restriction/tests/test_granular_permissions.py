@@ -312,3 +312,120 @@ class TestGranularPickingPermissions(TransactionCase):
             })
         
         self.assertIn('allow_write_picking', str(context.exception).lower())
+
+    def test_delete_only_user_can_delete_picking(self):
+        """Test that user with only allow_delete_picking can delete pickings.
+        
+        CASO 4.3.1: User should be able to delete (unlink) a picking.
+        """
+        # Create user with only delete permission
+        delete_user = self.env['res.users'].sudo().create({
+            'name': 'Delete Only Test User',
+            'login': 'delete_only_test',
+            'email': 'delete_only@test.com',
+            'groups_id': [(6, 0, [
+                self.env.ref('stock.group_stock_user').id,
+            ])],
+        })
+        
+        self.env['warehouse.user.permission'].sudo().create({
+            'user_id': delete_user.id,
+            'warehouse_id': self.warehouse.id,
+            'allow_delete_picking': True,
+            'allow_as_source': True,
+            'allow_as_destination': True,
+        })
+        
+        # Create a picking with sudo
+        picking = self.env['stock.picking'].sudo().create({
+            'picking_type_id': self.warehouse.out_type_id.id,
+            'location_id': self.location_stock.id,
+            'location_dest_id': self.location_customer.id,
+        })
+        
+        # Should be able to delete
+        picking.with_user(delete_user).unlink()
+        self.assertFalse(picking.exists())
+
+    def test_delete_permission_allows_cancel(self):
+        """Test that user with allow_delete_picking can cancel pickings.
+        
+        CASO 4.3.2: User should be able to cancel a picking.
+        """
+        # Create user with delete permission
+        delete_user = self.env['res.users'].sudo().create({
+            'name': 'Delete Cancel Test User',
+            'login': 'delete_cancel_test',
+            'email': 'delete_cancel@test.com',
+            'groups_id': [(6, 0, [
+                self.env.ref('stock.group_stock_user').id,
+            ])],
+        })
+        
+        self.env['warehouse.user.permission'].sudo().create({
+            'user_id': delete_user.id,
+            'warehouse_id': self.warehouse.id,
+            'allow_delete_picking': True,
+            'allow_as_source': True,
+            'allow_as_destination': True,
+        })
+        
+        # Create and confirm a picking
+        picking = self.env['stock.picking'].sudo().create({
+            'picking_type_id': self.warehouse.out_type_id.id,
+            'location_id': self.location_stock.id,
+            'location_dest_id': self.location_customer.id,
+        })
+        
+        move = self.env['stock.move'].sudo().create({
+            'name': 'Test Move',
+            'product_id': self.product.id,
+            'product_uom_qty': 10,
+            'product_uom': self.product.uom_id.id,
+            'picking_id': picking.id,
+            'location_id': self.location_stock.id,
+            'location_dest_id': self.location_customer.id,
+        })
+        
+        picking.action_confirm()
+        
+        # Should be able to cancel
+        picking.with_user(delete_user).action_cancel()
+        self.assertEqual(picking.state, 'cancel')
+
+    def test_no_delete_permission_blocks_delete(self):
+        """Test that user without allow_delete_picking cannot delete pickings.
+        
+        CASO 4.3.3: User without permission should be blocked from deleting.
+        """
+        # Create user without delete permission
+        no_delete_user = self.env['res.users'].sudo().create({
+            'name': 'No Delete Test User',
+            'login': 'no_delete_test',
+            'email': 'no_delete@test.com',
+            'groups_id': [(6, 0, [
+                self.env.ref('stock.group_stock_user').id,
+            ])],
+        })
+        
+        self.env['warehouse.user.permission'].sudo().create({
+            'user_id': no_delete_user.id,
+            'warehouse_id': self.warehouse.id,
+            'allow_delete_picking': False,
+            'allow_as_source': True,
+            'allow_as_destination': True,
+        })
+        
+        # Create a picking
+        picking = self.env['stock.picking'].sudo().create({
+            'picking_type_id': self.warehouse.out_type_id.id,
+            'location_id': self.location_stock.id,
+            'location_dest_id': self.location_customer.id,
+        })
+        
+        # Should not be able to delete
+        with self.assertRaises(UserError) as context:
+            picking.with_user(no_delete_user).unlink()
+        
+        # Should get UserError mentioning allow_delete_picking
+        self.assertIn('allow_delete_picking', str(context.exception).lower())

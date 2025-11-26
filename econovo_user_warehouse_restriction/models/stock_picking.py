@@ -169,8 +169,10 @@ class StockPicking(models.Model):
 
     def write(self, vals):
         """Override write to check view_only and allow_write_picking permissions."""
-        self._check_view_only_permission()
-        self._check_granular_permission('allow_write_picking', 'modify')
+        # Skip granular permission check if called from action_cancel
+        if not self.env.context.get('skip_write_permission_check'):
+            self._check_view_only_permission()
+            self._check_granular_permission('allow_write_picking', 'modify')
         return super(StockPicking, self).write(vals)
 
     def unlink(self):
@@ -186,7 +188,8 @@ class StockPicking(models.Model):
         """
         self._check_view_only_permission()
         self._check_granular_permission('allow_delete_picking', 'cancel')
-        return super(StockPicking, self).action_cancel()
+        # Skip write permission check for internal writes from action_cancel
+        return super(StockPicking, self.with_context(skip_write_permission_check=True)).action_cancel()
 
     def action_confirm(self):
         """Override action_confirm to check view_only permission.
