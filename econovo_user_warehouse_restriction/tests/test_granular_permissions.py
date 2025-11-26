@@ -548,3 +548,134 @@ class TestGranularPickingPermissions(TransactionCase):
         # Should get UserError mentioning view-only
         self.assertIn('view-only', str(context.exception).lower())
 
+    # =========================================================================
+    # CASO 4.5: allow_transit permission
+    # =========================================================================
+
+    def test_transit_permission_allows_transit_location(self):
+        """Test that user with allow_transit can use transit locations.
+        
+        CASO 4.5.1: User should be able to use transit locations.
+        """
+        # Create a transit location
+        transit_location = self.env['stock.location'].sudo().create({
+            'name': 'Test Transit Location',
+            'usage': 'transit',
+            'location_id': self.env.ref('stock.stock_location_locations').id,
+        })
+        
+        # Create user with transit permission
+        transit_user = self.env['res.users'].sudo().create({
+            'name': 'Transit Test User',
+            'login': 'transit_test',
+            'email': 'transit@test.com',
+            'groups_id': [(6, 0, [
+                self.env.ref('stock.group_stock_user').id,
+            ])],
+        })
+        
+        self.env['warehouse.user.permission'].sudo().create({
+            'user_id': transit_user.id,
+            'warehouse_id': self.warehouse.id,
+            'allow_transit': True,
+            'allow_as_source': True,
+            'allow_as_destination': True,
+            'allow_create_picking': True,
+            'allow_write_picking': True,
+        })
+        
+        # Create quant at stock location
+        self.env['stock.quant'].sudo().create({
+            'product_id': self.product.id,
+            'location_id': self.location_stock.id,
+            'quantity': 100.0,
+        })
+        
+        # Create picking to transit location
+        picking = self.env['stock.picking'].with_user(transit_user).create({
+            'picking_type_id': self.warehouse.int_type_id.id,
+            'location_id': self.location_stock.id,
+            'location_dest_id': transit_location.id,
+        })
+        
+        # Verify picking was created successfully
+        self.assertTrue(picking.exists())
+        self.assertEqual(picking.location_dest_id, transit_location)
+
+    def test_no_transit_permission_blocks_transit_location(self):
+        """Test that user without allow_transit cannot bypass blocked transit locations.
+        
+        CASO 4.5.2: When transit location is in blacklist and allow_transit=False,
+        user should be blocked from accessing it.
+        """
+        # Create a transit location within warehouse
+        transit_location = self.env['stock.location'].sudo().create({
+            'name': 'Test Transit in WH',
+            'usage': 'transit',
+            'location_id': self.location_stock.id,
+        })
+        
+        # Create user without transit permission and transit location in blacklist
+        no_transit_user = self.env['res.users'].sudo().create({
+            'name': 'No Transit Test User',
+            'login': 'no_transit_test',
+            'email': 'no_transit@test.com',
+            'groups_id': [(6, 0, [
+                self.env.ref('stock.group_stock_user').id,
+            ])],
+        })
+        
+        self.env['warehouse.user.permission'].sudo().create({
+            'user_id': no_transit_user.id,
+            'warehouse_id': self.warehouse.id,
+            'allow_transit': False,
+            'allow_as_source': True,
+            'allow_as_destination': True,
+            'allow_create_picking': True,
+            'allow_write_picking': True,
+            'blocked_location_ids': [(4, transit_location.id)],  # Block the transit location
+        })
+        
+        # Create quant at stock location
+        self.env['stock.quant'].sudo().create({
+            'product_id': self.product.id,
+            'location_id': self.location_stock.id,
+            'quantity': 100.0,
+        })
+        
+        # Try to create move to blocked transit location
+        # Without allow_transit, the transit bypass doesn't work
+        with self.assertRaises(Exception):
+            self.env['stock.move'].with_user(no_transit_user).create({
+                'name': 'Test Move to Blocked Transit',
+                'product_id': self.product.id,
+                'product_uom_qty': 10,
+                'product_uom': self.product.uom_id.id,
+                'location_id': self.location_stock.id,
+                'location_dest_id': transit_location.id,
+            })
+
+    def test_transit_permission_default_true(self):
+        """Test that allow_transit defaults to True.
+        
+        CASO 4.5.3: Default should be True as most users need transit access.
+        """
+        # Create user
+        test_user = self.env['res.users'].sudo().create({
+            'name': 'Default Transit Test User',
+            'login': 'default_transit_test',
+            'email': 'default_transit@test.com',
+            'groups_id': [(6, 0, [
+                self.env.ref('stock.group_stock_user').id,
+            ])],
+        })
+        
+        # Create permission without specifying allow_transit
+        permission = self.env['warehouse.user.permission'].sudo().create({
+            'user_id': test_user.id,
+            'warehouse_id': self.warehouse.id,
+        })
+        
+        # Default should be True
+        self.assertTrue(permission.allow_transit)
+
