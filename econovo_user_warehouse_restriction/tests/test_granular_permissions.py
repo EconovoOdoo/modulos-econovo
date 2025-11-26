@@ -168,3 +168,147 @@ class TestGranularPickingPermissions(TransactionCase):
             picking.with_user(create_only_user).button_validate()
         
         self.assertIn('allow_write_picking', str(context.exception).lower())
+
+    # ========================================================================
+    # CASO 4.2: allow_write_picking Permission Tests
+    # ========================================================================
+
+    def test_write_permission_allows_modify(self):
+        """Test that user with allow_write_picking can modify pickings.
+        
+        CASO 4.2.1: User should be able to write to existing picking.
+        """
+        # Create user with write permission
+        write_user = self.env['res.users'].sudo().create({
+            'name': 'Write Permission Test User',
+            'login': 'write_permission_test',
+            'email': 'write_permission@test.com',
+            'groups_id': [(6, 0, [
+                self.env.ref('stock.group_stock_user').id,
+            ])],
+        })
+        
+        self.env['warehouse.user.permission'].sudo().create({
+            'user_id': write_user.id,
+            'warehouse_id': self.warehouse.id,
+            'allow_create_picking': True,
+            'allow_write_picking': True,
+            'allow_as_source': True,
+            'allow_as_destination': True,
+        })
+        
+        # Create picking as admin
+        picking = self.env['stock.picking'].sudo().create({
+            'picking_type_id': self.warehouse.out_type_id.id,
+            'location_id': self.location_stock.id,
+            'location_dest_id': self.location_customer.id,
+        })
+        
+        # Should be able to modify
+        try:
+            picking.with_user(write_user).write({
+                'origin': 'Modified by write user',
+            })
+            self.assertEqual(picking.origin, 'Modified by write user')
+        except UserError as e:
+            self.fail(f"User with allow_write_picking should be able to modify: {str(e)}")
+
+    def test_write_permission_allows_validate(self):
+        """Test that user with allow_write_picking can validate pickings.
+        
+        CASO 4.2.2: User should be able to validate picking.
+        """
+        # Create user with write permission
+        write_user = self.env['res.users'].sudo().create({
+            'name': 'Write Validate Test User',
+            'login': 'write_validate_test',
+            'email': 'write_validate@test.com',
+            'groups_id': [(6, 0, [
+                self.env.ref('stock.group_stock_user').id,
+            ])],
+        })
+        
+        self.env['warehouse.user.permission'].sudo().create({
+            'user_id': write_user.id,
+            'warehouse_id': self.warehouse.id,
+            'allow_create_picking': True,
+            'allow_write_picking': True,
+            'allow_as_source': True,
+            'allow_as_destination': True,
+        })
+        
+        # Create stock quant first to have available stock
+        self.env['stock.quant'].sudo().create({
+            'product_id': self.product.id,
+            'location_id': self.location_stock.id,
+            'quantity': 100.0,
+        })
+        
+        # Create and confirm picking with move
+        picking = self.env['stock.picking'].sudo().create({
+            'picking_type_id': self.warehouse.out_type_id.id,
+            'location_id': self.location_stock.id,
+            'location_dest_id': self.location_customer.id,
+        })
+        
+        move = self.env['stock.move'].sudo().create({
+            'name': 'Test Move',
+            'product_id': self.product.id,
+            'product_uom_qty': 10,
+            'product_uom': self.product.uom_id.id,
+            'picking_id': picking.id,
+            'location_id': self.location_stock.id,
+            'location_dest_id': self.location_customer.id,
+        })
+        
+        picking.action_confirm()
+        picking.action_assign()
+        
+        # Set quantities done directly on move
+        move.sudo().quantity = 10.0
+        
+        # Should be able to validate
+        try:
+            picking.with_user(write_user).button_validate()
+            self.assertEqual(picking.state, 'done')
+        except UserError as e:
+            self.fail(f"User with allow_write_picking should be able to validate: {str(e)}")
+
+    def test_no_write_permission_blocks_modify(self):
+        """Test that user without allow_write_picking cannot modify pickings.
+        
+        CASO 4.2.3: User should NOT be able to write to picking.
+        """
+        # Create user without write permission
+        no_write_user = self.env['res.users'].sudo().create({
+            'name': 'No Write Permission Test User',
+            'login': 'no_write_permission_test',
+            'email': 'no_write_permission@test.com',
+            'groups_id': [(6, 0, [
+                self.env.ref('stock.group_stock_user').id,
+            ])],
+        })
+        
+        self.env['warehouse.user.permission'].sudo().create({
+            'user_id': no_write_user.id,
+            'warehouse_id': self.warehouse.id,
+            'allow_create_picking': True,
+            'allow_write_picking': False,
+            'allow_as_source': True,
+            'allow_as_destination': True,
+        })
+        
+        # Create picking as admin
+        picking = self.env['stock.picking'].sudo().create({
+            'picking_type_id': self.warehouse.out_type_id.id,
+            'location_id': self.location_stock.id,
+            'location_dest_id': self.location_customer.id,
+        })
+        
+        # Should NOT be able to modify
+        with self.assertRaises(UserError) as context:
+            picking.with_user(no_write_user).write({
+                'note': 'Attempt to modify',
+            })
+        
+        self.assertIn('allow_write_picking', str(context.exception).lower())
