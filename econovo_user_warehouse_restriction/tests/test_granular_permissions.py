@@ -1011,3 +1011,106 @@ class TestGranularPickingPermissions(TransactionCase):
         })
         
         self.assertTrue(move.exists())
+
+    # =========================================================================
+    # CASO 6: view_only permission
+    # =========================================================================
+
+    def test_view_only_blocks_create_picking(self):
+        """Test that view_only user cannot create pickings.
+        
+        CASO 6.1: View-only user should be blocked from creating.
+        """
+        # Create view-only user
+        view_user = self.env['res.users'].sudo().create({
+            'name': 'View Only Create Test User',
+            'login': 'view_only_create_test',
+            'email': 'view_only_create@test.com',
+            'groups_id': [(6, 0, [
+                self.env.ref('stock.group_stock_user').id,
+            ])],
+        })
+        
+        self.env['warehouse.user.permission'].sudo().create({
+            'user_id': view_user.id,
+            'warehouse_id': self.warehouse.id,
+            'view_only': True,
+        })
+        
+        # Should not be able to create picking
+        with self.assertRaises(UserError) as context:
+            self.env['stock.picking'].with_user(view_user).create({
+                'picking_type_id': self.warehouse.out_type_id.id,
+                'location_id': self.location_stock.id,
+                'location_dest_id': self.location_customer.id,
+            })
+        
+        self.assertIn('view', str(context.exception).lower())
+
+    def test_view_only_blocks_write_picking(self):
+        """Test that view_only user cannot modify pickings.
+        
+        CASO 6.2: View-only user should be blocked from writing.
+        """
+        # Create view-only user
+        view_user = self.env['res.users'].sudo().create({
+            'name': 'View Only Write Test User',
+            'login': 'view_only_write_test',
+            'email': 'view_only_write@test.com',
+            'groups_id': [(6, 0, [
+                self.env.ref('stock.group_stock_user').id,
+            ])],
+        })
+        
+        self.env['warehouse.user.permission'].sudo().create({
+            'user_id': view_user.id,
+            'warehouse_id': self.warehouse.id,
+            'view_only': True,
+        })
+        
+        # Create picking with sudo
+        picking = self.env['stock.picking'].sudo().create({
+            'picking_type_id': self.warehouse.out_type_id.id,
+            'location_id': self.location_stock.id,
+            'location_dest_id': self.location_customer.id,
+        })
+        
+        # Should not be able to modify picking
+        with self.assertRaises(UserError) as context:
+            picking.with_user(view_user).write({'origin': 'Test'})
+        
+        self.assertIn('view', str(context.exception).lower())
+
+    def test_view_only_blocks_delete_picking(self):
+        """Test that view_only user cannot delete pickings.
+        
+        CASO 6.3: View-only user should be blocked from deleting.
+        """
+        # Create view-only user
+        view_user = self.env['res.users'].sudo().create({
+            'name': 'View Only Delete Test User',
+            'login': 'view_only_delete_test',
+            'email': 'view_only_delete@test.com',
+            'groups_id': [(6, 0, [
+                self.env.ref('stock.group_stock_user').id,
+            ])],
+        })
+        
+        self.env['warehouse.user.permission'].sudo().create({
+            'user_id': view_user.id,
+            'warehouse_id': self.warehouse.id,
+            'view_only': True,
+        })
+        
+        # Create picking with sudo
+        picking = self.env['stock.picking'].sudo().create({
+            'picking_type_id': self.warehouse.out_type_id.id,
+            'location_id': self.location_stock.id,
+            'location_dest_id': self.location_customer.id,
+        })
+        
+        # Should not be able to delete picking
+        with self.assertRaises(UserError) as context:
+            picking.with_user(view_user).unlink()
+        
+        self.assertIn('view', str(context.exception).lower())
