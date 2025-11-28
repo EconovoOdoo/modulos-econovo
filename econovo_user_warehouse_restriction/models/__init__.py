@@ -2,8 +2,7 @@
 """
 Consolidated warehouse restriction models.
 
-This module now includes all functionality from user_warehouse_restriction
-(Cybrosys Technologies) plus econovo extensions.
+Granular permission matrix for warehouse access control.
 """
 from . import warehouse_user_permission
 from . import stock_warehouse

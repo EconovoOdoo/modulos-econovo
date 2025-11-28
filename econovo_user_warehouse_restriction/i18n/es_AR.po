@@ -1,0 +1,1072 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* econovo_user_warehouse_restriction
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 17.0+e-20250501\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-11-28 14:27+0000\n"
+"PO-Revision-Date: 2025-11-28 14:27+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: econovo_user_warehouse_restriction
+#: model:res.groups,comment:econovo_user_warehouse_restriction.group_warehouse_unrestricted
+msgid ""
+"\n"
+"                BYPASS GROUP - For System Administrators Only\n"
+"                \n"
+"                Users in this group have COMPLETE BYPASS of ALL warehouse restrictions:\n"
+"                - Record Rules explicitly exclude this group (unrestricted SQL access)\n"
+"                - Python Constraints check for this group and skip validation\n"
+"                - Same permissions as before module installation\n"
+"                \n"
+"                This group is automatically assigned to all users with base.group_system.\n"
+"                See: base.group_system has this group in implied_ids.\n"
+"                \n"
+"                DO NOT manually assign this group to non-administrators.\n"
+"                This would give them unrestricted access to all warehouses.\n"
+"            "
+msgstr ""
+"GRUPO DE BYPASS - Solo para administradores del sistema\n"
+"\n"
+"Los usuarios en este grupo tienen BYPASS COMPLETO de TODAS las restricciones de\n"
+"almacén:\n"
+"- Las reglas de registro excluyen explícitamente a este grupo (acceso SQL sin\n"
+"  restricciones)\n"
+"- Las restricciones en Python verifican este grupo y omiten la validación\n"
+"- Los mismos permisos que antes de la instalación del módulo\n"
+"\n"
+"Este grupo se asigna automáticamente a todos los usuarios con base.group_system.\n"
+"Ver: base.group_system tiene este grupo en implied_ids.\n"
+"\n"
+"NO asigne manualmente este grupo a usuarios que no sean administradores.\n"
+"Esto les daría acceso sin restricciones a todos los almacenes.\n"
+
+#. module: econovo_user_warehouse_restriction
+#: model:res.groups,comment:econovo_user_warehouse_restriction.user_warehouse_restriction_group_user
+msgid ""
+"\n"
+"                Base restriction group for warehouse access control.\n"
+"                \n"
+"                Provides foundational warehouse restrictions:\n"
+"                - Filters stock.picking.type by warehouse.user_ids\n"
+"                - Filters stock.location by user.location_ids (blacklist)\n"
+"                - Filters stock.warehouse by user_ids\n"
+"                - Filters stock.picking by warehouse assignment\n"
+"                \n"
+"                CRITICAL - ADMINISTRATOR BYPASS:\n"
+"                ================================\n"
+"                System Administrators (base.group_system) are AUTOMATICALLY EXCLUDED:\n"
+"                - NOT auto-assigned during installation (see hooks.py)\n"
+"                - NOT auto-assigned when creating new admin users (see res_users.py)\n"
+"                - Python constraints check for base.group_system and skip validation\n"
+"                - Record Rules ONLY apply to users WITH this group\n"
+"                \n"
+"                Result: Administrators have UNRESTRICTED warehouse access by default.\n"
+"                \n"
+"                WARNING: If you MANUALLY assign this group to an administrator,\n"
+"                they WILL be subject to restrictions. This is NOT recommended.\n"
+"                Use warehouse.user_ids to grant selective access instead.\n"
+"                \n"
+"                This group is HIDDEN and automatically assigned when users\n"
+"                receive Source Only or Full restriction groups via inheritance.\n"
+"                \n"
+"                DO NOT assign this group directly to users. Use:\n"
+"                - Source Only: For regional managers (source validation only)\n"
+"                - Full: For warehouse operators (source + destination validation)\n"
+"            "
+msgstr ""
+"Grupo base de restricciones para control de acceso a almacenes.\n"
+"\n"
+"Proporciona restricciones fundamentales de almacén:\n"
+"- Filtra stock.picking.type por warehouse.user_ids\n"
+"- Filtra stock.location por user.location_ids (lista negra)\n"
+"- Filtra stock.warehouse por user_ids\n"
+"- Filtra stock.picking por asignación de almacén\n"
+"\n"
+"CRÍTICO - EXENCIÓN DE ADMINISTRADOR:\n"
+"================================\n"
+"Los administradores del sistema (base.group_system) están EXCLUIDOS\n"
+"AUTOMÁTICAMENTE:\n"
+"- NO se asigna automáticamente durante la instalación (ver hooks.py)\n"
+"- NO se asigna automáticamente al crear nuevos usuarios admin (ver res_users.py)\n"
+"- Las restricciones en Python verifican base.group_system y omiten la validación\n"
+"- Las reglas de registro SOLO se aplican a usuarios CON este grupo\n"
+"\n"
+"Resultado: los administradores tienen acceso a los almacenes SIN RESTRICCIONES\n"
+"por defecto.\n"
+"\n"
+"ADVERTENCIA: Si asigna MANUALMENTE este grupo a un administrador,\n"
+"será sujeto a restricciones. Esto NO es recomendable.\n"
+"Use warehouse.user_ids para otorgar acceso selectivo en su lugar.\n"
+"\n"
+"Este grupo está OCULTO y se asigna automáticamente cuando los usuarios\n"
+"reciben grupos de Solo Origen o Completo por herencia.\n"
+"\n"
+"NO asigne este grupo directamente a usuarios. Use:\n"
+"- Solo Origen: Para gerentes regionales (solo validación de origen)\n"
+"- Completo: Para operarios de almacén (validación de origen + destino)\n"
+
+#. module: econovo_user_warehouse_restriction
+#: model:res.groups,comment:econovo_user_warehouse_restriction.user_warehouse_restriction_group_restricted
+msgid ""
+"\n"
+"                Internal group for security record rules.\n"
+"                \n"
+"                This group is used to identify users who should see ONLY their own permission records.\n"
+"                System administrators (base.group_system) are NOT assigned to this group,\n"
+"                allowing them to bypass the \"Own Records\" restriction.\n"
+"                \n"
+"                Auto-assigned to:\n"
+"                - All inventory users EXCEPT system administrators\n"
+"                \n"
+"                Used by:\n"
+"                - warehouse_user_permission_rule_own (Own Records rule)\n"
+"                \n"
+"                DO NOT manually assign this group.\n"
+"            "
+msgstr ""
+"Grupo interno para reglas de seguridad (record rules).\n"
+"\n"
+"Este grupo se utiliza para identificar usuarios que deben ver SOLO sus propios\n"
+"registros de permisos. Los administradores del sistema (base.group_system) NO\n"
+"están asignados a este grupo, lo que les permite evitar la restricción de\n"
+"\"Solo Propios\".\n"
+"\n"
+"Asignado automáticamente a:\n"
+"- Todos los usuarios de inventario EXCEPTO los administradores del sistema\n"
+"\n"
+"Usado por:\n"
+"- warehouse_user_permission_rule_own (regla Own Records)\n"
+"\n"
+"NO asigne manualmente este grupo.\n"
+
+#. module: econovo_user_warehouse_restriction
+#: model:res.groups,comment:econovo_user_warehouse_restriction.user_warehouse_restriction_group_manager
+msgid ""
+"\n"
+"                Users in this group can CONFIGURE warehouse permissions.\n"
+"                \n"
+"                Permissions:\n"
+"                - Create/modify/delete warehouse.user.permission records\n"
+"                - Access centralized permission matrix view\n"
+"                - Configure per-warehouse user permissions\n"
+"                \n"
+"                Use case: Warehouse managers, HR managers who assign user permissions.\n"
+"                \n"
+"                Note: This group automatically implies stock.group_stock_manager\n"
+"                to ensure managers can access configuration menus.\n"
+"            "
+msgstr ""
+"Los usuarios de este grupo pueden CONFIGURAR permisos de almacén.\n"
+"\n"
+"Permisos:\n"
+"- Crear/modificar/eliminar registros warehouse.user.permission\n"
+"- Acceder a la vista centralizada de la matriz de permisos\n"
+"- Configurar permisos por usuario y por almacén\n"
+"\n"
+"Caso de uso: Gerentes de almacén, responsables de RRHH que asignan permisos.\n"
+"\n"
+"Nota: Este grupo implica automáticamente stock.group_stock_manager\n"
+"para asegurar que los gerentes puedan acceder a los menús de configuración.\n"
+
+#. module: econovo_user_warehouse_restriction
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.warehouse_user_permission_form_view
+msgid ""
+"<i class=\"fa fa-info-circle\"/> \n"
+"                        <strong>System-Level Access Detected:</strong> \n"
+"                        This user has"
+msgstr ""
+"<i class=\"fa fa-info-circle\"/> \n"
+"                        <strong>Acceso a Nivel de Sistema Detectado:</strong> \n"
+"                        Este usuario tiene"
+
+#. module: econovo_user_warehouse_restriction
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.view_warehouse_form_inherit_restriction
+msgid ""
+"<strong>Permission Matrix:</strong> Configure granular permissions for each user.\n"
+"                            Each row defines 10 permission flags for one user in this warehouse.\n"
+"                            <br/><em>Tip: Click the \"Users\" smart button above for a full-screen view.</em>"
+msgstr ""
+"<strong>Matriz de Permisos:</strong> Configure permisos granulares para cada usuario.\n"
+"                            Cada fila define 10 banderas de permiso para un usuario en\n"
+"                            este almacén.\n"
+"                            <br/><em>Consejo: Haga clic en el botón inteligente \"Users\"\n"
+"                            arriba para ver en pantalla completa.</em>"
+
+#. module: econovo_user_warehouse_restriction
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.view_users_form
+msgid ""
+"<strong>Permission Matrix:</strong> Configure granular warehouse access for this user.\n"
+"                        Each row defines 10 permission flags for one warehouse."
+msgstr ""
+"<strong>Matriz de Permisos:</strong> Configure el acceso granular al almacén para este\n"
+"usuario.\n"
+"                        Cada fila define 10 banderas de permiso para un almacén."
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.constraint,message:econovo_user_warehouse_restriction.constraint_warehouse_user_permission_unique_user_warehouse
+msgid ""
+"A user can only have ONE permission record per warehouse! Please edit the "
+"existing permission instead of creating a duplicate."
+msgstr ""
+"¡Un usuario solo puede tener UN registro de permisos por almacén! Por favor edite el\n"
+"registro existente en lugar de crear uno duplicado."
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,field_description:econovo_user_warehouse_restriction.field_warehouse_user_permission__allow_transit
+msgid "Access Transit Locations"
+msgstr "Acceso a Ubicaciones de Tránsito"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,field_description:econovo_user_warehouse_restriction.field_warehouse_user_permission__active
+msgid "Active"
+msgstr "Activo"
+
+#. module: econovo_user_warehouse_restriction
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.warehouse_user_permission_form_view
+msgid "Basic Access"
+msgstr "Acceso Básico"
+
+#. module: econovo_user_warehouse_restriction
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.view_location_form_inherit_transit
+msgid "Blocked"
+msgstr "Bloqueada"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,field_description:econovo_user_warehouse_restriction.field_stock_location__blocked_user_permission_count
+msgid "Blocked By Users"
+msgstr "Bloqueada por Usuarios"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,field_description:econovo_user_warehouse_restriction.field_warehouse_user_permission__blocked_location_ids
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.warehouse_user_permission_form_view
+msgid "Blocked Locations (Blacklist)"
+msgstr "Ubicaciones Bloqueadas (Lista Negra)"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model,name:econovo_user_warehouse_restriction.model_warehouse_bypass_info_wizard
+msgid "Bypass Permissions Information"
+msgstr "Información de Permisos de Bypass"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,field_description:econovo_user_warehouse_restriction.field_warehouse_bypass_info_wizard__bypass_reason
+msgid "Bypass Reason"
+msgstr "Razón del Bypass"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,field_description:econovo_user_warehouse_restriction.field_warehouse_user_permission__bypass_info
+msgid "Bypass Status"
+msgstr "Estado de Bypass"
+
+#. module: econovo_user_warehouse_restriction
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.warehouse_user_permission_search_view
+msgid "Can Create Pickings"
+msgstr "Puede Crear Transferencias"
+
+#. module: econovo_user_warehouse_restriction
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.warehouse_user_permission_search_view
+msgid "Can Delete Pickings"
+msgstr "Puede Eliminar Transferencias"
+
+#. module: econovo_user_warehouse_restriction
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.warehouse_user_permission_search_view
+msgid "Can Write Pickings"
+msgstr "Puede Modificar Transferencias"
+
+#. module: econovo_user_warehouse_restriction
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.view_warehouse_bypass_info_wizard_form
+msgid "Close"
+msgstr "Cerrar"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,field_description:econovo_user_warehouse_restriction.field_warehouse_user_permission__company_id
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.warehouse_user_permission_search_view
+msgid "Company"
+msgstr "Compañía"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,help:econovo_user_warehouse_restriction.field_warehouse_user_permission__company_id
+msgid "Company of the warehouse (automatically set)."
+msgstr "Compañía del almacén (establecida automáticamente)."
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model,name:econovo_user_warehouse_restriction.model_res_config_settings
+msgid "Config Settings"
+msgstr "Ajustes de configuración"
+
+#. module: econovo_user_warehouse_restriction
+#: model_terms:ir.actions.act_window,help:econovo_user_warehouse_restriction.action_warehouse_user_permission
+msgid ""
+"Configure granular permissions for users to access specific warehouses.<br>\n"
+"                Each record defines 10 permission flags for one user in one warehouse."
+msgstr "Configure permisos granulares para que los usuarios accedan a almacenes específicos.<br/>\n"
+"Cada registro define 10 banderas de permiso para un usuario en un almacén."
+
+#. module: econovo_user_warehouse_restriction
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.warehouse_user_permission_form_view
+msgid "Core Information"
+msgstr "Información Principal"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,field_description:econovo_user_warehouse_restriction.field_warehouse_user_permission__allow_create_picking
+msgid "Create Transfers"
+msgstr "Crear Transferencias"
+
+#. module: econovo_user_warehouse_restriction
+#: model_terms:ir.actions.act_window,help:econovo_user_warehouse_restriction.action_warehouse_user_permission
+msgid "Create a new permission record"
+msgstr "Crear un nuevo registro de permisos"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,field_description:econovo_user_warehouse_restriction.field_warehouse_bypass_info_wizard__create_uid
+#: model:ir.model.fields,field_description:econovo_user_warehouse_restriction.field_warehouse_user_permission__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,field_description:econovo_user_warehouse_restriction.field_warehouse_bypass_info_wizard__create_date
+#: model:ir.model.fields,field_description:econovo_user_warehouse_restriction.field_warehouse_user_permission__create_date
+msgid "Created on"
+msgstr "Creado el"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,field_description:econovo_user_warehouse_restriction.field_warehouse_user_permission__allow_delete_picking
+msgid "Delete/Cancel Transfers"
+msgstr "Eliminar/Cancelar Transferencias"
+
+#. module: econovo_user_warehouse_restriction
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.warehouse_user_permission_search_view
+msgid "Destination Allowed"
+msgstr "Destino Permitido"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,help:econovo_user_warehouse_restriction.field_warehouse_bypass_info_wizard__info_html
+msgid "Detailed explanation about bypass permissions."
+msgstr "Explicación detallada sobre los permisos de bypass.\n\n"
+"Los permisos de bypass permiten a ciertos usuarios (por ejemplo, administradores del sistema)
+"anular las restricciones de almacén establecidas por este módulo. Úselos con extrema
+"precaución y documente la razón del bypass."
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,field_description:econovo_user_warehouse_restriction.field_warehouse_bypass_info_wizard__display_name
+#: model:ir.model.fields,field_description:econovo_user_warehouse_restriction.field_warehouse_user_permission__display_name
+msgid "Display Name"
+msgstr "Nombre para Mostrar"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,help:econovo_user_warehouse_restriction.field_res_config_settings__group_user_warehouse_restriction
+msgid ""
+"Enable to restrict warehouses and locations to specific users.\n"
+"\n"
+"When enabled, users must be explicitly assigned to warehouses via warehouse.user_ids to access inventory operations."
+msgstr "Habilite para restringir almacenes y ubicaciones a usuarios específicos.\n\n"
+"Al habilitar esta opción, los usuarios deberán asignarse explícitamente a los almacenes
+"mediante `warehouse.user_ids` para poder realizar operaciones de inventario."
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,field_description:econovo_user_warehouse_restriction.field_warehouse_user_permission__full_control
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.warehouse_user_permission_search_view
+msgid "Full Control"
+msgstr "Control Total"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model,name:econovo_user_warehouse_restriction.model_warehouse_user_permission
+msgid "Granular Warehouse Permissions per User"
+msgstr "Permisos Granulares de Almacén por Usuario"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,help:econovo_user_warehouse_restriction.field_res_users__warehouse_permission_ids
+msgid ""
+"Granular permission matrix per warehouse.\n"
+"\n"
+"Each record defines specific permissions for one warehouse."
+msgstr "Matriz de permisos granulares por almacén.\n\n"
+"Cada registro define permisos específicos para un almacén."
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,help:econovo_user_warehouse_restriction.field_stock_warehouse__user_permission_ids
+msgid ""
+"Granular permission matrix: configure different access levels per user.\n"
+"\n"
+"Each user can have:\n"
+"- Full Control (complete access)\n"
+"- View Only (read-only)\n"
+"- Granular permissions (Source, Destination, Inventory, etc.)\n"
+"- Location restrictions (blacklist specific locations)\n"
+"\n"
+"Example: User A has Full Control, User B can only receive (Destination)."
+msgstr "Matriz de permisos granulares: configure diferentes niveles de acceso por usuario.\n\n"
+"Cada usuario puede tener:\n"
+"- Control Total (acceso completo)\n"
+"- Solo Vista (solo lectura)\n"
+"- Permisos granulares (Origen, Destino, Inventario, etc.)\n"
+"- Restricciones de ubicaciones (lista negra)\n\n"
+"Ejemplo: Usuario A tiene Control Total, Usuario B solo puede recibir (Destino)."
+
+#. module: econovo_user_warehouse_restriction
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.warehouse_user_permission_search_view
+msgid "Group By"
+msgstr "Agrupar Por"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,field_description:econovo_user_warehouse_restriction.field_warehouse_user_permission__has_bypass_permissions
+msgid "Has Bypass Permissions"
+msgstr "Tiene Permisos de Bypass"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,field_description:econovo_user_warehouse_restriction.field_warehouse_bypass_info_wizard__id
+#: model:ir.model.fields,field_description:econovo_user_warehouse_restriction.field_warehouse_user_permission__id
+msgid "ID"
+msgstr "ID"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,help:econovo_user_warehouse_restriction.field_stock_location__is_transit_location
+msgid ""
+"If enabled, this location is accessible by all users for transit operations, regardless of their warehouse assignments.\n"
+"\n"
+"Useful for creating shared spaces where users from different warehouses can temporarily store or transfer stock without requiring access to each other's warehouses.\n"
+"\n"
+"CRITICAL: Must enable this for transit locations. Without it, stock move lines will be filtered out by Record Rules when picking locations reference transit areas.\n"
+"\n"
+"Example: A shared dock location where User1 drops off stock for User2 to pick up."
+msgstr "Si está habilitado, esta ubicación es accesible por todos los usuarios para operaciones de tránsito, independientemente\n"
+"de su asignación de almacén.\n\n"
+"Útil para crear espacios compartidos donde usuarios de diferentes almacenes pueden almacenar o transferir stock temporalmente\n"
+"sin necesitar acceso a los almacenes de los demás.\n\n"
+"CRÍTICO: Debe habilitarse para ubicaciones de tránsito. Sin ello, las líneas de movimiento se filtrarán por las Record Rules\n"
+"cuando las ubicaciones de picking hagan referencia a áreas de tránsito.\n\n"
+"Ejemplo: Un muelle compartido donde Usuario1 deja stock para que Usuario2 lo recoja."
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,help:econovo_user_warehouse_restriction.field_warehouse_user_permission__has_bypass_permissions
+msgid ""
+"Indicates if this user has system-level privileges that bypass all warehouse"
+" restrictions (e.g., System Administrator)."
+msgstr "Indica si este usuario tiene privilegios a nivel de sistema que omiten todas las restricciones\n"
+"de almacén (por ejemplo, Administrador del Sistema)."
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,field_description:econovo_user_warehouse_restriction.field_warehouse_bypass_info_wizard__info_html
+msgid "Information"
+msgstr "Información"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,help:econovo_user_warehouse_restriction.field_warehouse_user_permission__bypass_info
+msgid "Information about bypass permissions active for this user."
+msgstr "Información sobre los permisos de bypass activos para este usuario."
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,field_description:econovo_user_warehouse_restriction.field_warehouse_user_permission__allow_inventory_adjustment
+msgid "Inventory Adjustments"
+msgstr "Ajustes de Inventario"
+
+#. module: econovo_user_warehouse_restriction
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.warehouse_user_permission_search_view
+msgid "Inventory Allowed"
+msgstr "Inventario Permitido"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model,name:econovo_user_warehouse_restriction.model_stock_location
+msgid "Inventory Locations"
+msgstr "Ubicaciones de inventario"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,field_description:econovo_user_warehouse_restriction.field_warehouse_bypass_info_wizard__write_uid
+#: model:ir.model.fields,field_description:econovo_user_warehouse_restriction.field_warehouse_user_permission__write_uid
+msgid "Last Updated by"
+msgstr "Última actualización por"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,field_description:econovo_user_warehouse_restriction.field_warehouse_bypass_info_wizard__write_date
+#: model:ir.model.fields,field_description:econovo_user_warehouse_restriction.field_warehouse_user_permission__write_date
+msgid "Last Updated on"
+msgstr "Última actualización el"
+
+#. module: econovo_user_warehouse_restriction
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.warehouse_user_permission_form_view
+msgid "Location Restrictions"
+msgstr "Restricciones de Ubicación"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,help:econovo_user_warehouse_restriction.field_warehouse_user_permission__blocked_location_ids
+msgid ""
+"Locations within this warehouse that the user CANNOT access.\n"
+"\n"
+"BLACKLIST approach: User can access ALL locations in the warehouse EXCEPT these.\n"
+"\n"
+"Use cases:\n"
+"- Restrict access to Quality Control area (WH/Stock/QC)\n"
+"- Block high-value items location (WH/Stock/High Value)\n"
+"- Prevent access to quarantine zone (WH/Stock/Quarantine)\n"
+"- Segregate hazardous materials area (WH/Stock/Hazmat)\n"
+"\n"
+"Example: Operator has access to WH1 but NOT to WH1/QC or WH1/Quarantine.\n"
+"\n"
+"NOTE: Ignored if \"Full Control\" is enabled."
+msgstr "Ubicaciones dentro de este almacén a las que el usuario NO PUEDE acceder.\n\n"
+"Enfoque LISTA NEGRA: El usuario puede acceder a TODAS las ubicaciones del almacén EXCEPTO estas.\n\n"
+"Casos de uso:\n"
+"- Restringir acceso al área de Control de Calidad (WH/Stock/QC)\n"
+"- Bloquear la ubicación de artículos de alto valor (WH/Stock/High Value)\n"
+"- Evitar acceso a la zona de cuarentena (WH/Stock/Quarantine)\n"
+"- Segregar el área de materiales peligrosos (WH/Stock/Hazmat)\n\n"
+"Ejemplo: El operario tiene acceso a WH1 pero NO a WH1/QC ni WH1/Quarantine.\n\n"
+"NOTA: Ignorado si \"Control Total\" está habilitado."
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,field_description:econovo_user_warehouse_restriction.field_warehouse_user_permission__allow_write_picking
+msgid "Modify/Validate Transfers"
+msgstr "Modificar/Validar Transferencias"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,help:econovo_user_warehouse_restriction.field_warehouse_bypass_info_wizard__user_name
+msgid "Name of the user with bypass permissions."
+msgstr "Nombre del usuario con permisos de bypass."
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,help:econovo_user_warehouse_restriction.field_stock_location__blocked_user_permission_count
+msgid "Number of user permissions that have this location blocked."
+msgstr "Número de permisos de usuario que tienen esta ubicación bloqueada."
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,help:econovo_user_warehouse_restriction.field_stock_warehouse__user_permission_count
+msgid "Number of users with permissions configured for this warehouse."
+msgstr "Número de usuarios con permisos configurados para este almacén."
+
+#. module: econovo_user_warehouse_restriction
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.warehouse_user_permission_form_view
+msgid "Operation Permissions"
+msgstr "Permisos de Operación"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,field_description:econovo_user_warehouse_restriction.field_stock_warehouse__user_permission_count
+msgid "Permission Count"
+msgstr "Cantidad de Permisos"
+
+#. module: econovo_user_warehouse_restriction
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.warehouse_user_permission_form_view
+msgid "Picking Operations"
+msgstr "Operaciones de Transferencia"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model,name:econovo_user_warehouse_restriction.model_stock_quant
+msgid "Quants"
+msgstr "Quants"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,field_description:econovo_user_warehouse_restriction.field_res_config_settings__group_user_warehouse_restriction
+msgid "Restrict Stock Warehouse"
+msgstr "Restringir Almacén de Stock"
+
+#. module: econovo_user_warehouse_restriction
+#: model:res.groups,name:econovo_user_warehouse_restriction.user_warehouse_restriction_group_user
+msgid "Restrict Warehouse for Users"
+msgstr "Restringir Almacén para Usuarios"
+
+#. module: econovo_user_warehouse_restriction
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.warehouse_user_permission_search_view
+msgid "Search User Permissions"
+msgstr "Buscar Permisos de Usuario"
+
+#. module: econovo_user_warehouse_restriction
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.view_warehouse_user_permission_block_location_tree
+msgid "Select Users to Block"
+msgstr "Seleccionar Usuarios para Bloquear"
+
+#. module: econovo_user_warehouse_restriction
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.warehouse_user_permission_search_view
+msgid "Source Allowed"
+msgstr "Origen Permitido"
+
+#. module: econovo_user_warehouse_restriction
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.warehouse_user_permission_form_view
+msgid "Special Modes"
+msgstr "Modos Especiales"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model,name:econovo_user_warehouse_restriction.model_stock_move
+msgid "Stock Move"
+msgstr "Movimiento de stock"
+
+#. module: econovo_user_warehouse_restriction
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.view_warehouse_bypass_info_wizard_form
+msgid "System-Level Bypass Active"
+msgstr "Bypass a Nivel de Sistema Activo"
+
+#. module: econovo_user_warehouse_restriction
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.view_users_form
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.view_warehouse_form_inherit_restriction
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.warehouse_user_permission_tree_view
+msgid ""
+"System-Level Bypass Active: This user has administrator privileges that "
+"override all warehouse restrictions configured here. Click for details."
+msgstr ""
+"Bypass a Nivel de Sistema Activo: Este usuario tiene privilegios de "
+"administrador que anulan todas las restricciones de almacén configuradas "
+"aquí. Haga clic para más detalles."
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model,name:econovo_user_warehouse_restriction.model_stock_picking
+msgid "Transfer"
+msgstr "Transferir "
+
+#. module: econovo_user_warehouse_restriction
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.warehouse_user_permission_form_view
+msgid "Transit Access"
+msgstr "Acceso a Tránsito"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,field_description:econovo_user_warehouse_restriction.field_stock_location__is_transit_location
+msgid "Transit/Shared Location"
+msgstr "Ubicación de Tránsito/Compartida"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,help:econovo_user_warehouse_restriction.field_warehouse_bypass_info_wizard__bypass_reason
+msgid "Type of bypass permission (System Administrator, Unrestricted Access)."
+msgstr "Tipo de permiso de bypass (Administrador del Sistema, Acceso sin Restricciones)."
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,help:econovo_user_warehouse_restriction.field_warehouse_user_permission__active
+msgid ""
+"Uncheck to temporarily disable these permissions without deleting the "
+"record."
+msgstr "Desmarque para desactivar temporalmente estos permisos sin eliminar el registro."
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,field_description:econovo_user_warehouse_restriction.field_warehouse_user_permission__allow_as_destination
+msgid "Use as Destination"
+msgstr "Usar como Destino"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,field_description:econovo_user_warehouse_restriction.field_warehouse_user_permission__allow_as_source
+msgid "Use as Source"
+msgstr "Usar como Origen"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model,name:econovo_user_warehouse_restriction.model_res_users
+#: model:ir.model.fields,field_description:econovo_user_warehouse_restriction.field_warehouse_user_permission__user_id
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.warehouse_user_permission_search_view
+msgid "User"
+msgstr "Usuario"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,field_description:econovo_user_warehouse_restriction.field_warehouse_bypass_info_wizard__user_name
+msgid "User Name"
+msgstr "Nombre de Usuario"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,field_description:econovo_user_warehouse_restriction.field_stock_warehouse__user_permission_ids
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.view_warehouse_form_inherit_restriction
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.warehouse_user_permission_tree_view
+msgid "User Permissions"
+msgstr "Matriz de Permisos de Usuario"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.actions.act_window,name:econovo_user_warehouse_restriction.action_warehouse_user_permission
+#: model:ir.ui.menu,name:econovo_user_warehouse_restriction.menu_warehouse_user_permission
+msgid "User Warehouse Permissions"
+msgstr "Permisos de Almacén por Usuario"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,help:econovo_user_warehouse_restriction.field_warehouse_user_permission__allow_create_picking
+msgid ""
+"User can CREATE new stock pickings/transfers.\n"
+"\n"
+"Allows creating:\n"
+"- Delivery orders\n"
+"- Receipt orders\n"
+"- Internal transfers\n"
+"\n"
+"NOTE: User also needs \"Write\" permission to VALIDATE transfers.\n"
+"Without Write: User creates drafts that someone else must validate.\n"
+"\n"
+"Use case: Data entry operator creates pickings, supervisor validates."
+msgstr ""
+"El usuario puede CREAR nuevos pickings/transferencias de stock.\n"
+"\n"
+"Permite crear:\n"
+"- Órdenes de entrega\n"
+"- Órdenes de recepción\n"
+"- Transferencias internas\n"
+"\n"
+"NOTA: El usuario también necesita el permiso \"Write\" para VALIDAR transferencias.\n"
+"Sin Write: el usuario crea borradores que otra persona debe validar.\n"
+"\n"
+"Caso de uso: Un operador de entrada de datos crea pickings y el supervisor valida."
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,help:econovo_user_warehouse_restriction.field_warehouse_user_permission__allow_delete_picking
+msgid ""
+"User can DELETE or CANCEL stock transfers.\n"
+"\n"
+"Allows:\n"
+"- Canceling transfers in draft/confirmed state\n"
+"- Deleting canceled transfers\n"
+"\n"
+"Use with caution: Deleting transfers can hide audit trails.\n"
+"\n"
+"Example: User cancels an incorrect delivery order."
+msgstr "El usuario puede ELIMINAR o CANCELAR transferencias de stock.\n\n"
+"Permite:\n"
+"- Cancelar transferencias en estado borrador/confirmado\n"
+"- Eliminar transferencias canceladas\n\n"
+"Usar con precaución: eliminar transferencias puede ocultar la trazabilidad.\n\n"
+"Ejemplo: El usuario cancela una orden de entrega incorrecta."
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,help:econovo_user_warehouse_restriction.field_warehouse_user_permission__allow_write_picking
+msgid ""
+"User can MODIFY and VALIDATE existing transfers.\n"
+"\n"
+"Allows:\n"
+"- Changing products, quantities, locations\n"
+"- Clicking \"Validate\" button to confirm transfers\n"
+"- Modifying move lines (detailed operations)\n"
+"\n"
+"NOTE: This is required to complete transfers (move stock).\n"
+"\n"
+"Example: User validates a delivery, moving stock from WH to customer."
+msgstr "El usuario puede MODIFICAR y VALIDAR transferencias existentes.\n\n"
+"Permite:\n"
+"- Cambiar productos, cantidades y ubicaciones\n"
+"- Pulsar el botón \"Validar\" para confirmar transferencias\n"
+"- Modificar líneas de movimiento (operaciones detalladas)\n\n"
+"NOTA: Esto es necesario para completar transferencias (mover stock).\n\n"
+"Ejemplo: El usuario valida una entrega, moviendo stock del almacén al cliente."
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,help:econovo_user_warehouse_restriction.field_warehouse_user_permission__view_only
+msgid ""
+"User can ONLY VIEW data in this warehouse.\n"
+"\n"
+"When enabled:\n"
+"- Cannot create, modify, or delete anything\n"
+"- Can see stock levels, pickings, moves, etc.\n"
+"- All write permissions below are BLOCKED\n"
+"\n"
+"Use for: Auditors, analysts, read-only consultants"
+msgstr "El usuario SOLO PUEDE VER datos en este almacén.\n\n"
+"Al activarse:\n"
+"- No puede crear, modificar ni eliminar nada\n"
+"- Puede ver niveles de stock, pickings, movimientos, etc.\n"
+"- Todos los permisos de escritura están BLOQUEADOS\n\n"
+"Útil para: Auditores, analistas y consultores en modo solo lectura"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,help:econovo_user_warehouse_restriction.field_warehouse_user_permission__allow_as_destination
+msgid ""
+"User can RECEIVE stock INTO this warehouse.\n"
+"\n"
+"Required for:\n"
+"- Receipt Orders (Vendor → WH)\n"
+"- Inbound Transfers (WH2 → WH1)\n"
+"- Manufacturing output (Production → WH)\n"
+"\n"
+"Example: User can receive products from vendors into this warehouse."
+msgstr "El usuario puede RECIBIR stock EN este almacén.\n\n"
+"Requerido para:\n"
+"- Órdenes de recepción (Proveedor → Almacén)\n"
+"- Transferencias entrantes (WH2 → WH1)\n"
+"- Salida de fabricación (Producción → Almacén)\n\n"
+"Ejemplo: El usuario puede recibir productos de proveedores en este almacén."
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,help:econovo_user_warehouse_restriction.field_warehouse_user_permission__allow_as_source
+msgid ""
+"User can TAKE/SEND stock FROM this warehouse.\n"
+"\n"
+"Required for:\n"
+"- Delivery Orders (WH → Customer)\n"
+"- Outbound Transfers (WH1 → WH2)\n"
+"- Manufacturing consumption (WH → Production)\n"
+"\n"
+"Example: User can ship products from this warehouse to customers."
+msgstr "El usuario puede TOMAR/ENVIAR stock DESDE este almacén.\n\n"
+"Requerido para:\n"
+"- Órdenes de entrega (Almacén → Cliente)\n"
+"- Transferencias salientes (WH1 → WH2)\n"
+"- Consumo en fabricación (Almacén → Producción)\n\n"
+"Ejemplo: El usuario puede enviar productos desde este almacén a clientes."
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,help:econovo_user_warehouse_restriction.field_warehouse_user_permission__allow_inventory_adjustment
+msgid ""
+"User can adjust stock quantities DIRECTLY (bypasses source/destination validation).\n"
+"\n"
+"Allows:\n"
+"- Increment/decrement stock without transfer\n"
+"- Cycle counts and physical inventory\n"
+"- Scrap and loss operations\n"
+"\n"
+"⚠️ WARNING: This is a sensitive permission. User can add/remove stock freely.\n"
+"⚠️ Grant only to trusted users: supervisors, warehouse managers, accountants.\n"
+"\n"
+"Example: User can adjust stock from 100 → 95 units to reflect shrinkage."
+msgstr "El usuario puede ajustar cantidades de stock DIRECTAMENTE (omite la validación de origen/destino).\n\n"
+"Permite:\n"
+"- Incrementar/decrementar stock sin transferencia\n"
+"- Recuento cíclico e inventarios físicos\n"
+"- Operaciones de baja y desecho\n\n"
+"⚠️ ADVERTENCIA: Este es un permiso sensible. El usuario puede añadir/eliminar stock libremente.\n"
+"⚠️ Otorgar solo a usuarios de confianza: supervisores, gerentes de almacén, contadores.\n\n"
+"Ejemplo: El usuario ajusta el stock de 100 a 95 unidades para reflejar pérdidas."
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,help:econovo_user_warehouse_restriction.field_warehouse_user_permission__allow_transit
+msgid ""
+"User can use locations marked as Transit/Shared (is_transit_location=True).\n"
+"\n"
+"When enabled:\n"
+"- User can send/receive through shared transit locations\n"
+"- Required for inter-warehouse transfers via transit zones\n"
+"\n"
+"When disabled:\n"
+"- User cannot use ANY transit location\n"
+"- Blocks inter-warehouse workflows requiring transit\n"
+"\n"
+"Example: User1 (WH1) → Transit Dock → User2 (WH2)\n"
+"\n"
+"Default: Enabled (most users need transit access for transfers)."
+msgstr "El usuario puede usar ubicaciones marcadas como Tránsito/Compartidas (is_transit_location=True).\n\n"
+"Al activarse:\n"
+"- El usuario puede enviar/recibir a través de ubicaciones de tránsito compartidas\n"
+"- Requerido para transferencias entre almacenes vía zonas de tránsito\n\n"
+"Al desactivarse:\n"
+"- El usuario no puede usar NINGUNA ubicación de tránsito\n"
+"- Bloquea flujos inter-almacén que requieren tránsito\n\n"
+"Ejemplo: Usuario1 (WH1) → Muelle de Tránsito → Usuario2 (WH2)\n\n"
+"Por defecto: Habilitado (la mayoría de los usuarios necesita acceso a tránsito para transferencias)."
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,help:econovo_user_warehouse_restriction.field_warehouse_user_permission__full_control
+msgid ""
+"User has COMPLETE access to this warehouse.\n"
+"\n"
+"When enabled:\n"
+"- All granular permissions below are IGNORED\n"
+"- User can perform ANY operation in this warehouse\n"
+"- Blocked locations are IGNORED\n"
+"\n"
+"Use for: Warehouse managers, administrators"
+msgstr "El usuario tiene ACCESO COMPLETO a este almacén.\n\n"
+"Al activarse:\n"
+"- Todos los permisos granulares abajo son IGNORADOS\n"
+"- El usuario puede realizar CUALQUIER operación en este almacén\n"
+"- Las ubicaciones bloqueadas son IGNORADAS\n\n"
+"Uso: Gerentes de almacén, administradores"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,help:econovo_user_warehouse_restriction.field_warehouse_user_permission__user_id
+msgid "User to whom these permissions are granted. Only internal users."
+msgstr "Usuario al que se le otorgan estos permisos. Solo usuarios internos."
+
+#. module: econovo_user_warehouse_restriction
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.view_warehouse_form_inherit_restriction
+msgid "Users"
+msgstr "Usuarios"
+
+#. module: econovo_user_warehouse_restriction
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.warehouse_user_permission_search_view
+msgid "View Only"
+msgstr "Solo Vista"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,field_description:econovo_user_warehouse_restriction.field_warehouse_user_permission__view_only
+msgid "View Only (Read-Only)"
+msgstr "Solo Vista (Solo Lectura)"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model,name:econovo_user_warehouse_restriction.model_stock_warehouse
+#: model:ir.model.fields,field_description:econovo_user_warehouse_restriction.field_warehouse_user_permission__warehouse_id
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.warehouse_user_permission_search_view
+msgid "Warehouse"
+msgstr "Almacén"
+
+#. module: econovo_user_warehouse_restriction
+#: model:res.groups,name:econovo_user_warehouse_restriction.group_warehouse_unrestricted
+msgid "Warehouse - Unrestricted Access (Bypass All)"
+msgstr "Almacén - Acceso sin Restricción (Bypass Total)"
+
+#. module: econovo_user_warehouse_restriction
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.view_users_simple_form
+msgid "Warehouse Access"
+msgstr "Acceso al Almacén"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,field_description:econovo_user_warehouse_restriction.field_res_users__warehouse_permission_ids
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.view_users_form
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.warehouse_user_permission_form_view
+msgid "Warehouse Permissions"
+msgstr "Permisos de Usuario"
+
+#. module: econovo_user_warehouse_restriction
+#: model:res.groups,name:econovo_user_warehouse_restriction.user_warehouse_restriction_group_manager
+msgid "Warehouse Permissions Manager"
+msgstr "Administrador de Permisos de Almacén"
+
+#. module: econovo_user_warehouse_restriction
+#: model:res.groups,name:econovo_user_warehouse_restriction.user_warehouse_restriction_group_restricted
+msgid "Warehouse Restriction - Restricted Users"
+msgstr "Restricción de Almacén - Usuarios Restringidos"
+
+#. module: econovo_user_warehouse_restriction
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.warehouse_user_permission_form_view
+msgid "Warehouse User Permission"
+msgstr "Permiso de Usuario de Almacén"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,help:econovo_user_warehouse_restriction.field_warehouse_user_permission__warehouse_id
+msgid "Warehouse for which these permissions apply."
+msgstr "Almacén al que se aplican estos permisos."
+
+#. module: econovo_user_warehouse_restriction
+#. odoo-python
+#: code:addons/econovo_user_warehouse_restriction/models/stock_quant.py:0
+#, python-format
+msgid ""
+"You do not have any permissions configured for warehouse \"%s\".\n"
+"\n"
+"Inventory adjustment requires \"allow_inventory_adjustment\" permission.\n"
+"Contact your administrator to configure your permissions."
+msgstr "No tiene permisos configurados para el almacén \"%s\".\n\n"
+"Los ajustes de inventario requieren el permiso \"allow_inventory_adjustment\".\n"
+"Contacte a su administrador para configurar sus permisos."
+
+#. module: econovo_user_warehouse_restriction
+#. odoo-python
+#: code:addons/econovo_user_warehouse_restriction/models/stock_picking.py:0
+#, python-format
+msgid ""
+"You do not have permission to %s pickings in warehouse \"%s\".\n"
+"\n"
+"No permission record found for this warehouse.\n"
+"Contact your administrator to grant access."
+msgstr "No tiene permiso para %s pickings en el almacén \"%s\".\n\n"
+"No se encontró un registro de permisos para este almacén.\n"
+"Contacte a su administrador para otorgar acceso."
+
+#. module: econovo_user_warehouse_restriction
+#. odoo-python
+#: code:addons/econovo_user_warehouse_restriction/models/stock_picking.py:0
+#, python-format
+msgid ""
+"You do not have permission to %s pickings in warehouse \"%s\".\n"
+"\n"
+"Permission \"%s\" is disabled for this warehouse.\n"
+"Contact your administrator to grant this permission."
+msgstr "No tiene permiso para %s pickings en el almacén \"%s\".\n\n"
+"El permiso \"%s\" está deshabilitado para este almacén.\n"
+"Contacte a su administrador para otorgar este permiso."
+
+#. module: econovo_user_warehouse_restriction
+#. odoo-python
+#: code:addons/econovo_user_warehouse_restriction/models/stock_picking.py:0
+#, python-format
+msgid ""
+"You do not have permission to create pickings in warehouse \"%s\".\n"
+"\n"
+"No permission record found for this warehouse.\n"
+"Contact your administrator to grant access."
+msgstr "No tiene permiso para crear pickings en el almacén \"%s\".\n\n"
+"No se encontró un registro de permisos para este almacén.\n"
+"Contacte a su administrador para otorgar acceso."
+
+#. module: econovo_user_warehouse_restriction
+#. odoo-python
+#: code:addons/econovo_user_warehouse_restriction/models/stock_picking.py:0
+#, python-format
+msgid ""
+"You do not have permission to create pickings in warehouse \"%s\".\n"
+"\n"
+"Permission \"allow_create_picking\" is disabled for this warehouse.\n"
+"Contact your administrator to grant this permission."
+msgstr "No tiene permiso para crear pickings en el almacén \"%s\".\n\n"
+"El permiso \"allow_create_picking\" está deshabilitado para este almacén.\n"
+"Contacte a su administrador para otorgar este permiso."
+
+#. module: econovo_user_warehouse_restriction
+#. odoo-python
+#: code:addons/econovo_user_warehouse_restriction/models/stock_picking.py:0
+#, python-format
+msgid ""
+"You do not have permission to create pickings in warehouse \"%s\".\n"
+"\n"
+"Permission \"view_only\" is enabled for this warehouse.\n"
+"Contact your administrator to grant write access."
+msgstr "No tiene permiso para crear pickings en el almacén \"%s\".\n\n"
+"El permiso \"view_only\" está activado para este almacén.\n"
+"Contacte a su administrador para obtener permiso de escritura."
+
+#. module: econovo_user_warehouse_restriction
+#. odoo-python
+#: code:addons/econovo_user_warehouse_restriction/models/stock_quant.py:0
+#, python-format
+msgid ""
+"You do not have permission to make inventory adjustments in warehouse \"%s\".\n"
+"\n"
+"Permission \"allow_inventory_adjustment\" is disabled for this warehouse.\n"
+"Contact your administrator to grant this permission."
+msgstr "No tiene permiso para realizar ajustes de inventario en el almacén \"%s\".\n\n"
+"El permiso \"allow_inventory_adjustment\" está deshabilitado para este almacén.\n"
+"Contacte a su administrador para otorgar este permiso."
+
+#. module: econovo_user_warehouse_restriction
+#. odoo-python
+#: code:addons/econovo_user_warehouse_restriction/models/stock_move.py:0
+#: code:addons/econovo_user_warehouse_restriction/models/stock_picking.py:0
+#, python-format
+msgid ""
+"You do not have permission to modify warehouse \"%s\".\n"
+"\n"
+"Permission \"view_only\" is enabled for this warehouse.\n"
+"Contact your administrator to grant write access."
+msgstr "No tiene permiso para modificar el almacén \"%s\".\n\n"
+"El permiso \"view_only\" está activado para este almacén.\n"
+"Contacte a su administrador para obtener permiso de escritura."
+
+#. module: econovo_user_warehouse_restriction
+#. odoo-python
+#: code:addons/econovo_user_warehouse_restriction/models/stock_quant.py:0
+#, python-format
+msgid ""
+"You have view-only access to warehouse \"%s\".\n"
+"\n"
+"Inventory adjustments are not allowed in view-only mode."
+msgstr "Tiene acceso en solo lectura al almacén \"%s\".\n\n"
+"Los ajustes de inventario no están permitidos en modo solo lectura."
+
+#. module: econovo_user_warehouse_restriction
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.warehouse_user_permission_form_view
+msgid ""
+"privileges \n"
+"                        and can access <strong>all warehouses</strong> regardless of the permissions configured below.\n"
+"                        <br/><br/>\n"
+"                        <i class=\"fa fa-arrow-right\"/> \n"
+"                        To apply these restrictions, go to: \n"
+"                        <strong>Settings → Users &amp; Companies → Users</strong> → \n"
+"                        Select user → <strong>Access Rights</strong> tab → \n"
+"                        Remove <em>\"Administration / Settings\"</em> or <em>\"Unrestricted Warehouse Access\"</em> groups."
+msgstr "privilegios \n"
+"                        y puede acceder a <strong>todos los almacenes</strong> independientemente de los permisos configurados a continuación.\n"
+"                        <br/><br/>\n"
+"                        <i class=\"fa fa-arrow-right\"/> \n"
+"                        Para aplicar estas restricciones, vaya a: \n"
+"                        <strong>Settings → Users &amp; Companies → Users</strong> → \n"
+"                        Seleccione el usuario → pestaña <strong>Access Rights</strong> → \n"
+"                        Quite los grupos <em>\"Administration / Settings\"</em> o <em>\"Unrestricted Warehouse Access\"</em>."
+
+#. module: econovo_user_warehouse_restriction
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.view_location_form_inherit_transit
+msgid ""
+"ℹ️ This location is accessible by all users for transit operations, even if "
+"they don't have access to the parent warehouse. Useful for shared "
+"dock/staging areas."
+msgstr "ℹ️ Esta ubicación es accesible por todos los usuarios para operaciones de tránsito, incluso si no tienen acceso al almacén padre.\n"
+"Útil para muelles o áreas de preparación compartidas."

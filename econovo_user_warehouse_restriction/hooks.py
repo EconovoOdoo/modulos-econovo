@@ -210,4 +210,3 @@ def _initialize_admin_permissions(env):
                 )
     
     _logger.info(f"Admin permission initialization complete: {created_count} permission(s) created")
-

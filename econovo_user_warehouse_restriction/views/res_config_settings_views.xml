@@ -5,8 +5,6 @@
         INVENTORY CONFIGURATION SETTINGS
         ========================================================================
         
-        Consolidated from user_warehouse_restriction (Cybrosys Technologies)
-        
         Adds "Restrict Stock Warehouse" setting to Inventory > Configuration.
         When enabled, users must be explicitly assigned to warehouses to access them.
     -->

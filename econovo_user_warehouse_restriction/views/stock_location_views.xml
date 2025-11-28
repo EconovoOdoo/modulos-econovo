@@ -2,12 +2,24 @@
 <odoo>
     <data>
         
-        <!-- Inherit stock.location form view to add transit checkbox -->
+        <!-- Inherit stock.location form view to add transit checkbox and smart button -->
         <record id="view_location_form_inherit_transit" model="ir.ui.view">
             <field name="name">stock.location.form.inherit.econovo.transit</field>
             <field name="model">stock.location</field>
             <field name="inherit_id" ref="stock.view_location_form"/>
             <field name="arch" type="xml">
+                
+                <!-- Add Smart Button for Blocked Users -->
+                <xpath expr="//div[@name='button_box']" position="inside">
+                    <button name="action_view_blocked_users"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-user-times"
+                            groups="econovo_user_warehouse_restriction.user_warehouse_restriction_group_manager">
+                        <field name="blocked_user_permission_count" widget="statinfo" string="Blocked"/>
+                    </button>
+                </xpath>
+                
                 <!-- Add checkbox after usage field -->
                 <xpath expr="//field[@name='usage']" position="after">
                     <field name="is_transit_location"/>
@@ -20,6 +32,21 @@
                         ℹ️ This location is accessible by all users for transit operations, even if they don't have access to the parent warehouse. Useful for shared dock/staging areas.
                     </div>
                 </xpath>
+            </field>
+        </record>
+        
+        <!-- Tree view for selecting users to block location (high priority = not default) -->
+        <record id="view_warehouse_user_permission_block_location_tree" model="ir.ui.view">
+            <field name="name">warehouse.user.permission.block.location.tree</field>
+            <field name="model">warehouse.user.permission</field>
+            <field name="priority" eval="99"/>
+            <field name="arch" type="xml">
+                <tree string="Select Users to Block" multi_edit="1">
+                    <field name="user_id" readonly="1"/>
+                    <field name="warehouse_id" readonly="1"/>
+                    <field name="full_control" readonly="1" widget="boolean"/>
+                    <field name="blocked_location_ids" widget="many2many_tags"/>
+                </tree>
             </field>
         </record>
         

@@ -7,14 +7,10 @@
             SECURITY GROUPS ARCHITECTURE
             ========================================================================
             
-            This module consolidates groups from:
-            1. user_warehouse_restriction (Cybrosys Technologies - Base)
-            2. econovo_user_warehouse_restriction (Econovo - Extensions)
-            
             GROUP INHERITANCE STRUCTURE:
             ============================
             
-            Base (Cybrosys) → Source Only (Econovo) → Full (Econovo)
+            Base → Source Only → Full
             
             - Base group provides: Record Rules for picking.type, location, warehouse, picking
             - Source Only adds: Record Rules for quant, move, move.line + source validation
@@ -27,7 +23,7 @@
         -->
         
         <!-- ================================================================== -->
-        <!-- BASE GROUP (from Cybrosys user_warehouse_restriction)             -->
+        <!-- BASE GROUP                                                         -->
         <!-- ================================================================== -->
         
         <!-- BYPASS GROUP: Unrestricted Access (for Administrators) -->
@@ -59,7 +55,7 @@
             <field name="name">Restrict Warehouse for Users</field>
             <field name="category_id" ref="base.module_category_hidden"/>
             <field name="comment">
-                Base restriction group (from Cybrosys Technologies).
+                Base restriction group for warehouse access control.
                 
                 Provides foundational warehouse restrictions:
                 - Filters stock.picking.type by warehouse.user_ids

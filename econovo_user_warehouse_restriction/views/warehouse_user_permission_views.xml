@@ -16,7 +16,7 @@
         <field name="name">warehouse.user.permission.tree</field>
         <field name="model">warehouse.user.permission</field>
         <field name="arch" type="xml">
-            <tree string="User Permissions" editable="bottom" create="true" delete="true">
+            <tree string="User Permissions" multi_edit="1" create="true" delete="true">
                 <!-- Core Identification -->
                 <field name="user_id" required="1"/>
                 <field name="warehouse_id" required="1" invisible="context.get('default_warehouse_id')"/>
@@ -117,15 +117,13 @@
                         </page>
                         
                         <page name="location_restrictions" string="Location Restrictions">
-                            <group>
-                                <group name="blacklist" string="Blocked Locations (Blacklist)">
-                                    <field name="blocked_location_ids" widget="many2many_tags" nolabel="1">
-                                        <tree>
-                                            <field name="complete_name"/>
-                                        </tree>
-                                    </field>
-                                </group>
-                            </group>
+                            <field name="blocked_location_ids" nolabel="1">
+                                <tree editable="bottom">
+                                    <field name="complete_name" string="Location"/>
+                                    <field name="usage" optional="hide"/>
+                                    <field name="warehouse_id" optional="hide"/>
+                                </tree>
+                            </field>
                         </page>
                     </notebook>
                 </sheet>

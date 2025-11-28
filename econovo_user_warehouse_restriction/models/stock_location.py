@@ -19,7 +19,7 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 ###############################################################################
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 class StockLocation(models.Model):
@@ -42,3 +42,63 @@ class StockLocation(models.Model):
              "will be filtered out by Record Rules when picking locations reference transit areas.\n\n"
              "Example: A shared dock location where User1 drops off stock for User2 to pick up."
     )
+    
+    blocked_user_permission_count = fields.Integer(
+        string="Blocked By Users",
+        compute='_compute_blocked_user_permission_count',
+        help="Number of user permissions that have this location blocked."
+    )
+    
+    @api.depends_context('uid')
+    def _compute_blocked_user_permission_count(self):
+        """Count permissions that have this location in their blocked list."""
+        Permission = self.env['warehouse.user.permission']
+        for location in self:
+            location.blocked_user_permission_count = Permission.search_count([
+                ('blocked_location_ids', 'in', location.id)
+            ])
+    
+    def action_view_blocked_users(self):
+        """Open view showing user permissions that block this location."""
+        self.ensure_one()
+        permissions = self.env['warehouse.user.permission'].search([
+            ('blocked_location_ids', 'in', self.id)
+        ])
+        return {
+            'name': f"Users Blocked from: {self.display_name}",
+            'type': 'ir.actions.act_window',
+            'res_model': 'warehouse.user.permission',
+            'view_mode': 'tree,form',
+            'views': [
+                (self.env.ref('econovo_user_warehouse_restriction.warehouse_user_permission_tree_view').id, 'tree'),
+                (self.env.ref('econovo_user_warehouse_restriction.warehouse_user_permission_form_view').id, 'form'),
+            ],
+            'domain': [('id', 'in', permissions.ids)],
+            'context': {
+                'default_blocked_location_ids': [(4, self.id)],
+            },
+            'target': 'current',
+        }
+    
+    def action_add_to_blocked_locations(self):
+        """Open wizard to add this location to existing user permissions' blocked list."""
+        self.ensure_one()
+        return {
+            'name': f"Block Location: {self.display_name}",
+            'type': 'ir.actions.act_window',
+            'res_model': 'warehouse.user.permission',
+            'view_mode': 'tree',
+            'domain': [
+                ('warehouse_id', '=', self.warehouse_id.id),
+                ('blocked_location_ids', 'not in', self.id),
+                ('full_control', '=', False),
+            ],
+            'context': {
+                'location_to_block': self.id,
+                'tree_view_ref': 'econovo_user_warehouse_restriction.view_warehouse_user_permission_block_location_tree',
+            },
+            'target': 'new',
+            'help': '<p class="o_view_nocontent_smiling_face">'
+                    'No users available to block this location.'
+                    '</p><p>All users either already have this location blocked or have Full Control.</p>',
+        }
