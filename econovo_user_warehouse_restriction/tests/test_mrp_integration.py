@@ -224,7 +224,8 @@ class TestMrpIntegration(TransactionCase):
                 'allow_as_source': True,
                 'allow_as_destination': True,  # Also needed for finished goods
                 'allow_create_picking': True,
-                'allow_write_picking': True,
+                'allow_modify_picking': True,
+            'allow_validate_picking': True,
             }
         )
         
@@ -263,7 +264,8 @@ class TestMrpIntegration(TransactionCase):
                 'allow_as_source': False,  # No source permission
                 'allow_as_destination': True,
                 'allow_create_picking': True,
-                'allow_write_picking': True,
+                'allow_modify_picking': True,
+            'allow_validate_picking': True,
             }
         )
         
@@ -314,7 +316,8 @@ class TestMrpIntegration(TransactionCase):
                 'allow_as_source': True,
                 'allow_as_destination': True,
                 'allow_create_picking': True,
-                'allow_write_picking': True,
+                'allow_modify_picking': True,
+            'allow_validate_picking': True,
             }
         )
         
@@ -358,7 +361,8 @@ class TestMrpIntegration(TransactionCase):
                 'allow_as_source': True,
                 'allow_as_destination': True,
                 'allow_create_picking': True,
-                'allow_write_picking': True,
+                'allow_modify_picking': True,
+            'allow_validate_picking': True,
             }
         )
         
@@ -532,7 +536,8 @@ class TestMrpIntegration(TransactionCase):
                 'allow_as_source': True,  # Can consume raw materials
                 'allow_as_destination': False,  # Cannot produce to warehouse
                 'allow_create_picking': True,
-                'allow_write_picking': True,
+                'allow_modify_picking': True,
+            'allow_validate_picking': True,
             }
         )
         
@@ -709,7 +714,8 @@ class TestMrpIntegration(TransactionCase):
                 'allow_as_source': True,
                 'allow_as_destination': True,
                 'allow_create_picking': True,
-                'allow_write_picking': True,
+                'allow_modify_picking': True,
+            'allow_validate_picking': True,
             }
         )
         
@@ -770,7 +776,8 @@ class TestMrpIntegration(TransactionCase):
                 'allow_as_destination': True,
                 'allow_inventory_adjustment': True,
                 'allow_create_picking': True,
-                'allow_write_picking': True,
+                'allow_modify_picking': True,
+            'allow_validate_picking': True,
             }
         )
         
@@ -836,7 +843,8 @@ class TestMrpIntegration(TransactionCase):
                 'allow_as_source': False,  # No source permission
                 'allow_as_destination': True,
                 'allow_create_picking': True,
-                'allow_write_picking': True,
+                'allow_modify_picking': True,
+            'allow_validate_picking': True,
             }
         )
         

@@ -338,8 +338,13 @@ msgstr "Creado el"
 
 #. module: econovo_user_warehouse_restriction
 #: model:ir.model.fields,field_description:econovo_user_warehouse_restriction.field_warehouse_user_permission__allow_delete_picking
-msgid "Delete/Cancel Transfers"
-msgstr "Eliminar/Cancelar Transferencias"
+msgid "Delete Transfers"
+msgstr "Eliminar Transferencias"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,field_description:econovo_user_warehouse_restriction.field_warehouse_user_permission__allow_cancel_picking
+msgid "Cancel Transfers"
+msgstr "Cancelar Transferencias"
 
 #. module: econovo_user_warehouse_restriction
 #: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.warehouse_user_permission_search_view
@@ -704,42 +709,100 @@ msgstr ""
 #. module: econovo_user_warehouse_restriction
 #: model:ir.model.fields,help:econovo_user_warehouse_restriction.field_warehouse_user_permission__allow_delete_picking
 msgid ""
-"User can DELETE or CANCEL stock transfers.\n"
+"User can DELETE stock transfers.\n"
+"\n"
+"Allows:\n"
+"- Deleting canceled transfers permanently\n"
+"- Removing transfers from the system\n"
+"\n"
+"⚠️ WARNING: Use with caution!\n"
+"Deleting transfers removes audit trails permanently.\n"
+"Consider granting Cancel permission instead.\n"
+"\n"
+"Use case: Administrator cleans up test data or duplicates."
+msgstr "El usuario puede ELIMINAR transferencias de stock.\n\n"
+"Permite:\n"
+"- Eliminar permanentemente transferencias canceladas\n"
+"- Quitar transferencias del sistema\n\n"
+"⚠️ ADVERTENCIA: ¡Usar con precaución!\n"
+"Eliminar transferencias elimina la trazabilidad de auditoría permanentemente.\n"
+"Considere otorgar permiso de Cancelar en su lugar.\n\n"
+"Caso de uso: El administrador limpia datos de prueba o duplicados."
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,help:econovo_user_warehouse_restriction.field_warehouse_user_permission__allow_cancel_picking
+msgid ""
+"User can CANCEL stock transfers.\n"
 "\n"
 "Allows:\n"
 "- Canceling transfers in draft/confirmed state\n"
-"- Deleting canceled transfers\n"
+"- Reverting transfers to canceled status\n"
 "\n"
-"Use with caution: Deleting transfers can hide audit trails.\n"
+"NOTE: Does NOT allow deleting transfers.\n"
+"Canceled transfers remain visible for audit trail.\n"
 "\n"
-"Example: User cancels an incorrect delivery order."
-msgstr "El usuario puede ELIMINAR o CANCELAR transferencias de stock.\n\n"
+"Use case: User can cancel incorrect orders but cannot hide them."
+msgstr "El usuario puede CANCELAR transferencias de stock.\n\n"
 "Permite:\n"
 "- Cancelar transferencias en estado borrador/confirmado\n"
-"- Eliminar transferencias canceladas\n\n"
-"Usar con precaución: eliminar transferencias puede ocultar la trazabilidad.\n\n"
-"Ejemplo: El usuario cancela una orden de entrega incorrecta."
+"- Revertir transferencias al estado cancelado\n\n"
+"NOTA: NO permite eliminar transferencias.\n"
+"Las transferencias canceladas permanecen visibles para trazabilidad.\n\n"
+"Caso de uso: El usuario puede cancelar órdenes incorrectas pero no puede ocultarlas."
 
 #. module: econovo_user_warehouse_restriction
-#: model:ir.model.fields,help:econovo_user_warehouse_restriction.field_warehouse_user_permission__allow_write_picking
+#: model:ir.model.fields,help:econovo_user_warehouse_restriction.field_warehouse_user_permission__allow_modify_picking
 msgid ""
-"User can MODIFY and VALIDATE existing transfers.\n"
+"User can MODIFY existing transfers.\n"
 "\n"
 "Allows:\n"
 "- Changing products, quantities, locations\n"
-"- Clicking \"Validate\" button to confirm transfers\n"
 "- Modifying move lines (detailed operations)\n"
+"- Editing notes and other fields\n"
 "\n"
-"NOTE: This is required to complete transfers (move stock).\n"
+"NOTE: Does NOT allow validating transfers.\n"
+"User can prepare transfers but cannot complete them.\n"
 "\n"
-"Example: User validates a delivery, moving stock from WH to customer."
-msgstr "El usuario puede MODIFICAR y VALIDAR transferencias existentes.\n\n"
+"Use case: Warehouse operator adjusts quantities before supervisor validates."
+msgstr "El usuario puede MODIFICAR transferencias existentes.\n\n"
 "Permite:\n"
 "- Cambiar productos, cantidades y ubicaciones\n"
+"- Modificar líneas de movimiento (operaciones detalladas)\n"
+"- Editar notas y otros campos\n\n"
+"NOTA: NO permite validar transferencias.\n"
+"El usuario puede preparar transferencias pero no puede completarlas.\n\n"
+"Caso de uso: El operario del almacén ajusta cantidades antes de que el supervisor valide."
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,help:econovo_user_warehouse_restriction.field_warehouse_user_permission__allow_validate_picking
+msgid ""
+"User can VALIDATE (confirm) transfers.\n"
+"\n"
+"Allows:\n"
+"- Clicking \"Validate\" button to confirm transfers\n"
+"- Completing the stock movement\n"
+"\n"
+"NOTE: This is required to complete transfers (move stock).\n"
+"Can be granted separately from Modify permission.\n"
+"\n"
+"Use case: Supervisor validates prepared transfers without editing them."
+msgstr "El usuario puede VALIDAR (confirmar) transferencias.\n\n"
+"Permite:\n"
 "- Pulsar el botón \"Validar\" para confirmar transferencias\n"
-"- Modificar líneas de movimiento (operaciones detalladas)\n\n"
-"NOTA: Esto es necesario para completar transferencias (mover stock).\n\n"
-"Ejemplo: El usuario valida una entrega, moviendo stock del almacén al cliente."
+"- Completar el movimiento de stock\n\n"
+"NOTA: Esto es necesario para completar transferencias (mover stock).\n"
+"Puede otorgarse por separado del permiso de Modificar.\n\n"
+"Caso de uso: El supervisor valida transferencias preparadas sin editarlas."
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,field_description:econovo_user_warehouse_restriction.field_warehouse_user_permission__allow_modify_picking
+msgid "Modify Transfers"
+msgstr "Modificar Transferencias"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,field_description:econovo_user_warehouse_restriction.field_warehouse_user_permission__allow_validate_picking
+msgid "Validate Transfers"
+msgstr "Validar Transferencias"
 
 #. module: econovo_user_warehouse_restriction
 #: model:ir.model.fields,help:econovo_user_warehouse_restriction.field_warehouse_user_permission__view_only
@@ -1070,3 +1133,112 @@ msgid ""
 "dock/staging areas."
 msgstr "ℹ️ Esta ubicación es accesible por todos los usuarios para operaciones de tránsito, incluso si no tienen acceso al almacén padre.\n"
 "Útil para muelles o áreas de preparación compartidas."
+
+#. module: econovo_user_warehouse_restriction
+#: code:addons/econovo_user_warehouse_restriction/wizard/bypass_info_wizard.py:0
+#, python-format
+msgid "System-Level Access Detected"
+msgstr "Acceso a Nivel de Sistema Detectado"
+
+#. module: econovo_user_warehouse_restriction
+#: code:addons/econovo_user_warehouse_restriction/wizard/bypass_info_wizard.py:0
+#, python-format
+msgid "User %s has %s privileges."
+msgstr "El usuario %s tiene privilegios de %s."
+
+#. module: econovo_user_warehouse_restriction
+#: code:addons/econovo_user_warehouse_restriction/wizard/bypass_info_wizard.py:0
+#, python-format
+msgid "What does this mean?"
+msgstr "¿Qué significa esto?"
+
+#. module: econovo_user_warehouse_restriction
+#: code:addons/econovo_user_warehouse_restriction/wizard/bypass_info_wizard.py:0
+#, python-format
+msgid "This user can access ALL warehouses regardless of the permissions configured in the permission matrix."
+msgstr "Este usuario puede acceder a TODOS los almacenes independientemente de los permisos configurados en la matriz de permisos."
+
+#. module: econovo_user_warehouse_restriction
+#: code:addons/econovo_user_warehouse_restriction/wizard/bypass_info_wizard.py:0
+#, python-format
+msgid "The permissions you configure here are informational only and will NOT restrict this user's access."
+msgstr "Los permisos que configure aquí son solo informativos y NO restringirán el acceso de este usuario."
+
+#. module: econovo_user_warehouse_restriction
+#: code:addons/econovo_user_warehouse_restriction/wizard/bypass_info_wizard.py:0
+#, python-format
+msgid "Security rules automatically grant full bypass to system administrators."
+msgstr "Las reglas de seguridad otorgan automáticamente bypass completo a los administradores del sistema."
+
+#. module: econovo_user_warehouse_restriction
+#: code:addons/econovo_user_warehouse_restriction/wizard/bypass_info_wizard.py:0
+#, python-format
+msgid "How to apply these restrictions?"
+msgstr "¿Cómo aplicar estas restricciones?"
+
+#. module: econovo_user_warehouse_restriction
+#: code:addons/econovo_user_warehouse_restriction/wizard/bypass_info_wizard.py:0
+#, python-format
+msgid "To enforce warehouse restrictions for this user:"
+msgstr "Para aplicar restricciones de almacén a este usuario:"
+
+#. module: econovo_user_warehouse_restriction
+#: code:addons/econovo_user_warehouse_restriction/wizard/bypass_info_wizard.py:0
+#, python-format
+msgid "Go to: Settings → Users & Companies → Users"
+msgstr "Vaya a: Ajustes → Usuarios y Compañías → Usuarios"
+
+#. module: econovo_user_warehouse_restriction
+#: code:addons/econovo_user_warehouse_restriction/wizard/bypass_info_wizard.py:0
+#, python-format
+msgid "Select user: %s"
+msgstr "Seleccione el usuario: %s"
+
+#. module: econovo_user_warehouse_restriction
+#: code:addons/econovo_user_warehouse_restriction/wizard/bypass_info_wizard.py:0
+#, python-format
+msgid "Open Access Rights tab"
+msgstr "Abra la pestaña Derechos de Acceso"
+
+#. module: econovo_user_warehouse_restriction
+#: code:addons/econovo_user_warehouse_restriction/wizard/bypass_info_wizard.py:0
+#, python-format
+msgid "Remove the following groups:"
+msgstr "Quite los siguientes grupos:"
+
+#. module: econovo_user_warehouse_restriction
+#: code:addons/econovo_user_warehouse_restriction/wizard/bypass_info_wizard.py:0
+#, python-format
+msgid "Administration / Settings"
+msgstr "Administración / Ajustes"
+
+#. module: econovo_user_warehouse_restriction
+#: code:addons/econovo_user_warehouse_restriction/wizard/bypass_info_wizard.py:0
+#, python-format
+msgid "Unrestricted Warehouse Access"
+msgstr "Acceso Irrestricto a Almacenes"
+
+#. module: econovo_user_warehouse_restriction
+#: code:addons/econovo_user_warehouse_restriction/wizard/bypass_info_wizard.py:0
+#, python-format
+msgid "(if present)"
+msgstr "(si está presente)"
+
+#. module: econovo_user_warehouse_restriction
+#: code:addons/econovo_user_warehouse_restriction/wizard/bypass_info_wizard.py:0
+#, python-format
+msgid "Note:"
+msgstr "Nota:"
+
+#. module: econovo_user_warehouse_restriction
+#: code:addons/econovo_user_warehouse_restriction/wizard/bypass_info_wizard.py:0
+#, python-format
+msgid "Removing system administrator access will also restrict other administrative functions."
+msgstr "Eliminar el acceso de administrador del sistema también restringirá otras funciones administrativas."
+
+#. module: econovo_user_warehouse_restriction
+#: code:addons/econovo_user_warehouse_restriction/wizard/bypass_info_wizard.py:0
+#, python-format
+msgid "System-Level Bypass Active"
+msgstr "Bypass a Nivel de Sistema Activo"
+

@@ -16,13 +16,20 @@ class TestWarehouseSecurityRules(TransactionCase):
         
         # Get groups
         self.group_stock_user = self.env.ref('stock.group_stock_user')
+        self.group_warehouse_restriction = self.env.ref(
+            'econovo_user_warehouse_restriction.user_warehouse_restriction_group_user'
+        )
         
         # Create restricted user WITHOUT Settings access
+        # CRITICAL: Must be in user_warehouse_restriction_group_user for record rules to apply
         self.restricted_user = self.env['res.users'].create({
             'name': 'Test Restricted User',
             'login': 'test_restricted_security',
             'email': 'test_restricted_security@test.com',
-            'groups_id': [(6, 0, [self.group_stock_user.id])],
+            'groups_id': [(6, 0, [
+                self.group_stock_user.id,
+                self.group_warehouse_restriction.id,
+            ])],
         })
         
         # Get or create warehouses (use sudo for system operations)

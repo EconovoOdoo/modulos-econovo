@@ -79,7 +79,9 @@
                                 <field name="allow_as_destination" widget="boolean_toggle"/>
                                 <field name="allow_inventory_adjustment" widget="boolean_toggle"/>
                                 <field name="allow_create_picking" widget="boolean_toggle"/>
-                                <field name="allow_write_picking" widget="boolean_toggle"/>
+                                <field name="allow_modify_picking" widget="boolean_toggle"/>
+                                <field name="allow_validate_picking" widget="boolean_toggle"/>
+                                <field name="allow_cancel_picking" widget="boolean_toggle"/>
                                 <field name="allow_delete_picking" widget="boolean_toggle"/>
                                 <field name="blocked_location_ids" widget="many2many_tags" optional="hide"/>
                                 <field name="allow_transit" widget="boolean_toggle"/>

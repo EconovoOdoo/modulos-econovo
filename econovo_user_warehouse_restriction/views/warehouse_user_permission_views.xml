@@ -40,9 +40,11 @@
                 <field name="allow_as_destination" widget="boolean_toggle"/>
                 <field name="allow_inventory_adjustment" widget="boolean_toggle"/>
                 
-                <!-- Operation-Level Permissions -->
+                <!-- Operation-Level Permissions (Granular) -->
                 <field name="allow_create_picking" widget="boolean_toggle"/>
-                <field name="allow_write_picking" widget="boolean_toggle"/>
+                <field name="allow_modify_picking" widget="boolean_toggle"/>
+                <field name="allow_validate_picking" widget="boolean_toggle"/>
+                <field name="allow_cancel_picking" widget="boolean_toggle"/>
                 <field name="allow_delete_picking" widget="boolean_toggle"/>
                 
                 <!-- Location Restrictions -->
@@ -110,7 +112,12 @@
                             <group>
                                 <group name="picking_operations" string="Picking Operations">
                                     <field name="allow_create_picking" widget="boolean_toggle"/>
-                                    <field name="allow_write_picking" widget="boolean_toggle"/>
+                                    <field name="allow_modify_picking" widget="boolean_toggle"/>
+                                    <field name="allow_validate_picking" widget="boolean_toggle"/>
+                                </group>
+                                
+                                <group name="picking_removal" string="Cancel / Delete">
+                                    <field name="allow_cancel_picking" widget="boolean_toggle"/>
                                     <field name="allow_delete_picking" widget="boolean_toggle"/>
                                 </group>
                             </group>
@@ -153,7 +160,9 @@
                 <filter name="filter_inventory_allowed" string="Inventory Allowed" domain="[('allow_inventory_adjustment', '=', True)]"/>
                 <separator/>
                 <filter name="filter_create_allowed" string="Can Create Pickings" domain="[('allow_create_picking', '=', True)]"/>
-                <filter name="filter_write_allowed" string="Can Write Pickings" domain="[('allow_write_picking', '=', True)]"/>
+                <filter name="filter_modify_allowed" string="Can Modify Pickings" domain="[('allow_modify_picking', '=', True)]"/>
+                <filter name="filter_validate_allowed" string="Can Validate Pickings" domain="[('allow_validate_picking', '=', True)]"/>
+                <filter name="filter_cancel_allowed" string="Can Cancel Pickings" domain="[('allow_cancel_picking', '=', True)]"/>
                 <filter name="filter_delete_allowed" string="Can Delete Pickings" domain="[('allow_delete_picking', '=', True)]"/>
                 
                 <!-- Group By -->

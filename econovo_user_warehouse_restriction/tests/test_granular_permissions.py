@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-"""Test granular picking permissions (create, write, unlink, validate, cancel).
+"""Test granular picking permissions (create, modify, validate, delete, cancel).
 
 This test suite validates:
 - allow_create_picking permission
-- allow_write_picking permission
-- allow_unlink_picking permission
+- allow_modify_picking permission
 - allow_validate_picking permission
+- allow_delete_picking permission
 - allow_cancel_picking permission
 
 Test coverage for CASO 4.1-4.5 manual testing scenarios.
@@ -63,7 +63,8 @@ class TestGranularPickingPermissions(TransactionCase):
             'user_id': create_only_user.id,
             'warehouse_id': self.warehouse.id,
             'allow_create_picking': True,
-            'allow_write_picking': False,
+            'allow_modify_picking': False,
+            'allow_validate_picking': False,
             'allow_as_source': True,
             'allow_as_destination': True,
         })
@@ -100,7 +101,8 @@ class TestGranularPickingPermissions(TransactionCase):
             'user_id': create_only_user.id,
             'warehouse_id': self.warehouse.id,
             'allow_create_picking': True,
-            'allow_write_picking': False,
+            'allow_modify_picking': False,
+            'allow_validate_picking': False,
             'allow_as_source': True,
             'allow_as_destination': True,
         })
@@ -118,12 +120,12 @@ class TestGranularPickingPermissions(TransactionCase):
                 'note': 'Modified by create-only user',
             })
         
-        self.assertIn('allow_write_picking', str(context.exception).lower())
+        self.assertIn('allow_modify_picking', str(context.exception).lower())
 
     def test_create_only_user_cannot_validate_picking(self):
         """Test that user with only allow_create_picking cannot validate pickings.
         
-        CASO 4.1.3: User should NOT be able to validate picking (needs allow_write_picking).
+        CASO 4.1.3: User should NOT be able to validate picking (needs allow_validate_picking).
         """
         # Create user with only create permission
         create_only_user = self.env['res.users'].sudo().create({
@@ -139,7 +141,8 @@ class TestGranularPickingPermissions(TransactionCase):
             'user_id': create_only_user.id,
             'warehouse_id': self.warehouse.id,
             'allow_create_picking': True,
-            'allow_write_picking': False,  # Validation requires this
+            'allow_modify_picking': False,
+            'allow_validate_picking': False,  # Validation requires this
             'allow_as_source': True,
             'allow_as_destination': True,
         })
@@ -167,14 +170,14 @@ class TestGranularPickingPermissions(TransactionCase):
         with self.assertRaises(UserError) as context:
             picking.with_user(create_only_user).button_validate()
         
-        self.assertIn('allow_write_picking', str(context.exception).lower())
+        self.assertIn('allow_validate_picking', str(context.exception).lower())
 
     # ========================================================================
-    # CASO 4.2: allow_write_picking Permission Tests
+    # CASO 4.2: allow_modify_picking / allow_validate_picking Permission Tests
     # ========================================================================
 
     def test_write_permission_allows_modify(self):
-        """Test that user with allow_write_picking can modify pickings.
+        """Test that user with allow_modify_picking can modify pickings.
         
         CASO 4.2.1: User should be able to write to existing picking.
         """
@@ -192,7 +195,8 @@ class TestGranularPickingPermissions(TransactionCase):
             'user_id': write_user.id,
             'warehouse_id': self.warehouse.id,
             'allow_create_picking': True,
-            'allow_write_picking': True,
+            'allow_modify_picking': True,
+            'allow_validate_picking': True,
             'allow_as_source': True,
             'allow_as_destination': True,
         })
@@ -211,10 +215,10 @@ class TestGranularPickingPermissions(TransactionCase):
             })
             self.assertEqual(picking.origin, 'Modified by write user')
         except UserError as e:
-            self.fail(f"User with allow_write_picking should be able to modify: {str(e)}")
+            self.fail(f"User with allow_modify_picking should be able to modify: {str(e)}")
 
     def test_write_permission_allows_validate(self):
-        """Test that user with allow_write_picking can validate pickings.
+        """Test that user with allow_validate_picking can validate pickings.
         
         CASO 4.2.2: User should be able to validate picking.
         """
@@ -232,7 +236,8 @@ class TestGranularPickingPermissions(TransactionCase):
             'user_id': write_user.id,
             'warehouse_id': self.warehouse.id,
             'allow_create_picking': True,
-            'allow_write_picking': True,
+            'allow_modify_picking': True,
+            'allow_validate_picking': True,
             'allow_as_source': True,
             'allow_as_destination': True,
         })
@@ -272,10 +277,10 @@ class TestGranularPickingPermissions(TransactionCase):
             picking.with_user(write_user).button_validate()
             self.assertEqual(picking.state, 'done')
         except UserError as e:
-            self.fail(f"User with allow_write_picking should be able to validate: {str(e)}")
+            self.fail(f"User with allow_validate_picking should be able to validate: {str(e)}")
 
     def test_no_write_permission_blocks_modify(self):
-        """Test that user without allow_write_picking cannot modify pickings.
+        """Test that user without allow_modify_picking cannot modify pickings.
         
         CASO 4.2.3: User should NOT be able to write to picking.
         """
@@ -293,7 +298,8 @@ class TestGranularPickingPermissions(TransactionCase):
             'user_id': no_write_user.id,
             'warehouse_id': self.warehouse.id,
             'allow_create_picking': True,
-            'allow_write_picking': False,
+            'allow_modify_picking': False,
+            'allow_validate_picking': False,
             'allow_as_source': True,
             'allow_as_destination': True,
         })
@@ -311,7 +317,7 @@ class TestGranularPickingPermissions(TransactionCase):
                 'note': 'Attempt to modify',
             })
         
-        self.assertIn('allow_write_picking', str(context.exception).lower())
+        self.assertIn('allow_modify_picking', str(context.exception).lower())
 
     def test_delete_only_user_can_delete_picking(self):
         """Test that user with only allow_delete_picking can delete pickings.
@@ -332,6 +338,7 @@ class TestGranularPickingPermissions(TransactionCase):
             'user_id': delete_user.id,
             'warehouse_id': self.warehouse.id,
             'allow_delete_picking': True,
+            'allow_cancel_picking': True,
             'allow_as_source': True,
             'allow_as_destination': True,
         })
@@ -366,6 +373,7 @@ class TestGranularPickingPermissions(TransactionCase):
             'user_id': delete_user.id,
             'warehouse_id': self.warehouse.id,
             'allow_delete_picking': True,
+            'allow_cancel_picking': True,
             'allow_as_source': True,
             'allow_as_destination': True,
         })
@@ -412,6 +420,7 @@ class TestGranularPickingPermissions(TransactionCase):
             'user_id': no_delete_user.id,
             'warehouse_id': self.warehouse.id,
             'allow_delete_picking': False,
+            'allow_cancel_picking': False,
             'allow_as_source': True,
             'allow_as_destination': True,
         })
@@ -581,7 +590,8 @@ class TestGranularPickingPermissions(TransactionCase):
             'allow_as_source': True,
             'allow_as_destination': True,
             'allow_create_picking': True,
-            'allow_write_picking': True,
+            'allow_modify_picking': True,
+            'allow_validate_picking': True,
         })
         
         # Create quant at stock location
@@ -632,7 +642,8 @@ class TestGranularPickingPermissions(TransactionCase):
             'allow_as_source': True,
             'allow_as_destination': True,
             'allow_create_picking': True,
-            'allow_write_picking': True,
+            'allow_modify_picking': True,
+            'allow_validate_picking': True,
             'blocked_location_ids': [(4, transit_location.id)],  # Block the transit location
         })
         
@@ -704,8 +715,10 @@ class TestGranularPickingPermissions(TransactionCase):
             'full_control': True,
             # All granular permissions are False
             'allow_create_picking': False,
-            'allow_write_picking': False,
+            'allow_modify_picking': False,
+            'allow_validate_picking': False,
             'allow_delete_picking': False,
+            'allow_cancel_picking': False,
             'allow_inventory_adjustment': False,
         })
         
@@ -717,7 +730,7 @@ class TestGranularPickingPermissions(TransactionCase):
         })
         self.assertTrue(picking.exists())
         
-        # Should be able to modify picking despite allow_write_picking=False
+        # Should be able to modify picking despite allow_modify_picking=False
         picking.with_user(full_control_user).write({'origin': 'Full Control Test'})
         self.assertEqual(picking.origin, 'Full Control Test')
         
@@ -744,7 +757,8 @@ class TestGranularPickingPermissions(TransactionCase):
             'user_id': workflow_user.id,
             'warehouse_id': self.warehouse.id,
             'allow_create_picking': True,
-            'allow_write_picking': True,
+            'allow_modify_picking': True,
+            'allow_validate_picking': True,
             'allow_as_source': True,
             'allow_as_destination': True,
         })
@@ -803,7 +817,8 @@ class TestGranularPickingPermissions(TransactionCase):
             'user_id': create_only_user.id,
             'warehouse_id': self.warehouse.id,
             'allow_create_picking': True,
-            'allow_write_picking': False,  # Cannot write/validate
+            'allow_modify_picking': False,
+            'allow_validate_picking': False,  # Cannot write/validate
             'allow_as_source': True,
             'allow_as_destination': True,
         })
@@ -843,7 +858,7 @@ class TestGranularPickingPermissions(TransactionCase):
         with self.assertRaises(UserError) as context:
             picking.with_user(create_only_user).button_validate()
         
-        self.assertIn('allow_write_picking', str(context.exception).lower())
+        self.assertIn('allow_validate_picking', str(context.exception).lower())
 
     # =========================================================================
     # CASO 5: blocked_location_ids (Location Blacklist)
@@ -875,7 +890,8 @@ class TestGranularPickingPermissions(TransactionCase):
             'user_id': blocked_user.id,
             'warehouse_id': self.warehouse.id,
             'allow_create_picking': True,
-            'allow_write_picking': True,
+            'allow_modify_picking': True,
+            'allow_validate_picking': True,
             'allow_as_source': True,
             'allow_as_destination': True,
             'blocked_location_ids': [(4, blocked_location.id)],
@@ -928,7 +944,8 @@ class TestGranularPickingPermissions(TransactionCase):
             'user_id': blocked_user.id,
             'warehouse_id': self.warehouse.id,
             'allow_create_picking': True,
-            'allow_write_picking': True,
+            'allow_modify_picking': True,
+            'allow_validate_picking': True,
             'allow_as_source': True,
             'allow_as_destination': True,
             'blocked_location_ids': [(4, blocked_source.id)],
@@ -987,7 +1004,8 @@ class TestGranularPickingPermissions(TransactionCase):
             'user_id': user.id,
             'warehouse_id': self.warehouse.id,
             'allow_create_picking': True,
-            'allow_write_picking': True,
+            'allow_modify_picking': True,
+            'allow_validate_picking': True,
             'allow_as_source': True,
             'allow_as_destination': True,
             'blocked_location_ids': [(4, blocked_location.id)],  # Only block one
@@ -1140,7 +1158,8 @@ class TestGranularPickingPermissions(TransactionCase):
             'allow_as_source': False,
             'allow_as_destination': True,
             'allow_create_picking': True,
-            'allow_write_picking': True,
+            'allow_modify_picking': True,
+            'allow_validate_picking': True,
         })
         
         # Create quant
@@ -1184,7 +1203,8 @@ class TestGranularPickingPermissions(TransactionCase):
             'allow_as_source': True,
             'allow_as_destination': False,
             'allow_create_picking': True,
-            'allow_write_picking': True,
+            'allow_modify_picking': True,
+            'allow_validate_picking': True,
         })
         
         # Get supplier location
@@ -1224,7 +1244,8 @@ class TestGranularPickingPermissions(TransactionCase):
             'allow_as_source': True,
             'allow_as_destination': True,
             'allow_create_picking': True,
-            'allow_write_picking': True,
+            'allow_modify_picking': True,
+            'allow_validate_picking': True,
         })
         
         # Create another internal location

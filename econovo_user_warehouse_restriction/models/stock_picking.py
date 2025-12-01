@@ -175,11 +175,11 @@ class StockPicking(models.Model):
         return super(StockPicking, self).create(vals)
 
     def write(self, vals):
-        """Override write to check view_only and allow_write_picking permissions."""
+        """Override write to check view_only and allow_modify_picking permissions."""
         # Skip granular permission check if called from action_cancel
         if not self.env.context.get('skip_write_permission_check'):
             self._check_view_only_permission()
-            self._check_granular_permission('allow_write_picking', 'modify')
+            self._check_granular_permission('allow_modify_picking', 'modify')
         return super(StockPicking, self).write(vals)
 
     def unlink(self):
@@ -189,12 +189,12 @@ class StockPicking(models.Model):
         return super(StockPicking, self).unlink()
 
     def action_cancel(self):
-        """Override action_cancel to check view_only and allow_delete_picking permissions.
+        """Override action_cancel to check view_only and allow_cancel_picking permissions.
         
-        Note: Canceling is considered a delete operation as per allow_delete_picking field.
+        Note: Canceling now has its own permission separate from delete.
         """
         self._check_view_only_permission()
-        self._check_granular_permission('allow_delete_picking', 'cancel')
+        self._check_granular_permission('allow_cancel_picking', 'cancel')
         # Skip write permission check for internal writes from action_cancel
         return super(StockPicking, self.with_context(skip_write_permission_check=True)).action_cancel()
 
@@ -207,12 +207,12 @@ class StockPicking(models.Model):
         return super(StockPicking, self).action_confirm()
 
     def button_validate(self):
-        """Override button_validate to check view_only and allow_write_picking permissions.
+        """Override button_validate to check view_only and allow_validate_picking permissions.
         
-        Note: Validating requires allow_write_picking as per field help text.
+        Note: Validating now has its own permission separate from modify.
         """
         self._check_view_only_permission()
-        self._check_granular_permission('allow_write_picking', 'validate')
+        self._check_granular_permission('allow_validate_picking', 'validate')
         return super(StockPicking, self).button_validate()
 
     @api.onchange('location_id', 'location_dest_id')

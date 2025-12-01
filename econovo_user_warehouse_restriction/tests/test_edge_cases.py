@@ -254,7 +254,8 @@ class TestEdgeCases(TransactionCase):
             'allow_as_source': True,
             'allow_as_destination': False,
             'allow_create_picking': True,
-            'allow_write_picking': True,
+            'allow_modify_picking': True,
+            'allow_validate_picking': True,
         })
         
         # Full control on warehouse1
@@ -322,7 +323,8 @@ class TestEdgeCases(TransactionCase):
             'allow_as_source': False,
             'allow_as_destination': True,
             'allow_create_picking': True,
-            'allow_write_picking': True,
+            'allow_modify_picking': True,
+            'allow_validate_picking': True,
         })
         
         # Full control on warehouse2
@@ -444,7 +446,8 @@ class TestEdgeCases(TransactionCase):
             'allow_as_source': True,
             'allow_as_destination': False,
             'allow_create_picking': True,
-            'allow_write_picking': True,
+            'allow_modify_picking': True,
+            'allow_validate_picking': True,
         })
         
         # Destination permission on warehouse2
@@ -454,7 +457,8 @@ class TestEdgeCases(TransactionCase):
             'allow_as_source': False,
             'allow_as_destination': True,
             'allow_create_picking': True,
-            'allow_write_picking': True,
+            'allow_modify_picking': True,
+            'allow_validate_picking': True,
         })
         
         # Create stock in warehouse1
@@ -516,7 +520,8 @@ class TestEdgeCases(TransactionCase):
             'allow_as_source': True,
             'allow_as_destination': True,
             'allow_create_picking': True,
-            'allow_write_picking': True,
+            'allow_modify_picking': True,
+            'allow_validate_picking': True,
             'blocked_location_ids': [(4, self.location_stock.id)],  # Block parent
         })
         
@@ -573,7 +578,8 @@ class TestEdgeCases(TransactionCase):
             'allow_as_source': True,
             'allow_as_destination': True,
             'allow_create_picking': True,
-            'allow_write_picking': True,
+            'allow_modify_picking': True,
+            'allow_validate_picking': True,
             'blocked_location_ids': [(4, child_location.id)],  # Only block child
         })
         
@@ -697,7 +703,8 @@ class TestEdgeCases(TransactionCase):
             'allow_as_source': True,
             'allow_as_destination': True,
             'allow_create_picking': True,
-            'allow_write_picking': True,
+            'allow_modify_picking': True,
+            'allow_validate_picking': True,
         })
         
         # Create quant
@@ -750,7 +757,8 @@ class TestEdgeCases(TransactionCase):
             'allow_as_source': True,
             'allow_as_destination': True,
             'allow_create_picking': True,
-            'allow_write_picking': True,
+            'allow_modify_picking': True,
+            'allow_validate_picking': True,
         })
         
         # Create quant

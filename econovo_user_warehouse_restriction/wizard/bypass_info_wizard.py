@@ -10,7 +10,7 @@
 #    GENERAL PUBLIC LICENSE (AGPL v3).
 #
 ###############################################################################
-from odoo import api, fields, models
+from odoo import api, fields, models, _
 
 
 class BypassInfoWizard(models.TransientModel):
@@ -52,42 +52,57 @@ class BypassInfoWizard(models.TransientModel):
         Returns:
             dict: Action to open wizard dialog
         """
+        # Translatable strings
+        title_detected = _("System-Level Access Detected")
+        user_has = _("User %s has %s privileges.")
+        what_means = _("What does this mean?")
+        can_access_all = _("This user can access ALL warehouses regardless of the permissions configured in the permission matrix.")
+        info_only = _("The permissions you configure here are informational only and will NOT restrict this user's access.")
+        auto_bypass = _("Security rules automatically grant full bypass to system administrators.")
+        how_to_apply = _("How to apply these restrictions?")
+        to_enforce = _("To enforce warehouse restrictions for this user:")
+        go_to = _("Go to: Settings → Users & Companies → Users")
+        select_user = _("Select user: %s")
+        open_access = _("Open Access Rights tab")
+        remove_groups = _("Remove the following groups:")
+        admin_settings = _("Administration / Settings")
+        unrestricted_access = _("Unrestricted Warehouse Access")
+        if_present = _("(if present)")
+        note_label = _("Note:")
+        note_text = _("Removing system administrator access will also restrict other administrative functions.")
+        
         info_html = f"""
             <div class="alert alert-warning" role="alert">
-                <h4><i class="fa fa-shield"></i> System-Level Access Detected</h4>
-                <p>User <strong>{user_name}</strong> has 
-                <strong>{bypass_reason}</strong> privileges.</p>
+                <h4><i class="fa fa-shield"></i> {title_detected}</h4>
+                <p>{user_has % (user_name, bypass_reason)}</p>
             </div>
             
-            <h5><i class="fa fa-question-circle"></i> What does this mean?</h5>
+            <h5><i class="fa fa-question-circle"></i> {what_means}</h5>
             <ul>
-                <li>This user can access <strong>ALL warehouses</strong> regardless of 
-                the permissions configured in the permission matrix.</li>
-                <li>The permissions you configure here are <strong>informational only</strong> 
-                and will NOT restrict this user's access.</li>
-                <li>Security rules automatically grant full bypass to system administrators.</li>
+                <li>{can_access_all}</li>
+                <li>{info_only}</li>
+                <li>{auto_bypass}</li>
             </ul>
             
             <hr/>
             
-            <h5><i class="fa fa-wrench"></i> How to apply these restrictions?</h5>
-            <p>To enforce warehouse restrictions for this user:</p>
+            <h5><i class="fa fa-wrench"></i> {how_to_apply}</h5>
+            <p>{to_enforce}</p>
             <ol>
-                <li>Go to: <strong>Settings → Users &amp; Companies → Users</strong></li>
-                <li>Select user: <strong>{user_name}</strong></li>
-                <li>Open <strong>Access Rights</strong> tab</li>
-                <li>Remove the following groups:
+                <li>{go_to}</li>
+                <li>{select_user % user_name}</li>
+                <li>{open_access}</li>
+                <li>{remove_groups}
                     <ul>
-                        <li><em>Administration / Settings</em> (base.group_system)</li>
-                        <li><em>Unrestricted Warehouse Access</em> (if present)</li>
+                        <li><em>{admin_settings}</em> (base.group_system)</li>
+                        <li><em>{unrestricted_access}</em> {if_present}</li>
                     </ul>
                 </li>
             </ol>
             
             <div class="alert alert-info" role="alert">
-                <i class="fa fa-info-circle"></i> <strong>Note:</strong> 
-                Removing system administrator access will also restrict other 
-                administrative functions.
+                <i class="fa fa-info-circle"></i> <strong>{note_label}</strong> 
+                {note_text}
             </div>
         """
         
@@ -99,7 +114,7 @@ class BypassInfoWizard(models.TransientModel):
         
         return {
             'type': 'ir.actions.act_window',
-            'name': 'System-Level Bypass Active',
+            'name': _('System-Level Bypass Active'),
             'res_model': 'warehouse.bypass.info.wizard',
             'res_id': wizard.id,
             'view_mode': 'form',

@@ -39,7 +39,7 @@ class StockMove(models.Model):
     Validation Rules (v2.0):
     1. Check warehouse access (allow_as_source, allow_as_destination)
     2. Check location blacklist (blocked_location_ids, allow_transit bypass)
-    3. Check operation permissions (allow_create_picking, allow_write_picking)
+    3. Check operation permissions (allow_create_picking, allow_modify_picking, allow_validate_picking)
     
     Superuser/Admin Bypass:
     - env.su: Automatic bypass

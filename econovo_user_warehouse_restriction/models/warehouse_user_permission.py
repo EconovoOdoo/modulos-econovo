@@ -177,32 +177,59 @@ class WarehouseUserPermission(models.Model):
              '- Delivery orders\n'
              '- Receipt orders\n'
              '- Internal transfers\n\n'
-             'NOTE: User also needs "Write" permission to VALIDATE transfers.\n'
-             'Without Write: User creates drafts that someone else must validate.\n\n'
+             'NOTE: User also needs "Modify" or "Validate" permission to complete transfers.\n'
+             'Without them: User creates drafts that someone else must process.\n\n'
              'Use case: Data entry operator creates pickings, supervisor validates.'
     )
     
-    allow_write_picking = fields.Boolean(
-        string='Modify/Validate Transfers',
+    allow_modify_picking = fields.Boolean(
+        string='Modify Transfers',
         default=False,
-        help='User can MODIFY and VALIDATE existing transfers.\n\n'
+        help='User can MODIFY existing transfers.\n\n'
              'Allows:\n'
              '- Changing products, quantities, locations\n'
+             '- Modifying move lines (detailed operations)\n'
+             '- Editing notes and other fields\n\n'
+             'NOTE: Does NOT allow validating transfers.\n'
+             'User can prepare transfers but cannot complete them.\n\n'
+             'Use case: Warehouse operator adjusts quantities before supervisor validates.'
+    )
+    
+    allow_validate_picking = fields.Boolean(
+        string='Validate Transfers',
+        default=False,
+        help='User can VALIDATE (confirm) transfers.\n\n'
+             'Allows:\n'
              '- Clicking "Validate" button to confirm transfers\n'
-             '- Modifying move lines (detailed operations)\n\n'
-             'NOTE: This is required to complete transfers (move stock).\n\n'
-             'Example: User validates a delivery, moving stock from WH to customer.'
+             '- Completing the stock movement\n\n'
+             'NOTE: This is required to complete transfers (move stock).\n'
+             'Can be granted separately from Modify permission.\n\n'
+             'Use case: Supervisor validates prepared transfers without editing them.'
+    )
+    
+    allow_cancel_picking = fields.Boolean(
+        string='Cancel Transfers',
+        default=False,
+        help='User can CANCEL stock transfers.\n\n'
+             'Allows:\n'
+             '- Canceling transfers in draft/confirmed state\n'
+             '- Reverting transfers to canceled status\n\n'
+             'NOTE: Does NOT allow deleting transfers.\n'
+             'Canceled transfers remain visible for audit trail.\n\n'
+             'Use case: User can cancel incorrect orders but cannot hide them.'
     )
     
     allow_delete_picking = fields.Boolean(
-        string='Delete/Cancel Transfers',
+        string='Delete Transfers',
         default=False,
-        help='User can DELETE or CANCEL stock transfers.\n\n'
+        help='User can DELETE stock transfers.\n\n'
              'Allows:\n'
-             '- Canceling transfers in draft/confirmed state\n'
-             '- Deleting canceled transfers\n\n'
-             'Use with caution: Deleting transfers can hide audit trails.\n\n'
-             'Example: User cancels an incorrect delivery order.'
+             '- Deleting canceled transfers permanently\n'
+             '- Removing transfers from the system\n\n'
+             '⚠️ WARNING: Use with caution!\n'
+             'Deleting transfers removes audit trails permanently.\n'
+             'Consider granting Cancel permission instead.\n\n'
+             'Use case: Administrator cleans up test data or duplicates.'
     )
     
     # ========================================================================
@@ -309,7 +336,8 @@ class WarehouseUserPermission(models.Model):
     # ========================================================================
     
     @api.constrains('full_control', 'view_only', 'allow_create_picking', 
-                    'allow_write_picking', 'allow_delete_picking', 'allow_inventory_adjustment')
+                    'allow_modify_picking', 'allow_validate_picking', 'allow_cancel_picking',
+                    'allow_delete_picking', 'allow_inventory_adjustment')
     def _check_special_modes_consistency(self):
         """Validate that special modes are used correctly.
         
@@ -322,7 +350,9 @@ class WarehouseUserPermission(models.Model):
             if record.view_only:
                 write_permissions = [
                     record.allow_create_picking,
-                    record.allow_write_picking,
+                    record.allow_modify_picking,
+                    record.allow_validate_picking,
+                    record.allow_cancel_picking,
                     record.allow_delete_picking,
                     record.allow_inventory_adjustment,
                 ]
@@ -367,7 +397,9 @@ class WarehouseUserPermission(models.Model):
         """When View Only is enabled, disable all write permissions."""
         if self.view_only:
             self.allow_create_picking = False
-            self.allow_write_picking = False
+            self.allow_modify_picking = False
+            self.allow_validate_picking = False
+            self.allow_cancel_picking = False
             self.allow_delete_picking = False
             self.allow_inventory_adjustment = False
             return {
@@ -378,17 +410,17 @@ class WarehouseUserPermission(models.Model):
                 }
             }
     
-    @api.onchange('allow_create_picking', 'allow_write_picking')
+    @api.onchange('allow_create_picking', 'allow_modify_picking', 'allow_validate_picking')
     def _onchange_picking_permissions(self):
-        """Warn if user can Create but not Write (incomplete workflow)."""
-        if self.allow_create_picking and not self.allow_write_picking and not self.full_control:
+        """Warn if user can Create but not Validate (incomplete workflow)."""
+        if self.allow_create_picking and not self.allow_validate_picking and not self.full_control:
             return {
                 'warning': {
                     'title': 'Incomplete Workflow',
                     'message': 'This user can CREATE pickings but CANNOT VALIDATE them.\n\n'
                               'Result: User creates draft transfers that someone else must validate.\n\n'
                               'This is intentional for data entry operators.\n'
-                              'If user should complete transfers, enable "Modify/Validate Transfers".'
+                              'If user should complete transfers, enable "Validate Transfers".'
                 }
             }
     
@@ -417,7 +449,8 @@ class WarehouseUserPermission(models.Model):
             return True
         
         # View Only blocks all write operations
-        if self.view_only and permission_type in ['create_picking', 'write_picking', 
+        if self.view_only and permission_type in ['create_picking', 'modify_picking', 
+                                                    'validate_picking', 'cancel_picking',
                                                     'delete_picking', 'inventory']:
             return False
         
@@ -427,7 +460,9 @@ class WarehouseUserPermission(models.Model):
             'destination': self.allow_as_destination,
             'inventory': self.allow_inventory_adjustment,
             'create_picking': self.allow_create_picking,
-            'write_picking': self.allow_write_picking,
+            'modify_picking': self.allow_modify_picking,
+            'validate_picking': self.allow_validate_picking,
+            'cancel_picking': self.allow_cancel_picking,
             'delete_picking': self.allow_delete_picking,
         }
         
@@ -449,12 +484,20 @@ class WarehouseUserPermission(models.Model):
         """Check if user can create stock pickings in this warehouse."""
         return self.check_permission('create_picking')
     
-    def can_write_picking(self):
-        """Check if user can modify/validate stock pickings in this warehouse."""
-        return self.check_permission('write_picking')
+    def can_modify_picking(self):
+        """Check if user can modify stock pickings in this warehouse."""
+        return self.check_permission('modify_picking')
+    
+    def can_validate_picking(self):
+        """Check if user can validate stock pickings in this warehouse."""
+        return self.check_permission('validate_picking')
+    
+    def can_cancel_picking(self):
+        """Check if user can cancel stock pickings in this warehouse."""
+        return self.check_permission('cancel_picking')
     
     def can_delete_picking(self):
-        """Check if user can delete/cancel stock pickings in this warehouse."""
+        """Check if user can delete stock pickings in this warehouse."""
         return self.check_permission('delete_picking')
     
     def is_location_blocked(self, location):

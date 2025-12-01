@@ -71,7 +71,8 @@ class TestDirectionalPermissions(TransactionCase):
             'allow_as_source': True,
             'allow_as_destination': False,
             'allow_create_picking': True,
-            'allow_write_picking': True,
+            'allow_modify_picking': True,
+            'allow_validate_picking': True,
         })
         
         # Create destination-only user for CASO 3.5
@@ -90,7 +91,8 @@ class TestDirectionalPermissions(TransactionCase):
             'allow_as_source': False,
             'allow_as_destination': True,
             'allow_create_picking': True,
-            'allow_write_picking': True,
+            'allow_modify_picking': True,
+            'allow_validate_picking': True,
         })
 
     # ========================================================================

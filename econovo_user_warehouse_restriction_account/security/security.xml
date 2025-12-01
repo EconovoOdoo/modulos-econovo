@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<odoo noupdate="1">
+<odoo noupdate="0">
 
     <!-- ============================================================
          STOCK VALUATION LAYER - SECURITY RULES
@@ -13,14 +13,17 @@
          Uses stock.move restriction logic.
          
          Users can only see valuation layers for moves they have access to.
-         Prevents access errors when opening valuation layer forms. -->
+         For internal locations, checks warehouse permission.
+         For non-internal locations (supplier, customer, etc.), allows access
+         if the other location belongs to a warehouse with permission.
+         
+         Note: Valuation layers without stock_move_id are system-generated
+         (e.g., manual valuation adjustments) and are restricted to stock managers. -->
     <record id="stock_valuation_layer_rule_users" model="ir.rule">
         <field name="name">Stock Valuation Layer - Warehouse Restriction</field>
         <field name="model_id" ref="stock_account.model_stock_valuation_layer"/>
-        <field name="domain_force">['|', '|',
-            ('stock_move_id.location_id.warehouse_id.user_permission_ids.user_id', '=', user.id),
-            ('stock_move_id.location_dest_id.warehouse_id.user_permission_ids.user_id', '=', user.id),
-            ('stock_move_id', '=', False)
+        <field name="domain_force">[
+            ('stock_move_id.warehouse_id.user_permission_ids.user_id', '=', user.id)
         ]</field>
         <field name="groups" eval="[(4, ref('econovo_user_warehouse_restriction.user_warehouse_restriction_group_user'))]"/>
         <field name="perm_read" eval="True"/>
