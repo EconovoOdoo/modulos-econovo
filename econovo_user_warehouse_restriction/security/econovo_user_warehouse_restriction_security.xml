@@ -83,22 +83,28 @@
     </record>
     
     <!-- RULE 3: Stock Locations
-         Filters by warehouse permissions + non-internal locations.
+         Filters by warehouse permissions + allowed virtual locations.
          
          Users can access:
          - Locations belonging to warehouses where they have permissions
-         - Locations without warehouse assignment (shared/virtual locations)
-         - Non-internal locations (partners, transit, production, scrap, etc.)
+         - Locations without warehouse AND not 'view' type (shared virtual locations)
+         - Specific usage types needed for operations: supplier, customer, production, transit, inventory
          
-         This enables proper transfer operations while maintaining security.
-         Non-internal locations are necessary for receipts, deliveries, and production. -->
+         IMPORTANT: 'view' locations (warehouse parent folders like "DEPOS") are ONLY accessible
+         if the user has permission to the warehouse. This prevents information disclosure
+         about warehouse structure to unauthorized users.
+         
+         This enables proper transfer operations while maintaining security. -->
     <record id="stock_location_rule_users" model="ir.rule">
         <field name="name">Stock Location - Restriction</field>
         <field name="model_id" ref="stock.model_stock_location"/>
-        <field name="domain_force">['|', '|',
+        <field name="domain_force">[
+            '|', '|',
             ('warehouse_id.user_permission_ids.user_id', '=', user.id),
-            ('warehouse_id', '=', False),
-            ('usage', '!=', 'internal')
+            '&amp;',
+                ('warehouse_id', '=', False),
+                ('usage', '!=', 'view'),
+            ('usage', 'in', ['supplier', 'customer', 'production', 'transit', 'inventory'])
         ]</field>
         <field name="groups" eval="[(4, ref('econovo_user_warehouse_restriction.user_warehouse_restriction_group_user'))]"/>
         <field name="perm_read" eval="True"/>
