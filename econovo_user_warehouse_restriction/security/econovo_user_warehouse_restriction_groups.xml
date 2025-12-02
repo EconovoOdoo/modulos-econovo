@@ -131,6 +131,32 @@
             </field>
         </record>
         
+        <!-- Delegated Permission Manager - Can manage permissions for assigned warehouses only -->
+        <record id="group_warehouse_permission_delegator" model="res.groups">
+            <field name="name">Warehouse Permissions Delegator</field>
+            <field name="category_id" ref="base.module_category_inventory"/>
+            <field name="implied_ids" eval="[(4, ref('stock.group_stock_user'))]"/>
+            <field name="comment">
+                Delegated permission management for warehouse supervisors.
+                
+                Users in this group can:
+                - CREATE permission records for OTHER users (not themselves)
+                - ONLY for warehouses where THEY have access (permission exists)
+                - ONLY grant permissions EQUAL TO OR LESS THAN their own
+                
+                Cannot:
+                - Grant permissions to themselves (escalation prevention)
+                - Grant Full Control if they don't have Full Control
+                - Create permissions for warehouses they don't have access to
+                - Delete or modify permissions created by administrators
+                
+                Use case: Regional warehouse supervisor who needs to grant
+                access to their team members for warehouses they manage.
+                
+                Security: Python constraints prevent privilege escalation.
+            </field>
+        </record>
+        
         <!-- Make stock managers automatically get permission manager access -->
         <record id="stock.group_stock_manager" model="res.groups">
             <field name="implied_ids" eval="[(4, ref('econovo_user_warehouse_restriction.user_warehouse_restriction_group_manager'))]"/>

@@ -1242,3 +1242,117 @@ msgstr "Eliminar el acceso de administrador del sistema también restringirá ot
 msgid "System-Level Bypass Active"
 msgstr "Bypass a Nivel de Sistema Activo"
 
+#. module: econovo_user_warehouse_restriction
+#: model:ir.rule,name:econovo_user_warehouse_restriction.stock_putaway_rule_users
+msgid "Putaway Rules - Restriction"
+msgstr "Reglas de Almacenamiento - Restricción"
+
+#. module: econovo_user_warehouse_restriction
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.warehouse_user_permission_form_view
+msgid "Full Control Mode Active:"
+msgstr "Modo Control Total Activo:"
+
+#. module: econovo_user_warehouse_restriction
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.warehouse_user_permission_form_view
+msgid "Location restrictions (Blocked Locations) are"
+msgstr "Las restricciones de ubicación (Ubicaciones Bloqueadas) son"
+
+#. module: econovo_user_warehouse_restriction
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.warehouse_user_permission_form_view
+msgid "IGNORED"
+msgstr "IGNORADAS"
+
+#. module: econovo_user_warehouse_restriction
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.warehouse_user_permission_form_view
+msgid "when Full Control is enabled."
+msgstr "cuando Control Total está habilitado."
+
+#. module: econovo_user_warehouse_restriction
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.warehouse_user_permission_form_view
+msgid "This user has complete access to ALL locations in this warehouse."
+msgstr "Este usuario tiene acceso completo a TODAS las ubicaciones en este almacén."
+
+#. module: econovo_user_warehouse_restriction
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.warehouse_user_permission_form_view
+msgid "Full Control is enabled:"
+msgstr "Control Total está habilitado:"
+
+#. module: econovo_user_warehouse_restriction
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.warehouse_user_permission_form_view
+msgid "Location restrictions below are"
+msgstr "Las restricciones de ubicación a continuación son"
+
+#. module: econovo_user_warehouse_restriction
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.warehouse_user_permission_form_view
+msgid "The user has access to ALL locations in this warehouse."
+msgstr "El usuario tiene acceso a TODAS las ubicaciones en este almacén."
+
+#. module: econovo_user_warehouse_restriction
+#: model:res.groups,name:econovo_user_warehouse_restriction.group_warehouse_permission_delegator
+msgid "Warehouse Permission Delegator"
+msgstr "Delegador de Permisos de Almacén"
+
+#. module: econovo_user_warehouse_restriction
+#: model:res.groups,comment:econovo_user_warehouse_restriction.group_warehouse_permission_delegator
+msgid ""
+"\n"
+"                DELEGATED PERMISSION MANAGEMENT\n"
+"                Users can create/edit permissions ONLY for warehouses where they have Full Control.\n"
+"                Cannot give permissions to self or grant more access than they have.\n"
+"                Use for: Warehouse supervisors, team leads, regional managers.\n"
+"            "
+msgstr ""
+"GESTIÓN DE PERMISOS DELEGADA\n"
+"Los usuarios pueden crear/editar permisos SOLO para almacenes donde tienen Control Total.\n"
+"No pueden darse permisos a sí mismos ni otorgar más acceso del que tienen.\n"
+"Usar para: Supervisores de almacén, líderes de equipo, gerentes regionales.\n"
+
+#. module: econovo_user_warehouse_restriction
+#: code:addons/econovo_user_warehouse_restriction/models/warehouse_user_permission.py
+msgid "Permission Denied: Self-Assignment"
+msgstr "Permiso Denegado: Auto-asignación"
+
+#. module: econovo_user_warehouse_restriction
+#: code:addons/econovo_user_warehouse_restriction/models/warehouse_user_permission.py
+msgid "You cannot create or modify permissions for yourself."
+msgstr "No puede crear o modificar permisos para usted mismo."
+
+#. module: econovo_user_warehouse_restriction
+#: code:addons/econovo_user_warehouse_restriction/models/warehouse_user_permission.py
+msgid "This restriction prevents privilege escalation."
+msgstr "Esta restricción previene la escalación de privilegios."
+
+#. module: econovo_user_warehouse_restriction
+#: code:addons/econovo_user_warehouse_restriction/models/warehouse_user_permission.py
+msgid "Please contact a system administrator to modify your own permissions."
+msgstr "Por favor contacte a un administrador del sistema para modificar sus propios permisos."
+
+#. module: econovo_user_warehouse_restriction
+#: code:addons/econovo_user_warehouse_restriction/models/warehouse_user_permission.py
+msgid "Permission Denied: Unauthorized Warehouse"
+msgstr "Permiso Denegado: Almacén No Autorizado"
+
+#. module: econovo_user_warehouse_restriction
+#: code:addons/econovo_user_warehouse_restriction/models/warehouse_user_permission.py
+msgid "Delegated managers can only create/edit permissions in warehouses where they have 'Full Control' access."
+msgstr "Los gestores delegados solo pueden crear/editar permisos en almacenes donde tienen acceso de 'Control Total'."
+
+#. module: econovo_user_warehouse_restriction
+#: code:addons/econovo_user_warehouse_restriction/models/warehouse_user_permission.py
+msgid "Please contact a system administrator for this warehouse."
+msgstr "Por favor contacte a un administrador del sistema para este almacén."
+
+#. module: econovo_user_warehouse_restriction
+#: code:addons/econovo_user_warehouse_restriction/models/warehouse_user_permission.py
+msgid "Permission Denied: Full Control Grant"
+msgstr "Permiso Denegado: Otorgar Control Total"
+
+#. module: econovo_user_warehouse_restriction
+#: code:addons/econovo_user_warehouse_restriction/models/warehouse_user_permission.py
+msgid "Only system administrators can grant 'Full Control' access."
+msgstr "Solo los administradores del sistema pueden otorgar acceso de 'Control Total'."
+
+#. module: econovo_user_warehouse_restriction
+#: code:addons/econovo_user_warehouse_restriction/models/warehouse_user_permission.py
+msgid "Please contact a system administrator to grant Full Control."
+msgstr "Por favor contacte a un administrador del sistema para otorgar Control Total."

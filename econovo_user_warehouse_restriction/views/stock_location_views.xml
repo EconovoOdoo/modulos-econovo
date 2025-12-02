@@ -45,7 +45,7 @@
                     <field name="user_id" readonly="1"/>
                     <field name="warehouse_id" readonly="1"/>
                     <field name="full_control" readonly="1" widget="boolean"/>
-                    <field name="blocked_location_ids" widget="many2many_tags"/>
+                    <field name="blocked_location_ids" widget="many2many_tags" readonly="full_control"/>
                 </tree>
             </field>
         </record>

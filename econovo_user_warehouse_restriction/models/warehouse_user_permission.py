@@ -134,10 +134,16 @@ class WarehouseUserPermission(models.Model):
         string='Use as Source',
         default=False,
         help='User can TAKE/SEND stock FROM this warehouse.\n\n'
+             'This permission FILTERS which locations appear in source dropdowns.\n\n'
              'Required for:\n'
              '- Delivery Orders (WH → Customer)\n'
              '- Outbound Transfers (WH1 → WH2)\n'
              '- Manufacturing consumption (WH → Production)\n\n'
+             '⚠️ IMPORTANT: This permission alone does NOT allow operations!\n'
+             'You must ALSO enable operation permissions below:\n'
+             '- "Create Transfers" to create new pickings\n'
+             '- "Modify Transfers" to edit existing pickings\n'
+             '- "Validate Transfers" to confirm/complete pickings\n\n'
              'Example: User can ship products from this warehouse to customers.'
     )
     
@@ -145,10 +151,16 @@ class WarehouseUserPermission(models.Model):
         string='Use as Destination',
         default=False,
         help='User can RECEIVE stock INTO this warehouse.\n\n'
+             'This permission FILTERS which locations appear in destination dropdowns.\n\n'
              'Required for:\n'
              '- Receipt Orders (Vendor → WH)\n'
              '- Inbound Transfers (WH2 → WH1)\n'
              '- Manufacturing output (Production → WH)\n\n'
+             '⚠️ IMPORTANT: This permission alone does NOT allow operations!\n'
+             'You must ALSO enable operation permissions below:\n'
+             '- "Create Transfers" to create new pickings\n'
+             '- "Modify Transfers" to edit existing pickings\n'
+             '- "Validate Transfers" to confirm/complete pickings\n\n'
              'Example: User can receive products from vendors into this warehouse.'
     )
     
@@ -177,8 +189,11 @@ class WarehouseUserPermission(models.Model):
              '- Delivery orders\n'
              '- Receipt orders\n'
              '- Internal transfers\n\n'
-             'NOTE: User also needs "Modify" or "Validate" permission to complete transfers.\n'
-             'Without them: User creates drafts that someone else must process.\n\n'
+             '⚠️ PREREQUISITE: User needs "Use as Source" and/or "Use as Destination"\n'
+             'to see the warehouse locations in the dropdowns.\n\n'
+             'NOTE: This permission is INDEPENDENT from Modify and Validate.\n'
+             '- Without Modify: User cannot edit the picking after creation\n'
+             '- Without Validate: User creates drafts that someone else must process\n\n'
              'Use case: Data entry operator creates pickings, supervisor validates.'
     )
     
@@ -190,8 +205,10 @@ class WarehouseUserPermission(models.Model):
              '- Changing products, quantities, locations\n'
              '- Modifying move lines (detailed operations)\n'
              '- Editing notes and other fields\n\n'
-             'NOTE: Does NOT allow validating transfers.\n'
-             'User can prepare transfers but cannot complete them.\n\n'
+             'NOTE: This permission is INDEPENDENT from Create and Validate.\n'
+             '- Can modify pickings created by others\n'
+             '- Does NOT allow creating new pickings (needs Create permission)\n'
+             '- Does NOT allow validating transfers (needs Validate permission)\n\n'
              'Use case: Warehouse operator adjusts quantities before supervisor validates.'
     )
     
@@ -373,6 +390,88 @@ class WarehouseUserPermission(models.Model):
                     f"Please choose ONE:\n"
                     f"- Full Control: User has complete access\n"
                     f"- View Only: User can only read data"
+                )
+    
+    @api.constrains('user_id', 'warehouse_id', 'full_control', 'allow_as_source',
+                    'allow_as_destination', 'allow_inventory_adjustment', 'allow_create_picking',
+                    'allow_modify_picking', 'allow_validate_picking', 'allow_cancel_picking',
+                    'allow_delete_picking')
+    def _check_delegator_privilege_escalation(self):
+        """Prevent privilege escalation by delegated permission managers.
+        
+        Users in group_warehouse_permission_delegator can create permissions
+        for OTHER users in warehouses where they have Full Control, but:
+        1. Cannot create permissions for themselves
+        2. Cannot grant more permissions than they have
+        3. Cannot modify permissions they didn't create (handled by record rules)
+        
+        This check is bypassed for:
+        - System Administrators (base.group_system)
+        - Users with Warehouse Restriction Manager role (group_warehouse_restriction_manager)
+        """
+        delegator_group = self.env.ref(
+            'econovo_user_warehouse_restriction.group_warehouse_permission_delegator',
+            raise_if_not_found=False
+        )
+        manager_group = self.env.ref(
+            'econovo_user_warehouse_restriction.user_warehouse_restriction_group_manager',
+            raise_if_not_found=False
+        )
+        admin_group = self.env.ref('base.group_system', raise_if_not_found=False)
+        
+        if not delegator_group:
+            return
+        
+        current_user = self.env.user
+        
+        # Skip check for administrators and warehouse restriction managers
+        if admin_group and admin_group in current_user.groups_id:
+            return
+        if manager_group and manager_group in current_user.groups_id:
+            return
+        
+        # Only apply checks if current user is a delegator (not full admin)
+        if delegator_group not in current_user.groups_id:
+            return
+        
+        for record in self:
+            # Rule 1: Cannot create/modify permissions for yourself
+            if record.user_id == current_user:
+                raise ValidationError(
+                    "Permission Denied: Self-Assignment\n\n"
+                    "You cannot create or modify permissions for yourself.\n"
+                    "This restriction prevents privilege escalation.\n\n"
+                    "Please contact a system administrator to modify your own permissions."
+                )
+            
+            # Rule 2: Check if delegator has Full Control on this warehouse
+            delegator_permission = self.sudo().search([
+                ('user_id', '=', current_user.id),
+                ('warehouse_id', '=', record.warehouse_id.id),
+                ('full_control', '=', True),
+                ('active', '=', True),
+            ], limit=1)
+            
+            if not delegator_permission:
+                raise ValidationError(
+                    f"Permission Denied: Unauthorized Warehouse\n\n"
+                    f"You cannot manage permissions for warehouse '{record.warehouse_id.name}'.\n\n"
+                    f"Delegated managers can only create/edit permissions in warehouses "
+                    f"where they have 'Full Control' access.\n\n"
+                    f"Please contact a system administrator for this warehouse."
+                )
+            
+            # Rule 3: Cannot grant Full Control (only admins can)
+            if record.full_control:
+                raise ValidationError(
+                    "Permission Denied: Full Control Grant\n\n"
+                    "Only system administrators can grant 'Full Control' access.\n\n"
+                    "As a delegated manager, you can grant:\n"
+                    "- Source/Destination access\n"
+                    "- Inventory Adjustment access\n"
+                    "- Picking operation permissions (Create/Modify/Validate/Cancel/Delete)\n"
+                    "- Location restrictions\n\n"
+                    "Please contact a system administrator to grant Full Control."
                 )
     
     # ========================================================================

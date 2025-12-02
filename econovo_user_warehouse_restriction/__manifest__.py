@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Econovo - User Warehouse Restriction",
-    "version": "17.0.1.0.1",
+    "version": "17.0.1.2.0",
     "category": "Inventory",
     "summary": "Granular warehouse access control with 10-flag permission matrix per user/warehouse",
     "author": "Jose D. Leonett",

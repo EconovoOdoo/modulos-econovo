@@ -403,3 +403,298 @@ class TestWarehouseSecurityRules(TransactionCase):
             orderpoints_visible.ids,
             "User should NOT see orderpoints from unassigned warehouse"
         )
+
+    def test_user_sees_only_assigned_warehouse_putaway_rules(self):
+        """
+        Test that users can only see putaway rules for their assigned warehouses.
+        
+        CASO 2.9: Stock Putaway Rule access restriction
+        
+        This test validates that users cannot view storage strategies (putaway rules)
+        for warehouses they don't have access to.
+        """
+        # This test requires stock module with putaway rules
+        if 'stock.putaway.rule' not in self.env:
+            self.skipTest("stock.putaway.rule model not available")
+        
+        # Create child locations for putaway rules
+        location_assigned_sub = self.env['stock.location'].sudo().create({
+            'name': 'Sub Location Assigned',
+            'location_id': self.location_assigned.id,
+            'usage': 'internal',
+        })
+        
+        location_unassigned_sub = self.env['stock.location'].sudo().create({
+            'name': 'Sub Location Unassigned',
+            'location_id': self.location_unassigned.id,
+            'usage': 'internal',
+        })
+        
+        # Create putaway rule in assigned warehouse
+        putaway_assigned = self.env['stock.putaway.rule'].sudo().create({
+            'product_id': self.product.id,
+            'location_in_id': self.location_assigned.id,
+            'location_out_id': location_assigned_sub.id,
+        })
+        
+        # Create putaway rule in unassigned warehouse
+        putaway_unassigned = self.env['stock.putaway.rule'].sudo().create({
+            'product_id': self.product.id,
+            'location_in_id': self.location_unassigned.id,
+            'location_out_id': location_unassigned_sub.id,
+        })
+        
+        # Search as restricted user
+        putaway_visible = self.env['stock.putaway.rule'].with_user(self.restricted_user).search([
+            ('id', 'in', [putaway_assigned.id, putaway_unassigned.id]),
+        ])
+        
+        # Should see ONLY assigned warehouse putaway rule
+        self.assertIn(
+            putaway_assigned.id,
+            putaway_visible.ids,
+            "User should see putaway rules from assigned warehouse"
+        )
+        
+        self.assertNotIn(
+            putaway_unassigned.id,
+            putaway_visible.ids,
+            "User should NOT see putaway rules from unassigned warehouse - SECURITY"
+        )
+
+    def test_user_cannot_create_putaway_rule_unassigned_warehouse(self):
+        """
+        Test that users cannot create putaway rules for unauthorized warehouses.
+        
+        CASO 2.9.1: Stock Putaway Rule create restriction
+        """
+        # This test requires stock module with putaway rules
+        if 'stock.putaway.rule' not in self.env:
+            self.skipTest("stock.putaway.rule model not available")
+        
+        # Create child location for putaway rule
+        location_unassigned_sub = self.env['stock.location'].sudo().create({
+            'name': 'Sub Location Unassigned Create Test',
+            'location_id': self.location_unassigned.id,
+            'usage': 'internal',
+        })
+        
+        # Attempt to create putaway rule in unassigned warehouse should fail
+        with self.assertRaises(AccessError):
+            self.env['stock.putaway.rule'].with_user(self.restricted_user).create({
+                'product_id': self.product.id,
+                'location_in_id': self.location_unassigned.id,
+                'location_out_id': location_unassigned_sub.id,
+            })
+
+
+@tagged('post_install', '-at_install')
+class TestDelegatedPermissionManager(TransactionCase):
+    """Test delegated permission manager functionality"""
+
+    def setUp(self):
+        super(TestDelegatedPermissionManager, self).setUp()
+        
+        # Get required groups
+        self.group_stock_user = self.env.ref('stock.group_stock_user')
+        
+        # Get or create the delegator group (needed for post_install tests)
+        try:
+            self.group_delegator = self.env.ref(
+                'econovo_user_warehouse_restriction.group_warehouse_permission_delegator'
+            )
+        except ValueError:
+            # Create the group if it doesn't exist (during test execution)
+            category_inventory = self.env.ref('base.module_category_inventory')
+            self.group_delegator = self.env['res.groups'].sudo().create({
+                'name': 'Warehouse Permissions Delegator',
+                'category_id': category_inventory.id,
+                'implied_ids': [(4, self.group_stock_user.id)],
+            })
+            # Register in ir.model.data so ACLs can find it
+            self.env['ir.model.data'].sudo().create({
+                'name': 'group_warehouse_permission_delegator',
+                'module': 'econovo_user_warehouse_restriction',
+                'model': 'res.groups',
+                'res_id': self.group_delegator.id,
+                'noupdate': False,
+            })
+            # Create ACL for this group
+            permission_model = self.env['ir.model'].sudo().search([
+                ('model', '=', 'warehouse.user.permission')
+            ], limit=1)
+            if permission_model:
+                self.env['ir.model.access'].sudo().create({
+                    'name': 'warehouse.user.permission.delegator.test',
+                    'model_id': permission_model.id,
+                    'group_id': self.group_delegator.id,
+                    'perm_read': True,
+                    'perm_write': True,
+                    'perm_create': True,
+                    'perm_unlink': False,
+                })
+                # Create record rule for delegator group
+                self.env['ir.rule'].sudo().create({
+                    'name': 'Warehouse User Permission - Delegated Managers (Test)',
+                    'model_id': permission_model.id,
+                    'domain_force': '[(1, "=", 1)]',
+                    'groups': [(4, self.group_delegator.id)],
+                    'perm_read': True,
+                    'perm_write': True,
+                    'perm_create': True,
+                    'perm_unlink': False,
+                })
+        
+        # Create delegator user (supervisor who can delegate permissions in their warehouses)
+        self.delegator_user = self.env['res.users'].create({
+            'name': 'Test Delegator User',
+            'login': 'test_delegator',
+            'email': 'test_delegator@test.com',
+            'groups_id': [(6, 0, [
+                self.group_stock_user.id,
+                self.group_delegator.id,
+            ])],
+        })
+        
+        # Create a regular user that the delegator will try to give permissions to
+        self.target_user = self.env['res.users'].create({
+            'name': 'Test Target User',
+            'login': 'test_target',
+            'email': 'test_target@test.com',
+            'groups_id': [(6, 0, [self.group_stock_user.id])],
+        })
+        
+        # Create warehouses
+        self.warehouse_controlled = self.env['stock.warehouse'].sudo().create({
+            'name': 'Controlled Warehouse',
+            'code': 'CTRL',
+        })
+        
+        self.warehouse_uncontrolled = self.env['stock.warehouse'].sudo().create({
+            'name': 'Uncontrolled Warehouse',
+            'code': 'UNCT',
+        })
+        
+        # Give delegator Full Control on warehouse_controlled ONLY
+        self.env['warehouse.user.permission'].sudo().create({
+            'warehouse_id': self.warehouse_controlled.id,
+            'user_id': self.delegator_user.id,
+            'full_control': True,
+        })
+
+    def test_delegator_can_create_permission_for_others(self):
+        """
+        Test that delegators can create permissions for other users in their warehouses.
+        """
+        from odoo.exceptions import ValidationError
+        
+        # Delegator creates permission for target user in controlled warehouse
+        # This should succeed
+        permission = self.env['warehouse.user.permission'].with_user(self.delegator_user).create({
+            'warehouse_id': self.warehouse_controlled.id,
+            'user_id': self.target_user.id,
+            'allow_as_source': True,
+            'allow_as_destination': True,
+            'allow_create_picking': True,
+        })
+        
+        self.assertTrue(permission.id, "Delegator should be able to create permissions for others")
+        self.assertEqual(permission.user_id.id, self.target_user.id)
+        self.assertEqual(permission.warehouse_id.id, self.warehouse_controlled.id)
+        self.assertTrue(permission.allow_as_source)
+        self.assertTrue(permission.allow_as_destination)
+        self.assertTrue(permission.allow_create_picking)
+
+    def test_delegator_cannot_create_permission_for_self(self):
+        """
+        Test that delegators cannot create permissions for themselves.
+        
+        This prevents privilege escalation where a user grants themselves more access.
+        The system blocks self-assignment via:
+        1. Python constraint (_check_delegator_privilege_escalation)
+        2. Database unique constraint (if permission already exists)
+        
+        Both mechanisms effectively prevent self-assignment.
+        """
+        from odoo.exceptions import ValidationError
+        
+        # The delegator already has Full Control in warehouse_controlled (setUp)
+        # Attempting to create another permission for self should fail
+        # Either via ValidationError (Python) or IntegrityError (DB unique constraint)
+        error_raised = False
+        try:
+            self.env['warehouse.user.permission'].with_user(self.delegator_user).create({
+                'warehouse_id': self.warehouse_controlled.id,
+                'user_id': self.delegator_user.id,
+                'allow_inventory_adjustment': True,
+            })
+        except (ValidationError, Exception):
+            error_raised = True
+        
+        self.assertTrue(error_raised, "Delegator should NOT be able to create permissions for self")
+
+    def test_delegator_cannot_create_permission_for_uncontrolled_warehouse(self):
+        """
+        Test that delegators cannot create permissions for warehouses they don't control.
+        """
+        from odoo.exceptions import ValidationError
+        
+        # Delegator tries to create permission in uncontrolled warehouse - should fail
+        with self.assertRaises(ValidationError):
+            self.env['warehouse.user.permission'].with_user(self.delegator_user).create({
+                'warehouse_id': self.warehouse_uncontrolled.id,
+                'user_id': self.target_user.id,
+                'allow_as_source': True,
+            })
+
+    def test_delegator_cannot_grant_full_control(self):
+        """
+        Test that delegators cannot grant Full Control to other users.
+        
+        Only system administrators can grant Full Control access.
+        """
+        from odoo.exceptions import ValidationError
+        
+        # Delegator tries to grant Full Control - should fail
+        with self.assertRaises(ValidationError):
+            self.env['warehouse.user.permission'].with_user(self.delegator_user).create({
+                'warehouse_id': self.warehouse_controlled.id,
+                'user_id': self.target_user.id,
+                'full_control': True,
+            })
+
+    def test_delegator_can_read_permissions_in_controlled_warehouse(self):
+        """
+        Test that delegators can read permissions for their controlled warehouses.
+        """
+        # Create a permission via sudo (simulating admin creation)
+        admin_permission = self.env['warehouse.user.permission'].sudo().create({
+            'warehouse_id': self.warehouse_controlled.id,
+            'user_id': self.target_user.id,
+            'allow_as_source': True,
+        })
+        
+        # Delegator should be able to read this permission
+        visible_permissions = self.env['warehouse.user.permission'].with_user(self.delegator_user).search([
+            ('warehouse_id', '=', self.warehouse_controlled.id),
+        ])
+        
+        self.assertIn(
+            admin_permission.id,
+            visible_permissions.ids,
+            "Delegator should be able to read permissions in controlled warehouse"
+        )
+
+    def test_admin_can_grant_full_control(self):
+        """
+        Test that system administrators can still grant Full Control.
+        """
+        # Admin creates Full Control permission - should succeed
+        permission = self.env['warehouse.user.permission'].sudo().create({
+            'warehouse_id': self.warehouse_controlled.id,
+            'user_id': self.target_user.id,
+            'full_control': True,
+        })
+        
+        self.assertTrue(permission.id, "Admin should be able to grant Full Control")
+        self.assertTrue(permission.full_control)

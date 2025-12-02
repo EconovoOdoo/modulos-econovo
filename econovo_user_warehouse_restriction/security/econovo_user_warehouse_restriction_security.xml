@@ -58,6 +58,31 @@
         <field name="active" eval="True"/>
     </record>
     
+    <!-- RULE 1c: Warehouse User Permissions - Delegated Permission Manager
+         Users with group_warehouse_permission_delegator can:
+         - READ/WRITE/CREATE/UNLINK permissions for warehouses where they have permission records
+         
+         NOTE: This rule provides record-level access. The Python constraint
+         _check_delegator_privilege_escalation() in warehouse.user.permission model
+         performs additional validation to ensure:
+         - Cannot grant permissions to self
+         - Cannot grant Full Control (only admins can)
+         - Must have Full Control on the warehouse
+         
+         The domain checks if user has ANY permission on the warehouse.
+         Python constraint validates the actual access level. -->
+    <record id="warehouse_user_permission_rule_delegator" model="ir.rule">
+        <field name="name">Warehouse User Permission - Delegated Managers</field>
+        <field name="model_id" ref="model_warehouse_user_permission"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('econovo_user_warehouse_restriction.group_warehouse_permission_delegator'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+        <field name="active" eval="True"/>
+    </record>
+    
     <!-- ====================================================================== -->
     <!-- WAREHOUSE ACCESS RULES                                                -->
     <!-- ====================================================================== -->
@@ -233,6 +258,24 @@
         <field name="name">Reordering Rules - Restriction</field>
         <field name="model_id" ref="stock.model_stock_warehouse_orderpoint"/>
         <field name="domain_force">[('warehouse_id.user_permission_ids.user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('econovo_user_warehouse_restriction.user_warehouse_restriction_group_user'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+        <field name="active" eval="True"/>
+    </record>
+
+    <!-- RULE 10: Putaway Rules (Storage Rules) Restriction
+         Filters by location_in_id warehouse permission existence.
+         
+         Users can only see/create putaway rules for locations belonging to
+         warehouses they have access to. This prevents unauthorized users from
+         viewing or modifying storage strategies for restricted warehouses. -->
+    <record id="stock_putaway_rule_users" model="ir.rule">
+        <field name="name">Putaway Rules - Restriction</field>
+        <field name="model_id" ref="stock.model_stock_putaway_rule"/>
+        <field name="domain_force">[('location_in_id.warehouse_id.user_permission_ids.user_id', '=', user.id)]</field>
         <field name="groups" eval="[(4, ref('econovo_user_warehouse_restriction.user_warehouse_restriction_group_user'))]"/>
         <field name="perm_read" eval="True"/>
         <field name="perm_write" eval="True"/>

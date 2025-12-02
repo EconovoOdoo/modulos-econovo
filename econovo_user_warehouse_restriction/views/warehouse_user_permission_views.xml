@@ -47,8 +47,8 @@
                 <field name="allow_cancel_picking" widget="boolean_toggle"/>
                 <field name="allow_delete_picking" widget="boolean_toggle"/>
                 
-                <!-- Location Restrictions -->
-                <field name="blocked_location_ids" widget="many2many_tags" optional="hide"/>
+                <!-- Location Restrictions (readonly when full_control is active) -->
+                <field name="blocked_location_ids" widget="many2many_tags" optional="hide" readonly="full_control"/>
                 <field name="allow_transit" widget="boolean_toggle"/>
             </tree>
         </field>
@@ -76,6 +76,14 @@
                         <strong>Settings → Users &amp; Companies → Users</strong> → 
                         Select user → <strong>Access Rights</strong> tab → 
                         Remove <em>"Administration / Settings"</em> or <em>"Unrestricted Warehouse Access"</em> groups.
+                    </div>
+                    
+                    <!-- Full Control Warning Alert -->
+                    <div class="alert alert-warning" invisible="not full_control" role="alert">
+                        <i class="fa fa-exclamation-triangle"/> 
+                        <strong>Full Control Mode Active:</strong> 
+                        Location restrictions (Blocked Locations) are <strong>IGNORED</strong> when Full Control is enabled.
+                        This user has complete access to ALL locations in this warehouse.
                     </div>
                     
                     <field name="has_bypass_permissions" invisible="1"/>
@@ -124,7 +132,13 @@
                         </page>
                         
                         <page name="location_restrictions" string="Location Restrictions">
-                            <field name="blocked_location_ids" nolabel="1">
+                            <div class="alert alert-warning mb-3" invisible="not full_control" role="alert">
+                                <i class="fa fa-exclamation-triangle"/> 
+                                <strong>Full Control is enabled:</strong> 
+                                Location restrictions below are <strong>IGNORED</strong>. 
+                                The user has access to ALL locations in this warehouse.
+                            </div>
+                            <field name="blocked_location_ids" nolabel="1" readonly="full_control">
                                 <tree editable="bottom">
                                     <field name="complete_name" string="Location"/>
                                     <field name="usage" optional="hide"/>
