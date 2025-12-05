@@ -77,6 +77,7 @@
                                 <field name="view_only" widget="boolean_toggle"/>
                                 <field name="allow_as_source" widget="boolean_toggle"/>
                                 <field name="allow_as_destination" widget="boolean_toggle"/>
+                                <field name="allow_inventory_count" widget="boolean_toggle"/>
                                 <field name="allow_inventory_adjustment" widget="boolean_toggle"/>
                                 <field name="allow_create_picking" widget="boolean_toggle"/>
                                 <field name="allow_modify_picking" widget="boolean_toggle"/>

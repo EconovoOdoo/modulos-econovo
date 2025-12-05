@@ -38,6 +38,7 @@
                 <!-- Warehouse-Level Permissions -->
                 <field name="allow_as_source" widget="boolean_toggle"/>
                 <field name="allow_as_destination" widget="boolean_toggle"/>
+                <field name="allow_inventory_count" widget="boolean_toggle"/>
                 <field name="allow_inventory_adjustment" widget="boolean_toggle"/>
                 
                 <!-- Operation-Level Permissions (Granular) -->
@@ -107,6 +108,7 @@
                                 <group name="basic_access" string="Basic Access">
                                     <field name="allow_as_source" widget="boolean_toggle"/>
                                     <field name="allow_as_destination" widget="boolean_toggle"/>
+                                    <field name="allow_inventory_count" widget="boolean_toggle"/>
                                     <field name="allow_inventory_adjustment" widget="boolean_toggle"/>
                                 </group>
                                 
@@ -171,7 +173,8 @@
                 <separator/>
                 <filter name="filter_source_allowed" string="Source Allowed" domain="[('allow_as_source', '=', True)]"/>
                 <filter name="filter_dest_allowed" string="Destination Allowed" domain="[('allow_as_destination', '=', True)]"/>
-                <filter name="filter_inventory_allowed" string="Inventory Allowed" domain="[('allow_inventory_adjustment', '=', True)]"/>
+                <filter name="filter_count_allowed" string="Inventory Count Allowed" domain="[('allow_inventory_count', '=', True)]"/>
+                <filter name="filter_inventory_allowed" string="Apply Adjustments Allowed" domain="[('allow_inventory_adjustment', '=', True)]"/>
                 <separator/>
                 <filter name="filter_create_allowed" string="Can Create Pickings" domain="[('allow_create_picking', '=', True)]"/>
                 <filter name="filter_modify_allowed" string="Can Modify Pickings" domain="[('allow_modify_picking', '=', True)]"/>

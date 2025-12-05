@@ -164,13 +164,29 @@ class WarehouseUserPermission(models.Model):
              'Example: User can receive products from vendors into this warehouse.'
     )
     
-    allow_inventory_adjustment = fields.Boolean(
-        string='Inventory Adjustments',
+    allow_inventory_count = fields.Boolean(
+        string='Inventory Count',
         default=False,
-        help='User can adjust stock quantities DIRECTLY (bypasses source/destination validation).\n\n'
+        help='User can ENTER inventory count quantities but CANNOT apply the adjustment.\n\n'
              'Allows:\n'
+             '- Edit inventory_quantity field in stock quant list\n'
+             '- Record physical counts\n'
+             '- Prepare cycle counts for review\n\n'
+             'Does NOT allow:\n'
+             '- Clicking "Apply" to finalize the adjustment\n'
+             '- Modifying actual stock quantities\n\n'
+             'Use case: Warehouse operator counts stock, supervisor applies adjustment.'
+    )
+    
+    allow_inventory_adjustment = fields.Boolean(
+        string='Apply Adjustments',
+        default=False,
+        help='User can APPLY inventory adjustments (includes count permission).\n\n'
+             'Allows:\n'
+             '- Everything from "Inventory Count" permission\n'
+             '- Click "Apply" button to finalize adjustments\n'
              '- Increment/decrement stock without transfer\n'
-             '- Cycle counts and physical inventory\n'
+             '- Complete cycle counts and physical inventory\n'
              '- Scrap and loss operations\n\n'
              '⚠️ WARNING: This is a sensitive permission. User can add/remove stock freely.\n'
              '⚠️ Grant only to trusted users: supervisors, warehouse managers, accountants.\n\n'

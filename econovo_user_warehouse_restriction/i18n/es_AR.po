@@ -468,14 +468,24 @@ msgid "Information about bypass permissions active for this user."
 msgstr "Información sobre los permisos de bypass activos para este usuario."
 
 #. module: econovo_user_warehouse_restriction
-#: model:ir.model.fields,field_description:econovo_user_warehouse_restriction.field_warehouse_user_permission__allow_inventory_adjustment
-msgid "Inventory Adjustments"
-msgstr "Ajustes de Inventario"
+#: model:ir.model.fields,field_description:econovo_user_warehouse_restriction.field_warehouse_user_permission__allow_inventory_count
+msgid "Inventory Count"
+msgstr "Conteo de Inventario"
 
 #. module: econovo_user_warehouse_restriction
 #: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.warehouse_user_permission_search_view
-msgid "Inventory Allowed"
-msgstr "Inventario Permitido"
+msgid "Inventory Count Allowed"
+msgstr "Conteo de Inventario Permitido"
+
+#. module: econovo_user_warehouse_restriction
+#: model:ir.model.fields,field_description:econovo_user_warehouse_restriction.field_warehouse_user_permission__allow_inventory_adjustment
+msgid "Apply Adjustments"
+msgstr "Aplicar Ajustes"
+
+#. module: econovo_user_warehouse_restriction
+#: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.warehouse_user_permission_search_view
+msgid "Apply Adjustments Allowed"
+msgstr "Aplicar Ajustes Permitido"
 
 #. module: econovo_user_warehouse_restriction
 #: model:ir.model,name:econovo_user_warehouse_restriction.model_stock_location
@@ -996,10 +1006,23 @@ msgstr "Almacén al que se aplican estos permisos."
 msgid ""
 "You do not have any permissions configured for warehouse \"%s\".\n"
 "\n"
-"Inventory adjustment requires \"allow_inventory_adjustment\" permission.\n"
+"Applying inventory adjustment requires \"Apply Adjustments\" permission.\n"
 "Contact your administrator to configure your permissions."
 msgstr "No tiene permisos configurados para el almacén \"%s\".\n\n"
-"Los ajustes de inventario requieren el permiso \"allow_inventory_adjustment\".\n"
+"Aplicar ajustes de inventario requiere el permiso \"Aplicar Ajustes\".\n"
+"Contacte a su administrador para configurar sus permisos."
+
+#. module: econovo_user_warehouse_restriction
+#. odoo-python
+#: code:addons/econovo_user_warehouse_restriction/models/stock_quant.py:0
+#, python-format
+msgid ""
+"You do not have any permissions configured for warehouse \"%s\".\n"
+"\n"
+"Inventory count requires \"Inventory Count\" or \"Apply Adjustments\" permission.\n"
+"Contact your administrator to configure your permissions."
+msgstr "No tiene permisos configurados para el almacén \"%s\".\n\n"
+"El conteo de inventario requiere el permiso \"Conteo de Inventario\" o \"Aplicar Ajustes\".\n"
 "Contacte a su administrador para configurar sus permisos."
 
 #. module: econovo_user_warehouse_restriction
@@ -1072,12 +1095,27 @@ msgstr "No tiene permiso para crear pickings en el almacén \"%s\".\n\n"
 #: code:addons/econovo_user_warehouse_restriction/models/stock_quant.py:0
 #, python-format
 msgid ""
-"You do not have permission to make inventory adjustments in warehouse \"%s\".\n"
+"You do not have permission to apply inventory adjustments in warehouse \"%s\".\n"
 "\n"
-"Permission \"allow_inventory_adjustment\" is disabled for this warehouse.\n"
+"You may have \"Inventory Count\" permission (to enter counts),\n"
+"but \"Apply Adjustments\" permission is required to finalize.\n"
+"Contact your administrator or supervisor to apply the adjustment."
+msgstr "No tiene permiso para aplicar ajustes de inventario en el almacén \"%s\".\n\n"
+"Puede tener el permiso \"Conteo de Inventario\" (para ingresar conteos),\n"
+"pero se requiere el permiso \"Aplicar Ajustes\" para finalizar.\n"
+"Contacte a su administrador o supervisor para aplicar el ajuste."
+
+#. module: econovo_user_warehouse_restriction
+#. odoo-python
+#: code:addons/econovo_user_warehouse_restriction/models/stock_quant.py:0
+#, python-format
+msgid ""
+"You do not have permission to enter inventory counts in warehouse \"%s\".\n"
+"\n"
+"Permission \"Inventory Count\" or \"Apply Adjustments\" is required.\n"
 "Contact your administrator to grant this permission."
-msgstr "No tiene permiso para realizar ajustes de inventario en el almacén \"%s\".\n\n"
-"El permiso \"allow_inventory_adjustment\" está deshabilitado para este almacén.\n"
+msgstr "No tiene permiso para ingresar conteos de inventario en el almacén \"%s\".\n\n"
+"Se requiere el permiso \"Conteo de Inventario\" o \"Aplicar Ajustes\".\n"
 "Contacte a su administrador para otorgar este permiso."
 
 #. module: econovo_user_warehouse_restriction
@@ -1101,9 +1139,9 @@ msgstr "No tiene permiso para modificar el almacén \"%s\".\n\n"
 msgid ""
 "You have view-only access to warehouse \"%s\".\n"
 "\n"
-"Inventory adjustments are not allowed in view-only mode."
+"Inventory operations are not allowed in view-only mode."
 msgstr "Tiene acceso en solo lectura al almacén \"%s\".\n\n"
-"Los ajustes de inventario no están permitidos en modo solo lectura."
+"Las operaciones de inventario no están permitidas en modo solo lectura."
 
 #. module: econovo_user_warehouse_restriction
 #: model_terms:ir.ui.view,arch_db:econovo_user_warehouse_restriction.warehouse_user_permission_form_view
@@ -1308,51 +1346,61 @@ msgstr ""
 "Usar para: Supervisores de almacén, líderes de equipo, gerentes regionales.\n"
 
 #. module: econovo_user_warehouse_restriction
-#: code:addons/econovo_user_warehouse_restriction/models/warehouse_user_permission.py
+#: code:addons/econovo_user_warehouse_restriction/models/warehouse_user_permission.py:0
+#, python-format
 msgid "Permission Denied: Self-Assignment"
 msgstr "Permiso Denegado: Auto-asignación"
 
 #. module: econovo_user_warehouse_restriction
-#: code:addons/econovo_user_warehouse_restriction/models/warehouse_user_permission.py
+#: code:addons/econovo_user_warehouse_restriction/models/warehouse_user_permission.py:0
+#, python-format
 msgid "You cannot create or modify permissions for yourself."
 msgstr "No puede crear o modificar permisos para usted mismo."
 
 #. module: econovo_user_warehouse_restriction
-#: code:addons/econovo_user_warehouse_restriction/models/warehouse_user_permission.py
+#: code:addons/econovo_user_warehouse_restriction/models/warehouse_user_permission.py:0
+#, python-format
 msgid "This restriction prevents privilege escalation."
 msgstr "Esta restricción previene la escalación de privilegios."
 
 #. module: econovo_user_warehouse_restriction
-#: code:addons/econovo_user_warehouse_restriction/models/warehouse_user_permission.py
+#: code:addons/econovo_user_warehouse_restriction/models/warehouse_user_permission.py:0
+#, python-format
 msgid "Please contact a system administrator to modify your own permissions."
 msgstr "Por favor contacte a un administrador del sistema para modificar sus propios permisos."
 
 #. module: econovo_user_warehouse_restriction
-#: code:addons/econovo_user_warehouse_restriction/models/warehouse_user_permission.py
+#: code:addons/econovo_user_warehouse_restriction/models/warehouse_user_permission.py:0
+#, python-format
 msgid "Permission Denied: Unauthorized Warehouse"
 msgstr "Permiso Denegado: Almacén No Autorizado"
 
 #. module: econovo_user_warehouse_restriction
-#: code:addons/econovo_user_warehouse_restriction/models/warehouse_user_permission.py
+#: code:addons/econovo_user_warehouse_restriction/models/warehouse_user_permission.py:0
+#, python-format
 msgid "Delegated managers can only create/edit permissions in warehouses where they have 'Full Control' access."
 msgstr "Los gestores delegados solo pueden crear/editar permisos en almacenes donde tienen acceso de 'Control Total'."
 
 #. module: econovo_user_warehouse_restriction
-#: code:addons/econovo_user_warehouse_restriction/models/warehouse_user_permission.py
+#: code:addons/econovo_user_warehouse_restriction/models/warehouse_user_permission.py:0
+#, python-format
 msgid "Please contact a system administrator for this warehouse."
 msgstr "Por favor contacte a un administrador del sistema para este almacén."
 
 #. module: econovo_user_warehouse_restriction
-#: code:addons/econovo_user_warehouse_restriction/models/warehouse_user_permission.py
+#: code:addons/econovo_user_warehouse_restriction/models/warehouse_user_permission.py:0
+#, python-format
 msgid "Permission Denied: Full Control Grant"
 msgstr "Permiso Denegado: Otorgar Control Total"
 
 #. module: econovo_user_warehouse_restriction
-#: code:addons/econovo_user_warehouse_restriction/models/warehouse_user_permission.py
+#: code:addons/econovo_user_warehouse_restriction/models/warehouse_user_permission.py:0
+#, python-format
 msgid "Only system administrators can grant 'Full Control' access."
 msgstr "Solo los administradores del sistema pueden otorgar acceso de 'Control Total'."
 
 #. module: econovo_user_warehouse_restriction
-#: code:addons/econovo_user_warehouse_restriction/models/warehouse_user_permission.py
+#: code:addons/econovo_user_warehouse_restriction/models/warehouse_user_permission.py:0
+#, python-format
 msgid "Please contact a system administrator to grant Full Control."
 msgstr "Por favor contacte a un administrador del sistema para otorgar Control Total."

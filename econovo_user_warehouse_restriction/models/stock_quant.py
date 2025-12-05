@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 """
 Stock Quant extensions for warehouse user restrictions.
-Implements allow_inventory_adjustment permission checks.
+Implements granular inventory permissions:
+- allow_inventory_count: Can edit inventory_quantity field
+- allow_inventory_adjustment: Can apply the adjustment (includes count)
 """
 from odoo import _, api, models
 from odoo.exceptions import UserError
@@ -10,12 +12,34 @@ from odoo.exceptions import UserError
 class StockQuant(models.Model):
     _inherit = 'stock.quant'
 
-    def _check_inventory_adjustment_permission(self):
-        """Check if user has permission to make inventory adjustments.
+    def _check_inventory_count_permission(self):
+        """Check if user has permission to enter inventory counts.
         
         Validates:
         - User is not in superuser mode (bypass)
-        - User has allow_inventory_adjustment permission for the warehouse
+        - User has allow_inventory_count OR allow_inventory_adjustment permission
+        
+        This is for editing inventory_quantity field (entering counts).
+        """
+        self._check_inventory_permission(require_apply=False)
+
+    def _check_inventory_apply_permission(self):
+        """Check if user has permission to apply inventory adjustments.
+        
+        Validates:
+        - User is not in superuser mode (bypass)
+        - User has allow_inventory_adjustment permission (not just count)
+        
+        This is for clicking "Apply" to finalize the adjustment.
+        """
+        self._check_inventory_permission(require_apply=True)
+
+    def _check_inventory_permission(self, require_apply=False):
+        """Core permission check for inventory operations.
+        
+        Args:
+            require_apply: If True, requires allow_inventory_adjustment.
+                          If False, allows either count or adjustment permission.
         """
         if self.env.su:
             return
@@ -37,6 +61,11 @@ class StockQuant(models.Model):
             if not location:
                 continue
             
+            # Skip non-internal locations (supplier, customer, production, transit, inventory)
+            # These are system locations not subject to warehouse restrictions
+            if location.usage not in ('internal',):
+                continue
+            
             # Get warehouse from location
             warehouse = location.warehouse_id
             if not warehouse:
@@ -47,7 +76,13 @@ class StockQuant(models.Model):
                     parent = parent.location_id
             
             if not warehouse:
-                continue
+                # Internal location without warehouse - this shouldn't happen
+                # But if it does, block the operation for safety
+                raise UserError(_(
+                    'Cannot perform inventory operation on location "%s".\n\n'
+                    'This internal location is not associated with any warehouse.\n'
+                    'Contact your administrator to configure the location correctly.'
+                ) % location.complete_name)
             
             # Check user permission for this warehouse
             permission = self.env['warehouse.user.permission'].sudo().search([
@@ -57,11 +92,18 @@ class StockQuant(models.Model):
             ], limit=1)
             
             if not permission:
-                raise UserError(_(
-                    'You do not have any permissions configured for warehouse "%s".\n\n'
-                    'Inventory adjustment requires "allow_inventory_adjustment" permission.\n'
-                    'Contact your administrator to configure your permissions.'
-                ) % warehouse.name)
+                if require_apply:
+                    raise UserError(_(
+                        'You do not have any permissions configured for warehouse "%s".\n\n'
+                        'Applying inventory adjustment requires "Apply Adjustments" permission.\n'
+                        'Contact your administrator to configure your permissions.'
+                    ) % warehouse.name)
+                else:
+                    raise UserError(_(
+                        'You do not have any permissions configured for warehouse "%s".\n\n'
+                        'Inventory count requires "Inventory Count" or "Apply Adjustments" permission.\n'
+                        'Contact your administrator to configure your permissions.'
+                    ) % warehouse.name)
             
             # Check if user has full control (bypass granular permissions)
             if permission.full_control:
@@ -71,20 +113,31 @@ class StockQuant(models.Model):
             if permission.view_only:
                 raise UserError(_(
                     'You have view-only access to warehouse "%s".\n\n'
-                    'Inventory adjustments are not allowed in view-only mode.'
+                    'Inventory operations are not allowed in view-only mode.'
                 ) % warehouse.name)
             
-            # Check allow_inventory_adjustment
-            if not permission.allow_inventory_adjustment:
-                raise UserError(_(
-                    'You do not have permission to make inventory adjustments in warehouse "%s".\n\n'
-                    'Permission "allow_inventory_adjustment" is disabled for this warehouse.\n'
-                    'Contact your administrator to grant this permission.'
-                ) % warehouse.name)
+            # Check permissions based on operation type
+            if require_apply:
+                # Apply requires allow_inventory_adjustment
+                if not permission.allow_inventory_adjustment:
+                    raise UserError(_(
+                        'You do not have permission to apply inventory adjustments in warehouse "%s".\n\n'
+                        'You may have "Inventory Count" permission (to enter counts),\n'
+                        'but "Apply Adjustments" permission is required to finalize.\n'
+                        'Contact your administrator or supervisor to apply the adjustment.'
+                    ) % warehouse.name)
+            else:
+                # Count allows either permission
+                if not permission.allow_inventory_count and not permission.allow_inventory_adjustment:
+                    raise UserError(_(
+                        'You do not have permission to enter inventory counts in warehouse "%s".\n\n'
+                        'Permission "Inventory Count" or "Apply Adjustments" is required.\n'
+                        'Contact your administrator to grant this permission.'
+                    ) % warehouse.name)
 
     @api.model_create_multi
     def create(self, vals_list):
-        """Override create to check inventory adjustment permission."""
+        """Override create to check inventory count permission."""
         result = super(StockQuant, self).create(vals_list)
         # Check permission after creation to have location_id available
         if not self.env.context.get('inventory_mode'):
@@ -93,13 +146,43 @@ class StockQuant(models.Model):
         return result
 
     def write(self, vals):
-        """Override write to check inventory adjustment permission when quantity changes."""
-        # Only check permission if quantity is being modified
-        if 'inventory_quantity' in vals or 'inventory_quantity_set' in vals:
-            self._check_inventory_adjustment_permission()
+        """Override write to check inventory count permission when inventory fields change.
+        
+        Protected fields:
+        - inventory_quantity: The counted quantity
+        - inventory_quantity_set: Flag indicating count in progress
+        - user_id: Assigned counter (user assigned to do count)
+        - inventory_date: Scheduled date for next count
+        """
+        # Fields that require inventory count permission
+        inventory_fields = {
+            'inventory_quantity',
+            'inventory_quantity_set',
+            'user_id',
+            'inventory_date',
+        }
+        
+        # Check if any inventory field is being modified
+        if inventory_fields & set(vals.keys()):
+            self._check_inventory_count_permission()
         return super(StockQuant, self).write(vals)
 
     def action_apply_inventory(self):
-        """Override action_apply_inventory to check permission."""
-        self._check_inventory_adjustment_permission()
+        """Override action_apply_inventory to check apply permission."""
+        self._check_inventory_apply_permission()
         return super(StockQuant, self).action_apply_inventory()
+
+    def action_set_inventory_quantity(self):
+        """Override to check count permission before setting quantity to current on-hand."""
+        self._check_inventory_count_permission()
+        return super(StockQuant, self).action_set_inventory_quantity()
+
+    def action_set_inventory_quantity_zero(self):
+        """Override to check count permission before setting quantity to zero."""
+        self._check_inventory_count_permission()
+        return super(StockQuant, self).action_set_inventory_quantity_zero()
+
+    def action_clear_inventory_quantity(self):
+        """Override to check count permission before clearing inventory quantity."""
+        self._check_inventory_count_permission()
+        return super(StockQuant, self).action_clear_inventory_quantity()

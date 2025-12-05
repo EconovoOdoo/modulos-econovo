@@ -112,30 +112,12 @@
         </record>
         
         <!-- Management Groups for Permission Configuration -->
-        <record id="user_warehouse_restriction_group_manager" model="res.groups">
-            <field name="name">Warehouse Permissions Manager</field>
-            <field name="category_id" ref="base.module_category_inventory"/>
-            <field name="implied_ids" eval="[(4, ref('stock.group_stock_manager'))]"/>
-            <field name="comment">
-                Users in this group can CONFIGURE warehouse permissions.
-                
-                Permissions:
-                - Create/modify/delete warehouse.user.permission records
-                - Access centralized permission matrix view
-                - Configure per-warehouse user permissions
-                
-                Use case: Warehouse managers, HR managers who assign user permissions.
-                
-                Note: This group automatically implies stock.group_stock_manager
-                to ensure managers can access configuration menus.
-            </field>
-        </record>
         
         <!-- Delegated Permission Manager - Can manage permissions for assigned warehouses only -->
+        <!-- IMPORTANT: This group MUST be defined BEFORE Manager because Manager implies Delegator -->
         <record id="group_warehouse_permission_delegator" model="res.groups">
             <field name="name">Warehouse Permissions Delegator</field>
             <field name="category_id" ref="base.module_category_inventory"/>
-            <field name="implied_ids" eval="[(4, ref('stock.group_stock_user'))]"/>
             <field name="comment">
                 Delegated permission management for warehouse supervisors.
                 
@@ -153,14 +135,45 @@
                 Use case: Regional warehouse supervisor who needs to grant
                 access to their team members for warehouses they manage.
                 
+                IMPORTANT: This group does NOT imply any stock groups.
+                The user must have appropriate stock permissions separately.
+                
                 Security: Python constraints prevent privilege escalation.
             </field>
         </record>
         
-        <!-- Make stock managers automatically get permission manager access -->
-        <record id="stock.group_stock_manager" model="res.groups">
-            <field name="implied_ids" eval="[(4, ref('econovo_user_warehouse_restriction.user_warehouse_restriction_group_manager'))]"/>
+        <!-- Manager Group - Full permission configuration access -->
+        <record id="user_warehouse_restriction_group_manager" model="res.groups">
+            <field name="name">Warehouse Permissions Manager</field>
+            <field name="category_id" ref="base.module_category_inventory"/>
+            <field name="implied_ids" eval="[(4, ref('group_warehouse_permission_delegator'))]"/>
+            <field name="comment">
+                Users in this group can CONFIGURE warehouse permissions.
+                
+                Permissions:
+                - Create/modify/delete warehouse.user.permission records
+                - Access centralized permission matrix view
+                - Configure per-warehouse user permissions
+                
+                Use case: Warehouse managers, HR managers who assign user permissions.
+                
+                HIERARCHY: Manager implies Delegator.
+                A Manager can do everything a Delegator can, plus more.
+                
+                IMPORTANT: This group does NOT imply any stock groups.
+                The user must have appropriate stock permissions separately.
+            </field>
         </record>
+        
+        <!-- 
+            REMOVED: stock.group_stock_manager no longer implies user_warehouse_restriction_group_manager
+            
+            Rationale: A stock manager is not necessarily a permission manager.
+            Permission management should be explicitly assigned, not automatic.
+            This allows:
+            - Stock managers who don't manage permissions
+            - Permission managers who aren't stock managers (e.g., HR)
+        -->
         
     </data>
 </odoo>
