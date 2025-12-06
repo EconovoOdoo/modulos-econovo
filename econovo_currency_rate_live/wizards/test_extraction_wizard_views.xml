@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- Test Extraction Wizard Form View -->
+    <record id="view_test_extraction_wizard_form" model="ir.ui.view">
+        <field name="name">currency.rate.source.test.wizard.form</field>
+        <field name="model">currency.rate.source.test.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Test Extraction">
+                <!-- Hidden fields for invisible expressions -->
+                <field name="test_executed" invisible="1"/>
+                <field name="test_success" invisible="1"/>
+                <field name="validation_passed" invisible="1"/>
+                
+                <header invisible="not test_executed">
+                    <div class="alert alert-success w-100 mb-0" 
+                         role="alert" 
+                         invisible="not test_success">
+                        <strong>Test Successful!</strong> 
+                        The extraction configuration is working correctly.
+                    </div>
+                    <div class="alert alert-danger w-100 mb-0" 
+                         role="alert" 
+                         invisible="test_success or not test_executed">
+                        <strong>Test Failed!</strong> 
+                        Please check the error details below.
+                    </div>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="Source Information">
+                            <field name="source_id" readonly="1"/>
+                            <field name="source_url" widget="url"/>
+                            <field name="extraction_method"/>
+                            <field name="currency_id"/>
+                        </group>
+                        <group string="Test Status" invisible="not test_executed">
+                            <field name="test_duration"/>
+                        </group>
+                    </group>
+
+                    <!-- Before Test: Show button -->
+                    <div class="text-center py-4" invisible="test_executed">
+                        <p class="text-muted mb-3">
+                            Click the button below to test the extraction configuration.
+                            This will NOT update any currency rates.
+                        </p>
+                        <button name="action_test" 
+                                type="object" 
+                                string="Run Test" 
+                                class="btn-primary btn-lg"
+                                icon="fa-play"/>
+                    </div>
+
+                    <!-- After Test: Show results -->
+                    <notebook invisible="not test_executed">
+                        <!-- Results Tab -->
+                        <page string="Results" name="results" invisible="not test_success">
+                            <group>
+                                <group string="Extracted Values">
+                                    <field name="raw_extracted_value"/>
+                                    <field name="processed_rate"/>
+                                </group>
+                                <group string="Comparison">
+                                    <field name="current_rate"/>
+                                    <field name="rate_difference"/>
+                                    <field name="rate_variation_percent"/>
+                                </group>
+                            </group>
+                            <group string="Validation" invisible="validation_passed">
+                                <field name="validation_messages"/>
+                            </group>
+                        </page>
+
+                        <!-- HTTP Response Tab -->
+                        <page string="HTTP Response" name="http">
+                            <group>
+                                <group>
+                                    <field name="http_status_code"/>
+                                    <field name="http_response_time"/>
+                                    <field name="content_length"/>
+                                </group>
+                            </group>
+                            <group string="Content Preview">
+                                <field name="content_preview" readonly="1" widget="code"/>
+                            </group>
+                        </page>
+
+                        <!-- Error Tab -->
+                        <page string="Error Details" name="errors" invisible="test_success">
+                            <group>
+                                <field name="error_message" readonly="1" widget="code"/>
+                            </group>
+                            <group string="Traceback">
+                                <field name="error_traceback" readonly="1" widget="code"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <footer invisible="test_executed">
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+                <footer invisible="not test_executed">
+                    <button name="action_test" type="object" string="Run Again" class="btn-primary"/>
+                    <button string="Close" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action for the wizard -->
+    <record id="action_test_extraction_wizard" model="ir.actions.act_window">
+        <field name="name">Test Extraction</field>
+        <field name="res_model">currency.rate.source.test.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="view_id" ref="view_test_extraction_wizard_form"/>
+    </record>
+
+</odoo>

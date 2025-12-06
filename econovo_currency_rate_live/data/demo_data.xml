@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Demo Source 1: BNA USD Billete (Argentina) -->
+        <record id="demo_source_bna_usd" model="currency.rate.source">
+            <field name="name">USD - Banco Nacion Argentina</field>
+            <field name="currency_id" ref="base.USD"/>
+            <field name="url">https://www.bna.com.ar/Personas</field>
+            <field name="notes">Official USD exchange rate from Banco de la Nacion Argentina. Extracts the USD Billete sell rate from the main page.</field>
+            <field name="extraction_method">regex</field>
+            <field name="regex_pattern">Dolar U\.S\.A[^0-9]*([0-9]+[,.][0-9]+)[^0-9]*([0-9]+[,.][0-9]+)</field>
+            <field name="regex_group">2</field>
+            <field name="regex_flag_ignorecase" eval="True"/>
+            <field name="regex_flag_dotall" eval="True"/>
+            <field name="decimal_format">es_AR</field>
+            <field name="min_valid_rate">100</field>
+            <field name="max_valid_rate">5000</field>
+            <field name="max_variation_percent">15.0</field>
+            <field name="on_validation_fail">warn</field>
+            <field name="update_all_companies" eval="True"/>
+            <field name="active" eval="True"/>
+        </record>
+
+        <!-- Demo Source 2: BNA EUR Billete (Argentina) -->
+        <record id="demo_source_bna_eur" model="currency.rate.source">
+            <field name="name">EUR - Banco Nacion Argentina</field>
+            <field name="currency_id" ref="base.EUR"/>
+            <field name="url">https://www.bna.com.ar/Personas</field>
+            <field name="notes">Official EUR exchange rate from Banco de la Nacion Argentina. Extracts the Euro sell rate from the main page.</field>
+            <field name="extraction_method">regex</field>
+            <field name="regex_pattern">Euro[^0-9]*([0-9]+[,.][0-9]+)[^0-9]*([0-9]+[,.][0-9]+)</field>
+            <field name="regex_group">2</field>
+            <field name="regex_flag_ignorecase" eval="True"/>
+            <field name="regex_flag_dotall" eval="True"/>
+            <field name="decimal_format">es_AR</field>
+            <field name="min_valid_rate">100</field>
+            <field name="max_valid_rate">6000</field>
+            <field name="max_variation_percent">15.0</field>
+            <field name="on_validation_fail">warn</field>
+            <field name="update_all_companies" eval="True"/>
+            <field name="active" eval="True"/>
+        </record>
+
+        <!-- Demo Source 3: ECB API (JSON Example) -->
+        <record id="demo_source_ecb_usd" model="currency.rate.source">
+            <field name="name">USD - European Central Bank API</field>
+            <field name="currency_id" ref="base.USD"/>
+            <field name="url">https://api.frankfurter.app/latest?from=EUR&amp;to=USD</field>
+            <field name="notes">USD rate from the Frankfurter API (based on ECB data). Returns JSON with current exchange rates.</field>
+            <field name="extraction_method">jsonpath</field>
+            <field name="response_type">json</field>
+            <field name="jsonpath_expression">$.rates.USD</field>
+            <field name="decimal_format">en_US</field>
+            <field name="min_valid_rate">0.5</field>
+            <field name="max_valid_rate">2.0</field>
+            <field name="max_variation_percent">10.0</field>
+            <field name="on_validation_fail">warn</field>
+            <field name="update_all_companies" eval="True"/>
+            <field name="active" eval="True"/>
+        </record>
+
+        <!-- Demo Source 4: XPath Example -->
+        <record id="demo_source_xpath_example" model="currency.rate.source">
+            <field name="name">GBP - XPath Example</field>
+            <field name="currency_id" ref="base.GBP"/>
+            <field name="url">https://www.x-rates.com/table/?from=USD&amp;amount=1</field>
+            <field name="notes">Example using XPath extraction from x-rates.com. Demonstrates HTML table parsing.</field>
+            <field name="extraction_method">xpath</field>
+            <field name="xpath_expression">//table[@class='tablesorter ratesTable']//tr[td/a[contains(text(),'British Pound')]]/td[2]/text()</field>
+            <field name="xpath_result_index">0</field>
+            <field name="decimal_format">en_US</field>
+            <field name="min_valid_rate">0.5</field>
+            <field name="max_valid_rate">2.0</field>
+            <field name="max_variation_percent">10.0</field>
+            <field name="on_validation_fail">warn</field>
+            <field name="update_all_companies" eval="True"/>
+            <field name="active" eval="True"/>
+        </record>
+
+    </data>
+</odoo>

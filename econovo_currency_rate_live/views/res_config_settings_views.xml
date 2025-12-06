@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- Extend res.config.settings form view -->
+    <record id="res_config_settings_view_form_currency_rate_live" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.currency.rate.live</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//app[@name='account']" position="inside">
+                <block title="Currency Rate Live Updates" name="currency_rate_live_settings">
+                    <setting id="currency_rate_live_enable" 
+                             string="Currency Rate Live Updates" 
+                             documentation="/applications/finance/accounting/get_started/multi_currency.html">
+                        <div class="text-muted">
+                            Configure automatic currency rate updates from external sources (APIs, websites)
+                        </div>
+                        <div class="mt-3">
+                            <button name="action_open_currency_rate_sources" 
+                                    type="object" 
+                                    string="Configure Sources" 
+                                    class="btn-link"
+                                    icon="fa-external-link"/>
+                            <span class="ms-3 text-muted">
+                                <field name="currency_rate_live_sources_count" class="oe_inline"/> active sources
+                            </span>
+                        </div>
+                        <div class="content-group mt-4">
+                            <div class="row">
+                                <label for="currency_rate_live_log_retention_days" class="col-lg-4 o_light_label"/>
+                                <field name="currency_rate_live_log_retention_days" class="col-lg-2"/>
+                                <span class="text-muted">days</span>
+                            </div>
+                            <div class="row mt-2">
+                                <label for="currency_rate_live_default_timeout" class="col-lg-4 o_light_label"/>
+                                <field name="currency_rate_live_default_timeout" class="col-lg-2"/>
+                                <span class="text-muted">seconds</span>
+                            </div>
+                            <div class="row mt-2">
+                                <label for="currency_rate_live_max_retries" class="col-lg-4 o_light_label"/>
+                                <field name="currency_rate_live_max_retries" class="col-lg-2"/>
+                            </div>
+                        </div>
+                        <div class="content-group mt-4">
+                            <div class="mt-2">
+                                <field name="currency_rate_live_enable_notifications"/>
+                                <label for="currency_rate_live_enable_notifications"/>
+                            </div>
+                            <div class="mt-2 ms-4" invisible="not currency_rate_live_enable_notifications">
+                                <field name="currency_rate_live_notify_on_error"/>
+                                <label for="currency_rate_live_notify_on_error"/>
+                            </div>
+                            <div class="mt-2 ms-4" invisible="not currency_rate_live_enable_notifications">
+                                <field name="currency_rate_live_notify_on_high_variation"/>
+                                <label for="currency_rate_live_notify_on_high_variation"/>
+                            </div>
+                            <div class="row mt-2 ms-4" 
+                                 invisible="not currency_rate_live_enable_notifications or not currency_rate_live_notify_on_high_variation">
+                                <label for="currency_rate_live_variation_threshold" class="col-lg-4 o_light_label"/>
+                                <field name="currency_rate_live_variation_threshold" class="col-lg-2"/>
+                                <span class="text-muted">%</span>
+                            </div>
+                        </div>
+                        <div class="content-group mt-4">
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <button name="action_update_all_rates_now" 
+                                            type="object" 
+                                            string="Update All Rates Now" 
+                                            class="btn-secondary"
+                                            icon="fa-refresh"/>
+                                </div>
+                                <div class="col-lg-6">
+                                    <button name="action_cleanup_old_logs" 
+                                            type="object" 
+                                            string="Cleanup Old Logs" 
+                                            class="btn-secondary"
+                                            icon="fa-trash"/>
+                                </div>
+                            </div>
+                        </div>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

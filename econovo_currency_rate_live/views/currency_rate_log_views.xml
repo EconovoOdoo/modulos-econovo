@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- Tree View -->
+    <record id="view_currency_rate_log_tree" model="ir.ui.view">
+        <field name="name">currency.rate.log.tree</field>
+        <field name="model">currency.rate.log</field>
+        <field name="arch" type="xml">
+            <tree string="Currency Rate Logs" 
+                  decoration-danger="state == 'error'"
+                  decoration-warning="state == 'warning'"
+                  decoration-success="state == 'success'"
+                  default_order="execution_date desc">
+                <field name="execution_date"/>
+                <field name="source_id"/>
+                <field name="currency_id"/>
+                <field name="raw_value"/>
+                <field name="processed_rate" digits="[16,4]"/>
+                <field name="previous_rate" digits="[16,4]" optional="show"/>
+                <field name="rate_variation" widget="badge"
+                       decoration-danger="rate_variation > 10 or rate_variation &lt; -10"
+                       decoration-warning="rate_variation > 5 or rate_variation &lt; -5"/>
+                <field name="duration" optional="hide"/>
+                <field name="http_status_code" optional="hide"/>
+                <field name="triggered_by"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'success'"
+                       decoration-warning="state == 'warning'"
+                       decoration-danger="state == 'error'"/>
+                <field name="rates_created" optional="hide"/>
+                <field name="rates_updated" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_currency_rate_log_form" model="ir.ui.view">
+        <field name="name">currency.rate.log.form</field>
+        <field name="model">currency.rate.log</field>
+        <field name="arch" type="xml">
+            <form string="Currency Rate Log" create="false" edit="false">
+                <header>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="display_name"/>
+                        <h1>
+                            <field name="display_name" readonly="1"/>
+                        </h1>
+                    </div>
+                    
+                    <group>
+                        <group string="Execution Details">
+                            <field name="source_id"/>
+                            <field name="currency_id"/>
+                            <field name="execution_date"/>
+                            <field name="triggered_by"/>
+                            <field name="duration" widget="float_time"/>
+                        </group>
+                        <group string="Rate Information">
+                            <field name="raw_value" widget="code"/>
+                            <field name="processed_rate"/>
+                            <field name="previous_rate"/>
+                            <field name="rate_variation" widget="float" digits="[10,4]"/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <group string="HTTP Response">
+                            <field name="http_status_code"/>
+                            <field name="http_response_time"/>
+                            <field name="content_length"/>
+                        </group>
+                        <group string="Update Statistics">
+                            <field name="rates_created"/>
+                            <field name="rates_updated"/>
+                            <field name="companies_affected"/>
+                        </group>
+                    </group>
+
+                    <group string="Validation" invisible="validation_passed">
+                        <field name="validation_passed"/>
+                        <field name="validation_message" widget="code"/>
+                    </group>
+
+                    <group string="Error Information" invisible="state != 'error'">
+                        <field name="error_message" widget="code"/>
+                        <field name="error_traceback" widget="code"/>
+                    </group>
+
+                    <group string="Warning Information" invisible="state != 'warning'">
+                        <field name="warning_message" widget="code"/>
+                    </group>
+
+                    <group string="Content Preview" invisible="not content_preview">
+                        <field name="content_preview" widget="code"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_currency_rate_log_search" model="ir.ui.view">
+        <field name="name">currency.rate.log.search</field>
+        <field name="model">currency.rate.log</field>
+        <field name="arch" type="xml">
+            <search string="Currency Rate Logs">
+                <field name="source_id"/>
+                <field name="currency_id"/>
+                <separator/>
+                <filter string="Success" name="success" domain="[('state', '=', 'success')]"/>
+                <filter string="Warnings" name="warnings" domain="[('state', '=', 'warning')]"/>
+                <filter string="Errors" name="errors" domain="[('state', '=', 'error')]"/>
+                <separator/>
+                <filter string="Today" name="today" domain="[('execution_date', '>=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter string="This Week" name="this_week" domain="[('execution_date', '>=', (context_today() - datetime.timedelta(days=7)).strftime('%Y-%m-%d'))]"/>
+                <filter string="This Month" name="this_month" domain="[('execution_date', '>=', (context_today() - datetime.timedelta(days=30)).strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <filter string="Manual" name="manual" domain="[('triggered_by', '=', 'manual')]"/>
+                <filter string="Scheduled" name="scheduled" domain="[('triggered_by', '=', 'cron')]"/>
+                <filter string="Test" name="test" domain="[('triggered_by', '=', 'test')]"/>
+                <separator/>
+                <filter string="High Variation (&gt;5%)" name="high_variation" 
+                        domain="['|', ('rate_variation', '>', 5), ('rate_variation', '&lt;', -5)]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter string="Source" name="group_source" context="{'group_by': 'source_id'}"/>
+                    <filter string="Currency" name="group_currency" context="{'group_by': 'currency_id'}"/>
+                    <filter string="Status" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="Date" name="group_date" context="{'group_by': 'execution_date:day'}"/>
+                    <filter string="Triggered By" name="group_triggered" context="{'group_by': 'triggered_by'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_currency_rate_log" model="ir.actions.act_window">
+        <field name="name">Rate Update Logs</field>
+        <field name="res_model">currency.rate.log</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_currency_rate_log_search"/>
+        <field name="context">{'search_default_today': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No execution logs yet
+            </p>
+            <p>
+                Logs will appear here after currency rate sources 
+                are executed manually or by scheduled jobs.
+            </p>
+        </field>
+    </record>
+
+</odoo>

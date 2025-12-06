@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- Tree View -->
+    <record id="view_currency_rate_source_tree" model="ir.ui.view">
+        <field name="name">currency.rate.source.tree</field>
+        <field name="model">currency.rate.source</field>
+        <field name="arch" type="xml">
+            <tree string="Currency Rate Sources" 
+                  decoration-danger="last_status == 'error'"
+                  decoration-warning="last_status == 'warning'"
+                  decoration-success="last_status == 'success'"
+                  decoration-muted="state == 'draft' or not active">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="currency_id"/>
+                <field name="url" optional="hide"/>
+                <field name="extraction_method"/>
+                <field name="last_rate" digits="[16, 4]"/>
+                <field name="last_sync_date"/>
+                <field name="last_status" widget="badge"
+                       decoration-success="last_status == 'success'"
+                       decoration-warning="last_status == 'warning'"
+                       decoration-danger="last_status == 'error'"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-success="state == 'active'"
+                       decoration-danger="state == 'error'"/>
+                <field name="active" column_invisible="True"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_currency_rate_source_form" model="ir.ui.view">
+        <field name="name">currency.rate.source.form</field>
+        <field name="model">currency.rate.source</field>
+        <field name="arch" type="xml">
+            <form string="Currency Rate Source">
+                <header>
+                    <button name="action_update_rate" 
+                            type="object" 
+                            string="Update Now" 
+                            class="oe_highlight"/>
+                    <button name="action_test_extraction" 
+                            type="object" 
+                            string="Test Extraction"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,active,error"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_logs" 
+                                type="object" 
+                                class="oe_stat_button" 
+                                icon="fa-history">
+                            <field name="log_count" widget="statinfo" string="Logs"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="e.g., USD - Bank Central"/>
+                        </h1>
+                    </div>
+                    
+                    <!-- Status Panel -->
+                    <group name="status_panel" invisible="not last_sync_date">
+                        <group>
+                            <field name="last_rate" readonly="1"/>
+                            <field name="last_sync_date" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="last_status" widget="badge" readonly="1"
+                                   decoration-success="last_status == 'success'"
+                                   decoration-warning="last_status == 'warning'"
+                                   decoration-danger="last_status == 'error'"/>
+                            <field name="success_rate" widget="progressbar" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <!-- General Tab -->
+                        <page string="General" name="general">
+                            <group>
+                                <group string="Currency Configuration">
+                                    <field name="currency_id" options="{'no_create': True}"/>
+                                    <field name="active"/>
+                                    <field name="sequence"/>
+                                </group>
+                                <group string="Source URL">
+                                    <field name="url" widget="url" placeholder="https://api.example.com/rates"/>
+                                    <field name="notes" placeholder="Description of this source"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- HTTP Configuration Tab -->
+                        <page string="HTTP Configuration" name="http_config">
+                            <group>
+                                <group string="Request Settings">
+                                    <field name="http_method"/>
+                                    <field name="http_timeout"/>
+                                    <field name="http_retries"/>
+                                    <field name="http_user_agent"/>
+                                </group>
+                                <group string="Response Type">
+                                    <field name="response_type"/>
+                                </group>
+                            </group>
+                            <group string="Custom Headers" name="headers">
+                                <field name="http_headers" 
+                                       widget="code"
+                                       placeholder='{"Authorization": "Bearer xxx"}'/>
+                            </group>
+                            <group string="Request Body (for POST)" 
+                                   invisible="http_method != 'POST'"
+                                   name="request_body">
+                                <field name="http_body" widget="code"/>
+                            </group>
+                        </page>
+
+                        <!-- Extraction Method Tab -->
+                        <page string="Extraction Method" name="extraction">
+                            <group>
+                                <group string="Method Selection">
+                                    <field name="extraction_method"/>
+                                </group>
+                            </group>
+
+                            <!-- Automatic Extraction -->
+                            <group string="Automatic Detection Settings" 
+                                   invisible="extraction_method != 'auto'">
+                                <field name="auto_keyword" 
+                                       placeholder="dolar, dollar, usd"/>
+                            </group>
+
+                            <!-- Regex Extraction -->
+                            <group string="Regex Configuration" 
+                                   invisible="extraction_method != 'regex'">
+                                <field name="regex_pattern" 
+                                       widget="code"
+                                       placeholder="Dolar[^0-9]*([0-9]+[.,][0-9]+)"/>
+                                <field name="regex_group"/>
+                                <field name="regex_flag_ignorecase"/>
+                                <field name="regex_flag_multiline"/>
+                                <field name="regex_flag_dotall"/>
+                            </group>
+
+                            <!-- XPath Extraction -->
+                            <group string="XPath Configuration" 
+                                   invisible="extraction_method != 'xpath'">
+                                <field name="xpath_expression" 
+                                       widget="code"
+                                       placeholder="//table[@id='rates']//tr[contains(.,'USD')]/td[2]/text()"/>
+                                <field name="xpath_attribute"/>
+                                <field name="xpath_result_index"/>
+                            </group>
+
+                            <!-- JSONPath Extraction -->
+                            <group string="JSONPath Configuration" 
+                                   invisible="extraction_method != 'jsonpath'">
+                                <field name="jsonpath_expression" 
+                                       widget="code"
+                                       placeholder="$.data.rates.USD.value"/>
+                                <field name="jsonpath_result_index"/>
+                            </group>
+
+                            <!-- CSS Selector Extraction -->
+                            <group string="CSS Selector Configuration" 
+                                   invisible="extraction_method != 'css'">
+                                <field name="css_selector" 
+                                       widget="code"
+                                       placeholder="table.rates tr.usd td.value"/>
+                                <field name="css_attribute"/>
+                                <field name="css_result_index"/>
+                            </group>
+                        </page>
+
+                        <!-- Value Processing Tab -->
+                        <page string="Value Processing" name="processing">
+                            <group>
+                                <group string="Decimal Format">
+                                    <field name="decimal_format"/>
+                                </group>
+                                <group string="Value Transformations">
+                                    <field name="invert_rate"/>
+                                    <field name="value_multiplier"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- Validation Tab -->
+                        <page string="Validation" name="validation">
+                            <group>
+                                <group string="Rate Limits">
+                                    <field name="min_valid_rate"/>
+                                    <field name="max_valid_rate"/>
+                                </group>
+                                <group string="Variation Control">
+                                    <field name="max_variation_percent"/>
+                                    <field name="on_validation_fail"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- Scheduling Tab -->
+                        <page string="Scheduling" name="scheduling">
+                            <group>
+                                <group string="Automatic Updates">
+                                    <field name="auto_update"/>
+                                    <field name="update_interval" invisible="not auto_update"/>
+                                    <field name="update_hours" invisible="not auto_update"/>
+                                    <field name="update_weekdays" invisible="not auto_update"/>
+                                </group>
+                                <group string="Next Execution" invisible="not next_execution">
+                                    <field name="next_execution" readonly="1"/>
+                                </group>
+                            </group>
+                            <!-- Date Extraction -->
+                            <group string="Date Extraction">
+                                <field name="extract_date"/>
+                                <field name="date_regex_pattern" widget="code" invisible="not extract_date"/>
+                                <field name="date_format" invisible="not extract_date"/>
+                            </group>
+                        </page>
+
+                        <!-- Companies Tab -->
+                        <page string="Companies" name="companies">
+                            <group>
+                                <group string="Multi-Company Settings">
+                                    <field name="update_all_companies"/>
+                                </group>
+                            </group>
+                            <group invisible="update_all_companies">
+                                <field name="company_ids" 
+                                       widget="many2many_tags"
+                                       options="{'no_create': True}"/>
+                            </group>
+                        </page>
+
+                        <!-- Statistics Tab -->
+                        <page string="Statistics" name="statistics">
+                            <group>
+                                <group string="Execution Statistics">
+                                    <field name="execution_count" readonly="1"/>
+                                    <field name="success_count" readonly="1"/>
+                                    <field name="error_count" readonly="1"/>
+                                    <field name="success_rate" widget="progressbar" readonly="1"/>
+                                </group>
+                                <group string="Last Execution">
+                                    <field name="last_sync_date" readonly="1"/>
+                                    <field name="last_status" readonly="1"/>
+                                    <field name="last_rate" readonly="1"/>
+                                    <field name="last_raw_value" readonly="1"/>
+                                </group>
+                            </group>
+                            <group string="Error Information" invisible="not last_error">
+                                <field name="last_error" readonly="1" widget="code"/>
+                            </group>
+                            <group string="Debug Information" invisible="not last_http_response">
+                                <field name="last_http_response" readonly="1" widget="code"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_currency_rate_source_search" model="ir.ui.view">
+        <field name="name">currency.rate.source.search</field>
+        <field name="model">currency.rate.source</field>
+        <field name="arch" type="xml">
+            <search string="Currency Rate Sources">
+                <field name="name"/>
+                <field name="currency_id"/>
+                <field name="url"/>
+                <separator/>
+                <filter string="Active" name="active_sources" domain="[('state', '=', 'active')]"/>
+                <filter string="Draft" name="draft_sources" domain="[('state', '=', 'draft')]"/>
+                <filter string="Error" name="error_sources" domain="[('state', '=', 'error')]"/>
+                <separator/>
+                <filter string="Success" name="success" domain="[('last_status', '=', 'success')]"/>
+                <filter string="Errors" name="errors" domain="[('last_status', '=', 'error')]"/>
+                <filter string="Warnings" name="warnings" domain="[('last_status', '=', 'warning')]"/>
+                <separator/>
+                <filter string="Archived" name="archived" domain="[('active', '=', False)]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter string="Currency" name="group_currency" context="{'group_by': 'currency_id'}"/>
+                    <filter string="Status" name="group_status" context="{'group_by': 'last_status'}"/>
+                    <filter string="State" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="Method" name="group_method" context="{'group_by': 'extraction_method'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_currency_rate_source" model="ir.actions.act_window">
+        <field name="name">Currency Rate Sources</field>
+        <field name="res_model">currency.rate.source</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_currency_rate_source_search"/>
+        <field name="context">{'search_default_active_sources': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first currency rate source
+            </p>
+            <p>
+                Configure external sources (URLs, APIs) to automatically 
+                fetch and update currency exchange rates.
+            </p>
+        </field>
+    </record>
+
+</odoo>
