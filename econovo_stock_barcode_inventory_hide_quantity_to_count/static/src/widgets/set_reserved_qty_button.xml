@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- 
+        Override SetReservedQuantityButton template to hide quantity in blind count mode.
+        When show_quantity_to_count is disabled, shows "/ ?" instead of actual quantity.
+    -->
+    <t t-name="stock_barcode.SetReservedQuantityButtonTemplate" t-inherit="stock_barcode.SetReservedQuantityButtonTemplate" t-inherit-mode="extension">
+        <xpath expr="//span[@name='product_uom_qty']" position="attributes">
+            <attribute name="t-out">this.hideQuantityToCount ? '?' : props.record.data[props.name]</attribute>
+        </xpath>
+    </t>
+
+</templates>

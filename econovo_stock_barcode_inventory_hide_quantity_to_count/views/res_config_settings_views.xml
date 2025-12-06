@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_inherit_hide_qty" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.hide.quantity</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="stock_barcode.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//setting[@id='process_operations_barcodes']" position="after">
+                <setting id="show_quantity_to_count_setting"
+                         string="Show Quantity to Count"
+                         help="When enabled, the expected quantity is displayed during inventory adjustments. Disable for blind counting.">
+                    <field name="show_quantity_to_count"/>
+                </setting>
+            </xpath>
+        </field>
+    </record>
+</odoo>

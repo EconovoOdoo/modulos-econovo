@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- 
+        Override LineQuantity template to show "/ ?" when quantity is hidden (blind count mode).
+        When show_quantity_to_count is false, getQtyDemand returns false, so we need to
+        handle this case and display "/ ?" instead of hiding the demand quantity completely.
+    -->
+    <t t-name="econovo_stock_barcode_inventory_hide_quantity_to_count.LineQuantity" 
+       t-inherit="stock_barcode.LineQuantity" 
+       t-inherit-mode="extension">
+        <xpath expr="//span[@t-if='qtyDemand']" position="replace">
+            <span t-if="qtyDemand !== false" t-esc="'/ ' + qtyDemand"/>
+            <span t-else="">/ ?</span>
+        </xpath>
+    </t>
+
+</templates>

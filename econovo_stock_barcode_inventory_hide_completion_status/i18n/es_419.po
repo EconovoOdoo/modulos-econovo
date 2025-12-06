@@ -1,0 +1,40 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+#  * econovo_stock_barcode_inventory_hide_completion_status
+# Spanish (Latin America) translation
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 17.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-01-01 00:00+0000\n"
+"PO-Revision-Date: 2025-01-01 00:00+0000\n"
+"Last-Translator: \n"
+"Language-Team: Spanish (Latin America)\n"
+"Language: es_419\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: econovo_stock_barcode_inventory_hide_completion_status
+#: model:ir.model.fields,field_description:econovo_stock_barcode_inventory_hide_completion_status.field_res_company__show_completion_status
+#: model:ir.model.fields,field_description:econovo_stock_barcode_inventory_hide_completion_status.field_res_config_settings__show_completion_status
+msgid "Show Completion Status"
+msgstr "Mostrar estado de completado"
+
+#. module: econovo_stock_barcode_inventory_hide_completion_status
+#: model:ir.model.fields,help:econovo_stock_barcode_inventory_hide_completion_status.field_res_company__show_completion_status
+msgid "When enabled, inventory lines show visual feedback (green/red) indicating if the counted quantity matches the expected quantity. Disable this for blind counting where operators should not see if their count is correct."
+msgstr "Cuando está habilitado, las líneas de inventario muestran retroalimentación visual (verde/rojo) indicando si la cantidad contada coincide con la cantidad esperada. Deshabilitar para conteo ciego donde los operadores no deben ver si su conteo es correcto."
+
+#. module: econovo_stock_barcode_inventory_hide_completion_status
+#: model_terms:ir.ui.view,arch_db:econovo_stock_barcode_inventory_hide_completion_status.res_config_settings_view_form_inherit_completion_status
+msgid "Show visual feedback (green/red) indicating if counted quantity matches expected"
+msgstr "Mostrar retroalimentación visual (verde/rojo) indicando si la cantidad contada coincide con la esperada"
+
+#. module: econovo_stock_barcode_inventory_hide_completion_status
+#: model_terms:ir.ui.view,arch_db:econovo_stock_barcode_inventory_hide_completion_status.res_config_settings_view_form_inherit_completion_status
+#: setting string attribute
+msgid "Show Completion Status"
+msgstr "Mostrar estado de completado"

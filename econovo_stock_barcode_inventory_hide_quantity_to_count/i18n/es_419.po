@@ -1,0 +1,41 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+#  * econovo_stock_barcode_inventory_hide_quantity_to_count
+# Spanish (Latin America) translation
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 17.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-01-01 00:00+0000\n"
+"PO-Revision-Date: 2025-01-01 00:00+0000\n"
+"Last-Translator: \n"
+"Language-Team: Spanish (Latin America)\n"
+"Language: es_419\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: econovo_stock_barcode_inventory_hide_quantity_to_count
+#: model:ir.model.fields,field_description:econovo_stock_barcode_inventory_hide_quantity_to_count.field_res_company__show_quantity_to_count
+#: model:ir.model.fields,field_description:econovo_stock_barcode_inventory_hide_quantity_to_count.field_res_config_settings__show_quantity_to_count
+msgid "Show Quantity to Count"
+msgstr "Mostrar cantidad a contar"
+
+#. module: econovo_stock_barcode_inventory_hide_quantity_to_count
+#: model:ir.model.fields,help:econovo_stock_barcode_inventory_hide_quantity_to_count.field_res_company__show_quantity_to_count
+#: model:ir.model.fields,help:econovo_stock_barcode_inventory_hide_quantity_to_count.field_res_config_settings__show_quantity_to_count
+msgid "When enabled, the expected quantity (quantity on hand) is displayed during inventory adjustments in the Barcode app. Disable this option to force operators to perform a true blind count without seeing the system's expected quantities."
+msgstr "Cuando está habilitado, la cantidad esperada (cantidad disponible) se muestra durante los ajustes de inventario en la aplicación de código de barras. Deshabilite esta opción para forzar a los operadores a realizar un conteo ciego verdadero sin ver las cantidades esperadas del sistema."
+
+#. module: econovo_stock_barcode_inventory_hide_quantity_to_count
+#: model_terms:ir.ui.view,arch_db:econovo_stock_barcode_inventory_hide_quantity_to_count.res_config_settings_view_form_inherit_hide_qty
+msgid "When enabled, the expected quantity is displayed during inventory adjustments. Disable for blind counting."
+msgstr "Cuando está habilitado, la cantidad esperada se muestra durante los ajustes de inventario. Deshabilitar para conteo ciego."
+
+#. module: econovo_stock_barcode_inventory_hide_quantity_to_count
+#: model_terms:ir.ui.view,arch_db:econovo_stock_barcode_inventory_hide_quantity_to_count.res_config_settings_view_form_inherit_hide_qty
+#: setting string attribute
+msgid "Show Quantity to Count"
+msgstr "Mostrar cantidad a contar"

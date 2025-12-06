@@ -1,0 +1,9 @@
+.o_barcode_client_action .o_barcode_lines .o_barcode_line {
+    &.o_line_neutral {
+        background: var(--barcode__line--notCompleted, #fcf9f2);
+
+        &.o_line_counted {
+            background: var(--o-we-content-to-translate-color, rgba(255, 255, 90, 0.5));
+        }
+    }
+}
