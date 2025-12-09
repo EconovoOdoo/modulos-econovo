@@ -5,7 +5,8 @@
         <!-- Demo Source 1: BNA USD Billete (Argentina) -->
         <record id="demo_source_bna_usd" model="currency.rate.source">
             <field name="name">USD - Banco Nacion Argentina</field>
-            <field name="currency_id" ref="base.USD"/>
+            <field name="source_currency_id" ref="base.USD"/>
+            <field name="target_currency_id" ref="base.ARS"/>
             <field name="url">https://www.bna.com.ar/Personas</field>
             <field name="notes">Official USD exchange rate from Banco de la Nacion Argentina. Extracts the USD Billete sell rate from the main page.</field>
             <field name="extraction_method">regex</field>
@@ -25,7 +26,8 @@
         <!-- Demo Source 2: BNA EUR Billete (Argentina) -->
         <record id="demo_source_bna_eur" model="currency.rate.source">
             <field name="name">EUR - Banco Nacion Argentina</field>
-            <field name="currency_id" ref="base.EUR"/>
+            <field name="source_currency_id" ref="base.EUR"/>
+            <field name="target_currency_id" ref="base.ARS"/>
             <field name="url">https://www.bna.com.ar/Personas</field>
             <field name="notes">Official EUR exchange rate from Banco de la Nacion Argentina. Extracts the Euro sell rate from the main page.</field>
             <field name="extraction_method">regex</field>
@@ -45,7 +47,8 @@
         <!-- Demo Source 3: ECB API (JSON Example) -->
         <record id="demo_source_ecb_usd" model="currency.rate.source">
             <field name="name">USD - European Central Bank API</field>
-            <field name="currency_id" ref="base.USD"/>
+            <field name="source_currency_id" ref="base.USD"/>
+            <field name="target_currency_id" ref="base.EUR"/>
             <field name="url">https://api.frankfurter.app/latest?from=EUR&amp;to=USD</field>
             <field name="notes">USD rate from the Frankfurter API (based on ECB data). Returns JSON with current exchange rates.</field>
             <field name="extraction_method">jsonpath</field>
@@ -63,7 +66,8 @@
         <!-- Demo Source 4: XPath Example -->
         <record id="demo_source_xpath_example" model="currency.rate.source">
             <field name="name">GBP - XPath Example</field>
-            <field name="currency_id" ref="base.GBP"/>
+            <field name="source_currency_id" ref="base.GBP"/>
+            <field name="target_currency_id" ref="base.USD"/>
             <field name="url">https://www.x-rates.com/table/?from=USD&amp;amount=1</field>
             <field name="notes">Example using XPath extraction from x-rates.com. Demonstrates HTML table parsing.</field>
             <field name="extraction_method">xpath</field>

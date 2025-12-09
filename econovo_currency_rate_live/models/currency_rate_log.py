@@ -22,8 +22,13 @@ class CurrencyRateLog(models.Model):
         ondelete='cascade',
         index=True,
     )
-    currency_id = fields.Many2one(
-        related='source_id.currency_id',
+    source_currency_id = fields.Many2one(
+        related='source_id.source_currency_id',
+        store=True,
+        index=True,
+    )
+    target_currency_id = fields.Many2one(
+        related='source_id.target_currency_id',
         store=True,
         index=True,
     )
@@ -45,9 +50,31 @@ class CurrencyRateLog(models.Model):
             ('manual', 'Manual'),
             ('cron', 'Scheduled'),
             ('test', 'Test'),
+            ('fallback', 'Fallback'),
         ],
         string='Triggered By',
         default='manual',
+    )
+    triggered_by_source_id = fields.Many2one(
+        'currency.rate.source',
+        string='Triggered By Source',
+        ondelete='set null',
+        help='The source that triggered this execution via fallback',
+    )
+
+    # Extracted date information
+    extracted_date = fields.Date(
+        string='Extracted Date',
+        help='Date extracted from the source (if date extraction is configured)',
+    )
+    date_extraction_used = fields.Boolean(
+        string='Date Extraction Used',
+        default=False,
+        help='Whether date was extracted from source or used current date',
+    )
+    raw_date_value = fields.Char(
+        string='Raw Date Value',
+        help='Raw date string as extracted from the source before parsing',
     )
 
     # Result status

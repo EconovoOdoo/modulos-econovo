@@ -53,6 +53,10 @@ class TestExtractionWizard(models.TransientModel):
         string='Content Preview',
         help='First 5000 characters of the fetched content',
     )
+    extracted_fragment = fields.Text(
+        string='Extracted Fragment',
+        help='The portion of content that matched the extraction pattern',
+    )
 
     # Extraction Results
     raw_extracted_value = fields.Char(
@@ -77,6 +81,24 @@ class TestExtractionWizard(models.TransientModel):
         string='Variation (%)',
         digits=(10, 4),
         compute='_compute_rate_difference',
+    )
+
+    # Date Extraction Results
+    extract_date_enabled = fields.Boolean(
+        related='source_id.extract_date',
+        string='Date Extraction Enabled',
+        readonly=True,
+    )
+    extracted_date = fields.Date(
+        string='Extracted Date',
+        help='Date extracted from the source content',
+    )
+    raw_extracted_date = fields.Char(
+        string='Raw Date Value',
+        help='Date string as extracted before parsing',
+    )
+    date_extraction_error = fields.Char(
+        string='Date Extraction Error',
     )
 
     # Validation Results
@@ -105,8 +127,12 @@ class TestExtractionWizard(models.TransientModel):
         related='source_id.extraction_method',
         readonly=True,
     )
-    currency_id = fields.Many2one(
-        related='source_id.currency_id',
+    source_currency_id = fields.Many2one(
+        related='source_id.source_currency_id',
+        readonly=True,
+    )
+    target_currency_id = fields.Many2one(
+        related='source_id.target_currency_id',
         readonly=True,
     )
 
@@ -132,7 +158,7 @@ class TestExtractionWizard(models.TransientModel):
         try:
             # Get current rate for comparison
             current_rate_record = self.env['res.currency.rate'].search([
-                ('currency_id', '=', source.currency_id.id),
+                ('currency_id', '=', source.source_currency_id.id),
                 ('company_id', '=', self.env.company.id),
             ], order='name desc', limit=1)
             
@@ -149,13 +175,18 @@ class TestExtractionWizard(models.TransientModel):
             if not content:
                 raise ValueError('No content received from URL')
             
-            # Extract value
+            # Extract value and get the matched fragment for debugging
             raw_value = source._extract_value(content)
             
             if not raw_value:
                 raise ValueError(f'Could not extract value using {source.extraction_method} method')
             
             self.raw_extracted_value = raw_value
+            
+            # Extract fragment with context (100 chars before and after the value)
+            self.extracted_fragment = self._get_extraction_fragment(
+                content, raw_value, source.extraction_method
+            )
             
             # Process value
             processed_value = source._process_value(raw_value)
@@ -165,6 +196,17 @@ class TestExtractionWizard(models.TransientModel):
             
             self.processed_rate = processed_value
             self.current_rate = current_rate
+            
+            # Extract date if enabled
+            if source.extract_date:
+                try:
+                    # _extract_date now returns tuple (date, raw_value)
+                    extracted_date, raw_date_value = source._extract_date(content)
+                    self.extracted_date = extracted_date
+                    self.raw_extracted_date = raw_date_value or ''
+                except Exception as date_err:
+                    self.date_extraction_error = str(date_err)
+                    self.extracted_date = fields.Date.today()
             
             # Validate
             validation_result = source._validate_rate(processed_value)
@@ -225,3 +267,98 @@ class TestExtractionWizard(models.TransientModel):
             'view_mode': 'form',
             'target': 'current',
         }
+
+    def _get_extraction_fragment(self, content, extracted_value, method):
+        """
+        Get a fragment of the content showing the extracted value in context.
+        Shows approximately 150 characters before and after the extracted value.
+        """
+        import re
+        
+        if not content or not extracted_value:
+            return ''
+        
+        # Escape special regex characters in the extracted value
+        escaped_value = re.escape(str(extracted_value))
+        
+        # Try to find the value in the content
+        match = re.search(escaped_value, content)
+        
+        if not match:
+            # If exact match not found, return just the value
+            return f"Extracted value: {extracted_value}"
+        
+        start_pos = match.start()
+        end_pos = match.end()
+        
+        # Get context around the match (150 chars before and after)
+        context_chars = 150
+        fragment_start = max(0, start_pos - context_chars)
+        fragment_end = min(len(content), end_pos + context_chars)
+        
+        # Extract the fragment
+        fragment = content[fragment_start:fragment_end]
+        
+        # Add ellipsis if truncated
+        prefix = '...' if fragment_start > 0 else ''
+        suffix = '...' if fragment_end < len(content) else ''
+        
+        # Mark the extracted value in the fragment
+        # Find position of value in fragment
+        value_start_in_fragment = start_pos - fragment_start
+        value_end_in_fragment = end_pos - fragment_start
+        
+        # Build result with markers
+        result = (
+            f"{prefix}{fragment[:value_start_in_fragment]}"
+            f">>>{fragment[value_start_in_fragment:value_end_in_fragment]}<<<"
+            f"{fragment[value_end_in_fragment:]}{suffix}"
+        )
+        
+        return result
+
+    def _get_raw_date_value(self, content, source):
+        """Extract raw date string before parsing, for display purposes."""
+        import re
+        import json
+        from lxml import etree
+        
+        method = source.date_extraction_method or 'regex'
+        
+        try:
+            if method == 'regex' and source.date_regex:
+                match = re.search(source.date_regex, content)
+                if match:
+                    return match.group(1) if match.groups() else match.group(0)
+                    
+            elif method == 'xpath' and source.date_xpath:
+                tree = etree.HTML(content)
+                results = tree.xpath(source.date_xpath)
+                if results:
+                    return str(results[0]).strip()
+                    
+            elif method == 'jsonpath' and source.date_jsonpath:
+                try:
+                    from jsonpath_ng import parse
+                    data = json.loads(content)
+                    jsonpath_expr = parse(source.date_jsonpath)
+                    matches = [m.value for m in jsonpath_expr.find(data)]
+                    if matches:
+                        return str(matches[0]).strip()
+                except ImportError:
+                    pass
+                    
+            elif method == 'css' and source.date_css_selector:
+                try:
+                    from lxml.cssselect import CSSSelector
+                    tree = etree.HTML(content)
+                    selector = CSSSelector(source.date_css_selector)
+                    results = selector(tree)
+                    if results:
+                        return results[0].text_content().strip()
+                except ImportError:
+                    pass
+        except Exception:
+            pass
+        
+        return ''

@@ -11,6 +11,8 @@
                 <field name="test_executed" invisible="1"/>
                 <field name="test_success" invisible="1"/>
                 <field name="validation_passed" invisible="1"/>
+                <field name="extracted_fragment" invisible="1"/>
+                <field name="extract_date_enabled" invisible="1"/>
                 
                 <header invisible="not test_executed">
                     <div class="alert alert-success w-100 mb-0" 
@@ -32,7 +34,8 @@
                             <field name="source_id" readonly="1"/>
                             <field name="source_url" widget="url"/>
                             <field name="extraction_method"/>
-                            <field name="currency_id"/>
+                            <field name="source_currency_id"/>
+                            <field name="target_currency_id"/>
                         </group>
                         <group string="Test Status" invisible="not test_executed">
                             <field name="test_duration"/>
@@ -57,7 +60,7 @@
                         <!-- Results Tab -->
                         <page string="Results" name="results" invisible="not test_success">
                             <group>
-                                <group string="Extracted Values">
+                                <group string="Extracted Rate">
                                     <field name="raw_extracted_value"/>
                                     <field name="processed_rate"/>
                                 </group>
@@ -65,6 +68,18 @@
                                     <field name="current_rate"/>
                                     <field name="rate_difference"/>
                                     <field name="rate_variation_percent"/>
+                                </group>
+                            </group>
+                            <!-- Date Extraction Results -->
+                            <group string="Extracted Date" invisible="not extract_date_enabled">
+                                <group>
+                                    <field name="raw_extracted_date"/>
+                                    <field name="extracted_date"/>
+                                </group>
+                                <group>
+                                    <field name="date_extraction_error" 
+                                           invisible="not date_extraction_error"
+                                           class="text-danger"/>
                                 </group>
                             </group>
                             <group string="Validation" invisible="validation_passed">
@@ -80,6 +95,9 @@
                                     <field name="http_response_time"/>
                                     <field name="content_length"/>
                                 </group>
+                            </group>
+                            <group string="Extracted Fragment" invisible="not extracted_fragment">
+                                <field name="extracted_fragment" readonly="1" widget="code"/>
                             </group>
                             <group string="Content Preview">
                                 <field name="content_preview" readonly="1" widget="code"/>

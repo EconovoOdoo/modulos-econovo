@@ -7,10 +7,30 @@ from odoo import api, fields, models
 class ResConfigSettings(models.TransientModel):
     _inherit = 'res.config.settings'
 
-    # Currency Rate Live Settings
-    module_econovo_currency_rate_live = fields.Boolean(
-        string='Enable Currency Rate Live Updates',
-        help='Enable automatic currency rate updates from external sources',
+    # Currency Rate Live Settings - Main toggle
+    currency_rate_live_enabled = fields.Boolean(
+        string='Enable Econovo Currency Rate Live',
+        config_parameter='econovo_currency_rate_live.enabled',
+        help='Enable automatic currency rate updates from external sources (websites, APIs)',
+    )
+
+    currency_rate_live_cron_interval = fields.Selection(
+        selection=[
+            ('5', 'Every 5 minutes'),
+            ('10', 'Every 10 minutes'),
+            ('15', 'Every 15 minutes'),
+            ('30', 'Every 30 minutes'),
+            ('60', 'Every hour'),
+        ],
+        string='Check Interval',
+        default='15',
+        config_parameter='econovo_currency_rate_live.cron_interval',
+        help='How often the system checks if any source needs to run.\n\n'
+             'This is NOT the update frequency - it is how often the scheduler '
+             'looks for sources that are due.\n\n'
+             'Example: If a source is configured to run at 09:30 and Check Interval '
+             'is 15 minutes, the scheduler will detect it between 09:30 and 09:45.\n\n'
+             'Tip: Use 15 minutes for a good balance between precision and performance.',
     )
 
     currency_rate_live_log_retention_days = fields.Integer(
@@ -74,6 +94,36 @@ class ResConfigSettings(models.TransientModel):
             record.currency_rate_live_sources_count = Source.search_count([
                 ('active', '=', True)
             ])
+
+    def set_values(self):
+        """Override to update cron settings when config changes."""
+        res = super().set_values()
+        self._update_cron_settings()
+        return res
+
+    def _update_cron_settings(self):
+        """Update cron job based on configuration."""
+        cron = self.env.ref(
+            'econovo_currency_rate_live.ir_cron_update_currency_rates',
+            raise_if_not_found=False
+        )
+        if not cron:
+            return
+        
+        # Get config values
+        enabled = self.env['ir.config_parameter'].sudo().get_param(
+            'econovo_currency_rate_live.enabled', 'False'
+        ) == 'True'
+        interval = int(self.env['ir.config_parameter'].sudo().get_param(
+            'econovo_currency_rate_live.cron_interval', '15'
+        ))
+        
+        # Update cron
+        cron.sudo().write({
+            'active': enabled,
+            'interval_number': interval,
+            'interval_type': 'minutes',
+        })
 
     def action_open_currency_rate_sources(self):
         """Open the currency rate sources list."""

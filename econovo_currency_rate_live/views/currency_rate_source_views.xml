@@ -13,7 +13,8 @@
                   decoration-muted="state == 'draft' or not active">
                 <field name="sequence" widget="handle"/>
                 <field name="name"/>
-                <field name="currency_id"/>
+                <field name="source_currency_id"/>
+                <field name="target_currency_id" optional="show"/>
                 <field name="url" optional="hide"/>
                 <field name="extraction_method"/>
                 <field name="last_rate" digits="[16, 4]"/>
@@ -84,7 +85,8 @@
                         <page string="General" name="general">
                             <group>
                                 <group string="Currency Configuration">
-                                    <field name="currency_id" options="{'no_create': True}"/>
+                                    <field name="source_currency_id" options="{'no_create': True}"/>
+                                    <field name="target_currency_id" options="{'no_create': True}"/>
                                     <field name="active"/>
                                     <field name="sequence"/>
                                 </group>
@@ -134,6 +136,18 @@
                                 <field name="auto_keyword" 
                                        placeholder="dolar, dollar, usd"/>
                             </group>
+                            <!-- Auto Detection Quick Reference -->
+                            <group string="Quick Reference" invisible="extraction_method != 'auto'">
+                                <div colspan="2" class="alert alert-info mb-0">
+                                    <p class="mb-2"><strong>Automatic detection analyzes the response and applies the best method:</strong></p>
+                                    <ol class="mb-2">
+                                        <li>Check Content-Type: JSON -&gt; JSONPath, XML -&gt; XPath, HTML -&gt; Regex</li>
+                                        <li>For JSON: Search common fields (rate, value, price)</li>
+                                        <li>For HTML: Find numeric patterns near the keyword</li>
+                                    </ol>
+                                    <p class="mb-0 text-warning"><strong>Note:</strong> Less precise than manual methods. Not recommended for critical production.</p>
+                                </div>
+                            </group>
 
                             <!-- Regex Extraction -->
                             <group string="Regex Configuration" 
@@ -146,6 +160,25 @@
                                 <field name="regex_flag_multiline"/>
                                 <field name="regex_flag_dotall"/>
                             </group>
+                            <!-- Regex Quick Reference -->
+                            <group string="Quick Reference" invisible="extraction_method != 'regex'">
+                                <div colspan="2">
+                                    <p><strong>Use () for capture groups. The value is extracted from the specified group.</strong></p>
+                                    <table class="table table-sm table-bordered mb-2">
+                                        <thead><tr><th>Symbol</th><th>Meaning</th><th>Example</th></tr></thead>
+                                        <tbody>
+                                            <tr><td><code>.</code></td><td>Any character</td><td><code>USD.+</code></td></tr>
+                                            <tr><td><code>\d</code></td><td>Digit (0-9)</td><td><code>\d+</code></td></tr>
+                                            <tr><td><code>\s</code></td><td>Whitespace</td><td><code>\s*</code></td></tr>
+                                            <tr><td><code>*</code> / <code>+</code></td><td>0+ / 1+ repetitions</td><td><code>[0-9]+</code></td></tr>
+                                            <tr><td><code>?</code></td><td>Optional</td><td><code>\d+\.?\d*</code></td></tr>
+                                            <tr><td><code>(...)</code></td><td>Capture group</td><td><code>USD.*?([0-9.,]+)</code></td></tr>
+                                            <tr><td><code>[abc]</code></td><td>Character class</td><td><code>[0-9.,]+</code></td></tr>
+                                        </tbody>
+                                    </table>
+                                    <p class="mb-0"><strong>Common:</strong> <code>([0-9]+[.,][0-9]+)</code> | <code>USD&lt;/td&gt;\s*&lt;td&gt;([0-9.,]+)</code></p>
+                                </div>
+                            </group>
 
                             <!-- XPath Extraction -->
                             <group string="XPath Configuration" 
@@ -156,6 +189,24 @@
                                 <field name="xpath_attribute"/>
                                 <field name="xpath_result_index"/>
                             </group>
+                            <!-- XPath Quick Reference -->
+                            <group string="Quick Reference" invisible="extraction_method != 'xpath'">
+                                <div colspan="2">
+                                    <p><strong>Navigate HTML/XML by position, attributes, or content.</strong></p>
+                                    <table class="table table-sm table-bordered mb-2">
+                                        <thead><tr><th>Expression</th><th>Meaning</th><th>Example</th></tr></thead>
+                                        <tbody>
+                                            <tr><td><code>//</code></td><td>Any level</td><td><code>//table//td</code></td></tr>
+                                            <tr><td><code>[@id='x']</code></td><td>By attribute</td><td><code>//table[@id='rates']</code></td></tr>
+                                            <tr><td><code>[n]</code></td><td>By position (1-indexed)</td><td><code>//tr[2]/td[3]</code></td></tr>
+                                            <tr><td><code>contains()</code></td><td>Text contains</td><td><code>//tr[td[contains(.,'USD')]]</code></td></tr>
+                                            <tr><td><code>text()</code></td><td>Text content</td><td><code>//span/text()</code></td></tr>
+                                            <tr><td><code>[last()]</code></td><td>Last element</td><td><code>//tr[last()]/td</code></td></tr>
+                                        </tbody>
+                                    </table>
+                                    <p class="text-muted mb-0"><em>Use "XPath Attribute" to extract an attribute (e.g., "value") instead of text.</em></p>
+                                </div>
+                            </group>
 
                             <!-- JSONPath Extraction -->
                             <group string="JSONPath Configuration" 
@@ -164,6 +215,24 @@
                                        widget="code"
                                        placeholder="$.data.rates.USD.value"/>
                                 <field name="jsonpath_result_index"/>
+                            </group>
+                            <!-- JSONPath Quick Reference -->
+                            <group string="Quick Reference" invisible="extraction_method != 'jsonpath'">
+                                <div colspan="2">
+                                    <p><strong>Navigate JSON structures using XPath-like syntax.</strong></p>
+                                    <table class="table table-sm table-bordered mb-2">
+                                        <thead><tr><th>Expression</th><th>Meaning</th><th>Example</th></tr></thead>
+                                        <tbody>
+                                            <tr><td><code>$</code></td><td>Root of JSON</td><td><code>$.rate</code></td></tr>
+                                            <tr><td><code>.property</code></td><td>Access property</td><td><code>$.data.rates.USD</code></td></tr>
+                                            <tr><td><code>[0]</code></td><td>Array index (0-based)</td><td><code>$.rates[0].value</code></td></tr>
+                                            <tr><td><code>[*]</code></td><td>All elements</td><td><code>$.rates[*].value</code></td></tr>
+                                            <tr><td><code>[?(@.x=='y')]</code></td><td>Filter condition</td><td><code>$.rates[?(@.code=='USD')].value</code></td></tr>
+                                            <tr><td><code>..property</code></td><td>Recursive search</td><td><code>$..USD</code></td></tr>
+                                        </tbody>
+                                    </table>
+                                    <p class="mb-0"><strong>APIs:</strong> CoinGecko: <code>$.bitcoin.usd</code> | Open Exchange: <code>$.rates.ARS</code></p>
+                                </div>
                             </group>
 
                             <!-- CSS Selector Extraction -->
@@ -175,6 +244,34 @@
                                 <field name="css_attribute"/>
                                 <field name="css_result_index"/>
                             </group>
+                            <!-- CSS Quick Reference -->
+                            <group string="Quick Reference" invisible="extraction_method != 'css'">
+                                <div colspan="2">
+                                    <p><strong>Find HTML elements using stylesheet/querySelector syntax.</strong></p>
+                                    <table class="table table-sm table-bordered mb-2">
+                                        <thead><tr><th>Selector</th><th>Meaning</th><th>Example</th></tr></thead>
+                                        <tbody>
+                                            <tr><td><code>#id</code></td><td>Select by ID</td><td><code>#rate-usd</code></td></tr>
+                                            <tr><td><code>.class</code></td><td>Select by class</td><td><code>.price-value</code></td></tr>
+                                            <tr><td><code>[attr="val"]</code></td><td>By attribute</td><td><code>td[data-currency="USD"]</code></td></tr>
+                                            <tr><td><code>parent child</code></td><td>Descendant</td><td><code>#rates table td</code></td></tr>
+                                            <tr><td><code>parent &gt; child</code></td><td>Direct child</td><td><code>tr &gt; td</code></td></tr>
+                                            <tr><td><code>:nth-child(n)</code></td><td>N-th child (1-indexed)</td><td><code>tr td:nth-child(3)</code></td></tr>
+                                        </tbody>
+                                    </table>
+                                    <p class="text-muted mb-0"><em>Leave "CSS Attribute" empty to extract text content.</em></p>
+                                </div>
+                            </group>
+
+                            <!-- General Tips -->
+                            <separator string="Tips"/>
+                            <div class="alert alert-secondary">
+                                <ul class="mb-0">
+                                    <li><strong>Test first:</strong> Always use "Test Extraction" before activating</li>
+                                    <li><strong>Result Index:</strong> If multiple elements match, specify which one (1 = first)</li>
+                                    <li><strong>Decimal Format:</strong> Configure in "Value Processing" tab to match source format</li>
+                                </ul>
+                            </div>
                         </page>
 
                         <!-- Value Processing Tab -->
@@ -182,6 +279,12 @@
                             <group>
                                 <group string="Decimal Format">
                                     <field name="decimal_format"/>
+                                    <field name="custom_thousand_sep" 
+                                           invisible="decimal_format != 'custom'"
+                                           placeholder="e.g., . or , or space"/>
+                                    <field name="custom_decimal_sep" 
+                                           invisible="decimal_format != 'custom'"
+                                           placeholder="e.g., , or ."/>
                                 </group>
                                 <group string="Value Transformations">
                                     <field name="invert_rate"/>
@@ -190,8 +293,8 @@
                             </group>
                         </page>
 
-                        <!-- Validation Tab -->
-                        <page string="Validation" name="validation">
+                        <!-- Validation & Error Handling Tab -->
+                        <page string="Validation &amp; Error Handling" name="validation">
                             <group>
                                 <group string="Rate Limits">
                                     <field name="min_valid_rate"/>
@@ -199,8 +302,78 @@
                                 </group>
                                 <group string="Variation Control">
                                     <field name="max_variation_percent"/>
-                                    <field name="on_validation_fail"/>
                                 </group>
+                            </group>
+                            <group string="Error Handling">
+                                <group>
+                                    <field name="on_validation_fail"/>
+                                    <field name="fallback_source_id" 
+                                           invisible="on_validation_fail != 'fallback'"
+                                           required="on_validation_fail == 'fallback'"/>
+                                    <div class="text-muted small o_row" invisible="on_validation_fail != 'fallback'">
+                                        <span>When this source fails, the fallback source will be executed automatically. Only sources with "Automatic Update" disabled are available.</span>
+                                    </div>
+                                </group>
+                            </group>
+                        </page>
+                        
+                        <!-- Date Extraction Tab (moved between Validation and Scheduling) -->
+                        <page string="Date Extraction" name="date_extraction">
+                            <group string="Configuration">
+                                <group>
+                                    <field name="extract_date"/>
+                                    <field name="date_extraction_method" invisible="not extract_date"/>
+                                </group>
+                                <group>
+                                    <field name="date_format" invisible="not extract_date"/>
+                                </group>
+                            </group>
+                            
+                            <!-- Method-specific fields -->
+                            <group string="Extraction Pattern" invisible="not extract_date">
+                                <group>
+                                    <!-- Regex -->
+                                    <field name="date_regex" widget="code" 
+                                           invisible="date_extraction_method != 'regex'"
+                                           placeholder="(\d{2}/\d{2}/\d{4})"/>
+                                    <!-- XPath -->
+                                    <field name="date_xpath" widget="code" 
+                                           invisible="date_extraction_method != 'xpath'"
+                                           placeholder="//span[@class='date']/text()"/>
+                                    <!-- JSONPath -->
+                                    <field name="date_jsonpath" widget="code" 
+                                           invisible="date_extraction_method != 'jsonpath'"
+                                           placeholder="$.data.date"/>
+                                    <!-- CSS Selector -->
+                                    <field name="date_css_selector" widget="code" 
+                                           invisible="date_extraction_method != 'css'"
+                                           placeholder=".date-value, #rate-date"/>
+                                </group>
+                            </group>
+                            
+                            <group string="Quick Reference" invisible="not extract_date">
+                                <div class="text-muted" colspan="2">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Extraction Methods:</strong></p>
+                                            <ul class="mb-0">
+                                                <li><strong>Regex:</strong> Pattern with capturing group - <code>(\d{2}/\d{2}/\d{4})</code></li>
+                                                <li><strong>XPath:</strong> Path expression - <code>//span[@class='date']/text()</code></li>
+                                                <li><strong>JSONPath:</strong> JSON path - <code>$.data.date</code></li>
+                                                <li><strong>CSS:</strong> CSS selector - <code>.date-value</code></li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Date Format</strong> (Python strptime):</p>
+                                            <ul class="mb-0">
+                                                <li><code>%d/%m/%Y</code> - 31/12/2024</li>
+                                                <li><code>%Y-%m-%d</code> - 2024-12-31</li>
+                                                <li><code>%d-%m-%Y</code> - 31-12-2024</li>
+                                                <li><code>%m/%d/%Y</code> - 12/31/2024</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
                             </group>
                         </page>
 
@@ -209,19 +382,61 @@
                             <group>
                                 <group string="Automatic Updates">
                                     <field name="auto_update"/>
-                                    <field name="update_interval" invisible="not auto_update"/>
-                                    <field name="update_hours" invisible="not auto_update"/>
-                                    <field name="update_weekdays" invisible="not auto_update"/>
+                                    <field name="update_frequency" invisible="not auto_update"/>
+                                    <field name="source_tz" invisible="not auto_update"/>
                                 </group>
-                                <group string="Next Execution" invisible="not next_execution">
+                                <group string="Next Execution" invisible="not auto_update">
                                     <field name="next_execution" readonly="1"/>
+                                    <div class="text-muted small" colspan="2">
+                                        <p class="mb-0">Scheduled times are configured in <strong><field name="source_tz" readonly="1" nolabel="1" class="d-inline"/></strong> timezone.</p>
+                                    </div>
                                 </group>
                             </group>
-                            <!-- Date Extraction -->
-                            <group string="Date Extraction">
-                                <field name="extract_date"/>
-                                <field name="date_regex_pattern" widget="code" invisible="not extract_date"/>
-                                <field name="date_format" invisible="not extract_date"/>
+                            
+                            <!-- Timing Configuration based on frequency -->
+                            <group string="Timing Configuration" invisible="not auto_update or update_frequency in ('specific', 'hourly')">
+                                <group>
+                                    <!-- Daily: show preferred hour -->
+                                    <field name="preferred_hour" string="Run at Hour"
+                                           invisible="update_frequency != 'daily'"/>
+                                    <div class="text-muted small o_row" invisible="update_frequency != 'daily'">
+                                        <span>Updates run once per day at the selected hour.</span>
+                                    </div>
+                                    
+                                    <!-- Weekly: show day and hour -->
+                                    <field name="preferred_weekday" 
+                                           invisible="update_frequency != 'weekly'"/>
+                                    <field name="preferred_hour" string="Run at Hour"
+                                           invisible="update_frequency != 'weekly'"/>
+                                    <div class="text-muted small o_row" invisible="update_frequency != 'weekly'">
+                                        <span>Updates run once per week on the selected day and hour.</span>
+                                    </div>
+                                    
+                                    <!-- Monthly: show days of month and hour -->
+                                    <field name="preferred_monthdays" string="Days of Month"
+                                           invisible="update_frequency != 'monthly'"
+                                           placeholder="1, 15, 30"/>
+                                    <field name="preferred_hour" string="Run at Hour"
+                                           invisible="update_frequency != 'monthly'"/>
+                                    <div class="text-muted small o_row" invisible="update_frequency != 'monthly'">
+                                        <span>Enter days separated by commas (e.g., 1, 15, 30). Days 29-31 are skipped in shorter months.</span>
+                                    </div>
+                                </group>
+                            </group>
+                            
+                            <!-- Schedule Lines (One2many) - Only for specific frequency -->
+                            <group string="Specific Schedule" invisible="update_frequency != 'specific' or not auto_update">
+                                <div colspan="2" class="text-muted mb-2">
+                                    <p class="mb-1">Define specific day and hour combinations when updates should run.</p>
+                                    <p class="mb-0"><em>Example: Monday 09:00, Wednesday 14:30, Friday 17:00</em></p>
+                                    <p class="mb-0 text-warning"><em>Note: Duplicate day/hour combinations are not allowed.</em></p>
+                                </div>
+                                <field name="schedule_ids" nolabel="1" colspan="2">
+                                    <tree editable="bottom">
+                                        <field name="dayofweek"/>
+                                        <field name="hour"/>
+                                    </tree>
+                                </field>
                             </group>
                         </page>
 
@@ -280,7 +495,8 @@
         <field name="arch" type="xml">
             <search string="Currency Rate Sources">
                 <field name="name"/>
-                <field name="currency_id"/>
+                <field name="source_currency_id"/>
+                <field name="target_currency_id"/>
                 <field name="url"/>
                 <separator/>
                 <filter string="Active" name="active_sources" domain="[('state', '=', 'active')]"/>
@@ -294,7 +510,8 @@
                 <filter string="Archived" name="archived" domain="[('active', '=', False)]"/>
                 <separator/>
                 <group expand="0" string="Group By">
-                    <filter string="Currency" name="group_currency" context="{'group_by': 'currency_id'}"/>
+                    <filter string="Source Currency" name="group_source_currency" context="{'group_by': 'source_currency_id'}"/>
+                    <filter string="Target Currency" name="group_target_currency" context="{'group_by': 'target_currency_id'}"/>
                     <filter string="Status" name="group_status" context="{'group_by': 'last_status'}"/>
                     <filter string="State" name="group_state" context="{'group_by': 'state'}"/>
                     <filter string="Method" name="group_method" context="{'group_by': 'extraction_method'}"/>

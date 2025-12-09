@@ -13,7 +13,8 @@
                   default_order="execution_date desc">
                 <field name="execution_date"/>
                 <field name="source_id"/>
-                <field name="currency_id"/>
+                <field name="source_currency_id"/>
+                <field name="target_currency_id" optional="show"/>
                 <field name="raw_value"/>
                 <field name="processed_rate" digits="[16,4]"/>
                 <field name="previous_rate" digits="[16,4]" optional="show"/>
@@ -23,6 +24,8 @@
                 <field name="duration" optional="hide"/>
                 <field name="http_status_code" optional="hide"/>
                 <field name="triggered_by"/>
+                <field name="triggered_by_source_id" optional="hide"/>
+                <field name="extracted_date" optional="show"/>
                 <field name="state" widget="badge"
                        decoration-success="state == 'success'"
                        decoration-warning="state == 'warning'"
@@ -53,9 +56,11 @@
                     <group>
                         <group string="Execution Details">
                             <field name="source_id"/>
-                            <field name="currency_id"/>
+                            <field name="source_currency_id"/>
+                            <field name="target_currency_id"/>
                             <field name="execution_date"/>
                             <field name="triggered_by"/>
+                            <field name="triggered_by_source_id" invisible="triggered_by != 'fallback'"/>
                             <field name="duration" widget="float_time"/>
                         </group>
                         <group string="Rate Information">
@@ -63,6 +68,10 @@
                             <field name="processed_rate"/>
                             <field name="previous_rate"/>
                             <field name="rate_variation" widget="float" digits="[10,4]"/>
+                            <separator/>
+                            <field name="date_extraction_used"/>
+                            <field name="extracted_date" invisible="not date_extraction_used"/>
+                            <field name="raw_date_value" invisible="not date_extraction_used"/>
                         </group>
                     </group>
 
@@ -108,7 +117,8 @@
         <field name="arch" type="xml">
             <search string="Currency Rate Logs">
                 <field name="source_id"/>
-                <field name="currency_id"/>
+                <field name="source_currency_id"/>
+                <field name="target_currency_id"/>
                 <separator/>
                 <filter string="Success" name="success" domain="[('state', '=', 'success')]"/>
                 <filter string="Warnings" name="warnings" domain="[('state', '=', 'warning')]"/>
@@ -120,6 +130,7 @@
                 <separator/>
                 <filter string="Manual" name="manual" domain="[('triggered_by', '=', 'manual')]"/>
                 <filter string="Scheduled" name="scheduled" domain="[('triggered_by', '=', 'cron')]"/>
+                <filter string="Fallback" name="fallback" domain="[('triggered_by', '=', 'fallback')]"/>
                 <filter string="Test" name="test" domain="[('triggered_by', '=', 'test')]"/>
                 <separator/>
                 <filter string="High Variation (&gt;5%)" name="high_variation" 
@@ -127,7 +138,8 @@
                 <separator/>
                 <group expand="0" string="Group By">
                     <filter string="Source" name="group_source" context="{'group_by': 'source_id'}"/>
-                    <filter string="Currency" name="group_currency" context="{'group_by': 'currency_id'}"/>
+                    <filter string="Source Currency" name="group_source_currency" context="{'group_by': 'source_currency_id'}"/>
+                    <filter string="Target Currency" name="group_target_currency" context="{'group_by': 'target_currency_id'}"/>
                     <filter string="Status" name="group_state" context="{'group_by': 'state'}"/>
                     <filter string="Date" name="group_date" context="{'group_by': 'execution_date:day'}"/>
                     <filter string="Triggered By" name="group_triggered" context="{'group_by': 'triggered_by'}"/>

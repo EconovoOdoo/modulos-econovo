@@ -6,6 +6,7 @@ import re
 import traceback
 from datetime import datetime, timedelta
 
+import pytz
 import requests
 from lxml import etree
 
@@ -64,12 +65,20 @@ class CurrencyRateSource(models.Model):
         default=10,
         help='Lower values have higher priority'
     )
-    currency_id = fields.Many2one(
+    source_currency_id = fields.Many2one(
         'res.currency',
-        string='Currency',
+        string='Source Currency',
         required=True,
         tracking=True,
-        help='Target currency to update rates for'
+        help='The currency being quoted (e.g., USD). The extracted value represents how much of the target currency equals 1 unit of this currency.'
+    )
+    target_currency_id = fields.Many2one(
+        'res.currency',
+        string='Target Currency',
+        required=True,
+        tracking=True,
+        default=lambda self: self.env.company.currency_id,
+        help='The reference currency (e.g., ARS). The extracted value represents the price of 1 source currency in this currency. Only companies with this currency as their base will be updated.'
     )
     notes = fields.Text(
         string='Notes',
@@ -236,11 +245,23 @@ class CurrencyRateSource(models.Model):
             ('fr_FR', 'French (1 234,56)'),
             ('ch_CH', "Swiss (1'234.56)"),
             ('in_IN', 'Indian (1,23,456.78)'),
+            ('custom', 'Custom (specify separators)'),
         ],
         string='Number Format',
         default='es_AR',
         required=True,
-        help='Format used by the source for decimal numbers'
+        help='Format used by the source for decimal numbers. Select "Custom" to specify separators manually.'
+    )
+    custom_thousand_sep = fields.Char(
+        string='Thousands Separator',
+        size=3,
+        help='Character(s) used as thousands separator (e.g., ".", ",", " ", "\'"). Leave empty if none.'
+    )
+    custom_decimal_sep = fields.Char(
+        string='Decimal Separator',
+        size=3,
+        default=',',
+        help='Character used as decimal separator (e.g., "," or ".")'
     )
     value_multiplier = fields.Float(
         string='Multiplier',
@@ -253,7 +274,7 @@ class CurrencyRateSource(models.Model):
         help='If the source provides inverse rate (e.g., foreign per local instead of local per foreign)'
     )
 
-    # === VALIDATION ===
+    # === VALIDATION & ERROR HANDLING ===
     min_valid_rate = fields.Float(
         string='Minimum Valid Rate',
         default=0.0,
@@ -274,10 +295,18 @@ class CurrencyRateSource(models.Model):
             ('skip', 'Skip Update'),
             ('log_error', 'Log Error and Skip'),
             ('use_last', 'Use Last Valid Rate'),
+            ('fallback', 'Trigger Fallback Source'),
         ],
         string='On Validation Failure',
         default='log_error',
         help='Action to take when extracted rate fails validation'
+    )
+    fallback_source_id = fields.Many2one(
+        'currency.rate.source',
+        string='Fallback Source',
+        domain="[('id', '!=', id), ('auto_update', '=', False)]",
+        help='Alternative source to execute if this one fails. '
+             'Only sources with "Automatic Update" disabled are shown to prevent circular triggers.'
     )
 
     # === DATE EXTRACTION ===
@@ -286,9 +315,32 @@ class CurrencyRateSource(models.Model):
         default=False,
         help='Extract rate date from source instead of using current date'
     )
-    date_regex_pattern = fields.Char(
+    date_extraction_method = fields.Selection(
+        [
+            ('regex', 'Regular Expression'),
+            ('xpath', 'XPath (HTML/XML)'),
+            ('jsonpath', 'JSONPath (JSON)'),
+            ('css', 'CSS Selector'),
+        ],
+        string='Date Extraction Method',
+        default='regex',
+        help='Method to extract the date from the response'
+    )
+    date_regex = fields.Char(
         string='Date Regex Pattern',
-        help='Regex pattern to extract date. Example: (\\d{2}/\\d{2}/\\d{4})'
+        help='Regular expression with capturing group to extract date. Example: (\\d{2}/\\d{2}/\\d{4})'
+    )
+    date_xpath = fields.Char(
+        string='Date XPath',
+        help='XPath expression to extract date from HTML/XML'
+    )
+    date_jsonpath = fields.Char(
+        string='Date JSONPath',
+        help='JSONPath expression to extract date from JSON. Example: $.data.date'
+    )
+    date_css_selector = fields.Char(
+        string='Date CSS Selector',
+        help='CSS selector to extract date from HTML'
     )
     date_format = fields.Char(
         string='Date Format',
@@ -297,36 +349,82 @@ class CurrencyRateSource(models.Model):
     )
 
     # === SCHEDULING ===
+    @api.model
+    def _tz_get(self):
+        """Return list of timezones (same pattern as calendar module)."""
+        return [(tz, tz) for tz in sorted(pytz.all_timezones, key=lambda tz: tz if not tz.startswith('Etc/') else '_')]
+
+    source_tz = fields.Selection(
+        '_tz_get',
+        string='Source Timezone',
+        default=lambda self: self.env.user.tz or 'UTC',
+        required=True,
+        help='Timezone for schedule configuration. All scheduled times are interpreted in this timezone. '
+             'This should typically match the timezone where the rate source publishes updates.'
+    )
     auto_update = fields.Boolean(
         string='Automatic Update',
         default=True,
         tracking=True,
         help='Enable scheduled automatic updates'
     )
-    update_interval = fields.Selection(
+    update_frequency = fields.Selection(
         [
             ('hourly', 'Hourly'),
             ('daily', 'Daily'),
             ('weekly', 'Weekly'),
+            ('monthly', 'Monthly'),
+            ('specific', 'Specific Days/Hours'),
         ],
-        string='Update Interval',
-        default='daily'
+        string='Update Frequency',
+        default='daily',
+        help='How often to update the currency rate'
     )
-    update_hours = fields.Char(
-        string='Update Hours',
-        default='11,15',
-        help='Comma-separated hours (24h format) when to run updates. Example: 9,12,18'
+    preferred_hour = fields.Selection(
+        selection='_get_hour_selection',
+        string='Preferred Hour',
+        default='9:00',
+        help='Preferred hour for daily/weekly/monthly updates'
     )
-    update_weekdays = fields.Char(
-        string='Update Weekdays',
-        default='0,1,2,3,4',
-        help='Comma-separated weekdays (0=Monday, 6=Sunday). Example: 0,1,2,3,4 for weekdays'
+    preferred_weekday = fields.Selection(
+        [
+            ('0', 'Monday'),
+            ('1', 'Tuesday'),
+            ('2', 'Wednesday'),
+            ('3', 'Thursday'),
+            ('4', 'Friday'),
+            ('5', 'Saturday'),
+            ('6', 'Sunday'),
+        ],
+        string='Preferred Day',
+        default='0',
+        help='Preferred day of week for weekly updates'
+    )
+    preferred_monthdays = fields.Char(
+        string='Days of Month',
+        default='1',
+        help='Days of month for monthly updates. Comma-separated, e.g.: 1, 15, 30'
+    )
+    schedule_ids = fields.One2many(
+        'currency.rate.schedule',
+        'source_id',
+        string='Specific Schedule',
+        help='Define specific day/hour combinations (only used when frequency is "Specific Days/Hours")'
     )
     next_execution = fields.Datetime(
         string='Next Scheduled Execution',
         compute='_compute_next_execution',
         store=True
     )
+
+    @api.model
+    def _get_hour_selection(self):
+        """Generate hour selection options with 30-minute intervals."""
+        options = []
+        for h in range(24):
+            options.append((f'{h}:00', f'{h:02d}:00'))
+            options.append((f'{h}:30', f'{h:02d}:30'))
+        return options
 
     # === STATUS (computed) ===
     state = fields.Selection(
@@ -447,14 +545,186 @@ class CurrencyRateSource(models.Model):
             else:
                 record.state = 'draft'
 
-    @api.depends('auto_update', 'update_interval', 'update_hours', 'update_weekdays')
+    @api.depends('auto_update', 'update_frequency', 'preferred_hour', 'preferred_weekday', 'preferred_monthdays', 'schedule_ids', 'schedule_ids.dayofweek', 'schedule_ids.hour', 'source_tz')
     def _compute_next_execution(self):
+        """Compute next scheduled execution time.
+        
+        Uses the source's configured timezone (source_tz) to calculate 
+        scheduled times, following the pattern used by calendar.event.
+        All datetimes are stored as naive UTC in the database.
+        """
         for record in self:
             if not record.auto_update:
                 record.next_execution = False
                 continue
-            # Simple calculation - will be refined by cron
-            record.next_execution = fields.Datetime.now() + timedelta(hours=1)
+            
+            # Use source timezone (not user timezone) for schedule calculations
+            # This ensures consistent scheduling regardless of who views/edits
+            tz_name = record.source_tz or 'UTC'
+            try:
+                source_tz = pytz.timezone(tz_name)
+            except pytz.UnknownTimeZoneError:
+                source_tz = pytz.UTC
+            
+            # Convert current UTC time to source timezone for calculations
+            utc_now = fields.Datetime.now()
+            local_now = pytz.utc.localize(utc_now).astimezone(source_tz)
+            
+            # Parse preferred hour (represents time in source_tz)
+            pref_hour = 9
+            pref_minute = 0
+            if record.preferred_hour:
+                parts = record.preferred_hour.split(':')
+                pref_hour = int(parts[0])
+                pref_minute = int(parts[1]) if len(parts) > 1 else 0
+            
+            if record.update_frequency == 'hourly':
+                # Next hour (runs every hour when cron executes)
+                next_exec_local = local_now.replace(minute=0, second=0, microsecond=0) + timedelta(hours=1)
+                record.next_execution = next_exec_local.astimezone(pytz.utc).replace(tzinfo=None)
+                
+            elif record.update_frequency == 'daily':
+                # Today or tomorrow at preferred hour (source timezone)
+                next_exec_local = local_now.replace(hour=pref_hour, minute=pref_minute, second=0, microsecond=0)
+                if next_exec_local <= local_now:
+                    next_exec_local += timedelta(days=1)
+                record.next_execution = next_exec_local.astimezone(pytz.utc).replace(tzinfo=None)
+                
+            elif record.update_frequency == 'weekly':
+                # Next preferred weekday at preferred hour (source timezone)
+                pref_weekday = int(record.preferred_weekday or '0')
+                days_until = (pref_weekday - local_now.weekday()) % 7
+                next_exec_local = (local_now + timedelta(days=days_until)).replace(
+                    hour=pref_hour, minute=pref_minute, second=0, microsecond=0
+                )
+                if next_exec_local <= local_now:
+                    next_exec_local += timedelta(days=7)
+                record.next_execution = next_exec_local.astimezone(pytz.utc).replace(tzinfo=None)
+                
+            elif record.update_frequency == 'monthly':
+                # Find next valid day from preferred_monthdays (source timezone)
+                pref_days = record._parse_monthdays()
+                if not pref_days:
+                    pref_days = [1]
+                
+                # Find next execution using source timezone
+                next_exec = record._find_next_monthday_execution(local_now, pref_days, pref_hour, pref_minute, source_tz)
+                record.next_execution = next_exec
+                
+            elif record.update_frequency == 'specific' and record.schedule_ids:
+                # Find next scheduled time from schedule_ids (source timezone)
+                record.next_execution = record._compute_next_specific_execution(local_now, source_tz)
+            else:
+                record.next_execution = False
+
+    def _parse_monthdays(self):
+        """Parse preferred_monthdays string into list of integers."""
+        if not self.preferred_monthdays:
+            return [1]
+        try:
+            days = []
+            for part in self.preferred_monthdays.split(','):
+                day = int(part.strip())
+                if 1 <= day <= 31:
+                    days.append(day)
+            return sorted(set(days)) if days else [1]
+        except (ValueError, AttributeError):
+            return [1]
+
+    def _find_next_monthday_execution(self, local_now, pref_days, pref_hour, pref_minute, user_tz):
+        """Find next execution datetime for monthly schedule (returns UTC)."""
+        import calendar
+        
+        # Check current month first
+        for day in pref_days:
+            # Get last day of current month
+            _, last_day = calendar.monthrange(local_now.year, local_now.month)
+            actual_day = min(day, last_day)
+            try:
+                candidate = local_now.replace(day=actual_day, hour=pref_hour, minute=pref_minute, second=0, microsecond=0)
+                if candidate > local_now:
+                    return candidate.astimezone(pytz.utc).replace(tzinfo=None)
+            except ValueError:
+                continue
+        
+        # Check next month
+        if local_now.month == 12:
+            next_year, next_month = local_now.year + 1, 1
+        else:
+            next_year, next_month = local_now.year, local_now.month + 1
+        
+        _, last_day = calendar.monthrange(next_year, next_month)
+        for day in pref_days:
+            actual_day = min(day, last_day)
+            try:
+                from datetime import datetime
+                candidate = user_tz.localize(datetime(next_year, next_month, actual_day, pref_hour, pref_minute, 0))
+                return candidate.astimezone(pytz.utc).replace(tzinfo=None)
+            except ValueError:
+                continue
+        
+        # Fallback
+        return (local_now + timedelta(days=30)).astimezone(pytz.utc).replace(tzinfo=None)
+
+    def _compute_next_specific_execution(self, local_now, user_tz):
+        """Calculate next execution time based on schedule_ids (returns UTC)."""
+        if not self.schedule_ids:
+            return False
+        
+        # Get all active schedules sorted
+        schedules = self.schedule_ids.filtered(lambda s: s.active).sorted(
+            key=lambda s: (int(s.dayofweek), s.hour)
+        )
+        if not schedules:
+            return False
+        
+        current_weekday = local_now.weekday()
+        
+        # Find next schedule
+        for days_ahead in range(8):  # Check up to a week ahead
+            check_day = (current_weekday + days_ahead) % 7
+            for schedule in schedules:
+                if int(schedule.dayofweek) == check_day:
+                    # Parse schedule hour
+                    parts = schedule.hour.split(':')
+                    sched_hour = int(parts[0])
+                    sched_minute = int(parts[1]) if len(parts) > 1 else 0
+                    
+                    next_exec_local = (local_now + timedelta(days=days_ahead)).replace(
+                        hour=sched_hour, minute=sched_minute, second=0, microsecond=0
+                    )
+                    if next_exec_local > local_now:
+                        return next_exec_local.astimezone(pytz.utc).replace(tzinfo=None)
+        
+        # Fallback: first schedule next week
+        first_sched = schedules[0]
+        parts = first_sched.hour.split(':')
+        sched_hour = int(parts[0])
+        sched_minute = int(parts[1]) if len(parts) > 1 else 0
+        days_until = (int(first_sched.dayofweek) - current_weekday) % 7 or 7
+        next_exec_local = (local_now + timedelta(days=days_until)).replace(
+            hour=sched_hour, minute=sched_minute, second=0, microsecond=0
+        )
+        return next_exec_local.astimezone(pytz.utc).replace(tzinfo=None)
+
+    def action_create_default_schedule(self):
+        """Create default schedule: weekdays at 09:00 and 15:00."""
+        self.ensure_one()
+        Schedule = self.env['currency.rate.schedule']
+        # Clear existing
+        self.schedule_ids.unlink()
+        # Set frequency to specific
+        self.update_frequency = 'specific'
+        # Create weekday schedule at 09:00 and 15:00
+        for day in ['0', '1', '2', '3', '4']:  # Mon-Fri
+            for hour in ['9:00', '15:00']:
+                Schedule.create({
+                    'source_id': self.id,
+                    'dayofweek': day,
+                    'hour': hour,
+                })
+        return True
+        return True
 
     # ==========================================
     # VALIDATION METHODS
@@ -483,6 +753,22 @@ class CurrencyRateSource(models.Model):
                     json.loads(record.http_headers)
                 except json.JSONDecodeError as e:
                     raise ValidationError(_('Invalid JSON in HTTP headers: %s') % str(e))
+
+    @api.constrains('decimal_format', 'custom_decimal_sep')
+    def _check_custom_decimal_format(self):
+        for record in self:
+            if record.decimal_format == 'custom' and not record.custom_decimal_sep:
+                raise ValidationError(_(
+                    'Decimal Separator is required when using Custom number format.'
+                ))
+
+    @api.constrains('update_frequency', 'schedule_ids')
+    def _check_specific_schedule(self):
+        for record in self:
+            if record.update_frequency == 'specific' and not record.schedule_ids:
+                raise ValidationError(_(
+                    'At least one schedule line is required when using "Specific Days/Hours" frequency.'
+                ))
 
     # ==========================================
     # ACTION METHODS
@@ -524,11 +810,11 @@ class CurrencyRateSource(models.Model):
         self.ensure_one()
         return {
             'type': 'ir.actions.act_window',
-            'name': f'Rates for {self.currency_id.name}',
+            'name': f'Rates for {self.source_currency_id.name}',
             'res_model': 'res.currency.rate',
             'view_mode': 'tree,form',
-            'domain': [('currency_id', '=', self.currency_id.id)],
-            'context': {'default_currency_id': self.currency_id.id},
+            'domain': [('currency_id', '=', self.source_currency_id.id)],
+            'context': {'default_currency_id': self.source_currency_id.id},
         }
 
     def action_clear_error(self):
@@ -554,19 +840,29 @@ class CurrencyRateSource(models.Model):
     def action_update_rate(self):
         """Manual trigger for rate update."""
         self.ensure_one()
-        return self._execute_update()
+        return self._execute_update(trigger_fallback=True)
 
     # ==========================================
     # MAIN EXECUTION METHODS
     # ==========================================
 
-    def _execute_update(self):
-        """Execute rate update and create/update currency rates."""
+    def _execute_update(self, trigger_fallback=True, triggered_by='manual', triggered_by_source_id=False):
+        """Execute rate update and create/update currency rates.
+        
+        Args:
+            trigger_fallback: If True and on_validation_fail='fallback', 
+                            execute fallback source on error. Set to False
+                            during test extraction to prevent cascading calls.
+            triggered_by: Origin of the execution ('manual', 'cron', 'test', 'fallback')
+            triggered_by_source_id: ID of the source that triggered this execution via fallback
+        """
         self.ensure_one()
         
         log_vals = {
             'source_id': self.id,
             'execution_date': fields.Datetime.now(),
+            'triggered_by': triggered_by,
+            'triggered_by_source_id': triggered_by_source_id,
         }
         
         start_time = datetime.now()
@@ -575,7 +871,8 @@ class CurrencyRateSource(models.Model):
             # Fetch content
             content, http_status, response_time = self._fetch_content()
             log_vals['http_status_code'] = http_status
-            log_vals['http_response_size'] = len(content) if content else 0
+            log_vals['content_length'] = len(content) if content else 0
+            log_vals['http_response_time'] = response_time
             
             # Store response for debugging (truncated)
             self.last_http_response = content[:10000] if content else ''
@@ -595,7 +892,15 @@ class CurrencyRateSource(models.Model):
                 log_vals['processed_rate'] = rate
             
             # Extract date if configured
-            rate_date = self._extract_date(content) if self.extract_date else fields.Date.today()
+            if self.extract_date:
+                rate_date, raw_date_value = self._extract_date(content)
+                log_vals['date_extraction_used'] = True
+                log_vals['extracted_date'] = rate_date
+                log_vals['raw_date_value'] = raw_date_value
+            else:
+                rate_date = fields.Date.today()
+                log_vals['date_extraction_used'] = False
+                log_vals['extracted_date'] = rate_date
             
             # Update currency rates
             created, updated = self._update_currency_rates(rate, rate_date)
@@ -614,6 +919,7 @@ class CurrencyRateSource(models.Model):
             })
             
             log_vals['state'] = 'success'
+            fallback_triggered = False
             
         except Exception as e:
             error_msg = str(e)
@@ -631,6 +937,17 @@ class CurrencyRateSource(models.Model):
             log_vals['error_traceback'] = error_tb
             
             _logger.error('Currency rate update failed for %s: %s', self.name, error_msg)
+            
+            # Check if we should trigger fallback source
+            fallback_triggered = False
+            if (trigger_fallback and 
+                self.on_validation_fail == 'fallback' and 
+                self.fallback_source_id):
+                fallback_triggered = True
+                _logger.info(
+                    'Triggering fallback source %s due to failure in %s',
+                    self.fallback_source_id.name, self.name
+                )
         
         finally:
             # Calculate duration
@@ -639,6 +956,21 @@ class CurrencyRateSource(models.Model):
             
             # Create log entry
             self.env['currency.rate.log'].create(log_vals)
+            
+            # Execute fallback after logging (outside try block to avoid nested exceptions)
+            if fallback_triggered:
+                try:
+                    # Execute fallback with trigger_fallback=False to prevent infinite loops
+                    self.fallback_source_id._execute_update(
+                        trigger_fallback=False,
+                        triggered_by='fallback',
+                        triggered_by_source_id=self.id
+                    )
+                except Exception as fallback_error:
+                    _logger.error(
+                        'Fallback source %s also failed: %s',
+                        self.fallback_source_id.name, str(fallback_error)
+                    )
         
         return {
             'type': 'ir.actions.client',
@@ -725,8 +1057,8 @@ class CurrencyRateSource(models.Model):
 
     def _extract_auto(self, content):
         """Automatically detect and extract rate value."""
-        keyword = self.auto_keyword or self.currency_id.name
-        currency_code = self.currency_id.name if self.currency_id else ''
+        keyword = self.auto_keyword or self.source_currency_id.name
+        currency_code = self.source_currency_id.name if self.source_currency_id else ''
         
         # Currency-specific keywords mapping
         currency_keywords = {
@@ -970,7 +1302,13 @@ class CurrencyRateSource(models.Model):
         value = value.strip()
         
         # Get decimal format configuration
-        fmt = DECIMAL_FORMATS.get(self.decimal_format, DECIMAL_FORMATS['en_US'])
+        if self.decimal_format == 'custom':
+            fmt = {
+                'thousand': self.custom_thousand_sep or '',
+                'decimal': self.custom_decimal_sep or '.'
+            }
+        else:
+            fmt = DECIMAL_FORMATS.get(self.decimal_format, DECIMAL_FORMATS['en_US'])
         
         # Remove thousand separators and normalize decimal
         if fmt['thousand']:
@@ -1038,31 +1376,83 @@ class CurrencyRateSource(models.Model):
                     result['warnings'].append(_('Using last rate due to validation failure'))
                 else:
                     raise UserError(error_msg)
+            elif self.on_validation_fail == 'fallback':
+                # Raise error to trigger fallback in _execute_update
+                raise UserError(_('Validation failed, triggering fallback: %s') % error_msg)
         
         return result
 
     def _extract_date(self, content):
-        """Extract rate date from content."""
-        if not self.date_regex_pattern:
-            return fields.Date.today()
+        """Extract rate date from content using configured method.
         
-        match = re.search(self.date_regex_pattern, content)
-        if not match:
-            _logger.warning('Date pattern not found, using today')
-            return fields.Date.today()
+        Returns:
+            tuple: (parsed_date, raw_date_string) where raw_date_string is the 
+                   extracted string before parsing, or None if not found.
+        """
+        method = self.date_extraction_method or 'regex'
+        date_str = None
         
-        date_str = match.group(1) if match.groups() else match.group(0)
+        if method == 'regex':
+            if not self.date_regex:
+                return fields.Date.today(), None
+            match = re.search(self.date_regex, content)
+            if match:
+                date_str = match.group(1) if match.groups() else match.group(0)
+                
+        elif method == 'xpath':
+            if not self.date_xpath:
+                return fields.Date.today(), None
+            try:
+                tree = etree.HTML(content)
+                results = tree.xpath(self.date_xpath)
+                if results:
+                    date_str = str(results[0]).strip() if results else None
+            except Exception as e:
+                _logger.warning('XPath date extraction failed: %s', e)
+                
+        elif method == 'jsonpath':
+            if not self.date_jsonpath or not HAS_JSONPATH:
+                return fields.Date.today(), None
+            try:
+                data = json.loads(content)
+                jsonpath_expr = parse(self.date_jsonpath)
+                matches = [m.value for m in jsonpath_expr.find(data)]
+                if matches:
+                    date_str = str(matches[0]).strip()
+            except Exception as e:
+                _logger.warning('JSONPath date extraction failed: %s', e)
+                
+        elif method == 'css':
+            if not self.date_css_selector or not HAS_CSSSELECT:
+                return fields.Date.today(), None
+            try:
+                tree = etree.HTML(content)
+                selector = CSSSelector(self.date_css_selector)
+                results = selector(tree)
+                if results:
+                    date_str = results[0].text_content().strip() if results else None
+            except Exception as e:
+                _logger.warning('CSS date extraction failed: %s', e)
+        
+        if not date_str:
+            _logger.warning('Date not found using %s method, using today', method)
+            return fields.Date.today(), None
         
         try:
             parsed_date = datetime.strptime(date_str, self.date_format or '%d/%m/%Y')
-            return parsed_date.date()
+            return parsed_date.date(), date_str
         except ValueError:
-            _logger.warning('Could not parse date %s, using today', date_str)
-            return fields.Date.today()
+            _logger.warning('Could not parse date %s with format %s, using today', date_str, self.date_format)
+            return fields.Date.today(), date_str
 
     def _update_currency_rates(self, rate, rate_date):
-        """Create or update currency rates for configured companies."""
-        CurrencyRate = self.env['res.currency.rate']
+        """Create or update currency rates for configured companies.
+        
+        Uses sudo() to bypass multi-company access rules since currency
+        rates are system-level data that should be updated regardless
+        of the current user's company access.
+        """
+        CurrencyRate = self.env['res.currency.rate'].sudo()
         
         # Get companies to update
         if self.update_all_companies:
@@ -1074,8 +1464,18 @@ class CurrencyRateSource(models.Model):
         else:
             companies = self.company_ids
         
+        # Filter companies: only those whose base currency matches target_currency_id
+        # Example: If source=USD, target=ARS, only update companies with ARS as base
+        companies = companies.filtered(
+            lambda c: c.currency_id.id == self.target_currency_id.id
+        )
+        
         if not companies:
-            raise UserError(_('No companies configured for rate update'))
+            _logger.warning(
+                'No companies found with base currency %s for source %s',
+                self.target_currency_id.name, self.name
+            )
+            return 0, 0
         
         created = 0
         updated = 0
@@ -1083,7 +1483,7 @@ class CurrencyRateSource(models.Model):
         for company in companies:
             # Search for existing rate
             existing = CurrencyRate.search([
-                ('currency_id', '=', self.currency_id.id),
+                ('currency_id', '=', self.source_currency_id.id),
                 ('company_id', '=', company.id),
                 ('name', '=', rate_date),
             ], limit=1)
@@ -1101,7 +1501,7 @@ class CurrencyRateSource(models.Model):
                 updated += 1
             else:
                 CurrencyRate.create({
-                    'currency_id': self.currency_id.id,
+                    'currency_id': self.source_currency_id.id,
                     'company_id': company.id,
                     'name': rate_date,
                     'inverse_company_rate': rate,
@@ -1110,7 +1510,7 @@ class CurrencyRateSource(models.Model):
         
         _logger.info(
             'Updated currency rates for %s: %d created, %d updated',
-            self.currency_id.name, created, updated
+            self.source_currency_id.name, created, updated
         )
         
         return created, updated
@@ -1121,49 +1521,138 @@ class CurrencyRateSource(models.Model):
 
     @api.model
     def _cron_update_rates(self):
-        """Cron job to update rates for all active sources."""
+        """Cron job to update rates for all active sources.
+        
+        Each source is evaluated in its own timezone to determine
+        if it should run at the current time.
+        """
         sources = self.search([
             ('active', '=', True),
             ('auto_update', '=', True),
         ])
         
-        now = fields.Datetime.now()
-        current_hour = now.hour
-        current_weekday = now.weekday()
-        
         for source in sources:
             try:
-                # Check if should run based on schedule
-                if not source._should_run_now(current_hour, current_weekday):
+                # Check if should run based on schedule (timezone-aware)
+                if not source._should_run_now():
                     continue
                 
                 _logger.info('Running scheduled update for source: %s', source.name)
-                source._execute_update()
+                source._execute_update(triggered_by='cron')
                 
             except Exception as e:
                 _logger.error('Scheduled update failed for %s: %s', source.name, str(e))
 
-    def _should_run_now(self, current_hour, current_weekday):
-        """Check if source should run at current time."""
-        # Check weekday
-        if self.update_weekdays:
-            allowed_days = [int(d.strip()) for d in self.update_weekdays.split(',') if d.strip()]
-            if current_weekday not in allowed_days:
-                return False
+    def _should_run_now(self):
+        """Check if source should run at current time based on update_frequency.
         
-        # Check hour
-        if self.update_hours:
-            allowed_hours = [int(h.strip()) for h in self.update_hours.split(',') if h.strip()]
-            if current_hour not in allowed_hours:
-                return False
-        
-        # Check if already ran today at this hour
-        if self.last_sync_date:
-            last_sync_hour = self.last_sync_date.hour
-            last_sync_date = self.last_sync_date.date()
-            today = fields.Date.today()
+        Uses source_tz to evaluate schedule in the source's local timezone.
+        """
+        # Get current time in source's timezone
+        tz_name = self.source_tz or 'UTC'
+        try:
+            source_tz = pytz.timezone(tz_name)
+        except pytz.UnknownTimeZoneError:
+            source_tz = pytz.UTC
             
-            if last_sync_date == today and last_sync_hour == current_hour:
-                return False
+        utc_now = fields.Datetime.now()
+        local_now = pytz.utc.localize(utc_now).astimezone(source_tz)
         
-        return True
+        current_hour = local_now.hour
+        current_minute = local_now.minute
+        current_weekday = local_now.weekday()
+        local_today = local_now.date()
+        
+        # Convert last_sync_date to local timezone for comparison
+        last_sync_local = None
+        if self.last_sync_date:
+            last_sync_local = pytz.utc.localize(self.last_sync_date).astimezone(source_tz)
+        
+        # Parse preferred hour/minute
+        pref_hour = 9
+        pref_minute = 0
+        if self.preferred_hour:
+            parts = self.preferred_hour.split(':')
+            pref_hour = int(parts[0])
+            pref_minute = int(parts[1]) if len(parts) > 1 else 0
+        
+        # Check based on frequency
+        if self.update_frequency == 'hourly':
+            # Run every hour at preferred minute
+            pref_min = int(self.preferred_minute or '0')
+            # Check if we're in the right minute window (within 15 min)
+            if abs(current_minute - pref_min) > 15 and abs(current_minute - pref_min) < 45:
+                return False
+            # Check if already ran this hour
+            if last_sync_local:
+                if last_sync_local.date() == local_today and last_sync_local.hour == current_hour:
+                    return False
+            return True
+        
+        elif self.update_frequency == 'daily':
+            # Run once per day at preferred hour
+            if current_hour != pref_hour:
+                return False
+            # Check minute window (30 min tolerance)
+            if abs(current_minute - pref_minute) > 30:
+                return False
+            if last_sync_local:
+                if last_sync_local.date() == local_today:
+                    return False
+            return True
+        
+        elif self.update_frequency == 'weekly':
+            # Run once per week on preferred day at preferred hour
+            pref_weekday = int(self.preferred_weekday or '0')
+            if current_weekday != pref_weekday:
+                return False
+            if current_hour != pref_hour:
+                return False
+            if last_sync_local:
+                days_since_last = (local_today - last_sync_local.date()).days
+                if days_since_last < 7:
+                    return False
+            return True
+        
+        elif self.update_frequency == 'monthly':
+            # Run on preferred days of month at preferred hour
+            pref_days = self._parse_monthdays()
+            if local_now.day not in pref_days:
+                return False
+            if current_hour != pref_hour:
+                return False
+            if last_sync_local:
+                # Check if already ran today
+                if last_sync_local.date() == local_today:
+                    return False
+            return True
+        
+        elif self.update_frequency == 'specific':
+            # Run based on schedule_ids
+            if not self.schedule_ids:
+                return False
+            
+            # Format current time for comparison (e.g., "9:00" or "9:30")
+            time_key = f'{current_hour}:00' if current_minute < 30 else f'{current_hour}:30'
+            
+            matching_schedule = self.schedule_ids.filtered(
+                lambda s: s.active and 
+                          s.dayofweek == str(current_weekday) and 
+                          s.hour == time_key
+            )
+            if not matching_schedule:
+                return False
+            
+            # Check if already ran at this time slot (in local timezone)
+            if last_sync_local:
+                last_sync_date = last_sync_local.date()
+                last_sync_hour = last_sync_local.hour
+                last_sync_minute = last_sync_local.minute
+                last_time_key = f'{last_sync_hour}:00' if last_sync_minute < 30 else f'{last_sync_hour}:30'
+                
+                if last_sync_date == local_today and last_time_key == time_key:
+                    return False
+            
+            return True
+        
+        return False

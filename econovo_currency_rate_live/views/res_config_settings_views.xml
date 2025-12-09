@@ -1,32 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     
-    <!-- Extend res.config.settings form view -->
+    <!-- Extend res.config.settings form view - Add to Currencies block -->
     <record id="res_config_settings_view_form_currency_rate_live" model="ir.ui.view">
         <field name="name">res.config.settings.view.form.currency.rate.live</field>
         <field name="model">res.config.settings</field>
         <field name="inherit_id" ref="account.res_config_settings_view_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//app[@name='account']" position="inside">
-                <block title="Currency Rate Live Updates" name="currency_rate_live_settings">
-                    <setting id="currency_rate_live_enable" 
-                             string="Currency Rate Live Updates" 
-                             documentation="/applications/finance/accounting/get_started/multi_currency.html">
-                        <div class="text-muted">
-                            Configure automatic currency rate updates from external sources (APIs, websites)
+            <!-- Insert after the native "Automatic Currency Rates" setting in the Currencies block -->
+            <xpath expr="//block[@name='main_currency_setting_container']" position="inside">
+                
+                <!-- Econovo Currency Rate Live Setting -->
+                <setting id="econovo_currency_rate_live_setting" 
+                         invisible="not group_multi_currency"
+                         string="Custom Rate Sources"
+                         help="Update rates from custom sources (websites, APIs, banks)">
+                    <field name="currency_rate_live_enabled"/>
+                    <div class="content-group" invisible="not currency_rate_live_enabled">
+                        <div class="mt-2">
+                            <label for="currency_rate_live_cron_interval" class="o_light_label"/>
+                            <field name="currency_rate_live_cron_interval" class="o_inline"/>
+                            <span class="text-muted ms-2 small">
+                                (how often the scheduler checks for due sources)
+                            </span>
+                        </div>
+                        <div class="mt-1 text-muted small ms-3">
+                            <em>Note: Each source has its own schedule (daily, weekly, etc.) configured individually.</em>
                         </div>
                         <div class="mt-3">
                             <button name="action_open_currency_rate_sources" 
                                     type="object" 
                                     string="Configure Sources" 
                                     class="btn-link"
-                                    icon="fa-external-link"/>
-                            <span class="ms-3 text-muted">
-                                <field name="currency_rate_live_sources_count" class="oe_inline"/> active sources
+                                    icon="oi-arrow-right"/>
+                            <span class="ms-2 text-muted">
+                                (<field name="currency_rate_live_sources_count" class="oe_inline"/> active)
                             </span>
                         </div>
-                        <div class="content-group mt-4">
-                            <div class="row">
+                    </div>
+                </setting>
+                
+            </xpath>
+            
+            <!-- Keep detailed settings in a separate block below -->
+            <xpath expr="//app[@name='account']" position="inside">
+                <block title="Currency Rate Live - Advanced" 
+                       name="currency_rate_live_advanced_settings"
+                       invisible="not currency_rate_live_enabled">
+                    <setting id="currency_rate_live_general" 
+                             string="General Settings">
+                        <div class="content-group">
+                            <div class="row mt-2">
                                 <label for="currency_rate_live_log_retention_days" class="col-lg-4 o_light_label"/>
                                 <field name="currency_rate_live_log_retention_days" class="col-lg-2"/>
                                 <span class="text-muted">days</span>
@@ -41,7 +65,10 @@
                                 <field name="currency_rate_live_max_retries" class="col-lg-2"/>
                             </div>
                         </div>
-                        <div class="content-group mt-4">
+                    </setting>
+                    <setting id="currency_rate_live_notifications" 
+                             string="Notifications">
+                        <div class="content-group">
                             <div class="mt-2">
                                 <field name="currency_rate_live_enable_notifications"/>
                                 <label for="currency_rate_live_enable_notifications"/>
@@ -61,8 +88,11 @@
                                 <span class="text-muted">%</span>
                             </div>
                         </div>
-                        <div class="content-group mt-4">
-                            <div class="row">
+                    </setting>
+                    <setting id="currency_rate_live_actions" 
+                             string="Manual Actions">
+                        <div class="content-group">
+                            <div class="row mt-2">
                                 <div class="col-lg-6">
                                     <button name="action_update_all_rates_now" 
                                             type="object" 
