@@ -1552,7 +1552,7 @@ class CurrencyRateSource(models.Model):
         
         # Check if module is enabled
         enabled = self.env['ir.config_parameter'].sudo().get_param(
-            'econovo_currency_rate_live.enabled', 'False'
+            'econovo_currency_rate_custom_providers.enabled', 'False'
         ) == 'True'
         if not enabled:
             _logger.info('Currency Rate Live module is disabled, skipping update for: %s', source.name)
@@ -1646,7 +1646,7 @@ class CurrencyRateSource(models.Model):
         
         # Check if module is globally enabled
         module_enabled = self.env['ir.config_parameter'].sudo().get_param(
-            'econovo_currency_rate_live.enabled', 'False'
+            'econovo_currency_rate_custom_providers.enabled', 'False'
         ) == 'True'
         
         cron_vals = {
@@ -1702,7 +1702,7 @@ class CurrencyRateSource(models.Model):
         """
         if enabled is None:
             enabled = self.env['ir.config_parameter'].sudo().get_param(
-                'econovo_currency_rate_live.enabled', 'False'
+                'econovo_currency_rate_custom_providers.enabled', 'False'
             ) == 'True'
         
         sources = self.search([])
@@ -1725,7 +1725,7 @@ class CurrencyRateSource(models.Model):
         
         # Check if module is enabled
         enabled = self.env['ir.config_parameter'].sudo().get_param(
-            'econovo_currency_rate_live.enabled', 'False'
+            'econovo_currency_rate_custom_providers.enabled', 'False'
         ) == 'True'
         
         for record in records:

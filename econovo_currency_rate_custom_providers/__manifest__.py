@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 {
-    'name': 'Currency Rate Live Update',
+    'name': 'Currency Rate Custom Providers',
     'version': '17.0.1.0.0',
     'category': 'Accounting/Accounting',
-    'summary': 'Automatically update currency rates from any web source',
+    'summary': 'Automatically update currency rates from custom api/web sources',
     'description': """
-Currency Rate Live Update
-=========================
+Currency Rate Custom Providers
+==============================
 
 This module allows you to automatically update currency exchange rates from any 
 web source using multiple extraction methods.
@@ -21,7 +21,7 @@ Features
     - JSONPath expressions
     - CSS Selectors
 * **Multi-company Support:** Updates rates for all or selected companies
-* **Flexible Scheduling:** Configure execution times and days
+* **Flexible Scheduling:** Configure execution times and days with dedicated cron per source
 * **Complete Logging:** Execution history with error tracking
 * **Validation:** Rate range validation and change percentage limits
 * **Odoo.sh Compatible:** Works without restrictions on Odoo.sh
@@ -34,7 +34,7 @@ Configuration
 4. Enable automatic updates
 
 Technical Requirements
----------------------
+----------------------
 * Python packages: requests, lxml (included in Odoo)
 * Optional: jsonpath-ng for advanced JSONPath support
     """,
@@ -46,16 +46,12 @@ Technical Requirements
         'account',
     ],
     'data': [
-        # Security
         'security/ir.model.access.csv',
-        # Views (actions must be defined before menus reference them)
         'views/currency_rate_source_views.xml',
         'views/currency_rate_log_views.xml',
         'views/res_config_settings_views.xml',
         'views/menu_views.xml',
-        # Wizards
         'wizards/test_extraction_wizard_views.xml',
-        # Data
         'data/ir_cron_data.xml',
     ],
     'demo': [

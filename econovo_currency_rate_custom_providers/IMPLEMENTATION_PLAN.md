@@ -1,8 +1,8 @@
-# Implementation Plan: econovo_currency_rate_live
+# Implementation Plan: econovo_currency_rate_custom_providers
 
 ## Module Overview
 
-**Name:** `econovo_currency_rate_live`  
+**Name:** `econovo_currency_rate_custom_providers`  
 **Version:** 17.0.1.0.0  
 **Author:** Jose D. Leonett  
 **License:** AGPL-3  
@@ -81,7 +81,7 @@
 ## File Structure
 
 ```
-econovo_currency_rate_live/
+econovo_currency_rate_custom_providers/
 |-- __init__.py
 |-- __manifest__.py
 |-- IMPLEMENTATION_PLAN.md

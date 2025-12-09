@@ -2,21 +2,21 @@
 <odoo>
     
     <!-- Extend res.config.settings form view - Add to Currencies block -->
-    <record id="res_config_settings_view_form_currency_rate_live" model="ir.ui.view">
-        <field name="name">res.config.settings.view.form.currency.rate.live</field>
+    <record id="res_config_settings_view_form_currency_rate_custom_providers" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.currency.rate.custom.providers</field>
         <field name="model">res.config.settings</field>
         <field name="inherit_id" ref="account.res_config_settings_view_form"/>
         <field name="arch" type="xml">
             <!-- Insert after the native "Automatic Currency Rates" setting in the Currencies block -->
             <xpath expr="//block[@name='main_currency_setting_container']" position="inside">
                 
-                <!-- Econovo Currency Rate Live Setting -->
-                <setting id="econovo_currency_rate_live_setting" 
+                <!-- Econovo Custom Rate Providers Setting -->
+                <setting id="econovo_currency_rate_custom_providers_setting" 
                          invisible="not group_multi_currency"
                          string="Custom Rate Sources"
                          help="Update rates from custom sources (websites, APIs, banks)">
-                    <field name="currency_rate_live_enabled"/>
-                    <div class="content-group" invisible="not currency_rate_live_enabled">
+                    <field name="currency_rate_custom_providers_enabled"/>
+                    <div class="content-group" invisible="not currency_rate_custom_providers_enabled">
                         <div class="mt-2 text-muted small">
                             <em>Each source has its own dedicated scheduled action that runs exactly at the configured time.</em>
                         </div>
@@ -27,7 +27,7 @@
                                     class="btn-link"
                                     icon="oi-arrow-right"/>
                             <span class="ms-2 text-muted">
-                                (<field name="currency_rate_live_sources_count" class="oe_inline"/> active)
+                                (<field name="currency_rate_custom_providers_sources_count" class="oe_inline"/> active)
                             </span>
                         </div>
                         <div class="mt-2">
@@ -37,7 +37,7 @@
                                     class="btn-link"
                                     icon="fa-clock-o"/>
                             <span class="ms-2 text-muted">
-                                (<field name="currency_rate_live_crons_count" class="oe_inline"/> active)
+                                (<field name="currency_rate_custom_providers_crons_count" class="oe_inline"/> active)
                             </span>
                         </div>
                     </div>
@@ -47,52 +47,52 @@
             
             <!-- Keep detailed settings in a separate block below -->
             <xpath expr="//app[@name='account']" position="inside">
-                <block title="Currency Rate Live - Advanced" 
-                       name="currency_rate_live_advanced_settings"
-                       invisible="not currency_rate_live_enabled">
-                    <setting id="currency_rate_live_general" 
+                <block title="Custom Rate Providers - Advanced" 
+                       name="currency_rate_custom_providers_advanced_settings"
+                       invisible="not currency_rate_custom_providers_enabled">
+                    <setting id="currency_rate_custom_providers_general" 
                              string="General Settings">
                         <div class="content-group">
                             <div class="row mt-2">
-                                <label for="currency_rate_live_log_retention_days" class="col-lg-4 o_light_label"/>
-                                <field name="currency_rate_live_log_retention_days" class="col-lg-2"/>
+                                <label for="currency_rate_custom_providers_log_retention_days" class="col-lg-4 o_light_label"/>
+                                <field name="currency_rate_custom_providers_log_retention_days" class="col-lg-2"/>
                                 <span class="text-muted">days</span>
                             </div>
                             <div class="row mt-2">
-                                <label for="currency_rate_live_default_timeout" class="col-lg-4 o_light_label"/>
-                                <field name="currency_rate_live_default_timeout" class="col-lg-2"/>
+                                <label for="currency_rate_custom_providers_default_timeout" class="col-lg-4 o_light_label"/>
+                                <field name="currency_rate_custom_providers_default_timeout" class="col-lg-2"/>
                                 <span class="text-muted">seconds</span>
                             </div>
                             <div class="row mt-2">
-                                <label for="currency_rate_live_max_retries" class="col-lg-4 o_light_label"/>
-                                <field name="currency_rate_live_max_retries" class="col-lg-2"/>
+                                <label for="currency_rate_custom_providers_max_retries" class="col-lg-4 o_light_label"/>
+                                <field name="currency_rate_custom_providers_max_retries" class="col-lg-2"/>
                             </div>
                         </div>
                     </setting>
-                    <setting id="currency_rate_live_notifications" 
+                    <setting id="currency_rate_custom_providers_notifications" 
                              string="Notifications">
                         <div class="content-group">
                             <div class="mt-2">
-                                <field name="currency_rate_live_enable_notifications"/>
-                                <label for="currency_rate_live_enable_notifications"/>
+                                <field name="currency_rate_custom_providers_enable_notifications"/>
+                                <label for="currency_rate_custom_providers_enable_notifications"/>
                             </div>
-                            <div class="mt-2 ms-4" invisible="not currency_rate_live_enable_notifications">
-                                <field name="currency_rate_live_notify_on_error"/>
-                                <label for="currency_rate_live_notify_on_error"/>
+                            <div class="mt-2 ms-4" invisible="not currency_rate_custom_providers_enable_notifications">
+                                <field name="currency_rate_custom_providers_notify_on_error"/>
+                                <label for="currency_rate_custom_providers_notify_on_error"/>
                             </div>
-                            <div class="mt-2 ms-4" invisible="not currency_rate_live_enable_notifications">
-                                <field name="currency_rate_live_notify_on_high_variation"/>
-                                <label for="currency_rate_live_notify_on_high_variation"/>
+                            <div class="mt-2 ms-4" invisible="not currency_rate_custom_providers_enable_notifications">
+                                <field name="currency_rate_custom_providers_notify_on_high_variation"/>
+                                <label for="currency_rate_custom_providers_notify_on_high_variation"/>
                             </div>
                             <div class="row mt-2 ms-4" 
-                                 invisible="not currency_rate_live_enable_notifications or not currency_rate_live_notify_on_high_variation">
-                                <label for="currency_rate_live_variation_threshold" class="col-lg-4 o_light_label"/>
-                                <field name="currency_rate_live_variation_threshold" class="col-lg-2"/>
+                                 invisible="not currency_rate_custom_providers_enable_notifications or not currency_rate_custom_providers_notify_on_high_variation">
+                                <label for="currency_rate_custom_providers_variation_threshold" class="col-lg-4 o_light_label"/>
+                                <field name="currency_rate_custom_providers_variation_threshold" class="col-lg-2"/>
                                 <span class="text-muted">%</span>
                             </div>
                         </div>
                     </setting>
-                    <setting id="currency_rate_live_actions" 
+                    <setting id="currency_rate_custom_providers_actions" 
                              string="Manual Actions">
                         <div class="content-group">
                             <div class="row mt-2">

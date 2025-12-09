@@ -7,70 +7,70 @@ from odoo import api, fields, models
 class ResConfigSettings(models.TransientModel):
     _inherit = 'res.config.settings'
 
-    # Currency Rate Live Settings - Main toggle
-    currency_rate_live_enabled = fields.Boolean(
-        string='Enable Econovo Currency Rate Live',
-        config_parameter='econovo_currency_rate_live.enabled',
+    # Custom Rate Providers Settings - Main toggle
+    currency_rate_custom_providers_enabled = fields.Boolean(
+        string='Enable Econovo Custom Rate Providers',
+        config_parameter='econovo_currency_rate_custom_providers.enabled',
         help='Enable automatic currency rate updates from external sources (websites, APIs).\n\n'
              'When enabled, each source with "Automatic Update" will have its own dedicated '
              'scheduled action that runs exactly at the configured time.',
     )
 
-    currency_rate_live_log_retention_days = fields.Integer(
+    currency_rate_custom_providers_log_retention_days = fields.Integer(
         string='Log Retention (Days)',
         default=30,
-        config_parameter='econovo_currency_rate_live.log_retention_days',
+        config_parameter='econovo_currency_rate_custom_providers.log_retention_days',
         help='Number of days to keep execution logs. Older logs are automatically deleted.',
     )
 
-    currency_rate_live_default_timeout = fields.Integer(
+    currency_rate_custom_providers_default_timeout = fields.Integer(
         string='Default HTTP Timeout',
         default=30,
-        config_parameter='econovo_currency_rate_live.default_timeout',
+        config_parameter='econovo_currency_rate_custom_providers.default_timeout',
         help='Default timeout in seconds for HTTP requests',
     )
 
-    currency_rate_live_max_retries = fields.Integer(
+    currency_rate_custom_providers_max_retries = fields.Integer(
         string='Max Retries',
         default=3,
-        config_parameter='econovo_currency_rate_live.max_retries',
+        config_parameter='econovo_currency_rate_custom_providers.max_retries',
         help='Maximum number of retry attempts for failed requests',
     )
 
-    currency_rate_live_enable_notifications = fields.Boolean(
+    currency_rate_custom_providers_enable_notifications = fields.Boolean(
         string='Enable Notifications',
         default=True,
-        config_parameter='econovo_currency_rate_live.enable_notifications',
+        config_parameter='econovo_currency_rate_custom_providers.enable_notifications',
         help='Send notifications on errors or important events',
     )
 
-    currency_rate_live_notify_on_error = fields.Boolean(
+    currency_rate_custom_providers_notify_on_error = fields.Boolean(
         string='Notify on Errors',
         default=True,
-        config_parameter='econovo_currency_rate_live.notify_on_error',
+        config_parameter='econovo_currency_rate_custom_providers.notify_on_error',
         help='Create activity when a rate update fails',
     )
 
-    currency_rate_live_notify_on_high_variation = fields.Boolean(
+    currency_rate_custom_providers_notify_on_high_variation = fields.Boolean(
         string='Notify on High Variation',
         default=True,
-        config_parameter='econovo_currency_rate_live.notify_on_high_variation',
+        config_parameter='econovo_currency_rate_custom_providers.notify_on_high_variation',
         help='Create activity when rate variation exceeds threshold',
     )
 
-    currency_rate_live_variation_threshold = fields.Float(
+    currency_rate_custom_providers_variation_threshold = fields.Float(
         string='Variation Threshold (%)',
         default=10.0,
-        config_parameter='econovo_currency_rate_live.variation_threshold',
+        config_parameter='econovo_currency_rate_custom_providers.variation_threshold',
         help='Percentage variation that triggers notification',
     )
 
-    currency_rate_live_sources_count = fields.Integer(
+    currency_rate_custom_providers_sources_count = fields.Integer(
         string='Active Sources',
         compute='_compute_sources_count',
     )
 
-    currency_rate_live_crons_count = fields.Integer(
+    currency_rate_custom_providers_crons_count = fields.Integer(
         string='Active Scheduled Actions',
         compute='_compute_crons_count',
     )
@@ -79,7 +79,7 @@ class ResConfigSettings(models.TransientModel):
     def _compute_sources_count(self):
         Source = self.env['currency.rate.source']
         for record in self:
-            record.currency_rate_live_sources_count = Source.search_count([
+            record.currency_rate_custom_providers_sources_count = Source.search_count([
                 ('active', '=', True)
             ])
 
@@ -87,7 +87,7 @@ class ResConfigSettings(models.TransientModel):
     def _compute_crons_count(self):
         Source = self.env['currency.rate.source']
         for record in self:
-            record.currency_rate_live_crons_count = Source.search_count([
+            record.currency_rate_custom_providers_crons_count = Source.search_count([
                 ('active', '=', True),
                 ('auto_update', '=', True),
                 ('cron_id', '!=', False),
@@ -97,14 +97,14 @@ class ResConfigSettings(models.TransientModel):
         """Override to update all source crons when module enabled state changes."""
         # Get previous enabled state
         was_enabled = self.env['ir.config_parameter'].sudo().get_param(
-            'econovo_currency_rate_live.enabled', 'False'
+            'econovo_currency_rate_custom_providers.enabled', 'False'
         ) == 'True'
         
         res = super().set_values()
         
         # Get new enabled state
         is_enabled = self.env['ir.config_parameter'].sudo().get_param(
-            'econovo_currency_rate_live.enabled', 'False'
+            'econovo_currency_rate_custom_providers.enabled', 'False'
         ) == 'True'
         
         # Update all source crons if enabled state changed
@@ -142,7 +142,7 @@ class ResConfigSettings(models.TransientModel):
     def action_cleanup_old_logs(self):
         """Manually trigger log cleanup."""
         Log = self.env['currency.rate.log']
-        days = self.currency_rate_live_log_retention_days or 30
+        days = self.currency_rate_custom_providers_log_retention_days or 30
         deleted_count = Log.cleanup_old_logs(days=days)
         return {
             'type': 'ir.actions.client',

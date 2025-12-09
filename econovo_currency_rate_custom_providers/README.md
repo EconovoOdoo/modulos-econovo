@@ -1,4 +1,4 @@
-# Currency Rate Live Update
+# Custom Rate Providers Update
 
 Universal currency/asset rate updater for Odoo 17 from any web source using multiple extraction methods.
 
@@ -23,7 +23,7 @@ Universal currency/asset rate updater for Odoo 17 from any web source using mult
 
 1. Copy the module to your Odoo addons folder
 2. Update the apps list
-3. Install "Currency Rate Live Update"
+3. Install "Custom Rate Providers Update"
 
 ### Optional Dependencies
 
@@ -484,8 +484,8 @@ The module includes demo sources for:
 
 | Group | Access |
 |-------|--------|
-| Currency Rate Live User | Read-only access, can trigger updates |
-| Currency Rate Live Manager | Full access to configuration |
+| Custom Rate Providers User | Read-only access, can trigger updates |
+| Custom Rate Providers Manager | Full access to configuration |
 
 ---
 

@@ -3,7 +3,7 @@
     
     <!-- Menu Items -->
     <!-- Parent menu under Invoicing/Configuration -->
-    <menuitem id="menu_currency_rate_live_root"
+    <menuitem id="menu_currency_rate_custom_providers_root"
               name="Currency Rate Sources"
               parent="account.menu_finance_configuration"
               groups="account.group_account_manager"
@@ -12,7 +12,7 @@
     <!-- Sources submenu -->
     <menuitem id="menu_currency_rate_source"
               name="Rate Sources"
-              parent="menu_currency_rate_live_root"
+              parent="menu_currency_rate_custom_providers_root"
               action="action_currency_rate_source"
               groups="account.group_account_manager"
               sequence="10"/>
@@ -20,7 +20,7 @@
     <!-- Logs submenu -->
     <menuitem id="menu_currency_rate_log"
               name="Update Logs"
-              parent="menu_currency_rate_live_root"
+              parent="menu_currency_rate_custom_providers_root"
               action="action_currency_rate_log"
               groups="account.group_account_manager"
               sequence="20"/>
