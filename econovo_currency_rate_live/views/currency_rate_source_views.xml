@@ -387,8 +387,12 @@
                                 </group>
                                 <group string="Next Execution" invisible="not auto_update">
                                     <field name="next_execution" readonly="1"/>
+                                    <field name="cron_id" readonly="1" 
+                                           options="{'no_create': True, 'no_open': False}"
+                                           help="Dedicated scheduled action for this source"/>
                                     <div class="text-muted small" colspan="2">
                                         <p class="mb-0">Scheduled times are configured in <strong><field name="source_tz" readonly="1" nolabel="1" class="d-inline"/></strong> timezone.</p>
+                                        <p class="mb-0 mt-1" invisible="not cron_id">Each source has its own dedicated scheduled action that runs exactly at the configured time.</p>
                                     </div>
                                 </group>
                             </group>

@@ -509,6 +509,14 @@ class CurrencyRateSource(models.Model):
         string='Log Count',
         compute='_compute_log_count'
     )
+    cron_id = fields.Many2one(
+        'ir.cron',
+        string='Scheduled Action',
+        readonly=True,
+        ondelete='set null',
+        copy=False,
+        help='Dedicated scheduled action for this source. Created automatically when auto_update is enabled.'
+    )
 
     # === CONSTRAINTS ===
     _sql_constraints = [
@@ -956,6 +964,10 @@ class CurrencyRateSource(models.Model):
             
             # Create log entry
             self.env['currency.rate.log'].create(log_vals)
+            
+            # Update cron nextcall for next execution (only for cron-triggered updates)
+            if triggered_by == 'cron' and self.cron_id:
+                self._update_cron_nextcall()
             
             # Execute fallback after logging (outside try block to avoid nested exceptions)
             if fallback_triggered:
@@ -1516,143 +1528,259 @@ class CurrencyRateSource(models.Model):
         return created, updated
 
     # ==========================================
-    # CRON METHODS
+    # CRON METHODS - Individual Cron per Source
     # ==========================================
 
     @api.model
-    def _cron_update_rates(self):
-        """Cron job to update rates for all active sources.
+    def _cron_update_single_source(self, source_id):
+        """Cron job method called by individual source crons.
         
-        Each source is evaluated in its own timezone to determine
-        if it should run at the current time.
+        Each source has its own ir.cron that calls this method with its ID.
+        This ensures precise execution at the scheduled time.
+        
+        Args:
+            source_id: ID of the currency.rate.source to update
         """
+        source = self.browse(source_id)
+        if not source.exists():
+            _logger.warning('Cron called for non-existent source ID: %s', source_id)
+            return
+        
+        if not source.active or not source.auto_update:
+            _logger.info('Skipping disabled source: %s', source.name)
+            return
+        
+        # Check if module is enabled
+        enabled = self.env['ir.config_parameter'].sudo().get_param(
+            'econovo_currency_rate_live.enabled', 'False'
+        ) == 'True'
+        if not enabled:
+            _logger.info('Currency Rate Live module is disabled, skipping update for: %s', source.name)
+            return
+        
+        try:
+            _logger.info('Running scheduled update for source: %s', source.name)
+            source._execute_update(triggered_by='cron')
+        except Exception as e:
+            _logger.error('Scheduled update failed for %s: %s', source.name, str(e))
+
+    def _get_cron_nextcall(self):
+        """Calculate the next execution datetime for cron based on source schedule.
+        
+        Returns UTC datetime for the next scheduled execution.
+        """
+        self.ensure_one()
+        next_exec = self.next_execution
+        if next_exec:
+            return next_exec
+        # Fallback: 1 hour from now
+        return fields.Datetime.now() + timedelta(hours=1)
+
+    def _get_cron_interval(self):
+        """Get cron interval configuration based on update_frequency.
+        
+        Returns tuple (interval_number, interval_type) for ir.cron.
+        The cron will be re-scheduled after each execution via _update_cron_nextcall().
+        """
+        self.ensure_one()
+        if self.update_frequency == 'hourly':
+            return (1, 'hours')
+        elif self.update_frequency == 'daily':
+            return (1, 'days')
+        elif self.update_frequency == 'weekly':
+            return (7, 'days')
+        elif self.update_frequency == 'monthly':
+            return (30, 'days')
+        elif self.update_frequency == 'specific':
+            # For specific schedules, recalculate after each run
+            return (1, 'days')
+        return (1, 'days')
+
+    def _create_source_cron(self):
+        """Create a dedicated ir.cron for this source."""
+        self.ensure_one()
+        if self.cron_id:
+            return self.cron_id
+        
+        interval_number, interval_type = self._get_cron_interval()
+        nextcall = self._get_cron_nextcall()
+        
+        # Get model reference
+        model = self.env['ir.model'].sudo().search([
+            ('model', '=', 'currency.rate.source')
+        ], limit=1)
+        
+        cron_vals = {
+            'name': f'Currency Rate: {self.name}',
+            'model_id': model.id,
+            'state': 'code',
+            'code': f'model._cron_update_single_source({self.id})',
+            'interval_number': interval_number,
+            'interval_type': interval_type,
+            'nextcall': nextcall,
+            'numbercall': -1,
+            'active': self.active and self.auto_update,
+            'doall': False,
+            'priority': 15,
+        }
+        
+        cron = self.env['ir.cron'].sudo().create(cron_vals)
+        self.sudo().write({'cron_id': cron.id})
+        
+        _logger.info(
+            'Created cron for source %s (ID: %s), next execution: %s',
+            self.name, cron.id, nextcall
+        )
+        return cron
+
+    def _update_source_cron(self):
+        """Update the dedicated cron based on current source configuration."""
+        self.ensure_one()
+        if not self.cron_id:
+            if self.auto_update and self.active:
+                return self._create_source_cron()
+            return False
+        
+        interval_number, interval_type = self._get_cron_interval()
+        nextcall = self._get_cron_nextcall()
+        
+        # Check if module is globally enabled
+        module_enabled = self.env['ir.config_parameter'].sudo().get_param(
+            'econovo_currency_rate_live.enabled', 'False'
+        ) == 'True'
+        
+        cron_vals = {
+            'name': f'Currency Rate: {self.name}',
+            'code': f'model._cron_update_single_source({self.id})',
+            'interval_number': interval_number,
+            'interval_type': interval_type,
+            'nextcall': nextcall,
+            'active': self.active and self.auto_update and module_enabled,
+        }
+        
+        self.cron_id.sudo().write(cron_vals)
+        
+        _logger.info(
+            'Updated cron for source %s, active: %s, next execution: %s',
+            self.name, cron_vals['active'], nextcall
+        )
+        return self.cron_id
+
+    def _update_cron_nextcall(self):
+        """Update only the nextcall of the cron after execution.
+        
+        Call this after a successful execution to schedule next run.
+        """
+        self.ensure_one()
+        if not self.cron_id:
+            return
+        
+        nextcall = self._get_cron_nextcall()
+        self.cron_id.sudo().write({'nextcall': nextcall})
+        
+        _logger.debug(
+            'Updated nextcall for source %s cron to: %s',
+            self.name, nextcall
+        )
+
+    def _delete_source_cron(self):
+        """Delete the dedicated cron for this source."""
+        self.ensure_one()
+        if self.cron_id:
+            cron_name = self.cron_id.name
+            self.cron_id.sudo().unlink()
+            _logger.info('Deleted cron: %s', cron_name)
+
+    @api.model
+    def _update_all_source_crons(self, enabled=None):
+        """Update all source crons based on global module enabled state.
+        
+        Called from res.config.settings when the module enable/disable toggle changes.
+        
+        Args:
+            enabled: If provided, use this value. Otherwise read from config parameter.
+        """
+        if enabled is None:
+            enabled = self.env['ir.config_parameter'].sudo().get_param(
+                'econovo_currency_rate_live.enabled', 'False'
+            ) == 'True'
+        
+        sources = self.search([])
+        for source in sources:
+            if source.cron_id:
+                source.cron_id.sudo().write({
+                    'active': enabled and source.active and source.auto_update
+                })
+            elif enabled and source.active and source.auto_update:
+                source._create_source_cron()
+
+    # ==========================================
+    # CRUD OVERRIDES - Auto-manage crons
+    # ==========================================
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        """Override create to auto-create cron for new sources with auto_update."""
+        records = super().create(vals_list)
+        
+        # Check if module is enabled
+        enabled = self.env['ir.config_parameter'].sudo().get_param(
+            'econovo_currency_rate_live.enabled', 'False'
+        ) == 'True'
+        
+        for record in records:
+            if enabled and record.auto_update and record.active:
+                record._create_source_cron()
+        
+        return records
+
+    def write(self, vals):
+        """Override write to update cron when relevant fields change."""
+        result = super().write(vals)
+        
+        # Fields that affect cron configuration
+        cron_affecting_fields = {
+            'name', 'active', 'auto_update', 'update_frequency',
+            'preferred_hour', 'preferred_weekday', 'preferred_monthdays',
+            'source_tz', 'schedule_ids'
+        }
+        
+        if cron_affecting_fields & set(vals.keys()):
+            for record in self:
+                if record.auto_update and record.active:
+                    record._update_source_cron()
+                elif record.cron_id:
+                    # Deactivate cron if auto_update or active is disabled
+                    record.cron_id.sudo().write({'active': False})
+        
+        return result
+
+    def unlink(self):
+        """Override unlink to delete associated crons."""
+        for record in self:
+            if record.cron_id:
+                record._delete_source_cron()
+        return super().unlink()
+
+    # Keep legacy method for backward compatibility (deprecated)
+    @api.model
+    def _cron_update_rates(self):
+        """DEPRECATED: Legacy cron method kept for backward compatibility.
+        
+        This method is no longer used. Each source now has its own dedicated cron.
+        This method will be removed in a future version.
+        """
+        _logger.warning(
+            'DEPRECATED: _cron_update_rates() called. '
+            'Each source now has its own cron. Please update your configuration.'
+        )
+        # Fallback: update all due sources
         sources = self.search([
             ('active', '=', True),
             ('auto_update', '=', True),
         ])
-        
         for source in sources:
             try:
-                # Check if should run based on schedule (timezone-aware)
-                if not source._should_run_now():
-                    continue
-                
-                _logger.info('Running scheduled update for source: %s', source.name)
                 source._execute_update(triggered_by='cron')
-                
             except Exception as e:
-                _logger.error('Scheduled update failed for %s: %s', source.name, str(e))
-
-    def _should_run_now(self):
-        """Check if source should run at current time based on update_frequency.
-        
-        Uses source_tz to evaluate schedule in the source's local timezone.
-        """
-        # Get current time in source's timezone
-        tz_name = self.source_tz or 'UTC'
-        try:
-            source_tz = pytz.timezone(tz_name)
-        except pytz.UnknownTimeZoneError:
-            source_tz = pytz.UTC
-            
-        utc_now = fields.Datetime.now()
-        local_now = pytz.utc.localize(utc_now).astimezone(source_tz)
-        
-        current_hour = local_now.hour
-        current_minute = local_now.minute
-        current_weekday = local_now.weekday()
-        local_today = local_now.date()
-        
-        # Convert last_sync_date to local timezone for comparison
-        last_sync_local = None
-        if self.last_sync_date:
-            last_sync_local = pytz.utc.localize(self.last_sync_date).astimezone(source_tz)
-        
-        # Parse preferred hour/minute
-        pref_hour = 9
-        pref_minute = 0
-        if self.preferred_hour:
-            parts = self.preferred_hour.split(':')
-            pref_hour = int(parts[0])
-            pref_minute = int(parts[1]) if len(parts) > 1 else 0
-        
-        # Check based on frequency
-        if self.update_frequency == 'hourly':
-            # Run every hour at preferred minute
-            pref_min = int(self.preferred_minute or '0')
-            # Check if we're in the right minute window (within 15 min)
-            if abs(current_minute - pref_min) > 15 and abs(current_minute - pref_min) < 45:
-                return False
-            # Check if already ran this hour
-            if last_sync_local:
-                if last_sync_local.date() == local_today and last_sync_local.hour == current_hour:
-                    return False
-            return True
-        
-        elif self.update_frequency == 'daily':
-            # Run once per day at preferred hour
-            if current_hour != pref_hour:
-                return False
-            # Check minute window (30 min tolerance)
-            if abs(current_minute - pref_minute) > 30:
-                return False
-            if last_sync_local:
-                if last_sync_local.date() == local_today:
-                    return False
-            return True
-        
-        elif self.update_frequency == 'weekly':
-            # Run once per week on preferred day at preferred hour
-            pref_weekday = int(self.preferred_weekday or '0')
-            if current_weekday != pref_weekday:
-                return False
-            if current_hour != pref_hour:
-                return False
-            if last_sync_local:
-                days_since_last = (local_today - last_sync_local.date()).days
-                if days_since_last < 7:
-                    return False
-            return True
-        
-        elif self.update_frequency == 'monthly':
-            # Run on preferred days of month at preferred hour
-            pref_days = self._parse_monthdays()
-            if local_now.day not in pref_days:
-                return False
-            if current_hour != pref_hour:
-                return False
-            if last_sync_local:
-                # Check if already ran today
-                if last_sync_local.date() == local_today:
-                    return False
-            return True
-        
-        elif self.update_frequency == 'specific':
-            # Run based on schedule_ids
-            if not self.schedule_ids:
-                return False
-            
-            # Format current time for comparison (e.g., "9:00" or "9:30")
-            time_key = f'{current_hour}:00' if current_minute < 30 else f'{current_hour}:30'
-            
-            matching_schedule = self.schedule_ids.filtered(
-                lambda s: s.active and 
-                          s.dayofweek == str(current_weekday) and 
-                          s.hour == time_key
-            )
-            if not matching_schedule:
-                return False
-            
-            # Check if already ran at this time slot (in local timezone)
-            if last_sync_local:
-                last_sync_date = last_sync_local.date()
-                last_sync_hour = last_sync_local.hour
-                last_sync_minute = last_sync_local.minute
-                last_time_key = f'{last_sync_hour}:00' if last_sync_minute < 30 else f'{last_sync_hour}:30'
-                
-                if last_sync_date == local_today and last_time_key == time_key:
-                    return False
-            
-            return True
-        
-        return False
+                _logger.error('Update failed for %s: %s', source.name, str(e))

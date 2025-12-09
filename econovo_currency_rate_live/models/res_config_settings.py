@@ -11,26 +11,9 @@ class ResConfigSettings(models.TransientModel):
     currency_rate_live_enabled = fields.Boolean(
         string='Enable Econovo Currency Rate Live',
         config_parameter='econovo_currency_rate_live.enabled',
-        help='Enable automatic currency rate updates from external sources (websites, APIs)',
-    )
-
-    currency_rate_live_cron_interval = fields.Selection(
-        selection=[
-            ('5', 'Every 5 minutes'),
-            ('10', 'Every 10 minutes'),
-            ('15', 'Every 15 minutes'),
-            ('30', 'Every 30 minutes'),
-            ('60', 'Every hour'),
-        ],
-        string='Check Interval',
-        default='15',
-        config_parameter='econovo_currency_rate_live.cron_interval',
-        help='How often the system checks if any source needs to run.\n\n'
-             'This is NOT the update frequency - it is how often the scheduler '
-             'looks for sources that are due.\n\n'
-             'Example: If a source is configured to run at 09:30 and Check Interval '
-             'is 15 minutes, the scheduler will detect it between 09:30 and 09:45.\n\n'
-             'Tip: Use 15 minutes for a good balance between precision and performance.',
+        help='Enable automatic currency rate updates from external sources (websites, APIs).\n\n'
+             'When enabled, each source with "Automatic Update" will have its own dedicated '
+             'scheduled action that runs exactly at the configured time.',
     )
 
     currency_rate_live_log_retention_days = fields.Integer(
@@ -87,6 +70,11 @@ class ResConfigSettings(models.TransientModel):
         compute='_compute_sources_count',
     )
 
+    currency_rate_live_crons_count = fields.Integer(
+        string='Active Scheduled Actions',
+        compute='_compute_crons_count',
+    )
+
     @api.depends()
     def _compute_sources_count(self):
         Source = self.env['currency.rate.source']
@@ -95,35 +83,35 @@ class ResConfigSettings(models.TransientModel):
                 ('active', '=', True)
             ])
 
-    def set_values(self):
-        """Override to update cron settings when config changes."""
-        res = super().set_values()
-        self._update_cron_settings()
-        return res
+    @api.depends()
+    def _compute_crons_count(self):
+        Source = self.env['currency.rate.source']
+        for record in self:
+            record.currency_rate_live_crons_count = Source.search_count([
+                ('active', '=', True),
+                ('auto_update', '=', True),
+                ('cron_id', '!=', False),
+            ])
 
-    def _update_cron_settings(self):
-        """Update cron job based on configuration."""
-        cron = self.env.ref(
-            'econovo_currency_rate_live.ir_cron_update_currency_rates',
-            raise_if_not_found=False
-        )
-        if not cron:
-            return
-        
-        # Get config values
-        enabled = self.env['ir.config_parameter'].sudo().get_param(
+    def set_values(self):
+        """Override to update all source crons when module enabled state changes."""
+        # Get previous enabled state
+        was_enabled = self.env['ir.config_parameter'].sudo().get_param(
             'econovo_currency_rate_live.enabled', 'False'
         ) == 'True'
-        interval = int(self.env['ir.config_parameter'].sudo().get_param(
-            'econovo_currency_rate_live.cron_interval', '15'
-        ))
         
-        # Update cron
-        cron.sudo().write({
-            'active': enabled,
-            'interval_number': interval,
-            'interval_type': 'minutes',
-        })
+        res = super().set_values()
+        
+        # Get new enabled state
+        is_enabled = self.env['ir.config_parameter'].sudo().get_param(
+            'econovo_currency_rate_live.enabled', 'False'
+        ) == 'True'
+        
+        # Update all source crons if enabled state changed
+        if was_enabled != is_enabled:
+            self.env['currency.rate.source']._update_all_source_crons(enabled=is_enabled)
+        
+        return res
 
     def action_open_currency_rate_sources(self):
         """Open the currency rate sources list."""
@@ -132,6 +120,22 @@ class ResConfigSettings(models.TransientModel):
             'name': 'Currency Rate Sources',
             'res_model': 'currency.rate.source',
             'view_mode': 'tree,kanban,form',
+            'target': 'current',
+        }
+
+    def action_open_currency_rate_crons(self):
+        """Open the list of currency rate scheduled actions."""
+        Source = self.env['currency.rate.source']
+        cron_ids = Source.search([
+            ('cron_id', '!=', False)
+        ]).mapped('cron_id').ids
+        
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Currency Rate Scheduled Actions',
+            'res_model': 'ir.cron',
+            'view_mode': 'tree,form',
+            'domain': [('id', 'in', cron_ids)],
             'target': 'current',
         }
 
@@ -178,6 +182,36 @@ class ResConfigSettings(models.TransientModel):
                 'title': 'Rate Update Complete',
                 'message': f'Updated: {success_count}, Errors: {error_count}',
                 'type': message_type,
+                'sticky': False,
+            }
+        }
+
+    def action_recreate_all_crons(self):
+        """Recreate all source crons. Useful for fixing broken cron configurations."""
+        Source = self.env['currency.rate.source']
+        sources = Source.search([
+            ('active', '=', True),
+            ('auto_update', '=', True),
+        ])
+        
+        created_count = 0
+        updated_count = 0
+        
+        for source in sources:
+            if source.cron_id:
+                source._update_source_cron()
+                updated_count += 1
+            else:
+                source._create_source_cron()
+                created_count += 1
+        
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Crons Synchronized',
+                'message': f'Created: {created_count}, Updated: {updated_count}',
+                'type': 'success',
                 'sticky': False,
             }
         }

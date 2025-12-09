@@ -17,15 +17,8 @@
                          help="Update rates from custom sources (websites, APIs, banks)">
                     <field name="currency_rate_live_enabled"/>
                     <div class="content-group" invisible="not currency_rate_live_enabled">
-                        <div class="mt-2">
-                            <label for="currency_rate_live_cron_interval" class="o_light_label"/>
-                            <field name="currency_rate_live_cron_interval" class="o_inline"/>
-                            <span class="text-muted ms-2 small">
-                                (how often the scheduler checks for due sources)
-                            </span>
-                        </div>
-                        <div class="mt-1 text-muted small ms-3">
-                            <em>Note: Each source has its own schedule (daily, weekly, etc.) configured individually.</em>
+                        <div class="mt-2 text-muted small">
+                            <em>Each source has its own dedicated scheduled action that runs exactly at the configured time.</em>
                         </div>
                         <div class="mt-3">
                             <button name="action_open_currency_rate_sources" 
@@ -35,6 +28,16 @@
                                     icon="oi-arrow-right"/>
                             <span class="ms-2 text-muted">
                                 (<field name="currency_rate_live_sources_count" class="oe_inline"/> active)
+                            </span>
+                        </div>
+                        <div class="mt-2">
+                            <button name="action_open_currency_rate_crons" 
+                                    type="object" 
+                                    string="View Scheduled Actions" 
+                                    class="btn-link"
+                                    icon="fa-clock-o"/>
+                            <span class="ms-2 text-muted">
+                                (<field name="currency_rate_live_crons_count" class="oe_inline"/> active)
                             </span>
                         </div>
                     </div>
@@ -93,19 +96,27 @@
                              string="Manual Actions">
                         <div class="content-group">
                             <div class="row mt-2">
-                                <div class="col-lg-6">
+                                <div class="col-lg-4">
                                     <button name="action_update_all_rates_now" 
                                             type="object" 
                                             string="Update All Rates Now" 
                                             class="btn-secondary"
                                             icon="fa-refresh"/>
                                 </div>
-                                <div class="col-lg-6">
+                                <div class="col-lg-4">
                                     <button name="action_cleanup_old_logs" 
                                             type="object" 
                                             string="Cleanup Old Logs" 
                                             class="btn-secondary"
                                             icon="fa-trash"/>
+                                </div>
+                                <div class="col-lg-4">
+                                    <button name="action_recreate_all_crons" 
+                                            type="object" 
+                                            string="Sync Scheduled Actions" 
+                                            class="btn-secondary"
+                                            icon="fa-cogs"
+                                            help="Recreate or update scheduled actions for all sources"/>
                                 </div>
                             </div>
                         </div>
