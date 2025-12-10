@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        
+        <!-- Default Email Template for Error Notifications -->
+        <record id="mail_template_currency_rate_error" model="mail.template">
+            <field name="name">Currency Rate: Error Notification</field>
+            <field name="model_id" ref="model_currency_rate_source"/>
+            <field name="subject">⚠️ Currency Rate Update Failed: {{ object.name }}</field>
+            <field name="email_from">{{ (object.env.company.email or user.email_formatted) }}</field>
+            <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px; font-size: 13px;">
+    <table border="0" cellpadding="0" cellspacing="0" 
+           style="padding-top: 16px; background-color: #F1F1F1; font-family:Verdana, Arial,sans-serif; 
+                  color: #454748; width: 100%; border-collapse:separate;">
+        <tr>
+            <td align="center">
+                <table border="0" cellpadding="0" cellspacing="0" width="590" 
+                       style="padding: 16px; background-color: white; color: #454748; 
+                              border-collapse:separate;">
+                    <tbody>
+                        <!-- Header -->
+                        <tr>
+                            <td align="center" style="min-width: 590px;">
+                                <table border="0" cellpadding="0" cellspacing="0" width="590" 
+                                       style="min-width: 590px; background-color: white; 
+                                              padding: 0px 8px 0px 8px; border-collapse:separate;">
+                                    <tr>
+                                        <td valign="middle">
+                                            <span style="font-size: 20px; font-weight: bold; color: #dc3545;">
+                                                ⚠️ Currency Rates Update Failed
+                                            </span>
+                                        </td>
+                                        <td valign="middle" align="right">
+                                            <img t-attf-src="/logo.png?company={{ object.env.company.id }}" 
+                                                 style="max-height: 50px; max-width: 180px;" 
+                                                 t-att-alt="object.env.company.name"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2" style="padding-top: 10px;">
+                                            <hr style="border: 1px solid #dc3545;"/>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        
+                        <!-- Content -->
+                        <tr>
+                            <td align="center" style="min-width: 590px;">
+                                <table border="0" cellpadding="0" cellspacing="0" width="590" 
+                                       style="min-width: 590px; background-color: white; 
+                                              padding: 0px 8px 0px 8px; border-collapse:separate;">
+                                    <tr>
+                                        <td valign="top" style="font-size: 13px;">
+                                            <p>An error occurred while updating currency rates:</p>
+                                            
+                                            <table style="width: 100%; border-collapse: collapse; margin: 15px 0;">
+                                                <tr>
+                                                    <td style="padding: 8px; background-color: #f8f9fa; 
+                                                               border: 1px solid #dee2e6; width: 30%;">
+                                                        <strong>Source</strong>
+                                                    </td>
+                                                    <td style="padding: 8px; border: 1px solid #dee2e6;">
+                                                        <t t-out="object.name or ''">BNA Billete</t>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding: 8px; background-color: #f8f9fa; 
+                                                               border: 1px solid #dee2e6;">
+                                                        <strong>Currency Pair</strong>
+                                                    </td>
+                                                    <td style="padding: 8px; border: 1px solid #dee2e6;">
+                                                        <t t-out="object.source_currency_id.name or ''">USD</t> → <t t-out="object.target_currency_id.name or ''">ARS</t>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding: 8px; background-color: #f8f9fa; 
+                                                               border: 1px solid #dee2e6;">
+                                                        <strong>URL</strong>
+                                                    </td>
+                                                    <td style="padding: 8px; border: 1px solid #dee2e6;">
+                                                        <a t-att-href="object.url" style="color: #007bff;">
+                                                            <t t-out="object.url or ''">https://example.com</t>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding: 8px; background-color: #f8f9fa; 
+                                                               border: 1px solid #dee2e6;">
+                                                        <strong>Error</strong>
+                                                    </td>
+                                                    <td style="padding: 8px; border: 1px solid #dee2e6; color: #dc3545;">
+                                                        <t t-out="object.last_error or 'Unknown error'">Error message</t>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding: 8px; background-color: #f8f9fa; 
+                                                               border: 1px solid #dee2e6;">
+                                                        <strong>Time</strong>
+                                                    </td>
+                                                    <td style="padding: 8px; border: 1px solid #dee2e6;">
+                                                        <t t-out="object.last_sync_date or ''">2025-12-10</t>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding: 8px; background-color: #f8f9fa; 
+                                                               border: 1px solid #dee2e6;">
+                                                        <strong>Last Rate</strong>
+                                                    </td>
+                                                    <td style="padding: 8px; border: 1px solid #dee2e6;">
+                                                        <t t-out="object.last_rate or 'N/A'">1.234</t>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                            
+                                            <!-- Button to open source document -->
+                                            <div style="text-align: center; margin: 20px 0;">
+                                                <a t-attf-href="{{ object.get_base_url() }}/web#id={{ object.id }}&amp;model=currency.rate.source&amp;view_type=form"
+                                                   style="display: inline-block; padding: 10px 20px; 
+                                                          background-color: #875A7B; color: white; 
+                                                          text-decoration: none; border-radius: 4px;
+                                                          font-weight: bold;">
+                                                    🔗 View Source Configuration
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        
+                        <!-- Footer -->
+                        <tr>
+                            <td align="center" style="min-width: 590px;">
+                                <table border="0" cellpadding="0" cellspacing="0" width="590"
+                                       style="min-width: 590px; background-color: #F1F1F1; 
+                                              color: #454748; padding: 8px; border-collapse:separate;">
+                                    <tr>
+                                        <td style="text-align: center; font-size: 11px;">
+                                            This is an automated notification from 
+                                            <strong><t t-out="object.env.company.name or ''">YourCompany</t></strong>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+    </table>
+</div>
+            </field>
+            <field name="auto_delete" eval="False"/>
+            <field name="lang">{{ object.env.user.lang }}</field>
+        </record>
+        
+        <!-- Spanish Email Template for Error Notifications -->
+        <record id="mail_template_currency_rate_error_es" model="mail.template">
+            <field name="name">Tasa de Cambio: Notificación de Error (Español)</field>
+            <field name="model_id" ref="model_currency_rate_source"/>
+            <field name="subject">⚠️ Falló Actualización de Tasa: {{ object.name }}</field>
+            <field name="email_from">{{ (object.env.company.email or user.email_formatted) }}</field>
+            <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px; font-size: 13px;">
+    <table border="0" cellpadding="0" cellspacing="0" 
+           style="padding-top: 16px; background-color: #F1F1F1; font-family:Verdana, Arial,sans-serif; 
+                  color: #454748; width: 100%; border-collapse:separate;">
+        <tr>
+            <td align="center">
+                <table border="0" cellpadding="0" cellspacing="0" width="590" 
+                       style="padding: 16px; background-color: white; color: #454748; 
+                              border-collapse:separate;">
+                    <tbody>
+                        <!-- Encabezado -->
+                        <tr>
+                            <td align="center" style="min-width: 590px;">
+                                <table border="0" cellpadding="0" cellspacing="0" width="590" 
+                                       style="min-width: 590px; background-color: white; 
+                                              padding: 0px 8px 0px 8px; border-collapse:separate;">
+                                    <tr>
+                                        <td valign="middle">
+                                            <span style="font-size: 20px; font-weight: bold; color: #dc3545;">
+                                                ⚠️ Falló la Actualización de Tasas de Cambio
+                                            </span>
+                                        </td>
+                                        <td valign="middle" align="right">
+                                            <img t-attf-src="/logo.png?company={{ object.env.company.id }}" 
+                                                 style="max-height: 50px; max-width: 180px;" 
+                                                 t-att-alt="object.env.company.name"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2" style="padding-top: 10px;">
+                                            <hr style="border: 1px solid #dc3545;"/>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        
+                        <!-- Contenido -->
+                        <tr>
+                            <td align="center" style="min-width: 590px;">
+                                <table border="0" cellpadding="0" cellspacing="0" width="590" 
+                                       style="min-width: 590px; background-color: white; 
+                                              padding: 0px 8px 0px 8px; border-collapse:separate;">
+                                    <tr>
+                                        <td valign="top" style="font-size: 13px;">
+                                            <p>Ocurrió un error al actualizar las tasas de cambio:</p>
+                                            
+                                            <table style="width: 100%; border-collapse: collapse; margin: 15px 0;">
+                                                <tr>
+                                                    <td style="padding: 8px; background-color: #f8f9fa; 
+                                                               border: 1px solid #dee2e6; width: 30%;">
+                                                        <strong>Fuente</strong>
+                                                    </td>
+                                                    <td style="padding: 8px; border: 1px solid #dee2e6;">
+                                                        <t t-out="object.name or ''">BNA Billete</t>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding: 8px; background-color: #f8f9fa; 
+                                                               border: 1px solid #dee2e6;">
+                                                        <strong>Par de Monedas</strong>
+                                                    </td>
+                                                    <td style="padding: 8px; border: 1px solid #dee2e6;">
+                                                        <t t-out="object.source_currency_id.name or ''">USD</t> → <t t-out="object.target_currency_id.name or ''">ARS</t>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding: 8px; background-color: #f8f9fa; 
+                                                               border: 1px solid #dee2e6;">
+                                                        <strong>URL</strong>
+                                                    </td>
+                                                    <td style="padding: 8px; border: 1px solid #dee2e6;">
+                                                        <a t-att-href="object.url" style="color: #007bff;">
+                                                            <t t-out="object.url or ''">https://example.com</t>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding: 8px; background-color: #f8f9fa; 
+                                                               border: 1px solid #dee2e6;">
+                                                        <strong>Error</strong>
+                                                    </td>
+                                                    <td style="padding: 8px; border: 1px solid #dee2e6; color: #dc3545;">
+                                                        <t t-out="object.last_error or 'Error desconocido'">Mensaje de error</t>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding: 8px; background-color: #f8f9fa; 
+                                                               border: 1px solid #dee2e6;">
+                                                        <strong>Hora</strong>
+                                                    </td>
+                                                    <td style="padding: 8px; border: 1px solid #dee2e6;">
+                                                        <t t-out="object.last_sync_date or ''">2025-12-10</t>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding: 8px; background-color: #f8f9fa; 
+                                                               border: 1px solid #dee2e6;">
+                                                        <strong>Última Tasa</strong>
+                                                    </td>
+                                                    <td style="padding: 8px; border: 1px solid #dee2e6;">
+                                                        <t t-out="object.last_rate or 'N/D'">1.234</t>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                            
+                                            <!-- Botón para abrir configuración -->
+                                            <div style="text-align: center; margin: 20px 0;">
+                                                <a t-attf-href="{{ object.get_base_url() }}/web#id={{ object.id }}&amp;model=currency.rate.source&amp;view_type=form"
+                                                   style="display: inline-block; padding: 10px 20px; 
+                                                          background-color: #875A7B; color: white; 
+                                                          text-decoration: none; border-radius: 4px;
+                                                          font-weight: bold;">
+                                                    🔗 Ver Configuración de Fuente
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        
+                        <!-- Pie de página -->
+                        <tr>
+                            <td align="center" style="min-width: 590px;">
+                                <table border="0" cellpadding="0" cellspacing="0" width="590"
+                                       style="min-width: 590px; background-color: #F1F1F1; 
+                                              color: #454748; padding: 8px; border-collapse:separate;">
+                                    <tr>
+                                        <td style="text-align: center; font-size: 11px;">
+                                            Esta es una notificación automática de 
+                                            <strong><t t-out="object.env.company.name or ''">SuEmpresa</t></strong>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+    </table>
+</div>
+            </field>
+            <field name="auto_delete" eval="False"/>
+            <field name="lang">es_AR</field>
+        </record>
+        
+    </data>
+</odoo>

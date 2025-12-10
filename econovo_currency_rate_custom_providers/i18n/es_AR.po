@@ -1,0 +1,3436 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* econovo_currency_rate_custom_providers
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 17.0+e-20250501\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-12-10 15:48+0000\n"
+"PO-Revision-Date: 2025-12-10 15:48+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: econovo_currency_rate_custom_providers
+#. odoo-python
+#: code:addons/econovo_currency_rate_custom_providers/models/currency_rate_source.py:0
+#, python-format
+msgid ""
+"\n"
+"<div style=\"font-family: Arial, sans-serif;\">\n"
+"    <h3 style=\"color: #dc3545;\">⚠️ Currency Rate Update Failed</h3>\n"
+"    <table style=\"width: 100%%; border-collapse: collapse; margin: 10px 0;\">\n"
+"        <tr>\n"
+"            <td style=\"padding: 5px; border-bottom: 1px solid #ddd;\"><strong>Source:</strong></td>\n"
+"            <td style=\"padding: 5px; border-bottom: 1px solid #ddd;\">%(source_name)s</td>\n"
+"        </tr>\n"
+"        <tr>\n"
+"            <td style=\"padding: 5px; border-bottom: 1px solid #ddd;\"><strong>Currency:</strong></td>\n"
+"            <td style=\"padding: 5px; border-bottom: 1px solid #ddd;\">%(source_currency)s → %(target_currency)s</td>\n"
+"        </tr>\n"
+"        <tr>\n"
+"            <td style=\"padding: 5px; border-bottom: 1px solid #ddd;\"><strong>Error Type:</strong></td>\n"
+"            <td style=\"padding: 5px; border-bottom: 1px solid #ddd;\">%(error_type)s</td>\n"
+"        </tr>\n"
+"        <tr>\n"
+"            <td style=\"padding: 5px; border-bottom: 1px solid #ddd;\"><strong>Error:</strong></td>\n"
+"            <td style=\"padding: 5px; border-bottom: 1px solid #ddd; color: #dc3545;\">%(error_message)s</td>\n"
+"        </tr>\n"
+"        <tr>\n"
+"            <td style=\"padding: 5px; border-bottom: 1px solid #ddd;\"><strong>Time:</strong></td>\n"
+"            <td style=\"padding: 5px; border-bottom: 1px solid #ddd;\">%(error_time)s</td>\n"
+"        </tr>\n"
+"    </table>\n"
+"</div>\n"
+"        "
+msgstr ""
+"\n"
+"<div style=\"font-family: Arial, sans-serif;\">\n"
+"    <h3 style=\"color: #dc3545;\">⚠️ Falló la Actualización de Tasa de Cambio</h3>\n"
+"    <table style=\"width: 100%%; border-collapse: collapse; margin: 10px 0;\">\n"
+"        <tr>\n"
+"            <td style=\"padding: 5px; border-bottom: 1px solid #ddd;\"><strong>Fuente:</strong></td>\n"
+"            <td style=\"padding: 5px; border-bottom: 1px solid #ddd;\">%(source_name)s</td>\n"
+"        </tr>\n"
+"        <tr>\n"
+"            <td style=\"padding: 5px; border-bottom: 1px solid #ddd;\"><strong>Moneda:</strong></td>\n"
+"            <td style=\"padding: 5px; border-bottom: 1px solid #ddd;\">%(source_currency)s → %(target_currency)s</td>\n"
+"        </tr>\n"
+"        <tr>\n"
+"            <td style=\"padding: 5px; border-bottom: 1px solid #ddd;\"><strong>Tipo de Error:</strong></td>\n"
+"            <td style=\"padding: 5px; border-bottom: 1px solid #ddd;\">%(error_type)s</td>\n"
+"        </tr>\n"
+"        <tr>\n"
+"            <td style=\"padding: 5px; border-bottom: 1px solid #ddd;\"><strong>Error:</strong></td>\n"
+"            <td style=\"padding: 5px; border-bottom: 1px solid #ddd; color: #dc3545;\">%(error_message)s</td>\n"
+"        </tr>\n"
+"        <tr>\n"
+"            <td style=\"padding: 5px; border-bottom: 1px solid #ddd;\"><strong>Hora:</strong></td>\n"
+"            <td style=\"padding: 5px; border-bottom: 1px solid #ddd;\">%(error_time)s</td>\n"
+"        </tr>\n"
+"    </table>\n"
+"</div>\n"
+"        "
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "$.data.date"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "$.data.rates.USD.value"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "(\\d{2}/\\d{2}/\\d{4})"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid ".date-value, #rate-date"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "//span[@class='date']/text()"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "//table[@id='rates']//tr[contains(.,'USD')]/td[2]/text()"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "0+ / 1+ repetitions"
+msgstr "0+ / 1+ repeticiones"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "1, 15, 30"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>#id</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>#rate-usd</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>#rates table td</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>$..USD</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>$.data.rates.USD</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>$.rate</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>$.rates[*].value</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>$.rates[0].value</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>$.rates[?(@.code=='USD')].value</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>$</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>%Y-%m-%d</code> - 2024-12-31"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>%d-%m-%Y</code> - 31-12-2024"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>%d/%m/%Y</code> - 31/12/2024"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>%m/%d/%Y</code> - 12/31/2024"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>(...)</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>*</code> / <code>+</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>..property</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>.</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>.class</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>.price-value</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>.property</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>//</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>//span/text()</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>//table//td</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>//table[@id='rates']</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>//tr[2]/td[3]</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>//tr[last()]/td</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>//tr[td[contains(.,'USD')]]</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>:nth-child(n)</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>?</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>USD.*?([0-9.,]+)</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>USD.+</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>[*]</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>[0-9.,]+</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>[0-9]+</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>[0]</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>[?(@.x=='y')]</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>[@id='x']</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>[abc]</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>[attr=\"val\"]</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>[last()]</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>[n]</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>\\d+</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>\\d+\\.?\\d*</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>\\d</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>\\s*</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>\\s</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>contains()</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>parent &gt; child</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>parent child</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>td[data-currency=\"USD\"]</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>text()</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>tr &gt; td</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<code>tr td:nth-child(3)</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model:mail.template,body_html:econovo_currency_rate_custom_providers.mail_template_currency_rate_error
+msgid ""
+"<div style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"    <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"padding-top: 16px; background-color: #F1F1F1; font-family:Verdana, Arial,sans-serif;                    color: #454748; width: 100%; border-collapse:separate;\">\n"
+"        <tr>\n"
+"            <td align=\"center\">\n"
+"                <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"590\" style=\"padding: 16px; background-color: white; color: #454748;                                border-collapse:separate;\">\n"
+"                    <tbody>\n"
+"                        <!-- Header -->\n"
+"                        <tr>\n"
+"                            <td align=\"center\" style=\"min-width: 590px;\">\n"
+"                                <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"590\" style=\"min-width: 590px; background-color: white;                                                padding: 0px 8px 0px 8px; border-collapse:separate;\">\n"
+"                                    <tr>\n"
+"                                        <td valign=\"middle\">\n"
+"                                            <span style=\"font-size: 20px; font-weight: bold; color: #dc3545;\">\n"
+"                                                ⚠️ Currency Rates Update Failed\n"
+"                                            </span>\n"
+"                                        </td>\n"
+"                                        <td valign=\"middle\" align=\"right\">\n"
+"                                            <img t-attf-src=\"/logo.png?company={{ object.env.company.id }}\" style=\"max-height: 50px; max-width: 180px;\" t-att-alt=\"object.env.company.name\">\n"
+"                                        </td>\n"
+"                                    </tr>\n"
+"                                    <tr>\n"
+"                                        <td colspan=\"2\" style=\"padding-top: 10px;\">\n"
+"                                            <hr style=\"border: 1px solid #dc3545;\">\n"
+"                                        </td>\n"
+"                                    </tr>\n"
+"                                </table>\n"
+"                            </td>\n"
+"                        </tr>\n"
+"                        \n"
+"                        <!-- Content -->\n"
+"                        <tr>\n"
+"                            <td align=\"center\" style=\"min-width: 590px;\">\n"
+"                                <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"590\" style=\"min-width: 590px; background-color: white;                                                padding: 0px 8px 0px 8px; border-collapse:separate;\">\n"
+"                                    <tr>\n"
+"                                        <td valign=\"top\" style=\"font-size: 13px;\">\n"
+"                                            <p>An error occurred while updating currency rates:</p>\n"
+"                                            \n"
+"                                            <table style=\"width: 100%; border-collapse: collapse; margin: 15px 0;\">\n"
+"                                                <tr>\n"
+"                                                    <td style=\"padding: 8px; background-color: #f8f9fa;                                                                 border: 1px solid #dee2e6; width: 30%;\">\n"
+"                                                        <strong>Source</strong>\n"
+"                                                    </td>\n"
+"                                                    <td style=\"padding: 8px; border: 1px solid #dee2e6;\">\n"
+"                                                        <t t-out=\"object.name or ''\">BNA Billete</t>\n"
+"                                                    </td>\n"
+"                                                </tr>\n"
+"                                                <tr>\n"
+"                                                    <td style=\"padding: 8px; background-color: #f8f9fa;                                                                 border: 1px solid #dee2e6;\">\n"
+"                                                        <strong>Currency Pair</strong>\n"
+"                                                    </td>\n"
+"                                                    <td style=\"padding: 8px; border: 1px solid #dee2e6;\">\n"
+"                                                        <t t-out=\"object.source_currency_id.name or ''\">USD</t> → <t t-out=\"object.target_currency_id.name or ''\">ARS</t>\n"
+"                                                    </td>\n"
+"                                                </tr>\n"
+"                                                <tr>\n"
+"                                                    <td style=\"padding: 8px; background-color: #f8f9fa;                                                                 border: 1px solid #dee2e6;\">\n"
+"                                                        <strong>URL</strong>\n"
+"                                                    </td>\n"
+"                                                    <td style=\"padding: 8px; border: 1px solid #dee2e6;\">\n"
+"                                                        <a t-att-href=\"object.url\" style=\"color: #007bff;\">\n"
+"                                                            <t t-out=\"object.url or ''\">https://example.com</t>\n"
+"                                                        </a>\n"
+"                                                    </td>\n"
+"                                                </tr>\n"
+"                                                <tr>\n"
+"                                                    <td style=\"padding: 8px; background-color: #f8f9fa;                                                                 border: 1px solid #dee2e6;\">\n"
+"                                                        <strong>Error</strong>\n"
+"                                                    </td>\n"
+"                                                    <td style=\"padding: 8px; border: 1px solid #dee2e6; color: #dc3545;\">\n"
+"                                                        <t t-out=\"object.last_error or 'Unknown error'\">Error message</t>\n"
+"                                                    </td>\n"
+"                                                </tr>\n"
+"                                                <tr>\n"
+"                                                    <td style=\"padding: 8px; background-color: #f8f9fa;                                                                 border: 1px solid #dee2e6;\">\n"
+"                                                        <strong>Time</strong>\n"
+"                                                    </td>\n"
+"                                                    <td style=\"padding: 8px; border: 1px solid #dee2e6;\">\n"
+"                                                        <t t-out=\"object.last_sync_date or ''\">2025-12-10</t>\n"
+"                                                    </td>\n"
+"                                                </tr>\n"
+"                                                <tr>\n"
+"                                                    <td style=\"padding: 8px; background-color: #f8f9fa;                                                                 border: 1px solid #dee2e6;\">\n"
+"                                                        <strong>Last Rate</strong>\n"
+"                                                    </td>\n"
+"                                                    <td style=\"padding: 8px; border: 1px solid #dee2e6;\">\n"
+"                                                        <t t-out=\"object.last_rate or 'N/A'\">1.234</t>\n"
+"                                                    </td>\n"
+"                                                </tr>\n"
+"                                            </table>\n"
+"                                        </td>\n"
+"                                    </tr>\n"
+"                                </table>\n"
+"                            </td>\n"
+"                        </tr>\n"
+"                        \n"
+"                        <!-- Footer -->\n"
+"                        <tr>\n"
+"                            <td align=\"center\" style=\"min-width: 590px;\">\n"
+"                                <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"590\" style=\"min-width: 590px; background-color: #F1F1F1;                                                color: #454748; padding: 8px; border-collapse:separate;\">\n"
+"                                    <tr>\n"
+"                                        <td style=\"text-align: center; font-size: 11px;\">\n"
+"                                            This is an automated notification from \n"
+"                                            <strong><t t-out=\"object.env.company.name or ''\">YourCompany</t></strong>\n"
+"                                        </td>\n"
+"                                    </tr>\n"
+"                                </table>\n"
+"                            </td>\n"
+"                        </tr>\n"
+"                    </tbody>\n"
+"                </table>\n"
+"            </td>\n"
+"        </tr>\n"
+"    </table>\n"
+"</div>\n"
+"            "
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.res_config_settings_view_form_currency_rate_custom_providers
+msgid ""
+"<em>Each source has its own dedicated scheduled action that runs exactly at "
+"the configured time.</em>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<em>Example: Monday 09:00, Wednesday 14:30, Friday 17:00</em>"
+msgstr "<em>Ejemplo: Lunes 09:00, Miércoles 14:30, Viernes 17:00</em>"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<em>Leave \"CSS Attribute\" empty to extract text content.</em>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<em>Note: Duplicate day/hour combinations are not allowed.</em>"
+msgstr "<em>Nota: No se permiten combinaciones duplicadas de día/hora.</em>"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid ""
+"<em>Use \"XPath Attribute\" to extract an attribute (e.g., \"value\") "
+"instead of text.</em>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid ""
+"<small><i class=\"fa fa-info-circle\"/> External contacts will receive email"
+" notifications directly. They don't need an Odoo user account.</small>"
+msgstr "<small><i class=\"fa fa-info-circle\"/> Los contactos externos recibirán notificaciones por email directamente. No necesitan una cuenta de usuario en Odoo.</small>"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.res_config_settings_view_form_currency_rate_custom_providers
+msgid "<span class=\"text-muted\">%</span>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.res_config_settings_view_form_currency_rate_custom_providers
+msgid "<span class=\"text-muted\">days</span>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.res_config_settings_view_form_currency_rate_custom_providers
+msgid "<span class=\"text-muted\">seconds</span>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid ""
+"<span>Enter days separated by commas (e.g., 1, 15, 30). Days 29-31 are "
+"skipped in shorter months.</span>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<span>Updates run once per day at the selected hour.</span>"
+msgstr "<span>Las actualizaciones se ejecutan una vez al día a la hora seleccionada.</span>"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<span>Updates run once per week on the selected day and hour.</span>"
+msgstr "<span>Las actualizaciones se ejecutan una vez por semana en el día y hora seleccionados.</span>"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid ""
+"<span>When this source fails, the fallback source will be executed "
+"automatically. Only sources with \"Automatic Update\" disabled are "
+"available.</span>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid ""
+"<strong>APIs:</strong> CoinGecko: <code>$.bitcoin.usd</code> | Open "
+"Exchange: <code>$.rates.ARS</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid ""
+"<strong>Automatic detection analyzes the response and applies the best "
+"method:</strong>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<strong>CSS:</strong> CSS selector - <code>.date-value</code>"
+msgstr "<strong>CSS:</strong> Selector CSS - <code>.date-value</code>"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid ""
+"<strong>Common:</strong> <code>([0-9]+[.,][0-9]+)</code> | "
+"<code>USD&lt;/td&gt;\\s*&lt;td&gt;([0-9.,]+)</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<strong>Date Format</strong> (Python strptime):"
+msgstr "<strong>Formato de Fecha</strong> (Python strptime):"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid ""
+"<strong>Decimal Format:</strong> Configure in \"Value Processing\" tab to "
+"match source format"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<strong>Extraction Methods:</strong>"
+msgstr "<strong>Métodos de Extracción:</strong>"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid ""
+"<strong>Find HTML elements using stylesheet/querySelector syntax.</strong>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<strong>JSONPath:</strong> JSON path - <code>$.data.date</code>"
+msgstr "<strong>JSONPath:</strong> Ruta JSON - <code>$.data.date</code>"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid ""
+"<strong>Navigate HTML/XML by position, attributes, or content.</strong>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "<strong>Navigate JSON structures using XPath-like syntax.</strong>"
+msgstr "<strong>Navegar estructuras JSON usando sintaxis similar a XPath.</strong>"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid ""
+"<strong>Note:</strong> Less precise than manual methods. Not recommended for"
+" critical production."
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid ""
+"<strong>Regex:</strong> Pattern with capturing group - "
+"<code>(\\d{2}/\\d{2}/\\d{4})</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid ""
+"<strong>Result Index:</strong> If multiple elements match, specify which one"
+" (1 = first)"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_test_extraction_wizard_form
+msgid ""
+"<strong>Test Failed!</strong> \n"
+"                        Please check the error details below."
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_test_extraction_wizard_form
+msgid ""
+"<strong>Test Successful!</strong> \n"
+"                        The extraction configuration is working correctly."
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid ""
+"<strong>Test first:</strong> Always use \"Test Extraction\" before "
+"activating"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid ""
+"<strong>Use () for capture groups. The value is extracted from the specified"
+" group.</strong>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid ""
+"<strong>XPath:</strong> Path expression - "
+"<code>//span[@class='date']/text()</code>"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Access property"
+msgstr "Propiedad de acceso"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__message_needaction
+msgid "Action Needed"
+msgstr "Acción Requerida"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__on_validation_fail
+msgid "Action to take when extracted rate fails validation"
+msgstr "Acción a tomar cuando la tasa extraída falla la validación"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_schedule__active
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__active
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_source__state__active
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_search
+msgid "Active"
+msgstr "Activo"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_res_config_settings__currency_rate_custom_providers_crons_count
+msgid "Active Scheduled Actions"
+msgstr "Acciones Programadas Activas"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_res_config_settings__currency_rate_custom_providers_sources_count
+msgid "Active Sources"
+msgstr "Fuentes Activas"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__activity_ids
+msgid "Activities"
+msgstr "Actividades"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__activity_exception_decoration
+msgid "Activity Exception Decoration"
+msgstr "Decoración de Excepción de Actividad"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__activity_state
+msgid "Activity State"
+msgstr "Estado de Actividad"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__activity_type_icon
+msgid "Activity Type Icon"
+msgstr "Icono de Tipo de Actividad"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__notify_channel_mention_all
+msgid "Add @mention for all channel members in the message"
+msgstr "Agregar @mención para todos los miembros del canal en el mensaje"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Add contacts to receive email notifications..."
+msgstr "Agregar contactos para recibir notificaciones por email..."
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__http_headers
+msgid "Additional HTTP headers in JSON format, e.g.: {\"Accept\": \"text/html\"}"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__http_headers
+msgid "Additional Headers (JSON)"
+msgstr "Cabeceras Adicionales (JSON)"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "All elements"
+msgstr "Todos los elementos"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__fallback_source_id
+msgid ""
+"Alternative source to execute if this one fails. Only sources with "
+"\"Automatic Update\" disabled are shown to prevent circular triggers."
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Any character"
+msgstr "Cualquier carácter"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Any level"
+msgstr "Cualquier nivel"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_search
+msgid "Archived"
+msgstr "Archivado"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_source__decimal_format__es_ar
+msgid "Argentine/Spanish (1.234,56)"
+msgstr "Argentino/Español (1.234,56)"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Array index (0-based)"
+msgstr "Índice de array (base 0)"
+
+#. module: econovo_currency_rate_custom_providers
+#. odoo-python
+#: code:addons/econovo_currency_rate_custom_providers/models/currency_rate_source.py:0
+#, python-format
+msgid ""
+"At least one schedule line is required when using \"Specific Days/Hours\" "
+"frequency."
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__message_attachment_count
+msgid "Attachment Count"
+msgstr "Cantidad de Adjuntos"
+
+#. module: econovo_currency_rate_custom_providers
+#. odoo-python
+#: code:addons/econovo_currency_rate_custom_providers/models/currency_rate_source.py:0
+#: code:addons/econovo_currency_rate_custom_providers/models/currency_rate_source.py:0
+#, python-format
+msgid "Attribute '%s' not found on element"
+msgstr "Atributo '%s' no encontrado en el elemento"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__css_attribute
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__xpath_attribute
+msgid "Attribute to extract (leave empty for text content)"
+msgstr "Atributo a extraer (dejar vacío para contenido de texto)"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_source__extraction_method__auto
+msgid "Automatic Detection"
+msgstr "Detección Automática"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Automatic Detection Settings"
+msgstr "Configuración de Detección Automática"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__auto_update
+msgid "Automatic Update"
+msgstr "Actualización Automática"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Automatic Updates"
+msgstr "Actualizaciones Automáticas"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid ""
+"Available variables: object.name, object.source_currency_id.name, "
+"object.target_currency_id.name, ctx.get('error_message'), "
+"ctx.get('error_datetime')"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "By attribute"
+msgstr "Por atributo"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "By position (1-indexed)"
+msgstr "Por posición (base 1)"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__css_attribute
+msgid "CSS Attribute"
+msgstr "Atributo CSS"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__css_selector
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_source__date_extraction_method__css
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_source__extraction_method__css
+msgid "CSS Selector"
+msgstr "Selector CSS"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "CSS Selector Configuration"
+msgstr "Configuración de Selector CSS"
+
+#. module: econovo_currency_rate_custom_providers
+#. odoo-python
+#: code:addons/econovo_currency_rate_custom_providers/models/currency_rate_source.py:0
+#, python-format
+msgid ""
+"CSS selector extraction requires the cssselect package. Install it with: pip"
+" install cssselect"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#. odoo-python
+#: code:addons/econovo_currency_rate_custom_providers/models/currency_rate_source.py:0
+#, python-format
+msgid "CSS selector is required"
+msgstr "El selector CSS es requerido"
+
+#. module: econovo_currency_rate_custom_providers
+#. odoo-python
+#: code:addons/econovo_currency_rate_custom_providers/models/currency_rate_source.py:0
+#, python-format
+msgid "CSS selector returned no results: %s"
+msgstr "El selector CSS no devolvió resultados: %s"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__date_css_selector
+msgid "CSS selector to extract date from HTML"
+msgstr "Selector CSS para extraer fecha del HTML"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__css_selector
+msgid ""
+"CSS selector. Example: #rate-usd, .price-value, table.rates td:nth-child(3)"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_test_extraction_wizard_form
+msgid "Cancel"
+msgstr "Cancelar"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__regex_group
+msgid "Capture Group"
+msgstr "Grupo de Captura"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Capture group"
+msgstr "Grupo de captura"
+
+#. module: econovo_currency_rate_custom_providers
+#. odoo-python
+#: code:addons/econovo_currency_rate_custom_providers/models/currency_rate_source.py:0
+#, python-format
+msgid "Capture group %d not found. Pattern has %d groups."
+msgstr "Grupo de captura %d no encontrado. El patrón tiene %d grupos."
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Channel Notification"
+msgstr "Notificación en Canal"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Character class"
+msgstr "Clase de caracteres"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__custom_decimal_sep
+msgid "Character used as decimal separator (e.g., \",\" or \".\")"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__custom_thousand_sep
+msgid ""
+"Character(s) used as thousands separator (e.g., \".\", \",\", \" \", \"'\")."
+" Leave empty if none."
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid ""
+"Check Content-Type: JSON -&gt; JSONPath, XML -&gt; XPath, HTML -&gt; Regex"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.res_config_settings_view_form_currency_rate_custom_providers
+msgid "Cleanup Old Logs"
+msgstr "Limpiar Registros Antiguos"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_test_extraction_wizard_form
+msgid ""
+"Click the button below to test the extraction configuration.\n"
+"                            This will NOT update any currency rates."
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_test_extraction_wizard_form
+msgid "Close"
+msgstr "Cerrar"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__color
+msgid "Color Index"
+msgstr "Índice de Color"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__company_ids
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source_notify_user__user_company_ids
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Companies"
+msgstr "Compañías"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_log__companies_affected
+msgid "Companies Affected"
+msgstr "Compañías Afectadas"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_test_extraction_wizard_form
+msgid "Comparison"
+msgstr "Comparación"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model,name:econovo_currency_rate_custom_providers.model_res_config_settings
+msgid "Config Settings"
+msgstr "Ajustes de configuración"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Configuration"
+msgstr "Configuración"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.res_config_settings_view_form_currency_rate_custom_providers
+msgid "Configure Sources"
+msgstr "Configurar Fuentes"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.actions.act_window,help:econovo_currency_rate_custom_providers.action_currency_rate_source
+msgid ""
+"Configure external sources (URLs, APIs) to automatically \n"
+"                fetch and update currency exchange rates."
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__notify_partner_ids
+msgid "Contacts to Notify"
+msgstr "Contactos a Notificar"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_log__content_length
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source_test_wizard__content_length
+msgid "Content Length"
+msgstr "Longitud del Contenido"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_log__content_preview
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source_test_wizard__content_preview
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_log_form
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_test_extraction_wizard_form
+msgid "Content Preview"
+msgstr "Vista Previa del Contenido"
+
+#. module: econovo_currency_rate_custom_providers
+#. odoo-python
+#: code:addons/econovo_currency_rate_custom_providers/models/currency_rate_source.py:0
+#, python-format
+msgid "Could not auto-detect value for currency: %s (tried keywords: %s)"
+msgstr "No se pudo detectar automáticamente el valor para la moneda: %s (palabras clave intentadas: %s)"
+
+#. module: econovo_currency_rate_custom_providers
+#. odoo-python
+#: code:addons/econovo_currency_rate_custom_providers/models/currency_rate_source.py:0
+#, python-format
+msgid "Could not convert value to number: %s"
+msgstr "No se pudo convertir el valor a número: %s"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_res_config_settings__currency_rate_custom_providers_notify_on_error
+msgid "Create activity when a rate update fails"
+msgstr "Crear actividad cuando falla una actualización de tasa"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_res_config_settings__currency_rate_custom_providers_notify_on_high_variation
+msgid "Create activity when rate variation exceeds threshold"
+msgstr "Crear actividad cuando la variación de tasa excede el umbral"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.actions.act_window,help:econovo_currency_rate_custom_providers.action_currency_rate_source
+msgid "Create your first currency rate source"
+msgstr "Cree su primera fuente de tasa de cambio"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_log__create_uid
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_schedule__create_uid
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__create_uid
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source_notify_user__create_uid
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source_test_wizard__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_log__create_date
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_schedule__create_date
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__create_date
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source_notify_user__create_date
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source_test_wizard__create_date
+msgid "Created on"
+msgstr "Creado el"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Currency Configuration"
+msgstr "Configuración de Moneda"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_log_form
+msgid "Currency Rate Log"
+msgstr "Registro de Tasa de Cambio"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_log_search
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_log_tree
+msgid "Currency Rate Logs"
+msgstr "Registros de Tasas de Cambio"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model,name:econovo_currency_rate_custom_providers.model_currency_rate_source
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Currency Rate Source"
+msgstr "Fuente de Tasa de Cambio"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model,name:econovo_currency_rate_custom_providers.model_currency_rate_source_notify_user
+msgid "Currency Rate Source Notification User"
+msgstr "Usuario de Notificación de Fuente de Tasa"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.actions.act_window,name:econovo_currency_rate_custom_providers.action_currency_rate_source
+#: model:ir.ui.menu,name:econovo_currency_rate_custom_providers.menu_currency_rate_custom_providers_root
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_search
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_tree
+msgid "Currency Rate Sources"
+msgstr "Fuentes de Tasas de Cambio"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model,name:econovo_currency_rate_custom_providers.model_currency_rate_log
+msgid "Currency Rate Update Log"
+msgstr "Registro de Actualización de Tasa"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model,name:econovo_currency_rate_custom_providers.model_currency_rate_schedule
+msgid "Currency Rate Update Schedule"
+msgstr "Programación de Actualización de Tasa"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:mail.template,name:econovo_currency_rate_custom_providers.mail_template_currency_rate_error
+msgid "Currency Rate: Error Notification"
+msgstr "Tasa de Cambio: Notificación de Error"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source_test_wizard__current_rate
+msgid "Current Rate"
+msgstr "Tasa Actual"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source_test_wizard__current_rate
+msgid "Current rate for comparison"
+msgstr "Tasa actual para comparación"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_source__decimal_format__custom
+msgid "Custom (specify separators)"
+msgstr "Personalizado (especificar separadores)"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Custom Headers"
+msgstr "Cabeceras Personalizadas"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.res_config_settings_view_form_currency_rate_custom_providers
+msgid "Custom Rate Providers - Advanced"
+msgstr "Proveedores de Tasas Personalizados - Avanzado"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.actions.server,name:econovo_currency_rate_custom_providers.ir_cron_cleanup_currency_rate_logs_ir_actions_server
+msgid "Custom Rate Providers: Cleanup Old Logs"
+msgstr "Proveedores de Tasas Personalizados: Limpiar Registros Antiguos"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.actions.server,name:econovo_currency_rate_custom_providers.ir_cron_update_currency_rates_ir_actions_server
+msgid "Custom Rate Providers: Update Rates (DEPRECATED)"
+msgstr "Proveedores de Tasas Personalizados: Actualizar Tasas (DEPRECADO)"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.res_config_settings_view_form_currency_rate_custom_providers
+msgid "Custom Rate Sources"
+msgstr "Fuentes de Tasas Personalizadas"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_source__update_frequency__daily
+msgid "Daily"
+msgstr "Diario"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_log_search
+msgid "Date"
+msgstr "Fecha"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__date_css_selector
+msgid "Date CSS Selector"
+msgstr "Selector CSS de Fecha"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Date Extraction"
+msgstr "Extracción de Fecha"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source_test_wizard__extract_date_enabled
+msgid "Date Extraction Enabled"
+msgstr "Extracción de Fecha Habilitada"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source_test_wizard__date_extraction_error
+msgid "Date Extraction Error"
+msgstr "Error de Extracción de Fecha"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__date_extraction_method
+msgid "Date Extraction Method"
+msgstr "Método de Extracción de Fecha"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_log__date_extraction_used
+msgid "Date Extraction Used"
+msgstr "Extracción de Fecha Usada"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__date_format
+msgid "Date Format"
+msgstr "Formato de Fecha"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__date_jsonpath
+msgid "Date JSONPath"
+msgstr "JSONPath de Fecha"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__date_regex
+msgid "Date Regex Pattern"
+msgstr "Patrón Regex de Fecha"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__date_xpath
+msgid "Date XPath"
+msgstr "XPath de Fecha"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_log__extracted_date
+msgid "Date extracted from the source (if date extraction is configured)"
+msgstr "Fecha extraída de la fuente (si la extracción de fecha está configurada)"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source_test_wizard__extracted_date
+msgid "Date extracted from the source content"
+msgstr "Fecha extraída del contenido de la fuente"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source_test_wizard__raw_extracted_date
+msgid "Date string as extracted before parsing"
+msgstr "Cadena de fecha tal como se extrajo antes del análisis"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_schedule__dayofweek
+msgid "Day of Week"
+msgstr "Día de la Semana"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__preferred_monthdays
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Days of Month"
+msgstr "Días del Mes"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__preferred_monthdays
+msgid "Days of month for monthly updates. Comma-separated, e.g.: 1, 15, 30"
+msgstr "Días del mes para actualizaciones mensuales. Separados por coma, ej.: 1, 15, 30"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Debug Information"
+msgstr "Información de Depuración"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Decimal Format"
+msgstr "Formato Decimal"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__custom_decimal_sep
+msgid "Decimal Separator"
+msgstr "Separador Decimal"
+
+#. module: econovo_currency_rate_custom_providers
+#. odoo-python
+#: code:addons/econovo_currency_rate_custom_providers/models/currency_rate_source.py:0
+#, python-format
+msgid "Decimal Separator is required when using Custom number format."
+msgstr "El Separador Decimal es requerido cuando se usa formato de número Personalizado."
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Dedicated scheduled action for this source"
+msgstr "Acción programada dedicada para esta fuente"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__cron_id
+msgid ""
+"Dedicated scheduled action for this source. Created automatically when "
+"auto_update is enabled."
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_res_config_settings__currency_rate_custom_providers_default_timeout
+msgid "Default HTTP Timeout"
+msgstr "Tiempo de Espera HTTP Predeterminado"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_res_config_settings__currency_rate_custom_providers_default_timeout
+msgid "Default timeout in seconds for HTTP requests"
+msgstr "Tiempo de espera predeterminado en segundos para solicitudes HTTP"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Define specific day and hour combinations when updates should run."
+msgstr "Definir combinaciones específicas de día y hora cuando deben ejecutarse las actualizaciones."
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__schedule_ids
+msgid ""
+"Define specific day/hour combinations (only used when frequency is "
+"\"Specific Days/Hours\")"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Descendant"
+msgstr "Descendiente"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Description of this source"
+msgstr "Descripción de esta fuente"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__name
+msgid "Descriptive name for this rate source"
+msgstr "Nombre descriptivo para esta fuente de tasa"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_log__validation_message
+msgid "Details about validation checks"
+msgstr "Detalles sobre las verificaciones de validación"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Digit (0-9)"
+msgstr "Dígito (0-9)"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Direct child"
+msgstr "Hijo directo"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_log__display_name
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_schedule__display_name
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__display_name
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source_notify_user__display_name
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source_test_wizard__display_name
+msgid "Display Name"
+msgstr "Nombre a Mostrar"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Dolar[^0-9]*([0-9]+[.,][0-9]+)"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__regex_flag_dotall
+msgid "Dotall"
+msgstr "Dotall"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_search
+msgid "Draft"
+msgstr "Borrador"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_log__duration
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source_test_wizard__test_duration
+msgid "Duration (seconds)"
+msgstr "Duración (segundos)"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid ""
+"Each source has its own dedicated scheduled action that runs exactly at the "
+"configured time."
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.constraint,message:econovo_currency_rate_custom_providers.constraint_currency_rate_source_notify_user_unique_source_user
+msgid "Each user can only be added once per source!"
+msgstr "¡Cada usuario solo puede ser agregado una vez por fuente!"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source_notify_user__user_email
+msgid "Email"
+msgstr "Correo Electrónico"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__notify_template_id
+msgid "Email template for notifications. Uses default if empty."
+msgstr "Plantilla de email para notificaciones. Usa la predeterminada si está vacía."
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_res_config_settings__currency_rate_custom_providers_enabled
+msgid "Enable Econovo Custom Rate Providers"
+msgstr "Habilitar Proveedores de Tasas Personalizados de Econovo"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__notify_on_error
+msgid "Enable Error Notifications"
+msgstr "Habilitar Notificaciones de Error"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_res_config_settings__currency_rate_custom_providers_enable_notifications
+msgid "Enable Notifications"
+msgstr "Habilitar Notificaciones"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_res_config_settings__currency_rate_custom_providers_enabled
+msgid ""
+"Enable automatic currency rate updates from external sources (websites, APIs).\n"
+"\n"
+"When enabled, each source with \"Automatic Update\" will have its own dedicated scheduled action that runs exactly at the configured time."
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__auto_update
+msgid "Enable scheduled automatic updates"
+msgstr "Habilitar actualizaciones automáticas programadas"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_log__state__error
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_source__last_status__error
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_source__state__error
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_search
+msgid "Error"
+msgstr "Error"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_test_extraction_wizard_form
+msgid "Error Details"
+msgstr "Detalles del Error"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Error Handling"
+msgstr "Manejo de Errores"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_log_form
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Error Information"
+msgstr "Información del Error"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_log__error_message
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source_test_wizard__error_message
+msgid "Error Message"
+msgstr "Mensaje de Error"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Error Notifications"
+msgstr "Notificaciones de Error"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_log__error_traceback
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source_test_wizard__error_traceback
+msgid "Error Traceback"
+msgstr "Traza del Error"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_log_search
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_search
+msgid "Errors"
+msgstr "Errores"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Example"
+msgstr "Ejemplo"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_log__execution_date
+msgid "Execution Date"
+msgstr "Fecha de Ejecución"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_log_form
+msgid "Execution Details"
+msgstr "Detalles de Ejecución"
+
+#. module: econovo_currency_rate_custom_providers
+#. odoo-python
+#: code:addons/econovo_currency_rate_custom_providers/models/currency_rate_source.py:0
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__log_ids
+#, python-format
+msgid "Execution Logs"
+msgstr "Registros de Ejecución"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Execution Statistics"
+msgstr "Estadísticas de Ejecución"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__response_type
+msgid "Expected format of the response"
+msgstr "Formato esperado de la respuesta"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Expression"
+msgstr "Expresión"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "External Contacts to Notify"
+msgstr "Contactos Externos a Notificar"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__notify_partner_ids
+msgid ""
+"External contacts (partners) who will receive email notifications. These "
+"contacts do not need to have an Odoo user account."
+msgstr "Contactos externos (partners) que recibirán notificaciones por email. Estos contactos no necesitan tener una cuenta de usuario en Odoo."
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__extract_date
+msgid "Extract Date from Source"
+msgstr "Extraer Fecha de la Fuente"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__extract_date
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source_test_wizard__extract_date_enabled
+msgid "Extract rate date from source instead of using current date"
+msgstr "Extraer fecha de tasa de la fuente en lugar de usar la fecha actual"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_log__extracted_date
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source_test_wizard__extracted_date
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_test_extraction_wizard_form
+msgid "Extracted Date"
+msgstr "Fecha Extraída"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source_test_wizard__extracted_fragment
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_test_extraction_wizard_form
+msgid "Extracted Fragment"
+msgstr "Fragmento Extraído"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_test_extraction_wizard_form
+msgid "Extracted Rate"
+msgstr "Tasa Extraída"
+
+#. module: econovo_currency_rate_custom_providers
+#. odoo-python
+#: code:addons/econovo_currency_rate_custom_providers/models/currency_rate_source.py:0
+#, python-format
+msgid "Extracted value is empty"
+msgstr "El valor extraído está vacío"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__extraction_method
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source_test_wizard__extraction_method
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Extraction Method"
+msgstr "Método de Extracción"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Extraction Pattern"
+msgstr "Patrón de Extracción"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__error_count
+msgid "Failed Executions"
+msgstr "Ejecuciones Fallidas"
+
+#. module: econovo_currency_rate_custom_providers
+#. odoo-python
+#: code:addons/econovo_currency_rate_custom_providers/models/currency_rate_source.py:0
+#, python-format
+msgid "Failed to fetch URL after %d attempts: %s"
+msgstr "Error al obtener URL después de %d intentos: %s"
+
+#. module: econovo_currency_rate_custom_providers
+#. odoo-python
+#: code:addons/econovo_currency_rate_custom_providers/models/currency_rate_source.py:0
+#: code:addons/econovo_currency_rate_custom_providers/models/currency_rate_source.py:0
+#, python-format
+msgid "Failed to parse HTML: %s"
+msgstr "Error al analizar HTML: %s"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_log__triggered_by__fallback
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_log_search
+msgid "Fallback"
+msgstr "Respaldo"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__fallback_source_id
+msgid "Fallback Source"
+msgstr "Fuente de Respaldo"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Filter condition"
+msgstr "Condición de filtro"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_log__processed_rate
+msgid "Final rate value after processing"
+msgstr "Valor final de tasa después del procesamiento"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_log__content_preview
+msgid "First 2000 characters of fetched content"
+msgstr "Primeros 2000 caracteres del contenido obtenido"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source_test_wizard__content_preview
+msgid "First 5000 characters of the fetched content"
+msgstr "Primeros 5000 caracteres del contenido obtenido"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__message_follower_ids
+msgid "Followers"
+msgstr "Seguidores"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__message_partner_ids
+msgid "Followers (Partners)"
+msgstr "Seguidores (Contactos)"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__activity_type_icon
+msgid "Font awesome icon e.g. fa-tasks"
+msgstr "Icono de Font Awesome, ej. fa-tasks"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "For HTML: Find numeric patterns near the keyword"
+msgstr "Para HTML: Buscar patrones numéricos cerca de la palabra clave"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "For JSON: Search common fields (rate, value, price)"
+msgstr "Para JSON: Buscar campos comunes (rate, value, price)"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source_notify_user__force_email
+msgid "Force Email"
+msgstr "Forzar Email"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__decimal_format
+msgid ""
+"Format used by the source for decimal numbers. Select \"Custom\" to specify "
+"separators manually."
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_source__decimal_format__fr_fr
+msgid "French (1 234,56)"
+msgstr "Francés (1 234,56)"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_schedule__dayofweek__4
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_source__preferred_weekday__4
+msgid "Friday"
+msgstr "Viernes"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__url
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source_test_wizard__source_url
+msgid "Full URL of the source (must include http:// or https://)"
+msgstr "URL completa de la fuente (debe incluir http:// o https://)"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_log__error_traceback
+msgid "Full error traceback for debugging"
+msgstr "Traza completa del error para depuración"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_source__http_method__get
+msgid "GET"
+msgstr "GET"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "General"
+msgstr "General"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.res_config_settings_view_form_currency_rate_custom_providers
+msgid "General Settings"
+msgstr "Configuración General"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_source__decimal_format__de_de
+msgid "German (1.234,56)"
+msgstr "Alemán (1.234,56)"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_log_search
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_search
+msgid "Group By"
+msgstr "Agrupar Por"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_source__response_type__html
+msgid "HTML"
+msgstr "HTML"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "HTTP Configuration"
+msgstr "Configuración HTTP"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__http_method
+msgid "HTTP Method"
+msgstr "Método HTTP"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_log_form
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_test_extraction_wizard_form
+msgid "HTTP Response"
+msgstr "Respuesta HTTP"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_log__http_response_time
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source_test_wizard__http_response_time
+msgid "HTTP Response Time (s)"
+msgstr "Tiempo de Respuesta HTTP (s)"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_log__http_status_code
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source_test_wizard__http_status_code
+msgid "HTTP Status Code"
+msgstr "Código de Estado HTTP"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_log__http_status_code
+msgid "HTTP response status code"
+msgstr "Código de estado de respuesta HTTP"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__has_message
+msgid "Has Message"
+msgstr "Tiene Mensaje"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_log_search
+msgid "High Variation (>5%)"
+msgstr "Alta Variación (>5%)"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_schedule__hour
+msgid "Hour"
+msgstr "Hora"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_source__update_frequency__hourly
+msgid "Hourly"
+msgstr "Por Hora"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__update_frequency
+msgid "How often to update the currency rate"
+msgstr "Con qué frecuencia actualizar la tasa de cambio"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_log__id
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_schedule__id
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__id
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source_notify_user__id
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source_test_wizard__id
+msgid "ID"
+msgstr "ID"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__activity_exception_icon
+msgid "Icon"
+msgstr "Icono"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__activity_exception_icon
+msgid "Icon to indicate an exception activity."
+msgstr "Icono para indicar una actividad de excepción."
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__message_needaction
+msgid "If checked, new messages require your attention."
+msgstr "Si está marcado, nuevos mensajes requieren su atención."
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__message_has_error
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__message_has_sms_error
+msgid "If checked, some messages have a delivery error."
+msgstr "Si está marcado, algunos mensajes tienen error de entrega."
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__update_all_companies
+msgid "If checked, updates rates for all companies without a parent company"
+msgstr "Si está marcado, actualiza tasas para todas las compañías sin compañía padre"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__invert_rate
+msgid ""
+"If the source provides inverse rate (e.g., foreign per local instead of "
+"local per foreign)"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__regex_flag_ignorecase
+msgid "Ignore Case"
+msgstr "Ignorar Mayúsculas"
+
+#. module: econovo_currency_rate_custom_providers
+#. odoo-python
+#: code:addons/econovo_currency_rate_custom_providers/models/currency_rate_source.py:0
+#, python-format
+msgid "Index %d out of range. JSONPath returned %d results."
+msgstr "Índice %d fuera de rango. JSONPath devolvió %d resultados."
+
+#. module: econovo_currency_rate_custom_providers
+#. odoo-python
+#: code:addons/econovo_currency_rate_custom_providers/models/currency_rate_source.py:0
+#, python-format
+msgid "Index %d out of range. Selector returned %d results."
+msgstr "Índice %d fuera de rango. El selector devolvió %d resultados."
+
+#. module: econovo_currency_rate_custom_providers
+#. odoo-python
+#: code:addons/econovo_currency_rate_custom_providers/models/currency_rate_source.py:0
+#, python-format
+msgid "Index %d out of range. XPath returned %d results."
+msgstr "Índice %d fuera de rango. XPath devolvió %d resultados."
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_source__decimal_format__in_in
+msgid "Indian (1,23,456.78)"
+msgstr "Indio (1,23,456.78)"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__notes
+msgid "Internal notes about this source"
+msgstr "Notas internas sobre esta fuente"
+
+#. module: econovo_currency_rate_custom_providers
+#. odoo-python
+#: code:addons/econovo_currency_rate_custom_providers/models/currency_rate_source.py:0
+#, python-format
+msgid "Invalid CSS selector: %s"
+msgstr "Selector CSS inválido: %s"
+
+#. module: econovo_currency_rate_custom_providers
+#. odoo-python
+#: code:addons/econovo_currency_rate_custom_providers/models/currency_rate_source.py:0
+#, python-format
+msgid "Invalid JSON in HTTP headers: %s"
+msgstr "JSON inválido en cabeceras HTTP: %s"
+
+#. module: econovo_currency_rate_custom_providers
+#. odoo-python
+#: code:addons/econovo_currency_rate_custom_providers/models/currency_rate_source.py:0
+#, python-format
+msgid "Invalid JSON response: %s"
+msgstr "Respuesta JSON inválida: %s"
+
+#. module: econovo_currency_rate_custom_providers
+#. odoo-python
+#: code:addons/econovo_currency_rate_custom_providers/models/currency_rate_source.py:0
+#, python-format
+msgid "Invalid regex pattern: %s"
+msgstr "Patrón regex inválido: %s"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__invert_rate
+msgid "Invert Rate"
+msgstr "Invertir Tasa"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__message_is_follower
+msgid "Is Follower"
+msgstr "Es Seguidor"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_source__response_type__json
+msgid "JSON"
+msgstr "JSON"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_source__extraction_method__jsonpath
+msgid "JSONPath"
+msgstr "JSONPath"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_source__date_extraction_method__jsonpath
+msgid "JSONPath (JSON)"
+msgstr "JSONPath (JSON)"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "JSONPath Configuration"
+msgstr "Configuración de JSONPath"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__jsonpath_expression
+msgid "JSONPath Expression"
+msgstr "Expresión JSONPath"
+
+#. module: econovo_currency_rate_custom_providers
+#. odoo-python
+#: code:addons/econovo_currency_rate_custom_providers/models/currency_rate_source.py:0
+#, python-format
+msgid "JSONPath error: %s"
+msgstr "Error de JSONPath: %s"
+
+#. module: econovo_currency_rate_custom_providers
+#. odoo-python
+#: code:addons/econovo_currency_rate_custom_providers/models/currency_rate_source.py:0
+#, python-format
+msgid "JSONPath expression is required"
+msgstr "La expresión JSONPath es requerida"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__date_jsonpath
+msgid "JSONPath expression to extract date from JSON. Example: $.data.date"
+msgstr "Expresión JSONPath para extraer fecha del JSON. Ejemplo: $.data.date"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__jsonpath_expression
+msgid "JSONPath expression. Example: $.data.rates.USD.sell"
+msgstr "Expresión JSONPath. Ejemplo: $.data.rates.USD.sell"
+
+#. module: econovo_currency_rate_custom_providers
+#. odoo-python
+#: code:addons/econovo_currency_rate_custom_providers/models/currency_rate_source.py:0
+#, python-format
+msgid "JSONPath returned no results: %s"
+msgstr "JSONPath no devolvió resultados: %s"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__color
+msgid "Kanban color index"
+msgstr "Índice de color Kanban"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__auto_keyword
+msgid ""
+"Keyword to search for when using automatic detection (e.g., \"USD\", "
+"\"Bitcoin\")"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__last_error
+msgid "Last Error"
+msgstr "Último Error"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Last Execution"
+msgstr "Última Ejecución"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__last_http_response
+msgid "Last HTTP Response"
+msgstr "Última Respuesta HTTP"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__last_rate
+msgid "Last Rate"
+msgstr "Última Tasa"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__last_raw_value
+msgid "Last Raw Value"
+msgstr "Último Valor Sin Procesar"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__last_status
+msgid "Last Status"
+msgstr "Último Estado"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__last_sync_date
+msgid "Last Sync"
+msgstr "Última Sincronización"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_log__write_uid
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_schedule__write_uid
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__write_uid
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source_notify_user__write_uid
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source_test_wizard__write_uid
+msgid "Last Updated by"
+msgstr "Última Actualización por"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_log__write_date
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_schedule__write_date
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__write_date
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source_notify_user__write_date
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source_test_wizard__write_date
+msgid "Last Updated on"
+msgstr "Última Actualización el"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Last element"
+msgstr "Último elemento"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__log_count
+msgid "Log Count"
+msgstr "Cantidad de Registros"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_source__on_validation_fail__log_error
+msgid "Log Error and Skip"
+msgstr "Registrar Error y Omitir"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_res_config_settings__currency_rate_custom_providers_log_retention_days
+msgid "Log Retention (Days)"
+msgstr "Retención de Registros (Días)"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Logs"
+msgstr "Registros"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.actions.act_window,help:econovo_currency_rate_custom_providers.action_currency_rate_log
+msgid ""
+"Logs will appear here after currency rate sources \n"
+"                are executed manually or by scheduled jobs."
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__sequence
+msgid "Lower values have higher priority"
+msgstr "Valores menores tienen mayor prioridad"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__regex_flag_dotall
+msgid "Make . match newline characters"
+msgstr "Hacer que . coincida con caracteres de nueva línea"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__regex_flag_multiline
+msgid "Make ^ and $ match line boundaries"
+msgstr "Hacer que ^ y $ coincidan con límites de línea"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__regex_flag_ignorecase
+msgid "Make pattern case-insensitive"
+msgstr "Hacer patrón insensible a mayúsculas"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_log__triggered_by__manual
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_log_search
+msgid "Manual"
+msgstr "Manual"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.res_config_settings_view_form_currency_rate_custom_providers
+msgid "Manual Actions"
+msgstr "Acciones Manuales"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_res_config_settings__currency_rate_custom_providers_max_retries
+msgid "Max Retries"
+msgstr "Máximo de Reintentos"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__max_variation_percent
+msgid "Max Variation (%)"
+msgstr "Variación Máxima (%)"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__max_valid_rate
+msgid "Maximum Valid Rate"
+msgstr "Tasa Máxima Válida"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_res_config_settings__currency_rate_custom_providers_max_retries
+msgid "Maximum number of retry attempts for failed requests"
+msgstr "Número máximo de reintentos para solicitudes fallidas"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__max_variation_percent
+msgid "Maximum percentage change from last rate (0 = no limit)"
+msgstr "Porcentaje máximo de cambio desde la última tasa (0 = sin límite)"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__http_timeout
+msgid "Maximum time to wait for response"
+msgstr "Tiempo máximo de espera para respuesta"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Meaning"
+msgstr "Significado"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__notify_channel_mention_all
+msgid "Mention All Members"
+msgstr "Mencionar a Todos los Miembros"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__message_has_error
+msgid "Message Delivery error"
+msgstr "Error de Entrega de Mensaje"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Message Template"
+msgstr "Plantilla de Mensaje"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__message_ids
+msgid "Messages"
+msgstr "Mensajes"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_search
+msgid "Method"
+msgstr "Método"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Method Selection"
+msgstr "Selección de Método"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__date_extraction_method
+msgid "Method to extract the date from the response"
+msgstr "Método para extraer la fecha de la respuesta"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__extraction_method
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source_test_wizard__extraction_method
+msgid "Method to extract the rate value from the response"
+msgstr "Método para extraer el valor de tasa de la respuesta"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__min_valid_rate
+msgid "Minimum Valid Rate"
+msgstr "Tasa Mínima Válida"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_schedule__dayofweek__0
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_source__preferred_weekday__0
+msgid "Monday"
+msgstr "Lunes"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_source__update_frequency__monthly
+msgid "Monthly"
+msgstr "Mensual"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Multi-Company Settings"
+msgstr "Configuración Multi-Compañía"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__regex_flag_multiline
+msgid "Multiline"
+msgstr "Multilínea"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__value_multiplier
+msgid "Multiplier"
+msgstr "Multiplicador"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__value_multiplier
+msgid ""
+"Multiply extracted value by this factor (e.g., 0.01 if value is in cents)"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__my_activity_date_deadline
+msgid "My Activity Deadline"
+msgstr "Mi Fecha Límite de Actividad"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "N-th child (1-indexed)"
+msgstr "N-ésimo hijo (base 1)"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__name
+msgid "Name"
+msgstr "Nombre"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__activity_date_deadline
+msgid "Next Activity Deadline"
+msgstr "Fecha Límite de Próxima Actividad"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__activity_summary
+msgid "Next Activity Summary"
+msgstr "Resumen de Próxima Actividad"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__activity_type_id
+msgid "Next Activity Type"
+msgstr "Tipo de Próxima Actividad"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Next Execution"
+msgstr "Próxima Ejecución"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__next_execution
+msgid "Next Scheduled Execution"
+msgstr "Próxima Ejecución Programada"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.actions.act_window,help:econovo_currency_rate_custom_providers.action_currency_rate_log
+msgid "No execution logs yet"
+msgstr "Sin registros de ejecución aún"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_source__state__draft
+msgid "Not Tested"
+msgstr "No Probado"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__notes
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source_notify_user__notes
+msgid "Notes"
+msgstr "Notas"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__notify_channel_id
+msgid "Notification Channel"
+msgstr "Canal de Notificación"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__notify_template_id
+msgid "Notification Template"
+msgstr "Plantilla de Notificación"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.res_config_settings_view_form_currency_rate_custom_providers
+msgid "Notifications"
+msgstr "Notificaciones"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_res_config_settings__currency_rate_custom_providers_notify_on_error
+msgid "Notify on Errors"
+msgstr "Notificar en Errores"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_res_config_settings__currency_rate_custom_providers_notify_on_high_variation
+msgid "Notify on High Variation"
+msgstr "Notificar en Alta Variación"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__decimal_format
+msgid "Number Format"
+msgstr "Formato de Número"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__message_needaction_counter
+msgid "Number of Actions"
+msgstr "Número de Acciones"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_res_config_settings__currency_rate_custom_providers_log_retention_days
+msgid ""
+"Number of days to keep execution logs. Older logs are automatically deleted."
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__message_has_error_counter
+msgid "Number of errors"
+msgstr "Número de errores"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__message_needaction_counter
+msgid "Number of messages requiring action"
+msgstr "Número de mensajes que requieren acción"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__message_has_error_counter
+msgid "Number of messages with delivery error"
+msgstr "Número de mensajes con error de entrega"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__http_retries
+msgid "Number of retry attempts on failure"
+msgstr "Número de reintentos en caso de fallo"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__notify_channel_id
+msgid "Odoo Discuss channel where errors will be posted"
+msgstr "Canal de Odoo Discuss donde se publicarán los errores"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__on_validation_fail
+msgid "On Validation Failure"
+msgstr "Al Fallar Validación"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Optional"
+msgstr "Opcional"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source_notify_user__notes
+msgid "Optional notes about this notification recipient"
+msgstr "Notas opcionales sobre este destinatario de notificación"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_source__http_method__post
+msgid "POST"
+msgstr "POST"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_log__rate_variation
+msgid "Percentage change from previous rate"
+msgstr "Porcentaje de cambio desde la tasa anterior"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_res_config_settings__currency_rate_custom_providers_variation_threshold
+msgid "Percentage variation that triggers notification"
+msgstr "Porcentaje de variación que dispara notificación"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_source__response_type__text
+msgid "Plain Text"
+msgstr "Texto Plano"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__preferred_weekday
+msgid "Preferred Day"
+msgstr "Día Preferido"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__preferred_hour
+msgid "Preferred Hour"
+msgstr "Hora Preferida"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__preferred_weekday
+msgid "Preferred day of week for weekly updates"
+msgstr "Día de la semana preferido para actualizaciones semanales"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__preferred_hour
+msgid "Preferred hour for daily/weekly/monthly updates"
+msgstr "Hora preferida para actualizaciones diarias/semanales/mensuales"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_log__previous_rate
+msgid "Previous Rate"
+msgstr "Tasa Anterior"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_log__processed_rate
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source_test_wizard__processed_rate
+msgid "Processed Rate"
+msgstr "Tasa Procesada"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__date_format
+msgid "Python strptime format for parsing date. Example: %d/%m/%Y"
+msgstr "Formato strptime de Python para analizar fechas. Ejemplo: %d/%m/%Y"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Quick Reference"
+msgstr "Referencia Rápida"
+
+#. module: econovo_currency_rate_custom_providers
+#. odoo-python
+#: code:addons/econovo_currency_rate_custom_providers/models/currency_rate_source.py:0
+#, python-format
+msgid "Rate %s is above maximum %s"
+msgstr "La tasa %s está por encima del máximo %s"
+
+#. module: econovo_currency_rate_custom_providers
+#. odoo-python
+#: code:addons/econovo_currency_rate_custom_providers/models/currency_rate_source.py:0
+#, python-format
+msgid "Rate %s is below minimum %s"
+msgstr "La tasa %s está por debajo del mínimo %s"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source_test_wizard__rate_difference
+msgid "Rate Difference"
+msgstr "Diferencia de Tasa"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_log_form
+msgid "Rate Information"
+msgstr "Información de Tasa"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Rate Limits"
+msgstr "Límites de Tasa"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_schedule__source_id
+msgid "Rate Source"
+msgstr "Fuente de Tasa"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.ui.menu,name:econovo_currency_rate_custom_providers.menu_currency_rate_source
+msgid "Rate Sources"
+msgstr "Fuentes de Tasas"
+
+#. module: econovo_currency_rate_custom_providers
+#. odoo-python
+#: code:addons/econovo_currency_rate_custom_providers/models/currency_rate_source.py:0
+#, python-format
+msgid "Rate Update"
+msgstr "Actualización de Tasa"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.actions.act_window,name:econovo_currency_rate_custom_providers.action_currency_rate_log
+msgid "Rate Update Logs"
+msgstr "Registros de Actualización de Tasas"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_log__rate_variation
+msgid "Rate Variation (%)"
+msgstr "Variación de Tasa (%)"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_log__previous_rate
+msgid "Rate before this update"
+msgstr "Tasa antes de esta actualización"
+
+#. module: econovo_currency_rate_custom_providers
+#. odoo-python
+#: code:addons/econovo_currency_rate_custom_providers/models/currency_rate_source.py:0
+#, python-format
+msgid "Rate updated successfully: %s"
+msgstr "Tasa actualizada exitosamente: %s"
+
+#. module: econovo_currency_rate_custom_providers
+#. odoo-python
+#: code:addons/econovo_currency_rate_custom_providers/models/currency_rate_source.py:0
+#, python-format
+msgid "Rate variation %.2f%% exceeds maximum %.2f%%"
+msgstr "La variación de tasa %.2f%% excede el máximo %.2f%%"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_log__rates_created
+msgid "Rates Created"
+msgstr "Tasas Creadas"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_log__rates_updated
+msgid "Rates Updated"
+msgstr "Tasas Actualizadas"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_log__raw_date_value
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source_test_wizard__raw_extracted_date
+msgid "Raw Date Value"
+msgstr "Valor de Fecha Sin Procesar"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_log__raw_value
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source_test_wizard__raw_extracted_value
+msgid "Raw Extracted Value"
+msgstr "Valor Extraído Sin Procesar"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_log__raw_date_value
+msgid "Raw date string as extracted from the source before parsing"
+msgstr "Cadena de fecha sin procesar tal como se extrajo de la fuente antes del análisis"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.res_config_settings_view_form_currency_rate_custom_providers
+msgid "Recreate or update scheduled actions for all sources"
+msgstr "Recrear o actualizar acciones programadas para todas las fuentes"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Recursive search"
+msgstr "Búsqueda recursiva"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Regex Configuration"
+msgstr "Configuración de Regex"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__regex_pattern
+msgid "Regex Pattern"
+msgstr "Patrón Regex"
+
+#. module: econovo_currency_rate_custom_providers
+#. odoo-python
+#: code:addons/econovo_currency_rate_custom_providers/models/currency_rate_source.py:0
+#, python-format
+msgid "Regex pattern did not match: %s"
+msgstr "El patrón regex no coincidió: %s"
+
+#. module: econovo_currency_rate_custom_providers
+#. odoo-python
+#: code:addons/econovo_currency_rate_custom_providers/models/currency_rate_source.py:0
+#, python-format
+msgid "Regex pattern is required"
+msgstr "El patrón regex es requerido"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_source__date_extraction_method__regex
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_source__extraction_method__regex
+msgid "Regular Expression"
+msgstr "Expresión Regular"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__regex_pattern
+msgid ""
+"Regular expression pattern with capture groups. Example: USD.*?([0-9.,]+)"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__date_regex
+msgid ""
+"Regular expression with capturing group to extract date. Example: "
+"(\\d{2}/\\d{2}/\\d{4})"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__max_valid_rate
+msgid "Reject rates above this value (0 = no maximum)"
+msgstr "Rechazar tasas por encima de este valor (0 = sin máximo)"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__min_valid_rate
+msgid "Reject rates below this value (0 = no minimum)"
+msgstr "Rechazar tasas por debajo de este valor (0 = sin mínimo)"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__http_body
+msgid "Request Body"
+msgstr "Cuerpo de la Solicitud"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Request Body (for POST)"
+msgstr "Cuerpo de Solicitud (para POST)"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Request Settings"
+msgstr "Configuración de Solicitud"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__http_body
+msgid "Request body for POST requests"
+msgstr "Cuerpo de solicitud para solicitudes POST"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__response_type
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Response Type"
+msgstr "Tipo de Respuesta"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__activity_user_id
+msgid "Responsible User"
+msgstr "Usuario Responsable"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__css_result_index
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__jsonpath_result_index
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__xpath_result_index
+msgid "Result Index"
+msgstr "Índice del Resultado"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_test_extraction_wizard_form
+msgid "Results"
+msgstr "Resultados"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__http_retries
+msgid "Retries"
+msgstr "Reintentos"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Root of JSON"
+msgstr "Raíz del JSON"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_test_extraction_wizard_form
+msgid "Run Again"
+msgstr "Ejecutar de Nuevo"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_test_extraction_wizard_form
+msgid "Run Test"
+msgstr "Ejecutar Prueba"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Run at Hour"
+msgstr "Ejecutar a la Hora"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__message_has_sms_error
+msgid "SMS Delivery error"
+msgstr "Error de entrega de SMS"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_schedule__dayofweek__5
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_source__preferred_weekday__5
+msgid "Saturday"
+msgstr "Sábado"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_log__triggered_by__cron
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_log_search
+msgid "Scheduled"
+msgstr "Programado"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__cron_id
+msgid "Scheduled Action"
+msgstr "Acción Programada"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Scheduled times are configured in"
+msgstr "Los horarios programados están configurados en"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Scheduling"
+msgstr "Programación"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__auto_keyword
+msgid "Search Keyword"
+msgstr "Palabra Clave de Búsqueda"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Select a Discuss channel..."
+msgstr "Seleccione un canal de Discuss..."
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Select by ID"
+msgstr "Seleccionar por ID"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Select by class"
+msgstr "Seleccionar por clase"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Selector"
+msgstr "Selector"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__notify_channel_send_email
+msgid "Send Email to Members"
+msgstr "Enviar Email a Miembros"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__notify_channel_send_email
+msgid "Send email notification to all channel members"
+msgstr "Enviar notificación por email a todos los miembros del canal"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source_notify_user__force_email
+msgid "Send email regardless of user notification preferences"
+msgstr "Enviar email independientemente de las preferencias de notificación del usuario"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_res_config_settings__currency_rate_custom_providers_enable_notifications
+msgid "Send notifications on errors or important events"
+msgstr "Enviar notificaciones en errores o eventos importantes"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__notify_on_error
+msgid "Send notifications when errors occur during rate updates"
+msgstr "Enviar notificaciones cuando ocurran errores durante la actualización de tasas"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__sequence
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source_notify_user__sequence
+msgid "Sequence"
+msgstr "Secuencia"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_log__error_message
+msgid "Short error description"
+msgstr "Descripción corta del error"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_log__content_length
+msgid "Size of the fetched content in bytes"
+msgstr "Tamaño del contenido obtenido en bytes"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_source__on_validation_fail__skip
+msgid "Skip Update"
+msgstr "Omitir Actualización"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_log__source_id
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source_notify_user__source_id
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source_test_wizard__source_id
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_log_search
+msgid "Source"
+msgstr "Fuente"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_log__source_currency_id
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__source_currency_id
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source_test_wizard__source_currency_id
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_log_search
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_search
+msgid "Source Currency"
+msgstr "Moneda Origen"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_test_extraction_wizard_form
+msgid "Source Information"
+msgstr "Información de la Fuente"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__source_tz
+msgid "Source Timezone"
+msgstr "Zona Horaria de la Fuente"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Source URL"
+msgstr "URL de la Fuente"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.constraint,message:econovo_currency_rate_custom_providers.constraint_currency_rate_source_name_unique
+msgid "Source name must be unique!"
+msgstr "¡El nombre de la fuente debe ser único!"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_source__update_frequency__specific
+msgid "Specific Days/Hours"
+msgstr "Días/Horas Específicos"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__schedule_ids
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Specific Schedule"
+msgstr "Programación Específica"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__company_ids
+msgid ""
+"Specific companies to update (only if \"Update All Companies\" is unchecked)"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_search
+msgid "State"
+msgstr "Estado"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Statistics"
+msgstr "Estadísticas"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_log__state
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__state
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_log_search
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_search
+msgid "Status"
+msgstr "Estado"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__activity_state
+msgid ""
+"Status based on activities\n"
+"Overdue: Due date is already passed\n"
+"Today: Activity date is today\n"
+"Planned: Future activities."
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__last_status
+msgid "Status of the last synchronization attempt"
+msgstr "Estado del último intento de sincronización"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__last_http_response
+msgid "Stored for debugging purposes"
+msgstr "Almacenado para propósitos de depuración"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_log__state__success
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_source__last_status__success
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_log_search
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_search
+msgid "Success"
+msgstr "Éxito"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__success_rate
+msgid "Success Rate (%)"
+msgstr "Tasa de Éxito (%)"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__success_count
+msgid "Successful Executions"
+msgstr "Ejecuciones Exitosas"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_schedule__dayofweek__6
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_source__preferred_weekday__6
+msgid "Sunday"
+msgstr "Domingo"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_source__decimal_format__ch_ch
+msgid "Swiss (1'234.56)"
+msgstr "Suizo (1'234.56)"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Symbol"
+msgstr "Símbolo"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.res_config_settings_view_form_currency_rate_custom_providers
+msgid "Sync Scheduled Actions"
+msgstr "Sincronizar Acciones Programadas"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_log__target_currency_id
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__target_currency_id
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source_test_wizard__target_currency_id
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_log_search
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_search
+msgid "Target Currency"
+msgstr "Moneda Destino"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_log__triggered_by__test
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_log_search
+msgid "Test"
+msgstr "Prueba"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model,name:econovo_currency_rate_custom_providers.model_currency_rate_source_test_wizard
+msgid "Test Currency Rate Extraction"
+msgstr "Probar Extracción de Tasa de Cambio"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source_test_wizard__test_executed
+msgid "Test Executed"
+msgstr "Prueba Ejecutada"
+
+#. module: econovo_currency_rate_custom_providers
+#. odoo-python
+#: code:addons/econovo_currency_rate_custom_providers/models/currency_rate_source.py:0
+#: model:ir.actions.act_window,name:econovo_currency_rate_custom_providers.action_test_extraction_wizard
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_test_extraction_wizard_form
+#, python-format
+msgid "Test Extraction"
+msgstr "Probar Extracción"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_test_extraction_wizard_form
+msgid "Test Status"
+msgstr "Estado de Prueba"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source_test_wizard__test_success
+msgid "Test Success"
+msgstr "Prueba Exitosa"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Text contains"
+msgstr "El texto contiene"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Text content"
+msgstr "Contenido de texto"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_log__source_currency_id
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__source_currency_id
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source_test_wizard__source_currency_id
+msgid ""
+"The currency being quoted (e.g., USD). The extracted value represents how "
+"much of the target currency equals 1 unit of this currency."
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source_test_wizard__extracted_fragment
+msgid "The portion of content that matched the extraction pattern"
+msgstr "La porción del contenido que coincidió con el patrón de extracción"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_log__target_currency_id
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__target_currency_id
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source_test_wizard__target_currency_id
+msgid ""
+"The reference currency (e.g., ARS). The extracted value represents the price"
+" of 1 source currency in this currency. Only companies with this currency as"
+" their base will be updated."
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_log__triggered_by_source_id
+msgid "The source that triggered this execution via fallback"
+msgstr "La fuente que disparó esta ejecución vía respaldo"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_log_search
+msgid "This Month"
+msgstr "Este Mes"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_log_search
+msgid "This Week"
+msgstr "Esta Semana"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.constraint,message:econovo_currency_rate_custom_providers.constraint_currency_rate_schedule_unique_schedule
+msgid "This day/hour combination already exists for this source!"
+msgstr "¡Esta combinación de día/hora ya existe para esta fuente!"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__custom_thousand_sep
+msgid "Thousands Separator"
+msgstr "Separador de Miles"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_schedule__dayofweek__3
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_source__preferred_weekday__3
+msgid "Thursday"
+msgstr "Jueves"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__http_timeout
+msgid "Timeout (seconds)"
+msgstr "Tiempo de Espera (segundos)"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__source_tz
+msgid ""
+"Timezone for schedule configuration. All scheduled times are interpreted in "
+"this timezone. This should typically match the timezone where the rate "
+"source publishes updates."
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Timing Configuration"
+msgstr "Configuración de Tiempo"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Tips"
+msgstr "Consejos"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_log_search
+msgid "Today"
+msgstr "Hoy"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__execution_count
+msgid "Total Executions"
+msgstr "Total de Ejecuciones"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_log__duration
+msgid "Total execution time in seconds"
+msgstr "Tiempo total de ejecución en segundos"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_test_extraction_wizard_form
+msgid "Traceback"
+msgstr "Traza"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_source__on_validation_fail__fallback
+msgid "Trigger Fallback Source"
+msgstr "Disparar Fuente de Respaldo"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_log__triggered_by
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_log_search
+msgid "Triggered By"
+msgstr "Disparado Por"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_log__triggered_by_source_id
+msgid "Triggered By Source"
+msgstr "Disparado Por Fuente"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_schedule__dayofweek__1
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_source__preferred_weekday__1
+msgid "Tuesday"
+msgstr "Martes"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__activity_exception_decoration
+msgid "Type of the exception activity on record."
+msgstr "Tipo de actividad de excepción en el registro."
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__url
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source_test_wizard__source_url
+msgid "URL"
+msgstr "URL"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.constraint,message:econovo_currency_rate_custom_providers.constraint_currency_rate_source_url_required
+msgid "URL is required!"
+msgstr "¡La URL es requerida!"
+
+#. module: econovo_currency_rate_custom_providers
+#. odoo-python
+#: code:addons/econovo_currency_rate_custom_providers/models/currency_rate_source.py:0
+#, python-format
+msgid "URL must start with http:// or https://"
+msgstr "La URL debe comenzar con http:// o https://"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_source__decimal_format__en_us
+msgid "US/International (1,234.56)"
+msgstr "US/Internacional (1,234.56)"
+
+#. module: econovo_currency_rate_custom_providers
+#. odoo-python
+#: code:addons/econovo_currency_rate_custom_providers/models/currency_rate_source.py:0
+#, python-format
+msgid "Unknown extraction method: %s"
+msgstr "Método de extracción desconocido: %s"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__update_all_companies
+msgid "Update All Companies"
+msgstr "Actualizar Todas las Compañías"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.res_config_settings_view_form_currency_rate_custom_providers
+msgid "Update All Rates Now"
+msgstr "Actualizar Todas las Tasas Ahora"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__update_frequency
+msgid "Update Frequency"
+msgstr "Frecuencia de Actualización"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.ui.menu,name:econovo_currency_rate_custom_providers.menu_currency_rate_log
+msgid "Update Logs"
+msgstr "Registros de Actualización"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Update Now"
+msgstr "Actualizar Ahora"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_log_form
+msgid "Update Statistics"
+msgstr "Estadísticas de Actualización"
+
+#. module: econovo_currency_rate_custom_providers
+#. odoo-python
+#: code:addons/econovo_currency_rate_custom_providers/models/currency_rate_source.py:0
+#, python-format
+msgid "Update failed: %s"
+msgstr "Actualización fallida: %s"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.res_config_settings_view_form_currency_rate_custom_providers
+msgid "Update rates from custom sources (websites, APIs, banks)"
+msgstr "Actualizar tasas desde fuentes personalizadas (sitios web, APIs, bancos)"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_source__on_validation_fail__use_last
+msgid "Use Last Valid Rate"
+msgstr "Usar Última Tasa Válida"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Use default template if empty"
+msgstr "Usar plantilla predeterminada si está vacía"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source_notify_user__user_id
+msgid "User"
+msgstr "Usuario"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__http_user_agent
+msgid "User-Agent"
+msgstr "User-Agent"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__http_user_agent
+msgid "User-Agent header for HTTP requests"
+msgstr "Cabecera User-Agent para solicitudes HTTP"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__notify_user_ids
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Users to Notify"
+msgstr "Usuarios a Notificar"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__notify_user_ids
+msgid "Users who will receive error notifications"
+msgstr "Usuarios que recibirán notificaciones de error"
+
+#. module: econovo_currency_rate_custom_providers
+#. odoo-python
+#: code:addons/econovo_currency_rate_custom_providers/models/currency_rate_source.py:0
+#, python-format
+msgid "Using last rate due to validation failure"
+msgstr "Usando última tasa debido a fallo de validación"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_log_form
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_test_extraction_wizard_form
+msgid "Validation"
+msgstr "Validación"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Validation & Error Handling"
+msgstr "Validación y Manejo de Errores"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_log__validation_message
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source_test_wizard__validation_messages
+msgid "Validation Details"
+msgstr "Detalles de Validación"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_log__validation_passed
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source_test_wizard__validation_passed
+msgid "Validation Passed"
+msgstr "Validación Aprobada"
+
+#. module: econovo_currency_rate_custom_providers
+#. odoo-python
+#: code:addons/econovo_currency_rate_custom_providers/models/currency_rate_source.py:0
+#, python-format
+msgid "Validation failed but continuing: %s"
+msgstr "Validación fallida pero continuando: %s"
+
+#. module: econovo_currency_rate_custom_providers
+#. odoo-python
+#: code:addons/econovo_currency_rate_custom_providers/models/currency_rate_source.py:0
+#, python-format
+msgid "Validation failed, triggering fallback: %s"
+msgstr "Validación fallida, disparando respaldo: %s"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Value Processing"
+msgstr "Procesamiento de Valor"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Value Transformations"
+msgstr "Transformaciones de Valor"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_log__raw_value
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source_test_wizard__raw_extracted_value
+msgid "Value as extracted before processing"
+msgstr "Valor tal como se extrajo antes del procesamiento"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source_test_wizard__rate_variation_percent
+msgid "Variation (%)"
+msgstr "Variación (%)"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Variation Control"
+msgstr "Control de Variación"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_res_config_settings__currency_rate_custom_providers_variation_threshold
+msgid "Variation Threshold (%)"
+msgstr "Umbral de Variación (%)"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.res_config_settings_view_form_currency_rate_custom_providers
+msgid "View Scheduled Actions"
+msgstr "Ver Acciones Programadas"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_log__state__warning
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_source__last_status__warning
+msgid "Warning"
+msgstr "Advertencia"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_log_form
+msgid "Warning Information"
+msgstr "Información de Advertencia"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_log__warning_message
+msgid "Warning Message"
+msgstr "Mensaje de Advertencia"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_log__warning_message
+msgid "Warning messages if any"
+msgstr "Mensajes de advertencia si los hay"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_log_search
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_search
+msgid "Warnings"
+msgstr "Advertencias"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__website_message_ids
+msgid "Website Messages"
+msgstr "Mensajes del Sitio Web"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__website_message_ids
+msgid "Website communication history"
+msgstr "Historial de comunicación del sitio web"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_schedule__dayofweek__2
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_source__preferred_weekday__2
+msgid "Wednesday"
+msgstr "Miércoles"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_source__update_frequency__weekly
+msgid "Weekly"
+msgstr "Semanal"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_log__date_extraction_used
+msgid "Whether date was extracted from source or used current date"
+msgstr "Si la fecha fue extraída de la fuente o se usó la fecha actual"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__regex_group
+msgid "Which capture group contains the rate value (1-indexed)"
+msgstr "Qué grupo de captura contiene el valor de tasa (base 1)"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__jsonpath_result_index
+msgid "Which result to use if JSONPath returns multiple values (1-indexed)"
+msgstr "Qué resultado usar si JSONPath devuelve múltiples valores (base 1)"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__xpath_result_index
+msgid "Which result to use if XPath returns multiple elements (1-indexed)"
+msgstr "Qué resultado usar si XPath devuelve múltiples elementos (base 1)"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__css_result_index
+msgid "Which result to use if selector returns multiple elements (1-indexed)"
+msgstr "Qué resultado usar si el selector devuelve múltiples elementos (base 1)"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "Whitespace"
+msgstr "Espacio en blanco"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_source__response_type__xml
+msgid "XML"
+msgstr "XML"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_source__extraction_method__xpath
+msgid "XPath"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields.selection,name:econovo_currency_rate_custom_providers.selection__currency_rate_source__date_extraction_method__xpath
+msgid "XPath (HTML/XML)"
+msgstr "XPath (HTML/XML)"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__xpath_attribute
+msgid "XPath Attribute"
+msgstr "Atributo XPath"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "XPath Configuration"
+msgstr "Configuración de XPath"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,field_description:econovo_currency_rate_custom_providers.field_currency_rate_source__xpath_expression
+msgid "XPath Expression"
+msgstr "Expresión XPath"
+
+#. module: econovo_currency_rate_custom_providers
+#. odoo-python
+#: code:addons/econovo_currency_rate_custom_providers/models/currency_rate_source.py:0
+#, python-format
+msgid "XPath expression is required"
+msgstr "La expresión XPath es requerida"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__date_xpath
+msgid "XPath expression to extract date from HTML/XML"
+msgstr "Expresión XPath para extraer fecha de HTML/XML"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:ir.model.fields,help:econovo_currency_rate_custom_providers.field_currency_rate_source__xpath_expression
+msgid ""
+"XPath expression to select element. Example: "
+"//table[@id=\"rates\"]//tr[2]/td[3]"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#. odoo-python
+#: code:addons/econovo_currency_rate_custom_providers/models/currency_rate_source.py:0
+#, python-format
+msgid "XPath returned no results: %s"
+msgstr "XPath no devolvió resultados: %s"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.res_config_settings_view_form_currency_rate_custom_providers
+msgid "active)"
+msgstr "activo)"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "dolar, dollar, usd"
+msgstr "dolar, dollar, usd"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "e.g., , or ."
+msgstr "ej., , o ."
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "e.g., . or , or space"
+msgstr "ej., . o , o espacio"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "e.g., USD - Bank Central"
+msgstr "ej., USD - Banco Central"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "https://api.example.com/rates"
+msgstr "https://api.example.com/rates"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "table.rates tr.usd td.value"
+msgstr "table.rates tr.usd td.value"
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "timezone."
+msgstr "zona horaria."
+
+#. module: econovo_currency_rate_custom_providers
+#: model_terms:ir.ui.view,arch_db:econovo_currency_rate_custom_providers.view_currency_rate_source_form
+msgid "{\"Authorization\": \"Bearer xxx\"}"
+msgstr ""
+
+#. module: econovo_currency_rate_custom_providers
+#. odoo-python
+#: code:addons/econovo_currency_rate_custom_providers/models/currency_rate_source.py:0
+#, python-format
+msgid "⚠️ Currency Rate Error: %s"
+msgstr "⚠️ Error de Tasa de Cambio: %s"
+
+#. module: econovo_currency_rate_custom_providers
+#: model:mail.template,subject:econovo_currency_rate_custom_providers.mail_template_currency_rate_error
+msgid "⚠️ Currency Rate Update Failed: {{ object.name }}"
+msgstr "⚠️ Actualización de Tasa de Cambio Fallida: {{ object.name }}"

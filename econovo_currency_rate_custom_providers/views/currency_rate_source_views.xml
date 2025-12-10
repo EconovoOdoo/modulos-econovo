@@ -315,6 +315,64 @@
                                     </div>
                                 </group>
                             </group>
+                            
+                            <!-- Error Notifications Section -->
+                            <separator string="Error Notifications"/>
+                            <group>
+                                <group>
+                                    <field name="notify_on_error"/>
+                                </group>
+                            </group>
+                            
+                            <!-- Users to Notify Table -->
+                            <separator string="Users to Notify" invisible="not notify_on_error"/>
+                            <field name="notify_user_ids" nolabel="1" invisible="not notify_on_error">
+                                <tree editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="user_id"/>
+                                    <field name="user_email" optional="show"/>
+                                    <field name="force_email"/>
+                                    <field name="notes" optional="hide"/>
+                                </tree>
+                            </field>
+                            
+                            <!-- External Contacts to Notify -->
+                            <separator string="External Contacts to Notify" invisible="not notify_on_error"/>
+                            <group invisible="not notify_on_error">
+                                <group colspan="2">
+                                    <field name="notify_partner_ids" 
+                                           widget="many2many_tags" 
+                                           placeholder="Add contacts to receive email notifications..."
+                                           options="{'no_create_edit': True}"
+                                           context="{'show_email': True}"/>
+                                </group>
+                            </group>
+                            <div class="text-muted" invisible="not notify_on_error">
+                                <small><i class="fa fa-info-circle"/> External contacts will receive email notifications directly. They don't need an Odoo user account.</small>
+                            </div>
+                            
+                            <!-- Channel Notifications -->
+                            <separator string="Channel Notification" invisible="not notify_on_error"/>
+                            <group invisible="not notify_on_error">
+                                <group>
+                                    <field name="notify_channel_id" 
+                                           placeholder="Select a Discuss channel..."/>
+                                </group>
+                                <group invisible="not notify_channel_id">
+                                    <field name="notify_channel_mention_all"/>
+                                    <field name="notify_channel_send_email"/>
+                                </group>
+                            </group>
+                            
+                            <!-- Message Template -->
+                            <separator string="Message Template" invisible="not notify_on_error"/>
+                            <group invisible="not notify_on_error">
+                                <group>
+                                    <field name="notify_template_id" 
+                                           placeholder="Use default template if empty"
+                                           help="Available variables: object.name, object.source_currency_id.name, object.target_currency_id.name, ctx.get('error_message'), ctx.get('error_datetime')"/>
+                                </group>
+                            </group>
                         </page>
                         
                         <!-- Date Extraction Tab (moved between Validation and Scheduling) -->

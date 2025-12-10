@@ -26,6 +26,8 @@ except ImportError:
     HAS_JSONPATH = False
     jsonpath_parse = None
 
+from markupsafe import Markup
+
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError, ValidationError
 
@@ -307,6 +309,49 @@ class CurrencyRateSource(models.Model):
         domain="[('id', '!=', id), ('auto_update', '=', False)]",
         help='Alternative source to execute if this one fails. '
              'Only sources with "Automatic Update" disabled are shown to prevent circular triggers.'
+    )
+
+    # === NOTIFICATION SETTINGS ===
+    notify_on_error = fields.Boolean(
+        string='Enable Error Notifications',
+        default=False,
+        help='Send notifications when errors occur during rate updates',
+    )
+    notify_user_ids = fields.One2many(
+        'currency.rate.source.notify.user',
+        'source_id',
+        string='Users to Notify',
+        help='Users who will receive error notifications',
+    )
+    notify_partner_ids = fields.Many2many(
+        'res.partner',
+        'currency_rate_source_notify_partner_rel',
+        'source_id',
+        'partner_id',
+        string='Contacts to Notify',
+        help='External contacts (partners) who will receive email notifications. '
+             'These contacts do not need to have an Odoo user account.',
+    )
+    notify_channel_id = fields.Many2one(
+        'discuss.channel',
+        string='Notification Channel',
+        help='Odoo Discuss channel where errors will be posted',
+    )
+    notify_channel_mention_all = fields.Boolean(
+        string='Mention All Members',
+        default=False,
+        help='Add @mention for all channel members in the message',
+    )
+    notify_channel_send_email = fields.Boolean(
+        string='Send Email to Members',
+        default=False,
+        help='Send email notification to all channel members',
+    )
+    notify_template_id = fields.Many2one(
+        'mail.template',
+        string='Notification Template',
+        domain="[('model', '=', 'currency.rate.source')]",
+        help='Email template for notifications. Uses default if empty.',
     )
 
     # === DATE EXTRACTION ===
@@ -945,6 +990,12 @@ class CurrencyRateSource(models.Model):
             log_vals['error_traceback'] = error_tb
             
             _logger.error('Currency rate update failed for %s: %s', self.name, error_msg)
+            
+            # Send error notifications
+            try:
+                self._send_error_notification(error_msg, error_type='update')
+            except Exception as notify_error:
+                _logger.warning('Failed to send error notification: %s', str(notify_error))
             
             # Check if we should trigger fallback source
             fallback_triggered = False
@@ -1784,3 +1835,234 @@ class CurrencyRateSource(models.Model):
                 source._execute_update(triggered_by='cron')
             except Exception as e:
                 _logger.error('Update failed for %s: %s', source.name, str(e))
+
+    # === NOTIFICATION METHODS ===
+    
+    def _get_default_notification_body(self, error_message, error_type='validation'):
+        """Generate default notification body for error alerts (HTML for emails).
+        
+        Args:
+            error_message: The error description
+            error_type: Type of error (validation, extraction, connection)
+            
+        Returns:
+            str: HTML formatted notification body
+        """
+        self.ensure_one()
+        return _("""
+<div style="font-family: Arial, sans-serif;">
+    <h3 style="color: #dc3545;">⚠️ Currency Rate Update Failed</h3>
+    <table style="width: 100%%; border-collapse: collapse; margin: 10px 0;">
+        <tr>
+            <td style="padding: 5px; border-bottom: 1px solid #ddd;"><strong>Source:</strong></td>
+            <td style="padding: 5px; border-bottom: 1px solid #ddd;">%(source_name)s</td>
+        </tr>
+        <tr>
+            <td style="padding: 5px; border-bottom: 1px solid #ddd;"><strong>Currency:</strong></td>
+            <td style="padding: 5px; border-bottom: 1px solid #ddd;">%(source_currency)s → %(target_currency)s</td>
+        </tr>
+        <tr>
+            <td style="padding: 5px; border-bottom: 1px solid #ddd;"><strong>Error Type:</strong></td>
+            <td style="padding: 5px; border-bottom: 1px solid #ddd;">%(error_type)s</td>
+        </tr>
+        <tr>
+            <td style="padding: 5px; border-bottom: 1px solid #ddd;"><strong>Error:</strong></td>
+            <td style="padding: 5px; border-bottom: 1px solid #ddd; color: #dc3545;">%(error_message)s</td>
+        </tr>
+        <tr>
+            <td style="padding: 5px; border-bottom: 1px solid #ddd;"><strong>Time:</strong></td>
+            <td style="padding: 5px; border-bottom: 1px solid #ddd;">%(error_time)s</td>
+        </tr>
+    </table>
+</div>
+        """) % {
+            'source_name': self.name,
+            'source_currency': self.source_currency_id.name,
+            'target_currency': self.target_currency_id.name,
+            'error_type': error_type.replace('_', ' ').title(),
+            'error_message': error_message,
+            'error_time': fields.Datetime.now(),
+        }
+
+    def _get_channel_notification_body(self, error_message, error_type='validation'):
+        """Generate notification body for Discuss channels.
+        
+        Uses Markup to indicate HTML is safe and should be rendered.
+        
+        Args:
+            error_message: The error description
+            error_type: Type of error (validation, extraction, connection)
+            
+        Returns:
+            Markup: Safe HTML notification body for channel
+        """
+        self.ensure_one()
+        # Use Markup to indicate this HTML is safe and should be rendered
+        return Markup(
+            '<div class="o_mail_notification">'
+            '<p><strong>⚠️ Currency Rate Update Failed</strong></p>'
+            '<p>'
+            '<strong>Source:</strong> %(source_name)s<br/>'
+            '<strong>Currency:</strong> %(source_currency)s → %(target_currency)s<br/>'
+            '<strong>Error Type:</strong> %(error_type)s<br/>'
+            '<strong>Error:</strong> %(error_message)s<br/>'
+            '<strong>Time:</strong> %(error_time)s'
+            '</p>'
+            '</div>'
+        ) % {
+            'source_name': self.name,
+            'source_currency': self.source_currency_id.name,
+            'target_currency': self.target_currency_id.name,
+            'error_type': error_type.replace('_', ' ').title(),
+            'error_message': error_message,
+            'error_time': fields.Datetime.now(),
+        }
+    
+    def _send_error_notification(self, error_message, error_type='validation'):
+        """Send error notifications to configured users, partners, and/or channel.
+        
+        Args:
+            error_message: The error description
+            error_type: Type of error (validation, extraction, connection)
+        """
+        self.ensure_one()
+        if not self.notify_on_error:
+            return
+        
+        subject = _('⚠️ Currency Rate Error: %s') % self.name
+        # Body for emails (HTML format)
+        email_body = self._get_default_notification_body(error_message, error_type)
+        # Body for channels (simple format that Discuss can render)
+        channel_body = self._get_channel_notification_body(error_message, error_type)
+        
+        # 1. Notify specific users via internal notification + optional email
+        if self.notify_user_ids:
+            partner_ids = self.notify_user_ids.mapped('user_id.partner_id').ids
+            
+            try:
+                # Send internal notification (appears in user's inbox)
+                self.message_notify(
+                    partner_ids=partner_ids,
+                    body=channel_body,  # Use simple format for chatter/inbox
+                    subject=subject,
+                )
+                
+                # Handle forced email sending
+                force_email_partners = self.notify_user_ids.filtered(
+                    lambda u: u.force_email
+                ).mapped('user_id.partner_id')
+                
+                if force_email_partners:
+                    # If custom template exists, use it for email
+                    if self.notify_template_id:
+                        template = self.notify_template_id.with_context(
+                            error_message=error_message,
+                            error_type=error_type,
+                            error_datetime=fields.Datetime.now(),
+                        )
+                        template.send_mail(
+                            self.id,
+                            force_send=True,
+                            email_values={
+                                'recipient_ids': [(6, 0, force_email_partners.ids)],
+                                'email_to': False,  # Clear default to use recipient_ids
+                            }
+                        )
+                    else:
+                        # Use default HTML body for email
+                        self.env['mail.mail'].sudo().create({
+                            'subject': subject,
+                            'body_html': email_body,
+                            'recipient_ids': [(6, 0, force_email_partners.ids)],
+                            'auto_delete': True,
+                        }).send()
+                        
+            except Exception as e:
+                _logger.warning('Failed to send user notification: %s', str(e))
+        
+        # 2. Notify external contacts (partners without Odoo users)
+        if self.notify_partner_ids:
+            try:
+                # Filter partners with valid email
+                partners_with_email = self.notify_partner_ids.filtered(lambda p: p.email)
+                if partners_with_email:
+                    if self.notify_template_id:
+                        # Generate email from template
+                        template = self.notify_template_id.with_context(
+                            error_message=error_message,
+                            error_type=error_type,
+                            error_datetime=fields.Datetime.now(),
+                        )
+                        # Generate mail values from template
+                        mail_values = template.generate_email(self.id, ['subject', 'body_html', 'email_from'])
+                        # Create mail with explicit recipients
+                        self.env['mail.mail'].sudo().create({
+                            'subject': mail_values.get('subject', subject),
+                            'body_html': mail_values.get('body_html', email_body),
+                            'email_from': mail_values.get('email_from'),
+                            'recipient_ids': [(6, 0, partners_with_email.ids)],
+                            'auto_delete': True,
+                        }).send()
+                    else:
+                        self.env['mail.mail'].sudo().create({
+                            'subject': subject,
+                            'body_html': email_body,
+                            'recipient_ids': [(6, 0, partners_with_email.ids)],
+                            'auto_delete': True,
+                        }).send()
+            except Exception as e:
+                _logger.warning('Failed to send partner notification: %s', str(e))
+        
+        # 3. Post to Discuss channel
+        if self.notify_channel_id:
+            try:
+                post_body = channel_body
+                
+                # Mention all members if configured
+                if self.notify_channel_mention_all:
+                    members = self.notify_channel_id.channel_member_ids.mapped('partner_id')
+                    if members:
+                        # Create proper mention format for Discuss using Markup
+                        mentions = Markup(' ').join([
+                            Markup('<a href="#" data-oe-model="res.partner" data-oe-id="%s">@%s</a>') % (p.id, p.name)
+                            for p in members
+                        ])
+                        post_body = Markup('<p>%s</p>') % mentions + channel_body
+                
+                # Post message to channel
+                self.notify_channel_id.message_post(
+                    body=post_body,
+                    message_type='comment',
+                    subtype_xmlid='mail.mt_comment',
+                )
+                
+                # Force email to channel members if configured
+                if self.notify_channel_send_email:
+                    members = self.notify_channel_id.channel_member_ids.mapped('partner_id')
+                    if members:
+                        if self.notify_template_id:
+                            template = self.notify_template_id.with_context(
+                                error_message=error_message,
+                                error_type=error_type,
+                                error_datetime=fields.Datetime.now(),
+                            )
+                            template.send_mail(
+                                self.id,
+                                force_send=True,
+                                email_values={
+                                    'recipient_ids': [(6, 0, members.ids)],
+                                    'email_to': False,
+                                }
+                            )
+                        else:
+                            self.env['mail.mail'].sudo().create({
+                                'subject': subject,
+                                'body_html': email_body,
+                                'recipient_ids': [(6, 0, members.ids)],
+                                'auto_delete': True,
+                            }).send()
+                        
+            except Exception as e:
+                _logger.warning('Failed to send channel notification: %s', str(e))
+
+

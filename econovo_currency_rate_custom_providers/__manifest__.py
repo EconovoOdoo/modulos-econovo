@@ -44,9 +44,11 @@ Technical Requirements
     'depends': [
         'base',
         'account',
+        'mail',
     ],
     'data': [
         'security/ir.model.access.csv',
+        'data/mail_template_data.xml',
         'views/currency_rate_source_views.xml',
         'views/currency_rate_log_views.xml',
         'views/res_config_settings_views.xml',
