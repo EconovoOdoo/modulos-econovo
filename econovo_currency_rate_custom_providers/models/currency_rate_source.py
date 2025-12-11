@@ -1527,18 +1527,21 @@ class CurrencyRateSource(models.Model):
         Uses sudo() to bypass multi-company access rules since currency
         rates are system-level data that should be updated regardless
         of the current user's company access.
+        
+        Note: Odoo only allows creating currency rates for main companies
+        (companies without a parent). Branches inherit rates from their parent.
         """
         CurrencyRate = self.env['res.currency.rate'].sudo()
         
         # Get companies to update
         if self.update_all_companies:
-            companies = self.env['res.company'].search([
-                '|',
+            # Only main companies (without parent) - Odoo constraint
+            companies = self.env['res.company'].sudo().search([
                 ('parent_id', '=', False),
-                ('parent_id.parent_id', '=', False),
             ])
         else:
-            companies = self.company_ids
+            # Filter to only include main companies from the selected ones
+            companies = self.company_ids.filtered(lambda c: not c.parent_id)
         
         # Filter companies: only those whose base currency matches target_currency_id
         # Example: If source=USD, target=ARS, only update companies with ARS as base
