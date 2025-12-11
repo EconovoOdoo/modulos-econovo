@@ -38,15 +38,6 @@
         <field name="model">currency.rate.source</field>
         <field name="arch" type="xml">
             <form string="Currency Rate Source">
-                <!-- Module disabled warning banner -->
-                <field name="module_enabled" invisible="1"/>
-                <div class="alert alert-warning text-center mb-3" role="alert" invisible="module_enabled">
-                    <i class="fa fa-exclamation-triangle me-2"/>
-                    <strong>Module not enabled.</strong> 
-                    Scheduled updates are disabled. Go to 
-                    <em>Settings → Invoicing → Currencies → Custom Rate Sources</em> 
-                    to enable this feature.
-                </div>
                 <header>
                     <button name="action_update_rate" 
                             type="object" 

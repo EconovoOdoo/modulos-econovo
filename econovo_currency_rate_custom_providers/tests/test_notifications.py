@@ -17,11 +17,13 @@ class TestNotificationConfig(TransactionCase):
         """Set up test fixtures."""
         super().setUpClass()
         
-        # Enable the module functionality by assigning the group to admin user
+        # Enable the module functionality by adding group to base.group_user implied_ids
+        # This simulates enabling the checkbox in settings (implied_group)
         group = cls.env.ref(
             'econovo_currency_rate_custom_providers.group_custom_rate_sources'
         )
-        group.sudo().write({'users': [(4, cls.env.ref('base.user_admin').id)]})
+        group_user = cls.env.ref('base.group_user')
+        group_user.sudo().write({'implied_ids': [(4, group.id)]})
         
         # Unique suffix for test data
         cls._test_uid = str(uuid.uuid4())[:8]

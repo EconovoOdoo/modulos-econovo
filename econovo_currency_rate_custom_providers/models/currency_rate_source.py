@@ -62,11 +62,6 @@ class CurrencyRateSource(models.Model):
         default=True,
         tracking=True
     )
-    module_enabled = fields.Boolean(
-        string='Module Enabled',
-        compute='_compute_module_enabled',
-        help='Indicates if the Custom Rate Providers module is enabled in settings'
-    )
     sequence = fields.Integer(
         string='Sequence',
         default=10,
@@ -582,7 +577,8 @@ class CurrencyRateSource(models.Model):
         """Check if the module feature is enabled.
         
         The module is considered enabled when the group_custom_rate_sources
-        is assigned to users (controlled via implied_group in settings).
+        is in the implied_ids of base.group_user (controlled via implied_group 
+        in settings). This is how Odoo manages feature toggles with implied_group.
         
         Returns:
             bool: True if the feature is enabled, False otherwise.
@@ -591,21 +587,21 @@ class CurrencyRateSource(models.Model):
             'econovo_currency_rate_custom_providers.group_custom_rate_sources',
             raise_if_not_found=False
         )
-        return bool(group and group.users)
+        if not group:
+            return False
+        
+        # With implied_group, when enabled, the group is added to 
+        # base.group_user's implied_ids. Use sudo() to ensure access.
+        group_user = self.env.ref('base.group_user', raise_if_not_found=False)
+        if group_user:
+            return group in group_user.sudo().implied_ids
+        
+        # Fallback: check if any user has this group directly
+        return bool(group.sudo().users)
 
     # ==========================================
     # COMPUTE METHODS
     # ==========================================
-
-    def _compute_module_enabled(self):
-        """Check if the module is enabled in settings.
-        
-        The module is considered enabled when the group_custom_rate_sources
-        is assigned to users (controlled via implied_group in settings).
-        """
-        enabled = self._is_module_enabled()
-        for record in self:
-            record.module_enabled = enabled
 
     @api.depends('execution_count', 'success_count')
     def _compute_success_rate(self):

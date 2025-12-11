@@ -78,7 +78,7 @@ class ResConfigSettings(models.TransientModel):
 
     @api.depends()
     def _compute_sources_count(self):
-        Source = self.env['currency.rate.source']
+        Source = self.env['currency.rate.source'].sudo()
         for record in self:
             record.currency_rate_custom_providers_sources_count = Source.search_count([
                 ('active', '=', True)
@@ -86,7 +86,7 @@ class ResConfigSettings(models.TransientModel):
 
     @api.depends()
     def _compute_crons_count(self):
-        Source = self.env['currency.rate.source']
+        Source = self.env['currency.rate.source'].sudo()
         for record in self:
             record.currency_rate_custom_providers_crons_count = Source.search_count([
                 ('active', '=', True),
