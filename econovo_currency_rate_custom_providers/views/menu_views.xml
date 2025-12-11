@@ -3,10 +3,11 @@
     
     <!-- Menu Items -->
     <!-- Parent menu under Invoicing/Configuration -->
+    <!-- Uses group_custom_rate_sources which is controlled by implied_group in Settings -->
     <menuitem id="menu_currency_rate_custom_providers_root"
               name="Currency Rate Sources"
               parent="account.menu_finance_configuration"
-              groups="account.group_account_manager"
+              groups="econovo_currency_rate_custom_providers.group_custom_rate_sources"
               sequence="35"/>
 
     <!-- Sources submenu -->
@@ -14,7 +15,7 @@
               name="Rate Sources"
               parent="menu_currency_rate_custom_providers_root"
               action="action_currency_rate_source"
-              groups="account.group_account_manager"
+              groups="econovo_currency_rate_custom_providers.group_custom_rate_sources"
               sequence="10"/>
 
     <!-- Logs submenu -->
@@ -22,7 +23,7 @@
               name="Update Logs"
               parent="menu_currency_rate_custom_providers_root"
               action="action_currency_rate_log"
-              groups="account.group_account_manager"
+              groups="econovo_currency_rate_custom_providers.group_custom_rate_sources"
               sequence="20"/>
 
 </odoo>

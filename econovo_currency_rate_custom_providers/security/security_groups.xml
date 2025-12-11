@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- Group for Custom Rate Sources feature -->
+    <!-- This group is managed by implied_group in res.config.settings -->
+    <!-- When the checkbox is enabled in Settings, all internal users get this group -->
+    <!-- When disabled, no one has access to the menus -->
+    <record id="group_custom_rate_sources" model="res.groups">
+        <field name="name">Custom Rate Sources</field>
+        <field name="comment">
+            Users in this group can access the Custom Rate Sources feature.
+            This group is automatically assigned to all internal users when
+            the feature is enabled in Settings → Invoicing → Currencies.
+        </field>
+        <field name="category_id" ref="base.module_category_accounting_accounting"/>
+    </record>
+
+</odoo>

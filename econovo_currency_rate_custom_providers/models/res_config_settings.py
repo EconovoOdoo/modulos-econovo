@@ -8,9 +8,10 @@ class ResConfigSettings(models.TransientModel):
     _inherit = 'res.config.settings'
 
     # Custom Rate Providers Settings - Main toggle
-    currency_rate_custom_providers_enabled = fields.Boolean(
-        string='Enable Econovo Custom Rate Providers',
-        config_parameter='econovo_currency_rate_custom_providers.enabled',
+    # Uses implied_group to automatically show/hide menus for all internal users
+    group_currency_rate_custom_providers = fields.Boolean(
+        string='Custom Rate Sources',
+        implied_group='econovo_currency_rate_custom_providers.group_custom_rate_sources',
         help='Enable automatic currency rate updates from external sources (websites, APIs).\n\n'
              'When enabled, each source with "Automatic Update" will have its own dedicated '
              'scheduled action that runs exactly at the configured time.',
@@ -95,17 +96,17 @@ class ResConfigSettings(models.TransientModel):
 
     def set_values(self):
         """Override to update all source crons when module enabled state changes."""
-        # Get previous enabled state
-        was_enabled = self.env['ir.config_parameter'].sudo().get_param(
-            'econovo_currency_rate_custom_providers.enabled', 'False'
-        ) == 'True'
+        # Get previous enabled state by checking group membership
+        group = self.env.ref(
+            'econovo_currency_rate_custom_providers.group_custom_rate_sources',
+            raise_if_not_found=False
+        )
+        was_enabled = bool(group and group.users) if group else False
         
         res = super().set_values()
         
-        # Get new enabled state
-        is_enabled = self.env['ir.config_parameter'].sudo().get_param(
-            'econovo_currency_rate_custom_providers.enabled', 'False'
-        ) == 'True'
+        # Get new enabled state from the current field value
+        is_enabled = self.group_currency_rate_custom_providers
         
         # Update all source crons if enabled state changed
         if was_enabled != is_enabled:

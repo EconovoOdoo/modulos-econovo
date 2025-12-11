@@ -17,10 +17,11 @@ class TestCronCreation(TransactionCase):
         """Set up test fixtures."""
         super().setUpClass()
         
-        # Enable the module functionality (required for cron creation)
-        cls.env['ir.config_parameter'].sudo().set_param(
-            'econovo_currency_rate_custom_providers.enabled', 'True'
+        # Enable the module functionality by assigning the group to admin user
+        group = cls.env.ref(
+            'econovo_currency_rate_custom_providers.group_custom_rate_sources'
         )
+        group.sudo().write({'users': [(4, cls.env.ref('base.user_admin').id)]})
         
         # Unique suffix for test data
         cls._test_uid = str(uuid.uuid4())[:8]

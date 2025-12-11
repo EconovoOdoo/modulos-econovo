@@ -15,8 +15,8 @@
                          invisible="not group_multi_currency"
                          string="Custom Rate Sources"
                          help="Update rates from custom sources (websites, APIs, banks)">
-                    <field name="currency_rate_custom_providers_enabled"/>
-                    <div class="content-group" invisible="not currency_rate_custom_providers_enabled">
+                    <field name="group_currency_rate_custom_providers"/>
+                    <div class="content-group" invisible="not group_currency_rate_custom_providers">
                         <div class="mt-2 text-muted small">
                             <em>Each source has its own dedicated scheduled action that runs exactly at the configured time.</em>
                         </div>
@@ -49,7 +49,7 @@
             <xpath expr="//app[@name='account']" position="inside">
                 <block title="Custom Rate Providers - Advanced" 
                        name="currency_rate_custom_providers_advanced_settings"
-                       invisible="not currency_rate_custom_providers_enabled">
+                       invisible="not group_currency_rate_custom_providers">
                     <setting id="currency_rate_custom_providers_general" 
                              string="General Settings">
                         <div class="content-group">

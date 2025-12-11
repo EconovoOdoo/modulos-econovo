@@ -575,14 +575,35 @@ class CurrencyRateSource(models.Model):
     ]
 
     # ==========================================
+    # HELPER METHODS
+    # ==========================================
+
+    def _is_module_enabled(self):
+        """Check if the module feature is enabled.
+        
+        The module is considered enabled when the group_custom_rate_sources
+        is assigned to users (controlled via implied_group in settings).
+        
+        Returns:
+            bool: True if the feature is enabled, False otherwise.
+        """
+        group = self.env.ref(
+            'econovo_currency_rate_custom_providers.group_custom_rate_sources',
+            raise_if_not_found=False
+        )
+        return bool(group and group.users)
+
+    # ==========================================
     # COMPUTE METHODS
     # ==========================================
 
     def _compute_module_enabled(self):
-        """Check if the module is enabled in settings."""
-        enabled = self.env['ir.config_parameter'].sudo().get_param(
-            'econovo_currency_rate_custom_providers.enabled', 'False'
-        ) == 'True'
+        """Check if the module is enabled in settings.
+        
+        The module is considered enabled when the group_custom_rate_sources
+        is assigned to users (controlled via implied_group in settings).
+        """
+        enabled = self._is_module_enabled()
         for record in self:
             record.module_enabled = enabled
 
@@ -1617,12 +1638,9 @@ class CurrencyRateSource(models.Model):
             _logger.info('Skipping disabled source: %s', source.name)
             return
         
-        # Check if module is enabled
-        enabled = self.env['ir.config_parameter'].sudo().get_param(
-            'econovo_currency_rate_custom_providers.enabled', 'False'
-        ) == 'True'
-        if not enabled:
-            _logger.info('Currency Rate Live module is disabled, skipping update for: %s', source.name)
+        # Check if module feature is enabled
+        if not self._is_module_enabled():
+            _logger.info('Currency Rate Custom Providers is disabled, skipping update for: %s', source.name)
             return
         
         try:
@@ -1672,10 +1690,8 @@ class CurrencyRateSource(models.Model):
         interval_number, interval_type = self._get_cron_interval()
         nextcall = self._get_cron_nextcall()
         
-        # Check if module is globally enabled
-        module_enabled = self.env['ir.config_parameter'].sudo().get_param(
-            'econovo_currency_rate_custom_providers.enabled', 'False'
-        ) == 'True'
+        # Check if module feature is globally enabled
+        module_enabled = self._is_module_enabled()
         
         # Get model reference
         model = self.env['ir.model'].sudo().search([
@@ -1716,10 +1732,8 @@ class CurrencyRateSource(models.Model):
         interval_number, interval_type = self._get_cron_interval()
         nextcall = self._get_cron_nextcall()
         
-        # Check if module is globally enabled
-        module_enabled = self.env['ir.config_parameter'].sudo().get_param(
-            'econovo_currency_rate_custom_providers.enabled', 'False'
-        ) == 'True'
+        # Check if module feature is globally enabled
+        module_enabled = self._is_module_enabled()
         
         cron_vals = {
             'name': f'Currency Rate: {self.name}',
@@ -1770,12 +1784,10 @@ class CurrencyRateSource(models.Model):
         Called from res.config.settings when the module enable/disable toggle changes.
         
         Args:
-            enabled: If provided, use this value. Otherwise read from config parameter.
+            enabled: If provided, use this value. Otherwise check via group membership.
         """
         if enabled is None:
-            enabled = self.env['ir.config_parameter'].sudo().get_param(
-                'econovo_currency_rate_custom_providers.enabled', 'False'
-            ) == 'True'
+            enabled = self._is_module_enabled()
         
         sources = self.search([])
         for source in sources:
@@ -1795,10 +1807,8 @@ class CurrencyRateSource(models.Model):
         """Override create to auto-create cron for new sources with auto_update."""
         records = super().create(vals_list)
         
-        # Check if module is enabled
-        enabled = self.env['ir.config_parameter'].sudo().get_param(
-            'econovo_currency_rate_custom_providers.enabled', 'False'
-        ) == 'True'
+        # Check if module feature is enabled
+        enabled = self._is_module_enabled()
         
         for record in records:
             if enabled and record.auto_update and record.active:

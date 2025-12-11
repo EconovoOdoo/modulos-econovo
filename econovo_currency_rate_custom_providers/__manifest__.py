@@ -47,6 +47,7 @@ Technical Requirements
         'mail',
     ],
     'data': [
+        'security/security_groups.xml',
         'security/ir.model.access.csv',
         'data/mail_template_data.xml',
         'views/currency_rate_source_views.xml',
