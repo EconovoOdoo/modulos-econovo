@@ -62,6 +62,11 @@ class CurrencyRateSource(models.Model):
         default=True,
         tracking=True
     )
+    module_enabled = fields.Boolean(
+        string='Module Enabled',
+        compute='_compute_module_enabled',
+        help='Indicates if the Custom Rate Providers module is enabled in settings'
+    )
     sequence = fields.Integer(
         string='Sequence',
         default=10,
@@ -572,6 +577,14 @@ class CurrencyRateSource(models.Model):
     # ==========================================
     # COMPUTE METHODS
     # ==========================================
+
+    def _compute_module_enabled(self):
+        """Check if the module is enabled in settings."""
+        enabled = self.env['ir.config_parameter'].sudo().get_param(
+            'econovo_currency_rate_custom_providers.enabled', 'False'
+        ) == 'True'
+        for record in self:
+            record.module_enabled = enabled
 
     @api.depends('execution_count', 'success_count')
     def _compute_success_rate(self):
@@ -1656,6 +1669,11 @@ class CurrencyRateSource(models.Model):
         interval_number, interval_type = self._get_cron_interval()
         nextcall = self._get_cron_nextcall()
         
+        # Check if module is globally enabled
+        module_enabled = self.env['ir.config_parameter'].sudo().get_param(
+            'econovo_currency_rate_custom_providers.enabled', 'False'
+        ) == 'True'
+        
         # Get model reference
         model = self.env['ir.model'].sudo().search([
             ('model', '=', 'currency.rate.source')
@@ -1670,7 +1688,7 @@ class CurrencyRateSource(models.Model):
             'interval_type': interval_type,
             'nextcall': nextcall,
             'numbercall': -1,
-            'active': self.active and self.auto_update,
+            'active': self.active and self.auto_update and module_enabled,
             'doall': False,
             'priority': 15,
         }
