@@ -1705,7 +1705,7 @@ class CurrencyRateSource(models.Model):
             'numbercall': -1,
             'active': self.active and self.auto_update and module_enabled,
             'doall': False,
-            'priority': 15,
+            'priority': 1,
         }
         
         cron = self.env['ir.cron'].sudo().create(cron_vals)
