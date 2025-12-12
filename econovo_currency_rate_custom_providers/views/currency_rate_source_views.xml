@@ -456,6 +456,20 @@
                             </group>
                             
                             <!-- Timing Configuration based on frequency -->
+                            <!-- Hourly Configuration -->
+                            <group string="Hourly Configuration" invisible="not auto_update or update_frequency != 'hourly'">
+                                <group>
+                                    <label for="hourly_interval" string="Run every"/>
+                                    <div class="o_row">
+                                        <field name="hourly_interval" class="oe_inline" style="width: 60px;"/>
+                                        <span> hours (1-23)</span>
+                                    </div>
+                                    <div class="text-muted small o_row">
+                                        <span>Updates run at the specified interval. Example: every 2 hours, every 4 hours, etc.</span>
+                                    </div>
+                                </group>
+                            </group>
+                            
                             <group string="Timing Configuration" invisible="not auto_update or update_frequency in ('specific', 'hourly')">
                                 <group>
                                     <!-- Daily: show preferred hour -->

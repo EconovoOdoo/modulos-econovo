@@ -425,6 +425,11 @@ class CurrencyRateSource(models.Model):
         default='daily',
         help='How often to update the currency rate'
     )
+    hourly_interval = fields.Integer(
+        string='Every (hours)',
+        default=1,
+        help='Number of hours between each update (1-23)'
+    )
     preferred_hour = fields.Selection(
         selection='_get_hour_selection',
         string='Preferred Hour',
@@ -662,8 +667,9 @@ class CurrencyRateSource(models.Model):
                 pref_minute = int(parts[1]) if len(parts) > 1 else 0
             
             if record.update_frequency == 'hourly':
-                # Next hour (runs every hour when cron executes)
-                next_exec_local = local_now.replace(minute=0, second=0, microsecond=0) + timedelta(hours=1)
+                # Next execution based on hourly_interval (1-23 hours)
+                interval = max(1, min(23, record.hourly_interval or 1))
+                next_exec_local = local_now.replace(minute=0, second=0, microsecond=0) + timedelta(hours=interval)
                 record.next_execution = next_exec_local.astimezone(pytz.utc).replace(tzinfo=None)
                 
             elif record.update_frequency == 'daily':
@@ -1667,7 +1673,8 @@ class CurrencyRateSource(models.Model):
         """
         self.ensure_one()
         if self.update_frequency == 'hourly':
-            return (1, 'hours')
+            interval = max(1, min(23, self.hourly_interval or 1))
+            return (interval, 'hours')
         elif self.update_frequency == 'daily':
             return (1, 'days')
         elif self.update_frequency == 'weekly':
