@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Group for users who can relocate stock without being Inventory Administrator -->
+        <record id="group_stock_quant_relocate" model="res.groups">
+            <field name="name">Can Relocate Inventory Stock</field>
+            <field name="comment">Allows using the "Relocate" button in the Quants view (stock.quant) without being an Inventory Administrator.</field>
+            <field name="category_id" ref="base.module_category_usability"/>
+        </record>
+    </data>
+</odoo>

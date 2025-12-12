@@ -1,0 +1,31 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* econovo_stock_quant_relocate_permission
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 17.0+e-20250501\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-12-12 00:00+0000\n"
+"PO-Revision-Date: 2025-12-12 00:00+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: econovo_stock_quant_relocate_permission
+#: model:res.groups,name:econovo_stock_quant_relocate_permission.group_stock_quant_relocate
+msgid "Can Relocate Inventory Stock"
+msgstr "Puede reubicar existencias en inventario"
+
+#. module: econovo_stock_quant_relocate_permission
+#: model:res.groups,comment:econovo_stock_quant_relocate_permission.group_stock_quant_relocate
+msgid "Allows using the \"Relocate\" button in the Quants view (stock.quant) without being an Inventory Administrator."
+msgstr "Permite usar el botón \"Reubicar\" en la vista de Quants (stock.quant) sin necesidad de ser Administrador de Inventario."
+
+#. module: econovo_stock_quant_relocate_permission
+#: model:ir.model.access,name:econovo_stock_quant_relocate_permission.access_stock_quant_relocate_relocate_user
+msgid "stock.quant.relocate relocate user"
+msgstr "stock.quant.relocate usuario reubicar"

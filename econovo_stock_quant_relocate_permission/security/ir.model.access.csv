@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_stock_quant_relocate_relocate_user,stock.quant.relocate relocate user,stock.model_stock_quant_relocate,econovo_stock_quant_relocate_permission.group_stock_quant_relocate,1,1,1,0
