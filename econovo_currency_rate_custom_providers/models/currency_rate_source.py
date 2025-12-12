@@ -1625,25 +1625,27 @@ class CurrencyRateSource(models.Model):
         Args:
             source_id: ID of the currency.rate.source to update
         """
-        source = self.browse(source_id)
-        if not source.exists():
-            _logger.warning('Cron called for non-existent source ID: %s', source_id)
-            return
-        
-        if not source.active or not source.auto_update:
-            _logger.info('Skipping disabled source: %s', source.name)
-            return
-        
-        # Check if module feature is enabled
-        if not self._is_module_enabled():
-            _logger.info('Currency Rate Custom Providers is disabled, skipping update for: %s', source.name)
-            return
+        _logger.info('=== CRON START === Currency Rate update triggered for source ID: %s', source_id)
         
         try:
+            source = self.browse(source_id)
+            if not source.exists():
+                _logger.warning('Cron called for non-existent source ID: %s', source_id)
+                return
+            
+            _logger.info('Source found: %s (active=%s, auto_update=%s)', 
+                        source.name, source.active, source.auto_update)
+            
+            if not source.active or not source.auto_update:
+                _logger.info('Skipping disabled source: %s', source.name)
+                return
+            
             _logger.info('Running scheduled update for source: %s', source.name)
             source._execute_update(triggered_by='cron')
+            _logger.info('=== CRON END === Scheduled update completed for source: %s', source.name)
+            
         except Exception as e:
-            _logger.error('Scheduled update failed for %s: %s', source.name, str(e))
+            _logger.exception('=== CRON ERROR === Scheduled update failed for source_id %s: %s', source_id, str(e))
 
     def _get_cron_nextcall(self):
         """Calculate the next execution datetime for cron based on source schedule.
@@ -1697,6 +1699,7 @@ class CurrencyRateSource(models.Model):
         cron_vals = {
             'name': f'Currency Rate: {self.name}',
             'model_id': model.id,
+            'user_id': self.env.ref('base.user_admin').id,
             'state': 'code',
             'code': f'model._cron_update_single_source({self.id})',
             'interval_number': interval_number,
@@ -1704,8 +1707,8 @@ class CurrencyRateSource(models.Model):
             'nextcall': nextcall,
             'numbercall': -1,
             'active': self.active and self.auto_update and module_enabled,
-            'doall': False,
-            'priority': 1,
+            'doall': True,
+            'priority': 5,
         }
         
         cron = self.env['ir.cron'].sudo().create(cron_vals)
