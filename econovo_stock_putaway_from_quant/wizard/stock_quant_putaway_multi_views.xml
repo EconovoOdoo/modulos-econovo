@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="stock_quant_putaway_multi_view_form" model="ir.ui.view">
+        <field name="name">stock.quant.putaway.multi.view.form</field>
+        <field name="model">stock.quant.putaway.multi</field>
+        <field name="arch" type="xml">
+            <form string="Create Putaway Rules">
+                <sheet>
+                    <field name="company_id" invisible="1"/>
+                    <div class="oe_title">
+                        <h1>
+                            <span>Create Putaway Rules for </span>
+                            <field name="quant_count" readonly="1" class="oe_inline"/>
+                            <span> products</span>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group string="Source Location">
+                            <field name="location_in_id" 
+                                   options="{'no_create': True}"
+                                   required="1"/>
+                        </group>
+                        <group string="Destination">
+                            <field name="use_current_location" widget="boolean_toggle"/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <group string="Options">
+                            <field name="sequence"/>
+                            <field name="skip_existing" widget="boolean_toggle"/>
+                            <field name="replace_existing" widget="boolean_toggle"
+                                   invisible="skip_existing"/>
+                        </group>
+                        <group string="Summary">
+                            <field name="selected_count" readonly="1"/>
+                            <field name="has_conflicts" invisible="1"/>
+                        </group>
+                    </group>
+
+                    <div class="alert alert-warning" role="alert"
+                         invisible="not has_conflicts or skip_existing or replace_existing">
+                        <strong>Warning:</strong> Some products already have putaway rules.
+                        Choose to skip or replace existing rules.
+                    </div>
+
+                    <div class="alert alert-info" role="alert"
+                         invisible="not skip_existing">
+                        <strong>Note:</strong> Products with existing rules will be skipped.
+                    </div>
+
+                    <div class="alert alert-warning" role="alert"
+                         invisible="not replace_existing">
+                        <strong>Warning:</strong> Existing rules will be deactivated.
+                    </div>
+
+                    <field name="quant_ids" invisible="1"/>
+                    <field name="line_ids" nolabel="1">
+                        <tree string="Products" editable="bottom">
+                            <field name="selected" widget="boolean_toggle"/>
+                            <field name="product_id"/>
+                            <field name="current_location_id"/>
+                            <field name="quantity"/>
+                            <field name="location_out_id" 
+                                   readonly="parent.use_current_location"
+                                   required="selected"
+                                   options="{'no_create': True}"/>
+                            <field name="has_existing_rule" invisible="1"/>
+                            <field name="existing_rule_count" 
+                                   string="Existing Rules"
+                                   decoration-warning="existing_rule_count > 0"/>
+                            <field name="quant_id" column_invisible="1"/>
+                            <field name="company_id" column_invisible="1"/>
+                        </tree>
+                    </field>
+                </sheet>
+                <footer>
+                    <button name="action_create_rules" string="Create Rules" 
+                            type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="stock_quant_putaway_multi_action" model="ir.actions.act_window">
+        <field name="name">Create Putaway Rules</field>
+        <field name="res_model">stock.quant.putaway.multi</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

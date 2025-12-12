@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_stock_quant_putaway_single,stock.quant.putaway.single,model_stock_quant_putaway_single,group_stock_putaway_from_quant,1,1,1,1
+access_stock_quant_putaway_single_line,stock.quant.putaway.single.line,model_stock_quant_putaway_single_line,group_stock_putaway_from_quant,1,1,1,1
+access_stock_quant_putaway_multi,stock.quant.putaway.multi,model_stock_quant_putaway_multi,group_stock_putaway_from_quant,1,1,1,1
+access_stock_quant_putaway_multi_line,stock.quant.putaway.multi.line,model_stock_quant_putaway_multi_line,group_stock_putaway_from_quant,1,1,1,1

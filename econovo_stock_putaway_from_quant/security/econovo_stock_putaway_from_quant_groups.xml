@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="0">
+    <!-- Security group for creating putaway rules from quant view -->
+    <record id="group_stock_putaway_from_quant" model="res.groups">
+        <field name="name">Can Create Putaway Rules from Quant</field>
+        <field name="comment">Users with this permission can create putaway (storage) rules directly from the stock quant view.</field>
+        <field name="category_id" ref="base.module_category_usability"/>
+    </record>
+</odoo>
