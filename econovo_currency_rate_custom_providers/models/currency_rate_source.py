@@ -947,11 +947,15 @@ class CurrencyRateSource(models.Model):
         """
         self.ensure_one()
         
+        # Capture previous rate before update
+        previous_rate = self.last_rate or 0.0
+        
         log_vals = {
             'source_id': self.id,
             'execution_date': fields.Datetime.now(),
             'triggered_by': triggered_by,
             'triggered_by_source_id': triggered_by_source_id,
+            'previous_rate': previous_rate,
         }
         
         start_time = datetime.now()
@@ -992,9 +996,10 @@ class CurrencyRateSource(models.Model):
                 log_vals['extracted_date'] = rate_date
             
             # Update currency rates
-            created, updated = self._update_currency_rates(rate, rate_date)
+            created, updated, companies_count = self._update_currency_rates(rate, rate_date)
             log_vals['rates_created'] = created
             log_vals['rates_updated'] = updated
+            log_vals['companies_affected'] = companies_count
             
             # Update source status
             self.write({
@@ -1577,7 +1582,7 @@ class CurrencyRateSource(models.Model):
                 'No companies found with base currency %s for source %s',
                 self.target_currency_id.name, self.name
             )
-            return 0, 0
+            return 0, 0, 0
         
         created = 0
         updated = 0
@@ -1610,12 +1615,13 @@ class CurrencyRateSource(models.Model):
                 })
                 created += 1
         
+        companies_count = len(companies)
         _logger.info(
-            'Updated currency rates for %s: %d created, %d updated',
-            self.source_currency_id.name, created, updated
+            'Updated currency rates for %s: %d created, %d updated, %d companies',
+            self.source_currency_id.name, created, updated, companies_count
         )
         
-        return created, updated
+        return created, updated, companies_count
 
     # ==========================================
     # CRON METHODS - Individual Cron per Source
