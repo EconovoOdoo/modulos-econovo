@@ -1699,7 +1699,7 @@ class CurrencyRateSource(models.Model):
         cron_vals = {
             'name': f'Currency Rate: {self.name}',
             'model_id': model.id,
-            'user_id': self.env.ref('base.user_admin').id,
+            'user_id': self.env.ref('base.user_root').id,  # OdooBot
             'state': 'code',
             'code': f'model._cron_update_single_source({self.id})',
             'interval_number': interval_number,
