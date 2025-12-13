@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Server Action: Create Putaway Rule from Move Lines -->
+    <record id="action_stock_move_line_putaway" model="ir.actions.server">
+        <field name="name">Create Putaway Rule</field>
+        <field name="model_id" ref="stock.model_stock_move_line"/>
+        <field name="binding_model_id" ref="stock.model_stock_move_line"/>
+        <field name="binding_view_types">list</field>
+        <field name="groups_id" eval="[(4, ref('econovo_stock_putaway_from_quant.group_stock_putaway_from_quant'))]"/>
+        <field name="state">code</field>
+        <field name="code">
+# Only execute if all selected lines are from incoming pickings
+if records:
+    picking_types = records.mapped('picking_id.picking_type_id.code')
+    if picking_types and all(pt == 'incoming' for pt in picking_types):
+        action = records.action_open_putaway()
+        </field>
+    </record>
+
+</odoo>

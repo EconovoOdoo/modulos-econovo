@@ -564,11 +564,117 @@ msgstr "Ver Todas las Reglas"
 #: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi__location_in_id
 #: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single__location_in_id
 #: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single_line__location_in_id
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_move_line_putaway__location_in_id
 msgid "When Product Arrives In"
 msgstr "Cuando el Producto Llega a"
 
 #. module: econovo_stock_putaway_from_quant
 #: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi_line__wizard_id
 #: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single_line__wizard_id
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_move_line_putaway_line__wizard_id
 msgid "Wizard"
 msgstr "Asistente"
+
+#. module: econovo_stock_putaway_from_quant
+#: model:ir.model,name:econovo_stock_putaway_from_quant.model_stock_move_line_putaway
+msgid "Stock Move Line Putaway Wizard"
+msgstr "Asistente de Almacenamiento desde Líneas de Movimiento"
+
+#. module: econovo_stock_putaway_from_quant
+#: model:ir.model,name:econovo_stock_putaway_from_quant.model_stock_move_line_putaway_line
+msgid "Stock Move Line Putaway Wizard Line"
+msgstr "Línea del Asistente de Almacenamiento desde Movimientos"
+
+#. module: econovo_stock_putaway_from_quant
+#: model:ir.actions.server,name:econovo_stock_putaway_from_quant.action_stock_move_line_putaway
+msgid "Create Putaway Rule"
+msgstr "Crear Regla de Almacenamiento"
+
+#. module: econovo_stock_putaway_from_quant
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_move_line_putaway__picking_id
+msgid "Picking"
+msgstr "Picking"
+
+#. module: econovo_stock_putaway_from_quant
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_move_line_putaway__picking_name
+msgid "Picking Reference"
+msgstr "Referencia del Picking"
+
+#. module: econovo_stock_putaway_from_quant
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_move_line_putaway__partner_id
+msgid "Partner"
+msgstr "Contacto"
+
+#. module: econovo_stock_putaway_from_quant
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_move_line_putaway_line__move_line_id
+msgid "Move Line"
+msgstr "Línea de Movimiento"
+
+#. module: econovo_stock_putaway_from_quant
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_move_line_putaway_line__lot_id
+msgid "Lot/Serial"
+msgstr "Lote/Serie"
+
+#. module: econovo_stock_putaway_from_quant
+#. odoo-python
+#: code:addons/econovo_stock_putaway_from_quant/models/stock_move_line.py:0
+#, python-format
+msgid ""
+"La línea '%(product)s' no está asociada a una operación de picking."
+msgstr ""
+"La línea '%(product)s' no está asociada a una operación de picking."
+
+#. module: econovo_stock_putaway_from_quant
+#. odoo-python
+#: code:addons/econovo_stock_putaway_from_quant/models/stock_move_line.py:0
+#, python-format
+msgid ""
+"Esta acción solo está disponible para operaciones de recepción.\n"
+"\n"
+"El picking '%(picking)s' es de tipo '%(type)s'."
+msgstr ""
+"Esta acción solo está disponible para operaciones de recepción.\n"
+"\n"
+"El picking '%(picking)s' es de tipo '%(type)s'."
+
+#. module: econovo_stock_putaway_from_quant
+#. odoo-python
+#: code:addons/econovo_stock_putaway_from_quant/models/stock_move_line.py:0
+#, python-format
+msgid ""
+"Debe seleccionar líneas de la misma empresa.\n"
+"\n"
+"Empresas seleccionadas: %(companies)s"
+msgstr ""
+"Debe seleccionar líneas de la misma empresa.\n"
+"\n"
+"Empresas seleccionadas: %(companies)s"
+
+#. module: econovo_stock_putaway_from_quant
+#. odoo-python
+#: code:addons/econovo_stock_putaway_from_quant/models/stock_move_line.py:0
+#, python-format
+msgid ""
+"Debe seleccionar líneas del mismo picking.\n"
+"\n"
+"Pickings seleccionados: %(pickings)s"
+msgstr ""
+"Debe seleccionar líneas del mismo picking.\n"
+"\n"
+"Pickings seleccionados: %(pickings)s"
+
+#. module: econovo_stock_putaway_from_quant
+#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_move_line_putaway_view_form
+msgid "RECEPTION INFO"
+msgstr "INFORMACIÓN DE RECEPCIÓN"
+
+#. module: econovo_stock_putaway_from_quant
+#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_move_line_putaway_view_form
+msgid "Create Putaway Rules for "
+msgstr "Crear Reglas de Almacenamiento para "
+
+#. module: econovo_stock_putaway_from_quant
+#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_move_line_putaway_view_form
+msgid " products"
+msgstr " productos"
+

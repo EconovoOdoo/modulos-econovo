@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Lines List View -->
+    <record id="stock_move_line_putaway_line_view_list" model="ir.ui.view">
+        <field name="name">stock.move.line.putaway.line.view.list</field>
+        <field name="model">stock.move.line.putaway.line</field>
+        <field name="arch" type="xml">
+            <tree editable="bottom">
+                <field name="selected" string="Create Rule" widget="boolean_toggle"/>
+                <field name="product_id" string="Product"/>
+                <field name="product_uom_qty" string="Qty"/>
+                <field name="product_uom_id" string="UoM" optional="hide"/>
+                <field name="lot_id" string="Lot/Serial" optional="hide"/>
+                <field name="location_out_id" string="Store In"/>
+                <field name="has_existing_rule" string="Has Existing" widget="boolean"/>
+                <field name="existing_rules_count" string="Existing Rules"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Wizard Form View -->
+    <record id="stock_move_line_putaway_view_form" model="ir.ui.view">
+        <field name="name">stock.move.line.putaway.view.form</field>
+        <field name="model">stock.move.line.putaway</field>
+        <field name="arch" type="xml">
+            <form string="Create Putaway Rules">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <span>Create Putaway Rules for </span>
+                            <field name="selected_count" class="oe_inline"/>
+                            <span> products</span>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group string="RECEPTION INFO">
+                            <field name="picking_name" string="Picking"/>
+                            <field name="partner_id" string="Partner"/>
+                        </group>
+                        <group string="DESTINATION">
+                            <field name="location_in_id" string="When Product Arrives In"/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <group string="OPTIONS">
+                            <field name="sequence" string="Priority"/>
+                            <field name="skip_existing" string="Skip Products with Existing Rules"
+                                   help="Products that already have a putaway rule will be skipped."/>
+                            <field name="replace_existing" string="Replace Existing Rules"
+                                   help="Existing rules will be deactivated and replaced."/>
+                        </group>
+                        <group string="SUMMARY">
+                            <div class="alert alert-warning" role="alert"
+                                 invisible="not has_existing_rules or skip_existing">
+                                <strong>Warning:</strong> Some products already have putaway rules.
+                                Choose to skip or replace existing rules.
+                            </div>
+                            <div class="alert alert-info" role="alert"
+                                 invisible="not has_existing_rules or not skip_existing">
+                                <strong>Note:</strong> Products with existing rules will be skipped.
+                            </div>
+                            <div class="alert alert-warning" role="alert"
+                                 invisible="not has_existing_rules or not replace_existing">
+                                <strong>Warning:</strong> Existing rules will be deactivated.
+                            </div>
+                        </group>
+                    </group>
+
+                    <field name="line_ids" widget="one2many"/>
+
+                    <!-- Hidden fields -->
+                    <field name="picking_id" invisible="1"/>
+                    <field name="company_id" invisible="1"/>
+                    <field name="line_count" invisible="1"/>
+                    <field name="has_existing_rules" invisible="1"/>
+                </sheet>
+                <footer>
+                    <button name="action_create_rules" string="Create Rules"
+                            type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

@@ -3,3 +3,5 @@ access_stock_quant_putaway_single,stock.quant.putaway.single,model_stock_quant_p
 access_stock_quant_putaway_single_line,stock.quant.putaway.single.line,model_stock_quant_putaway_single_line,group_stock_putaway_from_quant,1,1,1,1
 access_stock_quant_putaway_multi,stock.quant.putaway.multi,model_stock_quant_putaway_multi,group_stock_putaway_from_quant,1,1,1,1
 access_stock_quant_putaway_multi_line,stock.quant.putaway.multi.line,model_stock_quant_putaway_multi_line,group_stock_putaway_from_quant,1,1,1,1
+access_stock_move_line_putaway,stock.move.line.putaway,model_stock_move_line_putaway,group_stock_putaway_from_quant,1,1,1,1
+access_stock_move_line_putaway_line,stock.move.line.putaway.line,model_stock_move_line_putaway_line,group_stock_putaway_from_quant,1,1,1,1
