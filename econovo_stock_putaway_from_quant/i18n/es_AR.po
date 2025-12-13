@@ -666,7 +666,53 @@ msgstr ""
 #. module: econovo_stock_putaway_from_quant
 #: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_move_line_putaway_view_form
 msgid "RECEPTION INFO"
-msgstr "INFORMACIÓN DE RECEPCIÓN"
+msgstr "Información de Recepción"
+
+#. module: econovo_stock_putaway_from_quant
+#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_move_line_putaway_view_form
+msgid "Reception Info"
+msgstr "Información de Recepción"
+
+#. module: econovo_stock_putaway_from_quant
+#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_move_line_putaway_view_form
+msgid "Selected Products"
+msgstr "Productos Seleccionados"
+
+#. module: econovo_stock_putaway_from_quant
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_move_line_putaway__skip_existing
+msgid "Skip Products with Existing Rules"
+msgstr "Omitir Productos con Reglas Existentes"
+
+#. module: econovo_stock_putaway_from_quant
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_move_line_putaway__replace_existing
+msgid "Replace Existing Rules"
+msgstr "Reemplazar Reglas Existentes"
+
+#. module: econovo_stock_putaway_from_quant
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_move_line_putaway__sequence
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi__sequence
+msgid "Priority"
+msgstr "Prioridad"
+
+#. module: econovo_stock_putaway_from_quant
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_move_line_putaway__selected_count
+msgid "Selected Count"
+msgstr "Cantidad Seleccionada"
+
+#. module: econovo_stock_putaway_from_quant
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_move_line_putaway__has_existing_rules
+msgid "Has Existing Rules"
+msgstr "Tiene Reglas Existentes"
+
+#. module: econovo_stock_putaway_from_quant
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_move_line_putaway_line__location_out_id
+msgid "Store In"
+msgstr "Almacenar En"
+
+#. module: econovo_stock_putaway_from_quant
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_move_line_putaway_line__existing_rules_count
+msgid "Existing Rules"
+msgstr "Reglas Existentes"
 
 #. module: econovo_stock_putaway_from_quant
 #: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_move_line_putaway_view_form

@@ -6,15 +6,19 @@
         <field name="name">stock.move.line.putaway.line.view.list</field>
         <field name="model">stock.move.line.putaway.line</field>
         <field name="arch" type="xml">
-            <tree editable="bottom">
-                <field name="selected" string="Create Rule" widget="boolean_toggle"/>
-                <field name="product_id" string="Product"/>
+            <tree editable="bottom" create="0" delete="0">
+                <field name="selected" widget="boolean_toggle"/>
+                <field name="product_id"/>
                 <field name="product_uom_qty" string="Qty"/>
                 <field name="product_uom_id" string="UoM" optional="hide"/>
                 <field name="lot_id" string="Lot/Serial" optional="hide"/>
-                <field name="location_out_id" string="Store In"/>
-                <field name="has_existing_rule" string="Has Existing" widget="boolean"/>
-                <field name="existing_rules_count" string="Existing Rules"/>
+                <field name="location_out_id" 
+                       required="selected"
+                       options="{'no_create': True}"/>
+                <field name="has_existing_rule" column_invisible="1"/>
+                <field name="existing_rules_count" 
+                       string="Existing Rules"
+                       decoration-warning="existing_rules_count > 0"/>
             </tree>
         </field>
     </record>
@@ -26,56 +30,60 @@
         <field name="arch" type="xml">
             <form string="Create Putaway Rules">
                 <sheet>
+                    <field name="picking_id" invisible="1"/>
+                    <field name="company_id" invisible="1"/>
+                    <field name="line_count" invisible="1"/>
+                    <field name="has_existing_rules" invisible="1"/>
+
                     <div class="oe_title">
                         <h1>
                             <span>Create Putaway Rules for </span>
-                            <field name="selected_count" class="oe_inline"/>
+                            <field name="selected_count" readonly="1" class="oe_inline"/>
                             <span> products</span>
                         </h1>
                     </div>
 
                     <group>
-                        <group string="RECEPTION INFO">
-                            <field name="picking_name" string="Picking"/>
-                            <field name="partner_id" string="Partner"/>
+                        <group string="Reception Info">
+                            <field name="picking_name"/>
+                            <field name="partner_id"/>
                         </group>
-                        <group string="DESTINATION">
-                            <field name="location_in_id" string="When Product Arrives In"/>
+                        <group string="Destination">
+                            <field name="location_in_id" 
+                                   options="{'no_create': True}"
+                                   required="1"/>
                         </group>
                     </group>
 
                     <group>
-                        <group string="OPTIONS">
-                            <field name="sequence" string="Priority"/>
-                            <field name="skip_existing" string="Skip Products with Existing Rules"
-                                   help="Products that already have a putaway rule will be skipped."/>
-                            <field name="replace_existing" string="Replace Existing Rules"
-                                   help="Existing rules will be deactivated and replaced."/>
+                        <group string="Options">
+                            <field name="sequence"/>
+                            <field name="skip_existing" widget="boolean_toggle"/>
+                            <field name="replace_existing" widget="boolean_toggle"
+                                   invisible="skip_existing"/>
                         </group>
-                        <group string="SUMMARY">
-                            <div class="alert alert-warning" role="alert"
-                                 invisible="not has_existing_rules or skip_existing">
-                                <strong>Warning:</strong> Some products already have putaway rules.
-                                Choose to skip or replace existing rules.
-                            </div>
-                            <div class="alert alert-info" role="alert"
-                                 invisible="not has_existing_rules or not skip_existing">
-                                <strong>Note:</strong> Products with existing rules will be skipped.
-                            </div>
-                            <div class="alert alert-warning" role="alert"
-                                 invisible="not has_existing_rules or not replace_existing">
-                                <strong>Warning:</strong> Existing rules will be deactivated.
-                            </div>
+                        <group string="Summary">
+                            <field name="selected_count" string="Selected Products" readonly="1"/>
                         </group>
                     </group>
 
-                    <field name="line_ids" widget="one2many"/>
+                    <div class="alert alert-warning" role="alert"
+                         invisible="not has_existing_rules or skip_existing or replace_existing">
+                        <strong>Warning:</strong> Some products already have putaway rules.
+                        Choose to skip or replace existing rules.
+                    </div>
 
-                    <!-- Hidden fields -->
-                    <field name="picking_id" invisible="1"/>
-                    <field name="company_id" invisible="1"/>
-                    <field name="line_count" invisible="1"/>
-                    <field name="has_existing_rules" invisible="1"/>
+                    <div class="alert alert-info" role="alert"
+                         invisible="not skip_existing">
+                        <strong>Note:</strong> Products with existing rules will be skipped.
+                    </div>
+
+                    <div class="alert alert-warning" role="alert"
+                         invisible="not replace_existing">
+                        <strong>Warning:</strong> Existing rules will be deactivated.
+                    </div>
+
+                    <field name="line_ids" nolabel="1"/>
                 </sheet>
                 <footer>
                     <button name="action_create_rules" string="Create Rules"
