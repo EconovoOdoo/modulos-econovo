@@ -76,6 +76,21 @@ msgstr ""
 " la ubicación \"%(location_in)s\" hasta \"%(location_out)s\"."
 
 #. module: econovo_stock_putaway_from_quant
+#. odoo-python
+#: code:addons/econovo_stock_putaway_from_quant/models/stock_quant.py:0
+#, python-format
+msgid ""
+"Debe seleccionar productos cuya ubicación de stock actual "
+"pertenezca a una misma empresa.\n"
+"\n"
+"Empresas seleccionadas: %(companies)s"
+msgstr ""
+"Debe seleccionar productos cuya ubicación de stock actual "
+"pertenezca a una misma empresa.\n"
+"\n"
+"Empresas seleccionadas: %(companies)s"
+
+#. module: econovo_stock_putaway_from_quant
 #: model:res.groups,name:econovo_stock_putaway_from_quant.group_stock_putaway_from_quant
 msgid "Can Create Putaway Rules from Quant"
 msgstr "Puede Crear Reglas de Almacenamiento desde Quant"

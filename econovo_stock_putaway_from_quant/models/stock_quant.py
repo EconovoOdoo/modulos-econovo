@@ -1,4 +1,5 @@
-from odoo import api, models
+from odoo import _, api, models
+from odoo.exceptions import UserError
 
 
 class StockQuant(models.Model):
@@ -57,6 +58,16 @@ class StockQuant(models.Model):
         Following portal.wizard pattern: create wizard first, then open it.
         This ensures lines are created before the form is displayed.
         """
+        # Validate all quants belong to the same company
+        companies = self.mapped('company_id')
+        if len(companies) > 1:
+            raise UserError(_(
+                "Debe seleccionar productos cuya ubicación de stock actual "
+                "pertenezca a una misma empresa.\n\n"
+                "Empresas seleccionadas: %(companies)s",
+                companies=', '.join(companies.mapped('name'))
+            ))
+        
         # Find the warehouse for the first quant's location
         location_in_id = False
         first_quant = self[0] if self else False
