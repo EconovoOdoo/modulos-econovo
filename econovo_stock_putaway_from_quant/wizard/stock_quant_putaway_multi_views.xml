@@ -57,7 +57,7 @@
 
                     <field name="quant_ids" invisible="1"/>
                     <field name="line_ids" nolabel="1">
-                        <tree string="Products" editable="bottom">
+                        <tree string="Products" editable="bottom" create="0" delete="0">
                             <field name="selected" widget="boolean_toggle"/>
                             <field name="product_id"/>
                             <field name="current_location_id"/>

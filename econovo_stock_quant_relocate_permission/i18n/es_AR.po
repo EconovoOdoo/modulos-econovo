@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 17.0+e-20250501\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-12 00:00+0000\n"
-"PO-Revision-Date: 2025-12-12 00:00+0000\n"
+"POT-Creation-Date: 2025-12-13 10:29+0000\n"
+"PO-Revision-Date: 2025-12-13 10:29+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -16,16 +16,20 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: econovo_stock_quant_relocate_permission
-#: model:res.groups,name:econovo_stock_quant_relocate_permission.group_stock_quant_relocate
-msgid "Can Relocate Inventory Stock"
-msgstr "Puede reubicar existencias en inventario"
-
-#. module: econovo_stock_quant_relocate_permission
 #: model:res.groups,comment:econovo_stock_quant_relocate_permission.group_stock_quant_relocate
-msgid "Allows using the \"Relocate\" button in the Quants view (stock.quant) without being an Inventory Administrator."
-msgstr "Permite usar el botón \"Reubicar\" en la vista de Quants (stock.quant) sin necesidad de ser Administrador de Inventario."
+msgid ""
+"Permite usar el botón \"Reubicar\" en la vista de Quants (stock.quant) sin "
+"necesidad de ser Administrador de Inventario."
+msgstr ""
+"Permite usar el botón \"Reubicar\" en la vista de Quants (stock.quant) sin "
+"necesidad de ser Administrador de Inventario."
 
 #. module: econovo_stock_quant_relocate_permission
-#: model:ir.model.access,name:econovo_stock_quant_relocate_permission.access_stock_quant_relocate_relocate_user
-msgid "stock.quant.relocate relocate user"
-msgstr "stock.quant.relocate usuario reubicar"
+#: model_terms:ir.ui.view,arch_db:econovo_stock_quant_relocate_permission.view_stock_quant_tree_relocate_permission
+msgid "Relocate"
+msgstr "Reubicar"
+
+#. module: econovo_stock_quant_relocate_permission
+#: model:res.groups,name:econovo_stock_quant_relocate_permission.group_stock_quant_relocate
+msgid "Stock: Puede Reubicar"
+msgstr "Stock: Puede Reubicar"

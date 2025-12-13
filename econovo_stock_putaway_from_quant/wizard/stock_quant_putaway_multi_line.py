@@ -13,10 +13,12 @@ class StockQuantPutawayMultiLine(models.TransientModel):
         required=True,
         ondelete='cascade',
     )
+    # Note: quant_id is NOT required=True to avoid validation errors 
+    # during compute. Following stock.return.picking.line pattern where
+    # move_id is also not required.
     quant_id = fields.Many2one(
         comodel_name='stock.quant',
         string='Quant',
-        required=True,
         readonly=True,
     )
     product_id = fields.Many2one(
@@ -48,9 +50,6 @@ class StockQuantPutawayMultiLine(models.TransientModel):
         comodel_name='stock.location',
         string='Store To',
         domain="[('usage', '=', 'internal'), '|', ('company_id', '=', False), ('company_id', '=', company_id)]",
-        compute='_compute_location_out_id',
-        store=True,
-        readonly=False,
         help='The destination location for this product putaway rule.',
     )
     has_existing_rule = fields.Boolean(
@@ -66,14 +65,6 @@ class StockQuantPutawayMultiLine(models.TransientModel):
         default=True,
         help='If checked, a putaway rule will be created for this quant.',
     )
-
-    @api.depends('quant_id.location_id', 'wizard_id.use_current_location')
-    def _compute_location_out_id(self):
-        for line in self:
-            if line.wizard_id.use_current_location:
-                line.location_out_id = line.current_location_id
-            elif not line.location_out_id:
-                line.location_out_id = line.current_location_id
 
     @api.depends('product_id', 'company_id', 'wizard_id.location_in_id')
     def _compute_has_existing_rule(self):

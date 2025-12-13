@@ -4,17 +4,76 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 17.0\n"
+"Project-Id-Version: Odoo Server 17.0+e-20250501\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-01-01 00:00+0000\n"
-"PO-Revision-Date: 2024-01-01 00:00+0000\n"
+"POT-Creation-Date: 2025-12-13 10:28+0000\n"
+"PO-Revision-Date: 2025-12-13 10:28+0000\n"
 "Last-Translator: \n"
-"Language-Team: Spanish (Argentina)\n"
-"Language: es_AR\n"
+"Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: econovo_stock_putaway_from_quant
+#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_multi_view_form
+msgid "<span> products</span>"
+msgstr "<span> productos</span>"
+
+#. module: econovo_stock_putaway_from_quant
+#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_multi_view_form
+msgid "<span>Create Putaway Rules for </span>"
+msgstr "<span>Crear Reglas de Almacenamiento para </span>"
+
+#. module: econovo_stock_putaway_from_quant
+#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_single_view_form
+msgid ""
+"<strong>A rule already exists</strong> that points to the current location."
+msgstr "<strong>Ya existe una regla</strong> que apunta a la ubicación actual."
+
+#. module: econovo_stock_putaway_from_quant
+#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_single_view_form
+msgid "<strong>No existing putaway rules</strong> for this product."
+msgstr "<strong>No hay reglas de almacenamiento</strong> para este producto."
+
+#. module: econovo_stock_putaway_from_quant
+#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_multi_view_form
+msgid "<strong>Note:</strong> Products with existing rules will be skipped."
+msgstr "<strong>Nota:</strong> Los productos con reglas existentes serán omitidos."
+
+#. module: econovo_stock_putaway_from_quant
+#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_single_view_form
+msgid ""
+"<strong>Warning:</strong> Existing rules for this product \n"
+"                                in the selected source location will be deactivated."
+msgstr ""
+"<strong>Advertencia:</strong> Las reglas existentes para este producto\n"
+"                                en la ubicación origen seleccionada serán desactivadas."
+
+#. module: econovo_stock_putaway_from_quant
+#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_multi_view_form
+msgid "<strong>Warning:</strong> Existing rules will be deactivated."
+msgstr "<strong>Advertencia:</strong> Las reglas existentes serán desactivadas."
+
+#. module: econovo_stock_putaway_from_quant
+#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_multi_view_form
+msgid ""
+"<strong>Warning:</strong> Some products already have putaway rules.\n"
+"                        Choose to skip or replace existing rules."
+msgstr ""
+"<strong>Advertencia:</strong> Algunos productos ya tienen reglas de almacenamiento.\n"
+"                        Elija omitir o reemplazar las reglas existentes."
+
+#. module: econovo_stock_putaway_from_quant
+#. odoo-python
+#: code:addons/econovo_stock_putaway_from_quant/wizard/stock_quant_putaway_single.py:0
+#, python-format
+msgid ""
+"A putaway rule already exists for product \"%(product)s\" from location "
+"\"%(location_in)s\" to \"%(location_out)s\"."
+msgstr ""
+"Ya existe una regla de almacenamiento para el producto \"%(product)s\" desde"
+" la ubicación \"%(location_in)s\" hasta \"%(location_out)s\"."
 
 #. module: econovo_stock_putaway_from_quant
 #: model:res.groups,name:econovo_stock_putaway_from_quant.group_stock_putaway_from_quant
@@ -22,111 +81,126 @@ msgid "Can Create Putaway Rules from Quant"
 msgstr "Puede Crear Reglas de Almacenamiento desde Quant"
 
 #. module: econovo_stock_putaway_from_quant
-#: model:res.groups,comment:econovo_stock_putaway_from_quant.group_stock_putaway_from_quant
-msgid "Users with this permission can create putaway (storage) rules directly from the stock quant view."
-msgstr "Los usuarios con este permiso pueden crear reglas de almacenamiento directamente desde la vista de quants de stock."
+#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_multi_view_form
+#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_single_view_form
+msgid "Cancel"
+msgstr "Cancelar"
+
+#. module: econovo_stock_putaway_from_quant
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi__company_id
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi_line__company_id
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single__company_id
+msgid "Company"
+msgstr "Compañía"
+
+#. module: econovo_stock_putaway_from_quant
+#: model:ir.model.fields,help:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi__company_id
+msgid "Company from the first quant. Used for domain filtering."
+msgstr "Compañía del primer quant. Usado para filtrar dominios."
+
+#. module: econovo_stock_putaway_from_quant
+#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_single_view_form
+msgid "Create New Rule"
+msgstr "Crear Nueva Regla"
 
 #. module: econovo_stock_putaway_from_quant
 #: model:ir.actions.act_window,name:econovo_stock_putaway_from_quant.stock_quant_putaway_single_action
-#: model:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_single_view_form
+#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_single_view_form
+#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.view_stock_quant_tree_editable_putaway
+#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.view_stock_quant_tree_inventory_editable_putaway
+#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.view_stock_quant_tree_putaway
 msgid "Create Putaway Rule"
 msgstr "Crear Regla de Almacenamiento"
 
 #. module: econovo_stock_putaway_from_quant
 #: model:ir.actions.act_window,name:econovo_stock_putaway_from_quant.stock_quant_putaway_multi_action
+#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_multi_view_form
 msgid "Create Putaway Rules"
 msgstr "Crear Reglas de Almacenamiento"
 
 #. module: econovo_stock_putaway_from_quant
-#: model:ir.model,name:econovo_stock_putaway_from_quant.model_stock_quant
-msgid "Quants"
-msgstr "Quants"
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi_line__selected
+#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_single_view_form
+msgid "Create Rule"
+msgstr "Crear Regla"
 
 #. module: econovo_stock_putaway_from_quant
-#: model:ir.model,name:econovo_stock_putaway_from_quant.model_stock_quant_putaway_single
-msgid "Stock Quant Putaway Single Wizard"
-msgstr "Asistente de Regla de Almacenamiento Individual"
+#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_multi_view_form
+msgid "Create Rules"
+msgstr "Crear Reglas"
 
 #. module: econovo_stock_putaway_from_quant
-#: model:ir.model,name:econovo_stock_putaway_from_quant.model_stock_quant_putaway_single_line
-msgid "Stock Quant Putaway Single Line"
-msgstr "Línea de Regla de Almacenamiento Individual"
+#. odoo-python
+#: code:addons/econovo_stock_putaway_from_quant/wizard/stock_quant_putaway_multi.py:0
+#, python-format
+msgid "Created %(created)s putaway rule(s)."
+msgstr "Se crearon %(created)s regla(s) de almacenamiento."
 
 #. module: econovo_stock_putaway_from_quant
-#: model:ir.model,name:econovo_stock_putaway_from_quant.model_stock_quant_putaway_multi
-msgid "Stock Quant Putaway Multi Wizard"
-msgstr "Asistente de Reglas de Almacenamiento Múltiple"
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi__create_uid
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi_line__create_uid
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single__create_uid
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single_line__create_uid
+msgid "Created by"
+msgstr "Creado por"
 
 #. module: econovo_stock_putaway_from_quant
-#: model:ir.model,name:econovo_stock_putaway_from_quant.model_stock_quant_putaway_multi_line
-msgid "Stock Quant Putaway Multi Line"
-msgstr "Línea de Regla de Almacenamiento Múltiple"
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi__create_date
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi_line__create_date
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single__create_date
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single_line__create_date
+msgid "Created on"
+msgstr "Creado en"
 
 #. module: econovo_stock_putaway_from_quant
-#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single__product_id
-#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single_line__product_id
-#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi_line__product_id
-msgid "Product"
-msgstr "Producto"
-
-#. module: econovo_stock_putaway_from_quant
-#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single__current_location_id
 #: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi_line__current_location_id
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single__current_location_id
 msgid "Current Location"
 msgstr "Ubicación Actual"
 
 #. module: econovo_stock_putaway_from_quant
-#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single__quantity
-#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi_line__quantity
-msgid "Quantity"
-msgstr "Cantidad"
+#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_multi_view_form
+#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_single_view_form
+msgid "Destination"
+msgstr "Destino"
 
 #. module: econovo_stock_putaway_from_quant
-#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single__location_in_id
-#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi__location_in_id
-#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single_line__location_in_id
-msgid "When Product Arrives In"
-msgstr "Cuando el Producto Llega a"
-
-#. module: econovo_stock_putaway_from_quant
-#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single__location_out_id
-#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi_line__location_out_id
-#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single_line__location_out_id
-msgid "Store To"
-msgstr "Almacenar En"
-
-#. module: econovo_stock_putaway_from_quant
-#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single__sequence
-#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi__sequence
-#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single_line__sequence
-msgid "Priority"
-msgstr "Prioridad"
-
-#. module: econovo_stock_putaway_from_quant
-#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single__use_current_location
-#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi__use_current_location
-msgid "Use Current Location as Destination"
-msgstr "Usar Ubicación Actual como Destino"
-
-#. module: econovo_stock_putaway_from_quant
-#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single__replace_existing
-#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi__replace_existing
-msgid "Replace Existing Rules"
-msgstr "Reemplazar Reglas Existentes"
-
-#. module: econovo_stock_putaway_from_quant
-#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi__skip_existing
-msgid "Skip Products with Existing Rules"
-msgstr "Omitir Productos con Reglas Existentes"
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi__display_name
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi_line__display_name
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single__display_name
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single_line__display_name
+msgid "Display Name"
+msgstr "Nombre a Mostrar"
 
 #. module: econovo_stock_putaway_from_quant
 #: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single__existing_rule_ids
+#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_single_view_form
 msgid "Existing Putaway Rules"
 msgstr "Reglas de Almacenamiento Existentes"
 
 #. module: econovo_stock_putaway_from_quant
-#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single__has_existing_rules
+#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_multi_view_form
+#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_single_view_form
+msgid "Existing Rules"
+msgstr "Reglas Existentes"
+
+#. module: econovo_stock_putaway_from_quant
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi_line__existing_rule_count
+msgid "Existing Rules Count"
+msgstr "Cantidad de Reglas Existentes"
+
+#. module: econovo_stock_putaway_from_quant
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi__has_conflicts
+msgid "Has Conflicts"
+msgstr "Tiene Conflictos"
+
+#. module: econovo_stock_putaway_from_quant
 #: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi_line__has_existing_rule
+msgid "Has Existing Rule"
+msgstr "Tiene Reglas Existentes"
+
+#. module: econovo_stock_putaway_from_quant
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single__has_existing_rules
 msgid "Has Existing Rules"
 msgstr "Tiene Reglas Existentes"
 
@@ -136,34 +210,152 @@ msgid "Has Rule for Current Location"
 msgstr "Tiene Regla para Ubicación Actual"
 
 #. module: econovo_stock_putaway_from_quant
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi__id
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi_line__id
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single__id
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single_line__id
+msgid "ID"
+msgstr "ID"
+
+#. module: econovo_stock_putaway_from_quant
+#: model:ir.model.fields,help:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi_line__selected
+msgid "If checked, a putaway rule will be created for this quant."
+msgstr ""
+"Si está marcado, se creará una regla de almacenamiento para este quant."
+
+#. module: econovo_stock_putaway_from_quant
+#: model:ir.model.fields,help:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi__use_current_location
+msgid ""
+"If checked, each product will use its current quant location as the "
+"destination for the putaway rule."
+msgstr ""
+"Si está marcado, la ubicación actual del quant se usará como ubicación de "
+"destino para la nueva regla."
+
+#. module: econovo_stock_putaway_from_quant
+#: model:ir.model.fields,help:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi__replace_existing
+msgid ""
+"If checked, existing putaway rules for products in the selected source "
+"location will be deactivated."
+msgstr ""
+"Si está marcado, las reglas de almacenamiento existentes para este producto "
+"en la ubicación origen seleccionada serán desactivadas."
+
+#. module: econovo_stock_putaway_from_quant
+#: model:ir.model.fields,help:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single__replace_existing
+msgid ""
+"If checked, existing putaway rules for this product in the selected source "
+"location will be deactivated."
+msgstr ""
+"Si está marcado, las reglas de almacenamiento existentes para este producto "
+"en la ubicación origen seleccionada serán desactivadas."
+
+#. module: econovo_stock_putaway_from_quant
+#: model:ir.model.fields,help:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi__skip_existing
+msgid ""
+"If checked, products that already have a putaway rule for the source "
+"location will be skipped."
+msgstr ""
+"Si está marcado, los productos que ya tienen una regla de almacenamiento "
+"para la ubicación origen serán omitidos."
+
+#. module: econovo_stock_putaway_from_quant
+#: model:ir.model.fields,help:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single__use_current_location
+msgid ""
+"If checked, the current location of the quant will be used as the "
+"destination location for the new rule."
+msgstr ""
+"Si está marcado, la ubicación actual del quant se usará como ubicación de "
+"destino para la nueva regla."
+
+#. module: econovo_stock_putaway_from_quant
 #: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single_line__is_current_location
 msgid "Is Current Location"
 msgstr "Es Ubicación Actual"
 
 #. module: econovo_stock_putaway_from_quant
-#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi_line__selected
-msgid "Create Rule"
-msgstr "Crear Regla"
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi__write_uid
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi_line__write_uid
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single__write_uid
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single_line__write_uid
+msgid "Last Updated by"
+msgstr "Última Actualización por"
 
 #. module: econovo_stock_putaway_from_quant
-#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi_line__existing_rule_count
-msgid "Existing Rules Count"
-msgstr "Cantidad de Reglas Existentes"
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi__write_date
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi_line__write_date
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single__write_date
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single_line__write_date
+msgid "Last Updated on"
+msgstr "Última Actualización en"
 
 #. module: econovo_stock_putaway_from_quant
-#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi__quant_count
-msgid "Quant Count"
-msgstr "Cantidad de Quants"
+#: model:ir.model.fields,help:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi_line__company_id
+#: model:ir.model.fields,help:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single__company_id
+msgid "Let this field empty if this location is shared between companies"
+msgstr "Deje este campo vacío si esta ubicación es compartida entre compañías"
 
 #. module: econovo_stock_putaway_from_quant
-#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi__selected_count
-msgid "Selected Count"
-msgstr "Cantidad Seleccionada"
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi__line_ids
+msgid "Lines"
+msgstr "Líneas"
 
 #. module: econovo_stock_putaway_from_quant
-#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi__has_conflicts
-msgid "Has Conflicts"
-msgstr "Tiene Conflictos"
+#: model:ir.model.fields,help:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi__sequence
+#: model:ir.model.fields,help:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single__sequence
+msgid "Lower values have higher priority."
+msgstr "Valores más bajos tienen mayor prioridad."
+
+#. module: econovo_stock_putaway_from_quant
+#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_multi_view_form
+#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_single_view_form
+msgid "Options"
+msgstr "Opciones"
+
+#. module: econovo_stock_putaway_from_quant
+#. odoo-python
+#: code:addons/econovo_stock_putaway_from_quant/wizard/stock_quant_putaway_multi.py:0
+#, python-format
+msgid "Please select a destination location for product \"%(product)s\"."
+msgstr ""
+"Por favor seleccione una ubicación de destino para el producto "
+"\"%(product)s\"."
+
+#. module: econovo_stock_putaway_from_quant
+#. odoo-python
+#: code:addons/econovo_stock_putaway_from_quant/wizard/stock_quant_putaway_single.py:0
+#, python-format
+msgid "Please select a destination location."
+msgstr "Por favor seleccione una ubicación de destino."
+
+#. module: econovo_stock_putaway_from_quant
+#. odoo-python
+#: code:addons/econovo_stock_putaway_from_quant/wizard/stock_quant_putaway_multi.py:0
+#: code:addons/econovo_stock_putaway_from_quant/wizard/stock_quant_putaway_single.py:0
+#, python-format
+msgid "Please select a source location."
+msgstr "Por favor seleccione una ubicación de origen."
+
+#. module: econovo_stock_putaway_from_quant
+#. odoo-python
+#: code:addons/econovo_stock_putaway_from_quant/wizard/stock_quant_putaway_multi.py:0
+#, python-format
+msgid "Please select at least one product."
+msgstr "Por favor seleccione al menos un producto."
+
+#. module: econovo_stock_putaway_from_quant
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi__sequence
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single__sequence
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single_line__sequence
+msgid "Priority"
+msgstr "Prioridad"
+
+#. module: econovo_stock_putaway_from_quant
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi_line__product_id
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single__product_id
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single_line__product_id
+msgid "Product"
+msgstr "Producto"
 
 #. module: econovo_stock_putaway_from_quant
 #: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_single_view_form
@@ -171,83 +363,96 @@ msgid "Product Information"
 msgstr "Información del Producto"
 
 #. module: econovo_stock_putaway_from_quant
-#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_single_view_form
-msgid "Existing Rules"
-msgstr "Reglas Existentes"
-
-#. module: econovo_stock_putaway_from_quant
-#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_single_view_form
-msgid "No existing putaway rules"
-msgstr "No existen reglas de almacenamiento"
-
-#. module: econovo_stock_putaway_from_quant
-#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_single_view_form
-msgid "A rule already exists"
-msgstr "Ya existe una regla"
-
-#. module: econovo_stock_putaway_from_quant
-#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_single_view_form
-msgid "that points to the current location."
-msgstr "que apunta a la ubicación actual."
-
-#. module: econovo_stock_putaway_from_quant
-#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_single_view_form
-msgid "Create New Rule"
-msgstr "Crear Nueva Regla"
-
-#. module: econovo_stock_putaway_from_quant
-#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_single_view_form
 #: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_multi_view_form
+msgid "Products"
+msgstr "Productos"
+
+#. module: econovo_stock_putaway_from_quant
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single_line__putaway_rule_id
+msgid "Putaway Rule"
+msgstr "Regla de Almacenamiento"
+
+#. module: econovo_stock_putaway_from_quant
+#. odoo-python
+#: code:addons/econovo_stock_putaway_from_quant/wizard/stock_quant_putaway_multi.py:0
+#, python-format
+msgid "Putaway Rules Created"
+msgstr "Reglas de Almacenamiento Creadas"
+
+#. module: econovo_stock_putaway_from_quant
+#. odoo-python
+#: code:addons/econovo_stock_putaway_from_quant/wizard/stock_quant_putaway_single.py:0
+#, python-format
+msgid "Putaway Rules for %s"
+msgstr "Reglas de Almacenamiento para %s"
+
+#. module: econovo_stock_putaway_from_quant
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi_line__quant_id
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single__quant_id
+msgid "Quant"
+msgstr "Quant"
+
+#. module: econovo_stock_putaway_from_quant
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi__quant_count
+msgid "Quant Count"
+msgstr "Cantidad de Quants"
+
+#. module: econovo_stock_putaway_from_quant
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi_line__quantity
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single__quantity
+msgid "Quantity"
+msgstr "Cantidad"
+
+#. module: econovo_stock_putaway_from_quant
+#: model:ir.model.fields,help:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi_line__quantity
+#: model:ir.model.fields,help:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single__quantity
+msgid ""
+"Quantity of products in this quant, in the default unit of measure of the "
+"product"
+msgstr ""
+"Cantidad de productos en este quant, en la unidad de medida predeterminada "
+"del producto"
+
+#. module: econovo_stock_putaway_from_quant
+#: model:ir.model,name:econovo_stock_putaway_from_quant.model_stock_quant
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi__quant_ids
+msgid "Quants"
+msgstr "Quants"
+
+#. module: econovo_stock_putaway_from_quant
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi__replace_existing
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single__replace_existing
+msgid "Replace Existing Rules"
+msgstr "Reemplazar Reglas Existentes"
+
+#. module: econovo_stock_putaway_from_quant
+#. odoo-python
+#: code:addons/econovo_stock_putaway_from_quant/wizard/stock_quant_putaway_multi.py:0
+#, python-format
+msgid "Replaced %(replaced)s existing rule(s)."
+msgstr "Se reemplazaron %(replaced)s regla(s) existente(s)."
+
+#. module: econovo_stock_putaway_from_quant
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi__selected_count
+msgid "Selected Count"
+msgstr "Cantidad Seleccionada"
+
+#. module: econovo_stock_putaway_from_quant
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi__skip_existing
+msgid "Skip Products with Existing Rules"
+msgstr "Omitir Productos con Reglas Existentes"
+
+#. module: econovo_stock_putaway_from_quant
+#. odoo-python
+#: code:addons/econovo_stock_putaway_from_quant/wizard/stock_quant_putaway_multi.py:0
+#, python-format
+msgid "Skipped %(skipped)s (already exist)."
+msgstr "Se omitieron %(skipped)s (ya existen)."
+
+#. module: econovo_stock_putaway_from_quant
+#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_single_view_form
 msgid "Source"
 msgstr "Origen"
-
-#. module: econovo_stock_putaway_from_quant
-#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_single_view_form
-#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_multi_view_form
-msgid "Destination"
-msgstr "Destino"
-
-#. module: econovo_stock_putaway_from_quant
-#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_single_view_form
-#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_multi_view_form
-msgid "Options"
-msgstr "Opciones"
-
-#. module: econovo_stock_putaway_from_quant
-#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_single_view_form
-msgid "Existing rules for this product in the selected source location will be deactivated."
-msgstr "Las reglas existentes para este producto en la ubicación origen seleccionada serán desactivadas."
-
-#. module: econovo_stock_putaway_from_quant
-#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_single_view_form
-msgid "View All Rules"
-msgstr "Ver Todas las Reglas"
-
-#. module: econovo_stock_putaway_from_quant
-#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_single_view_form
-#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_multi_view_form
-msgid "Cancel"
-msgstr "Cancelar"
-
-#. module: econovo_stock_putaway_from_quant
-#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_single_view_form
-msgid "Delete"
-msgstr "Eliminar"
-
-#. module: econovo_stock_putaway_from_quant
-#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_single_view_form
-msgid "Are you sure you want to delete this putaway rule?"
-msgstr "¿Está seguro que desea eliminar esta regla de almacenamiento?"
-
-#. module: econovo_stock_putaway_from_quant
-#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_multi_view_form
-msgid "Create Putaway Rules for"
-msgstr "Crear Reglas de Almacenamiento para"
-
-#. module: econovo_stock_putaway_from_quant
-#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_multi_view_form
-msgid "products"
-msgstr "productos"
 
 #. module: econovo_stock_putaway_from_quant
 #: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_multi_view_form
@@ -255,118 +460,42 @@ msgid "Source Location"
 msgstr "Ubicación Origen"
 
 #. module: econovo_stock_putaway_from_quant
+#: model:ir.model,name:econovo_stock_putaway_from_quant.model_stock_quant_putaway_multi_line
+msgid "Stock Quant Putaway Multi Line"
+msgstr "Línea de Regla de Almacenamiento Múltiple"
+
+#. module: econovo_stock_putaway_from_quant
+#: model:ir.model,name:econovo_stock_putaway_from_quant.model_stock_quant_putaway_multi
+msgid "Stock Quant Putaway Multi Wizard"
+msgstr "Asistente de Reglas de Almacenamiento Múltiple"
+
+#. module: econovo_stock_putaway_from_quant
+#: model:ir.model,name:econovo_stock_putaway_from_quant.model_stock_quant_putaway_single_line
+msgid "Stock Quant Putaway Single Line"
+msgstr "Línea de Regla de Almacenamiento Individual"
+
+#. module: econovo_stock_putaway_from_quant
+#: model:ir.model,name:econovo_stock_putaway_from_quant.model_stock_quant_putaway_single
+msgid "Stock Quant Putaway Single Wizard"
+msgstr "Asistente de Regla de Almacenamiento Individual"
+
+#. module: econovo_stock_putaway_from_quant
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi_line__location_out_id
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single__location_out_id
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single_line__location_out_id
+msgid "Store To"
+msgstr "Almacenar En"
+
+#. module: econovo_stock_putaway_from_quant
 #: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_multi_view_form
 msgid "Summary"
 msgstr "Resumen"
 
 #. module: econovo_stock_putaway_from_quant
-#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_multi_view_form
-msgid "Some products already have putaway rules. Choose to skip or replace existing rules."
-msgstr "Algunos productos ya tienen reglas de almacenamiento. Elija omitir o reemplazar las reglas existentes."
-
-#. module: econovo_stock_putaway_from_quant
-#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_multi_view_form
-msgid "Products with existing rules will be skipped."
-msgstr "Los productos con reglas existentes serán omitidos."
-
-#. module: econovo_stock_putaway_from_quant
-#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_multi_view_form
-msgid "Existing rules will be deactivated."
-msgstr "Las reglas existentes serán desactivadas."
-
-#. module: econovo_stock_putaway_from_quant
-#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_multi_view_form
-msgid "Products"
-msgstr "Productos"
-
-#. module: econovo_stock_putaway_from_quant
-#: code:addons/econovo_stock_putaway_from_quant/wizard/stock_quant_putaway_single.py:0
-#, python-format
-msgid "Please select a destination location."
-msgstr "Por favor seleccione una ubicación de destino."
-
-#. module: econovo_stock_putaway_from_quant
-#: code:addons/econovo_stock_putaway_from_quant/wizard/stock_quant_putaway_single.py:0
-#: code:addons/econovo_stock_putaway_from_quant/wizard/stock_quant_putaway_multi.py:0
-#, python-format
-msgid "Please select a source location."
-msgstr "Por favor seleccione una ubicación de origen."
-
-#. module: econovo_stock_putaway_from_quant
-#: code:addons/econovo_stock_putaway_from_quant/wizard/stock_quant_putaway_single.py:0
-#, python-format
-msgid "A putaway rule already exists for product \"%(product)s\" from location \"%(location_in)s\" to \"%(location_out)s\"."
-msgstr "Ya existe una regla de almacenamiento para el producto \"%(product)s\" desde la ubicación \"%(location_in)s\" hasta \"%(location_out)s\"."
-
-#. module: econovo_stock_putaway_from_quant
-#: code:addons/econovo_stock_putaway_from_quant/wizard/stock_quant_putaway_single.py:0
-#, python-format
-msgid "Putaway Rules for %s"
-msgstr "Reglas de Almacenamiento para %s"
-
-#. module: econovo_stock_putaway_from_quant
-#: code:addons/econovo_stock_putaway_from_quant/wizard/stock_quant_putaway_multi.py:0
-#, python-format
-msgid "Please select at least one product."
-msgstr "Por favor seleccione al menos un producto."
-
-#. module: econovo_stock_putaway_from_quant
-#: code:addons/econovo_stock_putaway_from_quant/wizard/stock_quant_putaway_multi.py:0
-#, python-format
-msgid "Please select a destination location for product \"%(product)s\"."
-msgstr "Por favor seleccione una ubicación de destino para el producto \"%(product)s\"."
-
-#. module: econovo_stock_putaway_from_quant
-#: code:addons/econovo_stock_putaway_from_quant/wizard/stock_quant_putaway_multi.py:0
-#, python-format
-msgid "Created %(created)s putaway rule(s)."
-msgstr "Se crearon %(created)s regla(s) de almacenamiento."
-
-#. module: econovo_stock_putaway_from_quant
-#: code:addons/econovo_stock_putaway_from_quant/wizard/stock_quant_putaway_multi.py:0
-#, python-format
-msgid "Skipped %(skipped)s (already exist)."
-msgstr "Se omitieron %(skipped)s (ya existen)."
-
-#. module: econovo_stock_putaway_from_quant
-#: code:addons/econovo_stock_putaway_from_quant/wizard/stock_quant_putaway_multi.py:0
-#, python-format
-msgid "Replaced %(replaced)s existing rule(s)."
-msgstr "Se reemplazaron %(replaced)s regla(s) existente(s)."
-
-#. module: econovo_stock_putaway_from_quant
-#: code:addons/econovo_stock_putaway_from_quant/wizard/stock_quant_putaway_multi.py:0
-#, python-format
-msgid "Putaway Rules Created"
-msgstr "Reglas de Almacenamiento Creadas"
-
-#. module: econovo_stock_putaway_from_quant
-#: model:ir.model.fields,help:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single__use_current_location
-#: model:ir.model.fields,help:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi__use_current_location
-msgid "If checked, the current location of the quant will be used as the destination location for the new rule."
-msgstr "Si está marcado, la ubicación actual del quant se usará como ubicación de destino para la nueva regla."
-
-#. module: econovo_stock_putaway_from_quant
-#: model:ir.model.fields,help:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single__replace_existing
-#: model:ir.model.fields,help:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi__replace_existing
-msgid "If checked, existing putaway rules for this product in the selected source location will be deactivated."
-msgstr "Si está marcado, las reglas de almacenamiento existentes para este producto en la ubicación origen seleccionada serán desactivadas."
-
-#. module: econovo_stock_putaway_from_quant
-#: model:ir.model.fields,help:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi__skip_existing
-msgid "If checked, products that already have a putaway rule for the source location will be skipped."
-msgstr "Si está marcado, los productos que ya tienen una regla de almacenamiento para la ubicación origen serán omitidos."
-
-#. module: econovo_stock_putaway_from_quant
-#: model:ir.model.fields,help:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single__sequence
-#: model:ir.model.fields,help:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi__sequence
-msgid "Lower values have higher priority."
-msgstr "Valores más bajos tienen mayor prioridad."
-
-#. module: econovo_stock_putaway_from_quant
-#: model:ir.model.fields,help:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single__location_in_id
-msgid "The parent location where the product arrives. Usually the main stock location of the warehouse."
-msgstr "La ubicación padre donde llega el producto. Usualmente la ubicación principal de stock del almacén."
+#: model:ir.model.fields,help:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi_line__location_out_id
+msgid "The destination location for this product putaway rule."
+msgstr ""
+"La ubicación de destino para la regla de almacenamiento de este producto."
 
 #. module: econovo_stock_putaway_from_quant
 #: model:ir.model.fields,help:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single__location_out_id
@@ -374,16 +503,57 @@ msgid "The destination location where the product should be stored."
 msgstr "La ubicación de destino donde el producto debe ser almacenado."
 
 #. module: econovo_stock_putaway_from_quant
+#: model:ir.model.fields,help:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi__location_in_id
+msgid ""
+"The parent location where products arrive. Usually the main stock location "
+"of the warehouse."
+msgstr ""
+"La ubicación padre donde llegan los productos. Usualmente la ubicación "
+"principal de stock del almacén."
+
+#. module: econovo_stock_putaway_from_quant
+#: model:ir.model.fields,help:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single__location_in_id
+msgid ""
+"The parent location where the product arrives. Usually the main stock "
+"location of the warehouse."
+msgstr ""
+"La ubicación padre donde llega el producto. Usualmente la ubicación "
+"principal de stock del almacén."
+
+#. module: econovo_stock_putaway_from_quant
 #: model:ir.model.fields,help:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single_line__is_current_location
 msgid "True if this rule points to the same location as the quant"
 msgstr "Verdadero si esta regla apunta a la misma ubicación que el quant"
 
 #. module: econovo_stock_putaway_from_quant
-#: model:ir.model.fields,help:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi_line__location_out_id
-msgid "The destination location for this product putaway rule."
-msgstr "La ubicación de destino para la regla de almacenamiento de este producto."
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi__use_current_location
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single__use_current_location
+msgid "Use Current Location as Destination"
+msgstr "Usar Ubicación Actual como Destino"
 
 #. module: econovo_stock_putaway_from_quant
-#: model:ir.model.fields,help:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi_line__selected
-msgid "If checked, a putaway rule will be created for this quant."
-msgstr "Si está marcado, se creará una regla de almacenamiento para este quant."
+#: model:res.groups,comment:econovo_stock_putaway_from_quant.group_stock_putaway_from_quant
+msgid ""
+"Users with this permission can create putaway (storage) rules directly from "
+"the stock quant view."
+msgstr ""
+"Los usuarios con este permiso pueden crear reglas de almacenamiento "
+"directamente desde la vista de quants de stock."
+
+#. module: econovo_stock_putaway_from_quant
+#: model_terms:ir.ui.view,arch_db:econovo_stock_putaway_from_quant.stock_quant_putaway_single_view_form
+msgid "View All Rules"
+msgstr "Ver Todas las Reglas"
+
+#. module: econovo_stock_putaway_from_quant
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi__location_in_id
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single__location_in_id
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single_line__location_in_id
+msgid "When Product Arrives In"
+msgstr "Cuando el Producto Llega a"
+
+#. module: econovo_stock_putaway_from_quant
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_multi_line__wizard_id
+#: model:ir.model.fields,field_description:econovo_stock_putaway_from_quant.field_stock_quant_putaway_single_line__wizard_id
+msgid "Wizard"
+msgstr "Asistente"

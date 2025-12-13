@@ -6,18 +6,25 @@ class StockQuantPutawayMulti(models.TransientModel):
     _name = 'stock.quant.putaway.multi'
     _description = 'Stock Quant Putaway Multi Wizard'
 
+    # No default_get or create override needed.
+    # Lines are created by stock.quant._action_open_putaway_multi()
+    # following the portal.wizard pattern: create wizard with data first,
+    # then open it with res_id.
+
+    # Store quant_ids for reference (not used for compute anymore)
     quant_ids = fields.Many2many(
         comodel_name='stock.quant',
+        relation='stock_quant_putaway_multi_quant_rel',
+        column1='wizard_id',
+        column2='quant_id',
         string='Quants',
         readonly=True,
     )
+    # Simple One2many - NOT computed, lines created in create() method
     line_ids = fields.One2many(
         comodel_name='stock.quant.putaway.multi.line',
         inverse_name='wizard_id',
         string='Lines',
-        compute='_compute_line_ids',
-        store=True,
-        readonly=False,
     )
     quant_count = fields.Integer(
         string='Quant Count',
@@ -27,12 +34,11 @@ class StockQuantPutawayMulti(models.TransientModel):
         string='Selected Count',
         compute='_compute_selected_count',
     )
-    
+
     # Common configuration
     company_id = fields.Many2one(
         comodel_name='res.company',
         string='Company',
-        compute='_compute_company_id',
         help='Company from the first quant. Used for domain filtering.',
     )
     location_in_id = fields.Many2one(
@@ -70,39 +76,17 @@ class StockQuantPutawayMulti(models.TransientModel):
         compute='_compute_has_conflicts',
     )
 
-    @api.depends('quant_ids')
-    def _compute_company_id(self):
-        """Get company from first quant for domain filtering."""
-        for wizard in self:
-            if wizard.quant_ids:
-                wizard.company_id = wizard.quant_ids[0].company_id
-            else:
-                wizard.company_id = self.env.company
-
-    @api.depends('quant_ids')
+    @api.depends('line_ids')
     def _compute_quant_count(self):
         for wizard in self:
-            wizard.quant_count = len(wizard.quant_ids)
+            wizard.quant_count = len(wizard.line_ids)
 
     @api.depends('line_ids.selected')
     def _compute_selected_count(self):
         for wizard in self:
             wizard.selected_count = len(wizard.line_ids.filtered('selected'))
 
-    @api.depends('quant_ids')
-    def _compute_line_ids(self):
-        for wizard in self:
-            lines_vals = []
-            for quant in wizard.quant_ids:
-                lines_vals.append({
-                    'wizard_id': wizard.id,
-                    'quant_id': quant.id,
-                    'location_out_id': quant.location_id.id,
-                    'selected': True,
-                })
-            wizard.line_ids = [(5, 0, 0)] + [(0, 0, vals) for vals in lines_vals]
-
-    @api.depends('line_ids.has_existing_rule')
+    @api.depends('line_ids.has_existing_rule', 'line_ids.selected')
     def _compute_has_conflicts(self):
         for wizard in self:
             wizard.has_conflicts = any(
@@ -122,7 +106,8 @@ class StockQuantPutawayMulti(models.TransientModel):
         if not self.location_in_id:
             raise UserError(_('Please select a source location.'))
 
-        selected_lines = self.line_ids.filtered('selected')
+        # Filter selected lines that have valid quant data
+        selected_lines = self.line_ids.filtered(lambda l: l.selected and l.quant_id)
         if not selected_lines:
             raise UserError(_('Please select at least one product.'))
 
@@ -175,7 +160,7 @@ class StockQuantPutawayMulti(models.TransientModel):
             })
             created_count += 1
 
-        # Show result message
+        # Show result message and close modal
         message = _('Created %(created)s putaway rule(s).', created=created_count)
         if skipped_count:
             message += ' ' + _('Skipped %(skipped)s (already exist).', skipped=skipped_count)
@@ -190,6 +175,7 @@ class StockQuantPutawayMulti(models.TransientModel):
                 'message': message,
                 'type': 'success',
                 'sticky': False,
+                'next': {'type': 'ir.actions.act_window_close'},
             }
         }
 

@@ -47,10 +47,3 @@ class StockQuantPutawaySingleLine(models.TransientModel):
             line.is_current_location = (
                 line.location_out_id == line.wizard_id.quant_id.location_id
             )
-
-    def action_delete_rule(self):
-        """Delete the associated putaway rule."""
-        self.ensure_one()
-        if self.putaway_rule_id:
-            self.putaway_rule_id.unlink()
-        return {'type': 'ir.actions.act_window_close'}

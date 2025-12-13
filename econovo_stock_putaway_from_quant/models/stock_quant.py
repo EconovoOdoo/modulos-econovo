@@ -52,7 +52,11 @@ class StockQuant(models.Model):
         }
 
     def _action_open_putaway_multi(self):
-        """Open multi quant putaway wizard for bulk creation."""
+        """Open multi quant putaway wizard for bulk creation.
+        
+        Following portal.wizard pattern: create wizard first, then open it.
+        This ensures lines are created before the form is displayed.
+        """
         # Find the warehouse for the first quant's location
         location_in_id = False
         first_quant = self[0] if self else False
@@ -71,16 +75,27 @@ class StockQuant(models.Model):
                 if warehouse:
                     location_in_id = warehouse.lot_stock_id.id
         
-        # Use context to pass defaults - standard Odoo pattern
+        # Create wizard first with all line data (portal.wizard pattern)
+        line_vals = []
+        for quant in self:
+            line_vals.append((0, 0, {
+                'quant_id': quant.id,
+                'location_out_id': quant.location_id.id,
+                'selected': True,
+            }))
+        
+        wizard = self.env['stock.quant.putaway.multi'].create({
+            'company_id': first_quant.company_id.id if first_quant else False,
+            'location_in_id': location_in_id,
+            'line_ids': line_vals,
+        })
+        
+        # Open the created wizard
         return {
             'name': 'Create Putaway Rules',
             'type': 'ir.actions.act_window',
             'res_model': 'stock.quant.putaway.multi',
+            'res_id': wizard.id,
             'view_mode': 'form',
             'target': 'new',
-            'context': {
-                **self.env.context,
-                'default_quant_ids': [(6, 0, self.ids)],
-                'default_location_in_id': location_in_id,
-            },
         }
