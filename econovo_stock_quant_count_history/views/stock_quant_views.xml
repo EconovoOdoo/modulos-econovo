@@ -13,7 +13,7 @@
             </xpath>
             <!-- Add bulk action button in header -->
             <xpath expr="//header/button[@name='action_reset']" position="after">
-                <button name="action_save_count_to_history"
+                <button name="action_open_save_count_wizard"
                         type="object"
                         string="Save Counts to History"
                         groups="stock.group_stock_manager"/>
@@ -29,7 +29,7 @@
             </xpath>
             <!-- Add button to save count to history before Apply button -->
             <xpath expr="//button[@name='action_apply_inventory']" position="before">
-                <button name="action_save_count_to_history"
+                <button name="action_open_save_count_wizard"
                         string="Save count to history"
                         type="object"
                         class="btn-link"

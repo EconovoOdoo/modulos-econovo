@@ -302,3 +302,84 @@ msgstr "Los registros del historial de conteos se crean cuando aplica ajustes de
 #: model_terms:ir.ui.view,arch_db:econovo_stock_quant_count_history.stock_quant_count_history_view_form
 msgid "Count Information"
 msgstr "Informacion del Conteo"
+
+#. module: econovo_stock_quant_count_history
+#: model:ir.model.fields.selection,name:econovo_stock_quant_count_history.selection__stock_quant_count_history__state__saved
+msgid "Saved Manually"
+msgstr "Guardado Manualmente"
+
+#. module: econovo_stock_quant_count_history
+#: model:ir.model.fields.selection,name:econovo_stock_quant_count_history.selection__stock_quant_count_history__state__applied
+msgid "Saved on Apply"
+msgstr "Guardado al Aplicar"
+
+#. module: econovo_stock_quant_count_history
+#: model:ir.model,name:econovo_stock_quant_count_history.model_stock_quant_save_count_wizard
+msgid "Save Count to History Wizard"
+msgstr "Asistente de Guardar Conteo en Historial"
+
+#. module: econovo_stock_quant_count_history
+#: model:ir.actions.act_window,name:econovo_stock_quant_count_history.action_stock_quant_save_count_wizard
+msgid "Save Count to History"
+msgstr "Guardar Conteo en Historial"
+
+#. module: econovo_stock_quant_count_history
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history.field_stock_quant_save_count_wizard__quant_ids
+msgid "Quants to Save"
+msgstr "Quants a Guardar"
+
+#. module: econovo_stock_quant_count_history
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history.field_stock_quant_save_count_wizard__notes
+msgid "Notes"
+msgstr "Notas"
+
+#. module: econovo_stock_quant_count_history
+#: model:ir.model.fields,help:econovo_stock_quant_count_history.field_stock_quant_save_count_wizard__notes
+msgid "Optional notes or reason for this count"
+msgstr "Notas opcionales o motivo de este conteo"
+
+#. module: econovo_stock_quant_count_history
+#: model_terms:ir.ui.view,arch_db:econovo_stock_quant_count_history.stock_quant_save_count_wizard_form
+msgid "Save"
+msgstr "Guardar"
+
+#. module: econovo_stock_quant_count_history
+#: model_terms:ir.ui.view,arch_db:econovo_stock_quant_count_history.stock_quant_save_count_wizard_form
+msgid "Cancel"
+msgstr "Cancelar"
+
+#. module: econovo_stock_quant_count_history
+#: code:addons/econovo_stock_quant_count_history/wizard/stock_quant_save_count_wizard.py:0
+#, python-format
+msgid "No Counts to Save"
+msgstr "No Hay Conteos para Guardar"
+
+#. module: econovo_stock_quant_count_history
+#: code:addons/econovo_stock_quant_count_history/wizard/stock_quant_save_count_wizard.py:0
+#, python-format
+msgid "Please select quants that have a counted quantity set."
+msgstr "Por favor seleccione quants que tengan una cantidad contada establecida."
+
+#. module: econovo_stock_quant_count_history
+#: code:addons/econovo_stock_quant_count_history/wizard/stock_quant_save_count_wizard.py:0
+#, python-format
+msgid "Counts Saved"
+msgstr "Conteos Guardados"
+
+#. module: econovo_stock_quant_count_history
+#: code:addons/econovo_stock_quant_count_history/wizard/stock_quant_save_count_wizard.py:0
+#, python-format
+msgid "%d count(s) have been saved to history."
+msgstr "%d conteo(s) han sido guardados en el historial."
+
+#. module: econovo_stock_quant_count_history
+#: code:addons/econovo_stock_quant_count_history/models/stock_quant.py:0
+#, python-format
+msgid "Count saved manually"
+msgstr "Conteo guardado manualmente"
+
+#. module: econovo_stock_quant_count_history
+#: code:addons/econovo_stock_quant_count_history/models/stock_quant.py:0
+#, python-format
+msgid "Inventory adjustment applied"
+msgstr "Ajuste de inventario aplicado"

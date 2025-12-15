@@ -27,6 +27,7 @@ The module uses non-invasive code patterns for easy migration to Odoo 18+.
         'security/econovo_stock_quant_count_history_security.xml',
         'security/ir.model.access.csv',
         'data/ir_sequence_data.xml',
+        'wizard/stock_quant_save_count_wizard_views.xml',
         'views/stock_quant_count_history_views.xml',
         'views/stock_quant_views.xml',
     ],

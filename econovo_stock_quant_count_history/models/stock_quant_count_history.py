@@ -124,13 +124,15 @@ class StockQuantCountHistory(models.Model):
     # State
     state = fields.Selection(
         selection=[
-            ('saved', 'Saved'),
-            ('applied', 'Applied'),
+            ('saved', 'Saved Manually'),
+            ('applied', 'Saved on Apply'),
         ],
         string='State',
         required=True,
         default='saved',
         index=True,
+        help='Saved Manually: Count saved without applying adjustment. '
+             'Saved on Apply: Count saved when applying inventory adjustment.',
     )
     was_applied = fields.Boolean(
         string='Adjustment Applied',

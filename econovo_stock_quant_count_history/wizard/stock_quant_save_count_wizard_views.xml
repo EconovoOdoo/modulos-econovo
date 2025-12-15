@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Wizard Form View -->
+    <record id="stock_quant_save_count_wizard_view_form" model="ir.ui.view">
+        <field name="name">stock.quant.save.count.wizard.view.form</field>
+        <field name="model">stock.quant.save.count.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Save Count to History">
+                <group>
+                    <field name="quant_ids" widget="many2many_tags" readonly="1"/>
+                    <field name="notes" placeholder="Enter notes or reason for this count (optional)..."/>
+                </group>
+                <footer>
+                    <button name="action_save_count_to_history" 
+                            string="Save to History" 
+                            type="object" 
+                            class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Wizard Action -->
+    <record id="stock_quant_save_count_wizard_action" model="ir.actions.act_window">
+        <field name="name">Save Count to History</field>
+        <field name="res_model">stock.quant.save.count.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="stock.model_stock_quant"/>
+        <field name="binding_view_types">list</field>
+    </record>
+
+</odoo>
