@@ -100,12 +100,19 @@ class StockQuantCountHistory(models.Model):
     )
 
     # Audit information
+    counted_by_id = fields.Many2one(
+        'res.users',
+        string='Counted By',
+        index=True,
+        help='User who physically counted the inventory (from quant assignment)',
+    )
     user_id = fields.Many2one(
         'res.users',
-        string='User',
+        string='Registered By',
         required=True,
         index=True,
         default=lambda self: self.env.user,
+        help='User who saved or applied the count in the system',
     )
     count_datetime = fields.Datetime(
         string='Count Date/Time',

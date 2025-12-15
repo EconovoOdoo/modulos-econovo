@@ -17,7 +17,8 @@
                 <field name="quantity_counted" string="Counted"/>
                 <field name="difference" decoration-danger="difference &lt; 0" decoration-success="difference &gt; 0"/>
                 <field name="product_uom_id" string="UoM" optional="hide"/>
-                <field name="user_id"/>
+                <field name="counted_by_id" string="Counted By" optional="show"/>
+                <field name="user_id" string="Registered By"/>
                 <field name="state" widget="badge" decoration-info="state == 'saved'" decoration-success="state == 'applied'"/>
                 <field name="was_applied" optional="hide"/>
                 <field name="company_id" optional="hide" column_invisible="not context.get('show_company')"/>
@@ -40,7 +41,8 @@
                     <group>
                         <group string="Count Information">
                             <field name="count_datetime"/>
-                            <field name="user_id"/>
+                            <field name="counted_by_id"/>
+                            <field name="user_id" string="Registered By"/>
                             <field name="state" widget="badge"/>
                             <field name="was_applied"/>
                         </group>

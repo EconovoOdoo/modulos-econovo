@@ -1,37 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- Inherit stock.quant tree view to add count history button -->
+    <!-- Inherit stock.quant tree view (Inventory Adjustments) to add count history buttons -->
     <record id="stock_quant_view_tree_inherit" model="ir.ui.view">
         <field name="name">stock.quant.view.tree.inherit.econovo_stock_quant_count_history</field>
         <field name="model">stock.quant</field>
         <field name="inherit_id" ref="stock.view_stock_quant_tree_inventory_editable"/>
         <field name="arch" type="xml">
+            <!-- Add count_history_count field (invisible, needed for button visibility) -->
+            <xpath expr="//field[@name='inventory_quantity_set']" position="after">
+                <field name="count_history_count" column_invisible="True"/>
+            </xpath>
+            <!-- Add bulk action button in header -->
+            <xpath expr="//header/button[@name='action_reset']" position="after">
+                <button name="action_save_count_to_history"
+                        type="object"
+                        string="Save Counts to History"
+                        groups="stock.group_stock_manager"/>
+            </xpath>
+            <!-- Add button to view count history next to existing History button -->
+            <xpath expr="//button[@name='action_inventory_history']" position="after">
+                <button name="action_view_count_history"
+                        type="object"
+                        class="btn btn-link text-primary"
+                        icon="fa-list-ol"
+                        string="Count History"
+                        invisible="count_history_count == 0"/>
+            </xpath>
+            <!-- Add button to save count to history before Apply button -->
             <xpath expr="//button[@name='action_apply_inventory']" position="before">
                 <button name="action_save_count_to_history"
                         string="Save count to history"
                         type="object"
-                        class="btn-secondary"
+                        class="btn-link"
+                        icon="fa-bookmark"
                         invisible="not inventory_quantity_set"/>
-            </xpath>
-        </field>
-    </record>
-
-    <!-- Inherit stock.quant form view to add history stat button and save button -->
-    <record id="stock_quant_view_form_inherit" model="ir.ui.view">
-        <field name="name">stock.quant.view.form.inherit.econovo_stock_quant_count_history</field>
-        <field name="model">stock.quant</field>
-        <field name="inherit_id" ref="stock.view_stock_quant_form"/>
-        <field name="arch" type="xml">
-            <!-- Add stat button for count history -->
-            <xpath expr="//div[hasclass('oe_button_box')]" position="inside">
-                <button name="action_view_count_history"
-                        type="object"
-                        class="oe_stat_button"
-                        icon="fa-history"
-                        invisible="count_history_count == 0">
-                    <field name="count_history_count" widget="statinfo" string="Counts"/>
-                </button>
             </xpath>
         </field>
     </record>

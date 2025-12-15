@@ -41,6 +41,7 @@ class StockQuant(models.Model):
             'owner_id': self.owner_id.id if self.owner_id else False,
             'quantity_on_hand': self.quantity,
             'quantity_counted': self.inventory_quantity,
+            'counted_by_id': self.user_id.id if self.user_id else False,
             'user_id': self.env.user.id,
             'count_datetime': fields.Datetime.now(),
             'state': state,

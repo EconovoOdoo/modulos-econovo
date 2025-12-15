@@ -141,9 +141,24 @@ msgid "Unit of Measure"
 msgstr "Unidad de Medida"
 
 #. module: econovo_stock_quant_count_history
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history.field_stock_quant_count_history__counted_by_id
+msgid "Counted By"
+msgstr "Contado Por"
+
+#. module: econovo_stock_quant_count_history
+#: model:ir.model.fields,help:econovo_stock_quant_count_history.field_stock_quant_count_history__counted_by_id
+msgid "User who physically counted the inventory (from quant assignment)"
+msgstr "Usuario que realizo el conteo fisico del inventario (de la asignacion del quant)"
+
+#. module: econovo_stock_quant_count_history
 #: model:ir.model.fields,field_description:econovo_stock_quant_count_history.field_stock_quant_count_history__user_id
-msgid "User"
-msgstr "Usuario"
+msgid "Registered By"
+msgstr "Registrado Por"
+
+#. module: econovo_stock_quant_count_history
+#: model:ir.model.fields,help:econovo_stock_quant_count_history.field_stock_quant_count_history__user_id
+msgid "User who saved or applied the count in the system"
+msgstr "Usuario que guardo o aplico el conteo en el sistema"
 
 #. module: econovo_stock_quant_count_history
 #: model:ir.model.fields,field_description:econovo_stock_quant_count_history.field_stock_quant_count_history__warehouse_id
