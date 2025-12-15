@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Tree View for Count History -->
+    <record id="stock_quant_count_history_view_tree" model="ir.ui.view">
+        <field name="name">stock.quant.count.history.view.tree</field>
+        <field name="model">stock.quant.count.history</field>
+        <field name="arch" type="xml">
+            <tree string="Count History" create="false" edit="false" default_order="count_datetime desc">
+                <field name="name"/>
+                <field name="count_datetime"/>
+                <field name="product_id"/>
+                <field name="location_id"/>
+                <field name="warehouse_id" optional="show"/>
+                <field name="lot_id" optional="show"/>
+                <field name="quantity_on_hand" string="On Hand"/>
+                <field name="quantity_counted" string="Counted"/>
+                <field name="difference" decoration-danger="difference &lt; 0" decoration-success="difference &gt; 0"/>
+                <field name="product_uom_id" string="UoM" optional="hide"/>
+                <field name="user_id"/>
+                <field name="state" widget="badge" decoration-info="state == 'saved'" decoration-success="state == 'applied'"/>
+                <field name="was_applied" optional="hide"/>
+                <field name="company_id" optional="hide" column_invisible="not context.get('show_company')"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View for Count History -->
+    <record id="stock_quant_count_history_view_form" model="ir.ui.view">
+        <field name="name">stock.quant.count.history.view.form</field>
+        <field name="model">stock.quant.count.history</field>
+        <field name="arch" type="xml">
+            <form string="Count History" create="false" edit="false">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Count Information">
+                            <field name="count_datetime"/>
+                            <field name="user_id"/>
+                            <field name="state" widget="badge"/>
+                            <field name="was_applied"/>
+                        </group>
+                        <group string="Location">
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="location_id"/>
+                            <field name="warehouse_id"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Product Information">
+                            <field name="product_id"/>
+                            <field name="lot_id"/>
+                            <field name="package_id"/>
+                            <field name="owner_id"/>
+                        </group>
+                        <group string="Quantities">
+                            <field name="quantity_on_hand"/>
+                            <field name="quantity_counted"/>
+                            <field name="difference"/>
+                            <field name="product_uom_id"/>
+                        </group>
+                    </group>
+                    <group string="Notes" invisible="not notes">
+                        <field name="notes" nolabel="1"/>
+                    </group>
+                    <group string="Reference">
+                        <field name="quant_id" readonly="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View for Count History -->
+    <record id="stock_quant_count_history_view_search" model="ir.ui.view">
+        <field name="name">stock.quant.count.history.view.search</field>
+        <field name="model">stock.quant.count.history</field>
+        <field name="arch" type="xml">
+            <search string="Search Count History">
+                <field name="name"/>
+                <field name="product_id"/>
+                <field name="location_id"/>
+                <field name="warehouse_id"/>
+                <field name="lot_id"/>
+                <field name="user_id"/>
+                <separator/>
+                <filter name="filter_saved" string="Saved" domain="[('state', '=', 'saved')]"/>
+                <filter name="filter_applied" string="Applied" domain="[('state', '=', 'applied')]"/>
+                <separator/>
+                <filter name="filter_with_difference" string="With Difference" domain="[('difference', '!=', 0)]"/>
+                <filter name="filter_no_difference" string="No Difference" domain="[('difference', '=', 0)]"/>
+                <separator/>
+                <filter name="filter_was_applied" string="Adjustment Applied" domain="[('was_applied', '=', True)]"/>
+                <separator/>
+                <filter name="filter_today" string="Today" domain="[('count_datetime', '&gt;=', (context_today()).strftime('%Y-%m-%d'))]"/>
+                <filter name="filter_last_7_days" string="Last 7 Days" domain="[('count_datetime', '&gt;=', (context_today() - datetime.timedelta(days=7)).strftime('%Y-%m-%d'))]"/>
+                <filter name="filter_this_month" string="This Month" domain="[('count_datetime', '&gt;=', (context_today()).strftime('%Y-%m-01'))]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter name="groupby_product" string="Product" context="{'group_by': 'product_id'}"/>
+                    <filter name="groupby_location" string="Location" context="{'group_by': 'location_id'}"/>
+                    <filter name="groupby_warehouse" string="Warehouse" context="{'group_by': 'warehouse_id'}"/>
+                    <filter name="groupby_user" string="User" context="{'group_by': 'user_id'}"/>
+                    <filter name="groupby_state" string="State" context="{'group_by': 'state'}"/>
+                    <filter name="groupby_date" string="Count Date" context="{'group_by': 'count_datetime:day'}"/>
+                    <filter name="groupby_month" string="Month" context="{'group_by': 'count_datetime:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="stock_quant_count_history_action" model="ir.actions.act_window">
+        <field name="name">Count History</field>
+        <field name="res_model">stock.quant.count.history</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="stock_quant_count_history_view_search"/>
+        <field name="context">{'search_default_filter_this_month': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No count history found
+            </p>
+            <p>
+                Count history records are created when you apply inventory adjustments
+                or manually save counted quantities using the "Save count to history" button.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu: Inventory > Reporting > Count History -->
+    <menuitem
+        id="stock_quant_count_history_menu"
+        name="Count History"
+        parent="stock.menu_warehouse_report"
+        action="stock_quant_count_history_action"
+        sequence="99"/>
+
+</odoo>

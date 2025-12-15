@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Multi-company rule: users see only their company's records -->
+    <record id="stock_quant_count_history_rule_company" model="ir.rule">
+        <field name="name">Stock Quant Count History: Company rule</field>
+        <field name="model_id" ref="model_stock_quant_count_history"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+</odoo>
