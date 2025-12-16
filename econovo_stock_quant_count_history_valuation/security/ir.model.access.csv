@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_stock_quant_count_history_valuation_user,stock.quant.count.history.valuation.user,model_stock_quant_count_history_valuation,stock.group_stock_user,1,0,0,0
+access_stock_quant_count_history_valuation_manager,stock.quant.count.history.valuation.manager,model_stock_quant_count_history_valuation,stock.group_stock_manager,1,1,1,1

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ===================================================================== -->
+    <!-- Extend Inventory Adjustments Tree View to show valuation preview      -->
+    <!-- ===================================================================== -->
+    <record id="stock_quant_view_tree_valuation_preview" model="ir.ui.view">
+        <field name="name">stock.quant.view.tree.valuation.preview</field>
+        <field name="model">stock.quant</field>
+        <field name="inherit_id" ref="stock.view_stock_quant_tree_inventory_editable"/>
+        <field name="priority">100</field>
+        <field name="arch" type="xml">
+            <!-- Add currency fields (invisible) -->
+            <xpath expr="//tree" position="inside">
+                <field name="currency_id" column_invisible="True"/>
+                <field name="currency_usd_id" column_invisible="True"/>
+                <field name="is_inventory_loss" column_invisible="True"/>
+                <field name="has_product_cost" column_invisible="True"/>
+            </xpath>
+            
+            <!-- Add unit cost columns after product -->
+            <xpath expr="//field[@name='product_id']" position="after">
+                <field name="preview_unit_cost" 
+                       string="Unit Cost"
+                       optional="show"
+                       readonly="1"/>
+                <field name="preview_unit_cost_usd" 
+                       string="Cost USD"
+                       optional="show"
+                       readonly="1"/>
+            </xpath>
+            
+            <!-- Add difference value columns after inventory_diff_quantity -->
+            <xpath expr="//field[@name='inventory_diff_quantity']" position="after">
+                <field name="preview_difference_value" 
+                       string="Diff. Value"
+                       decoration-danger="preview_difference_value &lt; 0"
+                       decoration-success="preview_difference_value &gt; 0"
+                       optional="show"
+                       readonly="1"/>
+                <field name="preview_difference_value_usd" 
+                       string="Diff. USD"
+                       decoration-danger="preview_difference_value_usd &lt; 0"
+                       decoration-success="preview_difference_value_usd &gt; 0"
+                       optional="show"
+                       readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ===================================================================== -->
+    <!-- Extend Inventory Adjustments Search View with valuation filters       -->
+    <!-- ===================================================================== -->
+    <record id="stock_quant_view_search_valuation" model="ir.ui.view">
+        <field name="name">stock.quant.view.search.valuation</field>
+        <field name="model">stock.quant</field>
+        <field name="inherit_id" ref="stock.quant_search_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <!-- Valuation Filters -->
+                <separator/>
+                <filter string="With Loss" name="filter_with_loss"
+                        domain="[('is_inventory_loss', '=', True)]"/>
+                <filter string="With Gain" name="filter_with_gain"
+                        domain="[('inventory_diff_quantity', '&gt;', 0)]"/>
+                <separator/>
+                <filter string="Products Without Cost" name="filter_no_cost"
+                        domain="[('has_product_cost', '=', False)]"/>
+                <filter string="Products With Cost" name="filter_with_cost"
+                        domain="[('has_product_cost', '=', True)]"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

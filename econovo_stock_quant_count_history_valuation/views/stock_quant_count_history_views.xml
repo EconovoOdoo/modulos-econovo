@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ===================================================================== -->
+    <!-- Count History List View Extension - Add Valuation Columns             -->
+    <!-- ===================================================================== -->
+    <record id="stock_quant_count_history_view_tree_valuation" model="ir.ui.view">
+        <field name="name">stock.quant.count.history.view.tree.valuation</field>
+        <field name="model">stock.quant.count.history</field>
+        <field name="inherit_id" ref="econovo_stock_quant_count_history.stock_quant_count_history_view_tree"/>
+        <field name="arch" type="xml">
+            <!-- Add currency fields (invisible) -->
+            <xpath expr="//tree" position="inside">
+                <field name="currency_id" column_invisible="True"/>
+                <field name="currency_usd_id" column_invisible="True"/>
+            </xpath>
+            
+            <!-- Add valuation columns after state -->
+            <xpath expr="//field[@name='state']" position="after">
+                <field name="final_difference_value" 
+                       string="Diff. Value"
+                       decoration-danger="is_loss"
+                       decoration-success="not is_loss and final_difference_value != 0"
+                       optional="show"/>
+                <field name="final_difference_value_usd" 
+                       string="Diff. Value (USD)"
+                       decoration-danger="is_loss"
+                       decoration-success="not is_loss and final_difference_value_usd != 0"
+                       optional="show"/>
+                <field name="is_loss" column_invisible="True"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ===================================================================== -->
+    <!-- Count History Form View Extension - Add Valuation Tab                 -->
+    <!-- ===================================================================== -->
+    <record id="stock_quant_count_history_view_form_valuation" model="ir.ui.view">
+        <field name="name">stock.quant.count.history.view.form.valuation</field>
+        <field name="model">stock.quant.count.history</field>
+        <field name="inherit_id" ref="econovo_stock_quant_count_history.stock_quant_count_history_view_form"/>
+        <field name="arch" type="xml">
+            <!-- Add Valuation tab after the main info -->
+            <xpath expr="//sheet" position="inside">
+                <notebook>
+                    <page string="Valuation" name="valuation" 
+                          invisible="not valuation_id">
+                        <field name="valuation_id" nolabel="1">
+                            <tree create="false" delete="false" editable="bottom">
+                                <field name="currency_id" column_invisible="True"/>
+                                <field name="currency_usd_id" column_invisible="True"/>
+                            </tree>
+                            <form>
+                                <sheet>
+                                    <field name="currency_id" invisible="True"/>
+                                    <field name="currency_usd_id" invisible="True"/>
+                                    
+                                    <!-- Cost at Count Moment -->
+                                    <group string="Cost at Count Moment">
+                                        <group>
+                                            <field name="snapshot_cost_method" readonly="1"/>
+                                            <field name="snapshot_unit_cost"/>
+                                            <field name="snapshot_unit_cost_usd"/>
+                                        </group>
+                                        <group>
+                                            <field name="exchange_rate"/>
+                                        </group>
+                                    </group>
+                                    
+                                    <!-- Value Summary -->
+                                    <group string="Snapshot Values">
+                                        <group>
+                                            <field name="snapshot_on_hand_value"/>
+                                            <field name="snapshot_counted_value"/>
+                                            <field name="snapshot_difference_value"
+                                                   decoration-danger="snapshot_difference_value &lt; 0"
+                                                   decoration-success="snapshot_difference_value &gt; 0"/>
+                                        </group>
+                                        <group>
+                                            <field name="snapshot_on_hand_value_usd"/>
+                                            <field name="snapshot_counted_value_usd"/>
+                                            <field name="snapshot_difference_value_usd"
+                                                   decoration-danger="snapshot_difference_value_usd &lt; 0"
+                                                   decoration-success="snapshot_difference_value_usd &gt; 0"/>
+                                        </group>
+                                    </group>
+                                    
+                                    <!-- SVL Section (only when available) -->
+                                    <group string="Valuation Layers" invisible="not has_svl">
+                                        <field name="valuation_layer_ids" 
+                                               nolabel="1" 
+                                               readonly="1"
+                                               colspan="2">
+                                            <tree>
+                                                <field name="create_date"/>
+                                                <field name="quantity"/>
+                                                <field name="unit_cost"/>
+                                                <field name="value"/>
+                                            </tree>
+                                        </field>
+                                        <group>
+                                            <field name="svl_total_value"/>
+                                        </group>
+                                        <group>
+                                            <field name="svl_total_value_usd"/>
+                                        </group>
+                                    </group>
+                                    
+                                    <!-- Final Impact -->
+                                    <group string="Final Impact">
+                                        <group>
+                                            <field name="value_source"/>
+                                            <field name="has_svl" invisible="True"/>
+                                            <field name="final_difference_value"
+                                                   decoration-danger="is_loss"
+                                                   decoration-success="not is_loss and final_difference_value != 0"/>
+                                            <field name="final_difference_value_usd"
+                                                   decoration-danger="is_loss"
+                                                   decoration-success="not is_loss and final_difference_value_usd != 0"/>
+                                        </group>
+                                        <group>
+                                            <field name="is_loss"/>
+                                        </group>
+                                    </group>
+                                </sheet>
+                            </form>
+                        </field>
+                    </page>
+                </notebook>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ===================================================================== -->
+    <!-- Count History Search View Extension - Add Valuation Filters           -->
+    <!-- ===================================================================== -->
+    <record id="stock_quant_count_history_view_search_valuation" model="ir.ui.view">
+        <field name="name">stock.quant.count.history.view.search.valuation</field>
+        <field name="model">stock.quant.count.history</field>
+        <field name="inherit_id" ref="econovo_stock_quant_count_history.stock_quant_count_history_view_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <separator/>
+                <filter string="With Loss" name="with_loss" 
+                        domain="[('is_loss', '=', True)]"/>
+                <filter string="With Gain" name="with_gain" 
+                        domain="[('is_loss', '=', False), ('final_difference_value', '!=', 0)]"/>
+                <separator/>
+                <filter string="Value Source: SVL" name="source_svl" 
+                        domain="[('value_source', '=', 'svl')]"/>
+                <filter string="Value Source: Snapshot" name="source_snapshot" 
+                        domain="[('value_source', '=', 'snapshot')]"/>
+            </xpath>
+            <xpath expr="//group" position="inside">
+                <filter string="Value Source" name="group_value_source" 
+                        context="{'group_by': 'value_source'}"/>
+                <filter string="Is Loss" name="group_is_loss" 
+                        context="{'group_by': 'is_loss'}"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

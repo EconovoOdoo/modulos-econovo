@@ -1,0 +1,387 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* econovo_stock_quant_count_history_valuation
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 17.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-12-16 00:00+0000\n"
+"PO-Revision-Date: 2024-12-16 00:00+0000\n"
+"Last-Translator: Jose D. Leonett\n"
+"Language-Team: Spanish (Argentina)\n"
+"Language: es_AR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history_valuation.field_stock_quant_count_history__currency_id
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history_valuation.field_stock_quant_count_history_valuation__currency_id
+msgid "Company Currency"
+msgstr "Moneda de la Compañía"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history_valuation.field_stock_quant_count_history_valuation__company_id
+msgid "Company"
+msgstr "Compañía"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model,name:econovo_stock_quant_count_history_valuation.model_stock_quant_count_history_valuation
+msgid "Count History Valuation"
+msgstr "Valorización del Historial de Conteo"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history_valuation.field_stock_valuation_layer__count_history_id
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history_valuation.field_stock_quant_count_history_valuation__history_id
+msgid "Count History"
+msgstr "Historial de Conteo"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history_valuation.field_stock_quant_count_history_valuation__snapshot_counted_value
+msgid "Counted Value"
+msgstr "Valor Contado"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history_valuation.field_stock_quant_count_history_valuation__snapshot_counted_value_usd
+msgid "Counted Value (USD)"
+msgstr "Valor Contado (USD)"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history_valuation.field_stock_quant_count_history_valuation__snapshot_cost_method
+msgid "Cost Method"
+msgstr "Método de Costeo"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history_valuation.field_stock_quant_count_history__currency_usd_id
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history_valuation.field_stock_quant_count_history_valuation__currency_usd_id
+msgid "USD Currency"
+msgstr "Moneda USD"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history_valuation.field_stock_quant_count_history__final_difference_value
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history_valuation.field_stock_quant_count_history_valuation__final_difference_value
+msgid "Difference Value"
+msgstr "Valor Diferencia"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history_valuation.field_stock_quant_count_history__final_difference_value_usd
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history_valuation.field_stock_quant_count_history_valuation__final_difference_value_usd
+msgid "Difference Value (USD)"
+msgstr "Valor Diferencia (USD)"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history_valuation.field_stock_quant_count_history_valuation__exchange_rate
+msgid "Exchange Rate"
+msgstr "Tipo de Cambio"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,help:econovo_stock_quant_count_history_valuation.field_stock_quant_count_history_valuation__exchange_rate
+msgid "Exchange rate at the moment of count (Company Currency / USD)"
+msgstr "Tipo de cambio al momento del conteo (Moneda Compañía / USD)"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history_valuation.field_stock_quant_count_history_valuation__has_svl
+msgid "Has Valuation Layers"
+msgstr "Tiene Capas de Valorización"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history_valuation.field_stock_quant_count_history__is_loss
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history_valuation.field_stock_quant_count_history_valuation__is_loss
+msgid "Is Loss"
+msgstr "Es Pérdida"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,help:econovo_stock_quant_count_history_valuation.field_stock_quant_count_history_valuation__is_loss
+msgid "True if this count resulted in a loss"
+msgstr "Verdadero si este conteo resultó en una pérdida"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history_valuation.field_stock_quant_count_history_valuation__snapshot_on_hand_value
+msgid "On Hand Value"
+msgstr "Valor en Mano"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history_valuation.field_stock_quant_count_history_valuation__snapshot_on_hand_value_usd
+msgid "On Hand Value (USD)"
+msgstr "Valor en Mano (USD)"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,help:econovo_stock_quant_count_history_valuation.field_stock_quant_count_history_valuation__snapshot_on_hand_value
+msgid "Value of on-hand quantity at count moment"
+msgstr "Valor de la cantidad en mano al momento del conteo"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,help:econovo_stock_quant_count_history_valuation.field_stock_quant_count_history_valuation__snapshot_counted_value
+msgid "Value of counted quantity at count moment"
+msgstr "Valor de la cantidad contada al momento del conteo"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history_valuation.field_stock_quant_count_history_valuation__product_id
+msgid "Product"
+msgstr "Producto"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history_valuation.field_stock_quant_count_history_valuation__snapshot_difference_value
+msgid "Snapshot Difference Value"
+msgstr "Valor Diferencia Snapshot"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history_valuation.field_stock_quant_count_history_valuation__snapshot_difference_value_usd
+msgid "Snapshot Difference Value (USD)"
+msgstr "Valor Diferencia Snapshot (USD)"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,help:econovo_stock_quant_count_history_valuation.field_stock_quant_count_history_valuation__snapshot_difference_value
+msgid "Estimated value difference based on snapshot cost"
+msgstr "Diferencia de valor estimada basada en el costo snapshot"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history_valuation.field_stock_quant_count_history_valuation__svl_total_value
+msgid "SVL Total Value"
+msgstr "Valor Total SVL"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history_valuation.field_stock_quant_count_history_valuation__svl_total_value_usd
+msgid "SVL Total Value (USD)"
+msgstr "Valor Total SVL (USD)"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,help:econovo_stock_quant_count_history_valuation.field_stock_quant_count_history_valuation__svl_total_value
+msgid "Actual value from Stock Valuation Layers"
+msgstr "Valor real desde las Capas de Valorización de Stock"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history_valuation.field_stock_quant_count_history_valuation__snapshot_unit_cost
+msgid "Unit Cost"
+msgstr "Costo Unitario"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history_valuation.field_stock_quant_count_history_valuation__snapshot_unit_cost_usd
+msgid "Unit Cost (USD)"
+msgstr "Costo Unitario (USD)"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,help:econovo_stock_quant_count_history_valuation.field_stock_quant_count_history_valuation__snapshot_unit_cost
+msgid "Product cost at the moment of count"
+msgstr "Costo del producto al momento del conteo"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history_valuation.field_stock_quant_count_history__valuation_id
+msgid "Valuation Details"
+msgstr "Detalles de Valorización"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history_valuation.field_stock_quant_count_history_valuation__valuation_layer_ids
+msgid "Valuation Layers"
+msgstr "Capas de Valorización"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,help:econovo_stock_quant_count_history_valuation.field_stock_quant_count_history_valuation__valuation_layer_ids
+msgid "Valuation layers created when count was applied"
+msgstr "Capas de valorización creadas cuando el conteo fue aplicado"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history_valuation.field_stock_quant_count_history__value_source
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history_valuation.field_stock_quant_count_history_valuation__value_source
+msgid "Value Source"
+msgstr "Origen del Valor"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,help:econovo_stock_quant_count_history_valuation.field_stock_quant_count_history_valuation__value_source
+msgid "Source of the final valuation"
+msgstr "Origen de la valorización final"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields.selection,name:econovo_stock_quant_count_history_valuation.selection__stock_quant_count_history_valuation__value_source__snapshot
+#: model:ir.model.fields.selection,name:econovo_stock_quant_count_history_valuation.selection__stock_quant_count_history__value_source__snapshot
+msgid "Estimated (Snapshot)"
+msgstr "Estimado (Snapshot)"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields.selection,name:econovo_stock_quant_count_history_valuation.selection__stock_quant_count_history_valuation__value_source__svl
+#: model:ir.model.fields.selection,name:econovo_stock_quant_count_history_valuation.selection__stock_quant_count_history__value_source__svl
+msgid "Actual (from Valuation Layer)"
+msgstr "Real (desde Capa de Valorización)"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields.selection,name:econovo_stock_quant_count_history_valuation.selection__stock_quant_count_history_valuation__value_source__none
+#: model:ir.model.fields.selection,name:econovo_stock_quant_count_history_valuation.selection__stock_quant_count_history__value_source__none
+msgid "No Difference"
+msgstr "Sin Diferencia"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields.selection,name:econovo_stock_quant_count_history_valuation.selection__stock_quant_count_history_valuation__snapshot_cost_method__standard
+msgid "Standard Price"
+msgstr "Precio Estándar"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields.selection,name:econovo_stock_quant_count_history_valuation.selection__stock_quant_count_history_valuation__snapshot_cost_method__fifo
+msgid "FIFO"
+msgstr "FIFO"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields.selection,name:econovo_stock_quant_count_history_valuation.selection__stock_quant_count_history_valuation__snapshot_cost_method__average
+msgid "Average Cost"
+msgstr "Costo Promedio"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,help:econovo_stock_quant_count_history_valuation.field_stock_quant_count_history_valuation__snapshot_cost_method
+msgid "Product cost method at the moment of count"
+msgstr "Método de costeo del producto al momento del conteo"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,help:econovo_stock_quant_count_history_valuation.field_stock_quant_count_history_valuation__final_difference_value
+msgid "Final difference value (from SVL if available, else snapshot)"
+msgstr "Valor de diferencia final (desde SVL si está disponible, sino snapshot)"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,help:econovo_stock_quant_count_history_valuation.field_stock_valuation_layer__count_history_id
+msgid "Count history that generated this valuation layer"
+msgstr "Historial de conteo que generó esta capa de valorización"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model_terms:ir.ui.view,arch_db:econovo_stock_quant_count_history_valuation.stock_quant_count_history_view_search_valuation
+msgid "With Loss"
+msgstr "Con Pérdida"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model_terms:ir.ui.view,arch_db:econovo_stock_quant_count_history_valuation.stock_quant_count_history_view_search_valuation
+msgid "With Gain"
+msgstr "Con Ganancia"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model_terms:ir.ui.view,arch_db:econovo_stock_quant_count_history_valuation.stock_quant_count_history_view_search_valuation
+msgid "Value Source: SVL"
+msgstr "Origen Valor: SVL"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model_terms:ir.ui.view,arch_db:econovo_stock_quant_count_history_valuation.stock_quant_count_history_view_search_valuation
+msgid "Value Source: Snapshot"
+msgstr "Origen Valor: Snapshot"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model_terms:ir.ui.view,arch_db:econovo_stock_quant_count_history_valuation.stock_quant_count_history_view_form_valuation
+msgid "Cost at Count Moment"
+msgstr "Costo al Momento del Conteo"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model_terms:ir.ui.view,arch_db:econovo_stock_quant_count_history_valuation.stock_quant_count_history_view_form_valuation
+msgid "Snapshot Values"
+msgstr "Valores Snapshot"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model_terms:ir.ui.view,arch_db:econovo_stock_quant_count_history_valuation.stock_quant_count_history_view_form_valuation
+msgid "Final Impact"
+msgstr "Impacto Final"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.access,name:econovo_stock_quant_count_history_valuation.access_stock_quant_count_history_valuation_user
+msgid "stock.quant.count.history.valuation.user"
+msgstr "stock.quant.count.history.valuation.user"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.access,name:econovo_stock_quant_count_history_valuation.access_stock_quant_count_history_valuation_manager
+msgid "stock.quant.count.history.valuation.manager"
+msgstr "stock.quant.count.history.valuation.manager"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.rule,name:econovo_stock_quant_count_history_valuation.stock_quant_count_history_valuation_rule_company
+msgid "Count History Valuation: Multi-Company"
+msgstr "Valorización Historial Conteo: Multi-Compañía"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history_valuation.field_stock_quant__preview_unit_cost
+msgid "Unit Cost"
+msgstr "Costo Unitario"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history_valuation.field_stock_quant__preview_unit_cost_usd
+msgid "Unit Cost (USD)"
+msgstr "Costo Unitario (USD)"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history_valuation.field_stock_quant__preview_difference_value
+msgid "Diff. Value"
+msgstr "Valor Dif."
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history_valuation.field_stock_quant__preview_difference_value_usd
+msgid "Diff. Value (USD)"
+msgstr "Valor Dif. (USD)"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,help:econovo_stock_quant_count_history_valuation.field_stock_quant__preview_unit_cost
+msgid "Current product cost in company currency"
+msgstr "Costo actual del producto en moneda de la compañía"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,help:econovo_stock_quant_count_history_valuation.field_stock_quant__preview_unit_cost_usd
+msgid "Current product cost in USD"
+msgstr "Costo actual del producto en USD"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,help:econovo_stock_quant_count_history_valuation.field_stock_quant__preview_difference_value
+msgid "Value of the difference if adjustment is applied"
+msgstr "Valor de la diferencia si se aplica el ajuste"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,help:econovo_stock_quant_count_history_valuation.field_stock_quant__preview_difference_value_usd
+msgid "Value of the difference in USD if adjustment is applied"
+msgstr "Valor de la diferencia en USD si se aplica el ajuste"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history_valuation.field_stock_quant__has_inventory_difference
+msgid "Has Difference"
+msgstr "Tiene Diferencia"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history_valuation.field_stock_quant__currency_id
+msgid "Currency"
+msgstr "Moneda"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history_valuation.field_stock_quant__currency_usd_id
+msgid "USD"
+msgstr "USD"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history_valuation.field_stock_quant__is_inventory_loss
+msgid "Is Loss"
+msgstr "Es Pérdida"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,help:econovo_stock_quant_count_history_valuation.field_stock_quant__is_inventory_loss
+msgid "True if the difference is negative (loss)"
+msgstr "Verdadero si la diferencia es negativa (pérdida)"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history_valuation.field_stock_quant__has_product_cost
+msgid "Has Cost"
+msgstr "Tiene Costo"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields,help:econovo_stock_quant_count_history_valuation.field_stock_quant__has_product_cost
+msgid "True if the product has a defined cost"
+msgstr "Verdadero si el producto tiene un costo definido"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model_terms:ir.ui.view,arch_db:econovo_stock_quant_count_history_valuation.stock_quant_view_search_valuation
+msgid "With Loss"
+msgstr "Con Pérdida"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model_terms:ir.ui.view,arch_db:econovo_stock_quant_count_history_valuation.stock_quant_view_search_valuation
+msgid "With Gain"
+msgstr "Con Ganancia"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model_terms:ir.ui.view,arch_db:econovo_stock_quant_count_history_valuation.stock_quant_view_search_valuation
+msgid "Products Without Cost"
+msgstr "Productos Sin Costo"
+
+#. module: econovo_stock_quant_count_history_valuation
+#: model_terms:ir.ui.view,arch_db:econovo_stock_quant_count_history_valuation.stock_quant_view_search_valuation
+msgid "Products With Cost"
+msgstr "Productos Con Costo"
