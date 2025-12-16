@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <!-- Inherits the main EDITABLE Quants view (Inventory → Reports → Locations) -->
-    <!-- This view is only seen by Inventory Administrators -->
+    <!-- Modifies existing Relocate button to also be visible for users with special permission -->
     <record id="view_stock_quant_tree_editable_relocate_permission" model="ir.ui.view">
         <field name="name">stock.quant.tree.editable.relocate.permission</field>
         <field name="model">stock.quant</field>
@@ -15,24 +15,27 @@
     </record>
 
     <!-- Inherits the READ-ONLY Quants view (the one normal users see) -->
-    <!-- ADDS the Relocate button which doesn't exist in this view by default -->
+    <!-- ADDS the Relocate button inside a new header element (same approach as putaway module) -->
     <record id="view_stock_quant_tree_relocate_permission" model="ir.ui.view">
         <field name="name">stock.quant.tree.relocate.permission</field>
         <field name="model">stock.quant</field>
         <field name="inherit_id" ref="stock.view_stock_quant_tree"/>
         <field name="arch" type="xml">
-            <xpath expr="//header/button[@name='action_inventory_at_date']" position="after">
-                <button name="action_stock_quant_relocate" 
-                        string="Relocate" 
-                        type="object" 
-                        groups="econovo_stock_quant_relocate_permission.group_stock_quant_relocate"
-                        invisible="context.get('hide_location', False)" 
-                        context="{'action_ref': 'stock.action_view_quants'}"/>
+            <xpath expr="//tree" position="inside">
+                <header>
+                    <button name="action_stock_quant_relocate" 
+                            string="Relocate" 
+                            type="object" 
+                            groups="econovo_stock_quant_relocate_permission.group_stock_quant_relocate"
+                            invisible="context.get('hide_location', False)"
+                            context="{'action_ref': 'stock.action_view_quants'}"/>
+                </header>
             </xpath>
         </field>
     </record>
 
-    <!-- Inherits the Inventory view (Inventory → Operations → Inventory Adjustments) -->
+    <!-- Inherits the Inventory Adjustments view (Inventory → Operations → Physical Inventory) -->
+    <!-- Modifies existing Relocate button to also be visible for users with special permission -->
     <record id="view_stock_quant_tree_inventory_editable_relocate_permission" model="ir.ui.view">
         <field name="name">stock.quant.tree.inventory.editable.relocate.permission</field>
         <field name="model">stock.quant</field>
@@ -41,6 +44,26 @@
             <xpath expr="//button[@name='action_stock_quant_relocate']" position="attributes">
                 <!-- Visible for Inventory Administrator OR users with special relocate permission -->
                 <attribute name="groups">stock.group_stock_manager,econovo_stock_quant_relocate_permission.group_stock_quant_relocate</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Inherits the Barcode Quants view (Barcode app → scan product → quant list) -->
+    <!-- ADDS the Relocate button for barcode users with special permission -->
+    <record id="view_stock_quant_tree_barcode_relocate_permission" model="ir.ui.view">
+        <field name="name">stock.quant.tree.barcode.relocate.permission</field>
+        <field name="model">stock.quant</field>
+        <field name="inherit_id" ref="stock_barcode.view_stock_quant_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//tree" position="inside">
+                <header>
+                    <button name="action_stock_quant_relocate" 
+                            string="Relocate" 
+                            type="object" 
+                            groups="econovo_stock_quant_relocate_permission.group_stock_quant_relocate"
+                            invisible="context.get('hide_location', False)"
+                            context="{'action_ref': 'stock.action_view_quants'}"/>
+                </header>
             </xpath>
         </field>
     </record>
