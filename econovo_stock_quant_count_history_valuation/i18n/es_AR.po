@@ -227,6 +227,11 @@ msgid "Average Cost"
 msgstr "Costo Promedio"
 
 #. module: econovo_stock_quant_count_history_valuation
+#: model:ir.model.fields.selection,name:econovo_stock_quant_count_history_valuation.selection__stock_quant_count_history_valuation__snapshot_cost_method__last
+msgid "Last Purchase Price"
+msgstr "Último Precio de Compra"
+
+#. module: econovo_stock_quant_count_history_valuation
 #: model:ir.model.fields,help:econovo_stock_quant_count_history_valuation.field_stock_quant_count_history_valuation__snapshot_cost_method
 msgid "Product cost method at the moment of count"
 msgstr "Método de costeo del producto al momento del conteo"
