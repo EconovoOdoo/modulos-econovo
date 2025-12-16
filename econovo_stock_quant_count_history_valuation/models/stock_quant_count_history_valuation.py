@@ -67,6 +67,7 @@ class StockQuantCountHistoryValuation(models.Model):
             ('standard', 'Standard Price'),
             ('fifo', 'FIFO'),
             ('average', 'Average Cost'),
+            ('last', 'Last Purchase Price'),
         ],
         string='Cost Method',
         help='Product cost method at the moment of count',

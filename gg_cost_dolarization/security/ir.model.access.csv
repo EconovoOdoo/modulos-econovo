@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+gg_cost_dolarization.access_product_price_modification,access_product_price_modification,gg_cost_dolarization.model_product_price_modification,base.group_user,1,0,1,0
