@@ -10,10 +10,28 @@ class StockQuantSaveCountWizard(models.TransientModel):
         string='Quants',
         required=True,
     )
+    quant_count = fields.Integer(
+        string='Number of Counts',
+        compute='_compute_quant_count',
+    )
+    quant_count_display = fields.Char(
+        string='Items to Save',
+        compute='_compute_quant_count',
+    )
     notes = fields.Text(
         string='Notes',
         help='Notes or reason for saving this count to history',
     )
+
+    @api.depends('quant_ids')
+    def _compute_quant_count(self):
+        for wizard in self:
+            count = len(wizard.quant_ids)
+            wizard.quant_count = count
+            if count == 1:
+                wizard.quant_count_display = _('1 count will be saved to history')
+            else:
+                wizard.quant_count_display = _('%d counts will be saved to history') % count
 
     @api.model
     def default_get(self, fields_list):

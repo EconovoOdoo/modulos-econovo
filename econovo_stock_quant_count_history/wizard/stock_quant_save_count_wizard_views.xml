@@ -7,10 +7,12 @@
         <field name="model">stock.quant.save.count.wizard</field>
         <field name="arch" type="xml">
             <form string="Save Count to History">
-                <group>
-                    <field name="quant_ids" widget="many2many_tags" readonly="1"/>
-                    <field name="notes" placeholder="Enter notes or reason for this count (optional)..."/>
-                </group>
+                <field name="quant_ids" invisible="1"/>
+                <div class="alert alert-info text-center" role="alert">
+                    <strong><field name="quant_count_display" nolabel="1"/></strong>
+                </div>
+                <label for="notes" string="Notes"/>
+                <field name="notes" widget="text" placeholder="Enter notes or reason for this count (optional)..." class="w-100"/>
                 <footer>
                     <button name="action_save_count_to_history" 
                             string="Save to History" 
