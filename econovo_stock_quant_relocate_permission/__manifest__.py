@@ -2,7 +2,7 @@
 # Part of Econovo. See LICENSE file for full copyright and licensing details.
 {
     'name': 'Stock Quant Relocate Permission',
-    'version': '17.0.1.1.0',
+    'version': '17.0.1.2.0',
     'summary': 'Allows non-admin users to use the Relocate button on stock.quant.',
     'description': '''
 This module creates a special permission group that allows users with 

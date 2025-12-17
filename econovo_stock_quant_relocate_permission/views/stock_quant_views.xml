@@ -15,7 +15,7 @@
     </record>
 
     <!-- Inherits the READ-ONLY Quants view (the one normal users see) -->
-    <!-- ADDS the Relocate button inside a new header element (same approach as putaway module) -->
+    <!-- ADDS the Relocate button inside a new header element -->
     <record id="view_stock_quant_tree_relocate_permission" model="ir.ui.view">
         <field name="name">stock.quant.tree.relocate.permission</field>
         <field name="model">stock.quant</field>
@@ -49,7 +49,8 @@
     </record>
 
     <!-- Inherits the Barcode Quants view (Barcode app → scan product → quant list) -->
-    <!-- ADDS the Relocate button for barcode users with special permission -->
+    <!-- CREATES header and ADDS the Relocate button for barcode users with special permission -->
+    <!-- Note: stock_barcode.view_stock_quant_tree doesn't have a header, so we create one -->
     <record id="view_stock_quant_tree_barcode_relocate_permission" model="ir.ui.view">
         <field name="name">stock.quant.tree.barcode.relocate.permission</field>
         <field name="model">stock.quant</field>

@@ -1,6 +1,6 @@
 {
     'name': 'Stock Putaway from Quant',
-    'version': '17.0.1.0.1',
+    'version': '17.0.1.1.0',
     'category': 'Inventory/Inventory',
     'summary': 'Create putaway rules directly from stock quant view',
     'description': """
@@ -8,7 +8,7 @@ Stock Putaway from Quant
 ========================
 
 This module allows users to create putaway (storage) rules directly from the
-stock quant list view.
+stock quant list view using the Actions menu (gear icon).
 
 Features:
 ---------
@@ -16,6 +16,7 @@ Features:
 * Multiple quants: Bulk creation of putaway rules with conflict resolution
 * Independent security group for permission control
 * Preview of existing rules before creating new ones
+* Uses Actions menu to avoid conflicts with other modules
 
 Usage:
 ------
