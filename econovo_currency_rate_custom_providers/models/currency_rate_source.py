@@ -1662,9 +1662,15 @@ class CurrencyRateSource(models.Model):
     def _get_cron_nextcall(self):
         """Calculate the next execution datetime for cron based on source schedule.
         
+        Forces recalculation of next_execution to ensure it's always current.
         Returns UTC datetime for the next scheduled execution.
         """
         self.ensure_one()
+        
+        # Force recalculation of next_execution since it's a stored computed field
+        # that may not be up-to-date after the current execution
+        self._compute_next_execution()
+        
         next_exec = self.next_execution
         if next_exec:
             return next_exec
@@ -1675,7 +1681,10 @@ class CurrencyRateSource(models.Model):
         """Get cron interval configuration based on update_frequency.
         
         Returns tuple (interval_number, interval_type) for ir.cron.
-        The cron will be re-scheduled after each execution via _update_cron_nextcall().
+        
+        IMPORTANT: For 'specific' schedules, we use a longer interval than needed
+        because the actual execution is controlled by triggers created in 
+        _update_cron_nextcall(). The interval here is only a fallback.
         """
         self.ensure_one()
         if self.update_frequency == 'hourly':
@@ -1688,8 +1697,11 @@ class CurrencyRateSource(models.Model):
         elif self.update_frequency == 'monthly':
             return (30, 'days')
         elif self.update_frequency == 'specific':
-            # For specific schedules, recalculate after each run
-            return (1, 'days')
+            # Use a long interval (30 days) as fallback
+            # Actual execution is controlled by triggers in _update_cron_nextcall()
+            # This prevents Odoo from auto-calculating nextcall and interfering
+            # with our specific schedule
+            return (30, 'days')
         return (1, 'days')
 
     def _create_source_cron(self):
@@ -1765,21 +1777,52 @@ class CurrencyRateSource(models.Model):
         return self.cron_id
 
     def _update_cron_nextcall(self):
-        """Update only the nextcall of the cron after execution.
+        """Schedule the next cron execution intelligently.
         
-        Call this after a successful execution to schedule next run.
+        Strategy:
+        1. Try to update the cron's nextcall using try_write() (no exception if locked)
+        2. If that fails or cron is locked, use _trigger() for future executions only
+        3. Clean up old triggers to prevent accumulation
+        
+        This avoids both deadlock issues and infinite execution loops.
         """
         self.ensure_one()
         if not self.cron_id:
             return
         
         nextcall = self._get_cron_nextcall()
-        self.cron_id.sudo().write({'nextcall': nextcall})
+        now = fields.Datetime.now()
         
-        _logger.debug(
-            'Updated nextcall for source %s cron to: %s',
-            self.name, nextcall
-        )
+        # First, try to update the cron's nextcall field using try_write()
+        # This method doesn't raise an exception if the cron is locked
+        updated = self.cron_id.sudo().try_write({'nextcall': nextcall})
+        
+        if updated:
+            _logger.debug(
+                'Updated nextcall for source %s cron to: %s',
+                self.name, nextcall
+            )
+        else:
+            # Cron is locked (being executed), use trigger only for FUTURE executions
+            # Clean up any existing triggers for this cron to prevent accumulation
+            self.env['ir.cron.trigger'].sudo().search([
+                ('cron_id', '=', self.cron_id.id),
+                ('call_at', '<=', now)
+            ]).unlink()
+            
+            # Only create a trigger if nextcall is in the future
+            # This prevents infinite loop (execution -> trigger now -> execution -> ...)
+            if nextcall and nextcall > now:
+                self.cron_id.sudo()._trigger(at=nextcall)
+                _logger.debug(
+                    'Cron locked, created trigger for source %s at: %s',
+                    self.name, nextcall
+                )
+            else:
+                _logger.warning(
+                    'Skipped trigger creation for source %s: nextcall %s is not in the future (now: %s)',
+                    self.name, nextcall, now
+                )
 
     def _delete_source_cron(self):
         """Delete the dedicated cron for this source."""
