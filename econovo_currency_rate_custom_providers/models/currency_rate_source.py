@@ -415,7 +415,6 @@ class CurrencyRateSource(models.Model):
         related='cron_id.active',
         string='Automatic Update',
         readonly=False,
-        tracking=True,
         help='Enable/disable scheduled automatic updates. '
              'This controls the active state of the dedicated scheduled action.'
     )
