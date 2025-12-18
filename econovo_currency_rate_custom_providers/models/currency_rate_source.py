@@ -415,7 +415,6 @@ class CurrencyRateSource(models.Model):
         related='cron_id.active',
         string='Automatic Update',
         readonly=False,
-        store=True,
         tracking=True,
         help='Enable/disable scheduled automatic updates. '
              'This controls the active state of the dedicated scheduled action.'
@@ -424,21 +423,18 @@ class CurrencyRateSource(models.Model):
         related='cron_id.interval_number',
         string='Execute Every',
         readonly=False,
-        store=True,
         help='Repeat every x (interval units)'
     )
     interval_type = fields.Selection(
         related='cron_id.interval_type',
         string='Interval Unit',
         readonly=False,
-        store=True,
         help='Unit of the interval: minutes, hours, days, weeks, months'
     )
     nextcall = fields.Datetime(
         related='cron_id.nextcall',
         string='Next Execution Date (UTC)',
         readonly=False,
-        store=True,
         help='Next planned execution date for this source (stored in UTC). '
              'See "Next Execution (Local)" for the time in your timezone.'
     )
@@ -451,7 +447,6 @@ class CurrencyRateSource(models.Model):
         related='cron_id.numbercall',
         string='Number of Calls',
         readonly=False,
-        store=True,
         help='Number of times the scheduled action is run. '
              'Set to -1 for unlimited executions.'
     )
@@ -459,7 +454,6 @@ class CurrencyRateSource(models.Model):
         related='cron_id.priority',
         string='Priority',
         readonly=False,
-        store=True,
         help='Lower values mean higher priority. '
              'Cron jobs with lower priority numbers are executed first.'
     )
@@ -467,7 +461,6 @@ class CurrencyRateSource(models.Model):
         related='cron_id.doall',
         string='Execute Missed Runs',
         readonly=False,
-        store=True,
         help='Enable this to execute all missed runs when the server restarts. '
              'Disable to only execute the next scheduled run.'
     )

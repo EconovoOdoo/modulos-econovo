@@ -451,13 +451,14 @@
                                     <field name="next_execution_display" readonly="1" 
                                            invisible="not auto_update"
                                            help="Next execution time in your configured timezone"/>
-                                    <field name="nextcall" string="Next Execution (UTC)" 
-                                           readonly="1"
-                                           invisible="not auto_update"/>
+                                    <field name="nextcall" string="Next Execution Date (UTC)" 
+                                           widget="datetime"
+                                           invisible="not auto_update"
+                                           help="You can modify this to schedule a specific time for the next run. Time is in UTC."/>
                                     <field name="cron_id" readonly="1" 
                                            invisible="not auto_update"
-                                           options="{'no_create': True, 'no_open': True}"
-                                           help="Dedicated scheduled action for this source"/>
+                                           options="{'no_create': True}"
+                                           help="Click to view/edit the dedicated scheduled action for this source"/>
                                 </group>
                             </group>
                             
@@ -469,15 +470,6 @@
                                         <field name="interval_number" class="oe_inline" style="width: 80px;"/>
                                         <field name="interval_type" class="oe_inline" nolabel="1"/>
                                     </div>
-                                    <div class="text-muted small">
-                                        <p class="mb-0">Examples:</p>
-                                        <ul class="mb-0 ps-3">
-                                            <li>1 Days = Daily execution</li>
-                                            <li>7 Days = Weekly execution</li>
-                                            <li>30 Days = Monthly execution (approximate)</li>
-                                            <li>2 Hours = Every 2 hours</li>
-                                        </ul>
-                                    </div>
                                 </group>
                                 <group>
                                     <field name="numbercall" 
@@ -487,6 +479,18 @@
                                     <field name="doall" 
                                            help="Execute missed runs after server restart"/>
                                 </group>
+                            </group>
+                            
+                            <group invisible="not auto_update">
+                                <div class="text-muted small" colspan="2">
+                                    <p class="mb-1"><strong>Examples:</strong></p>
+                                    <ul class="mb-0">
+                                        <li><strong>1 Days</strong> = Daily execution</li>
+                                        <li><strong>7 Days</strong> = Weekly execution</li>
+                                        <li><strong>30 Days</strong> = Monthly execution (approximate)</li>
+                                        <li><strong>2 Hours</strong> = Every 2 hours</li>
+                                    </ul>
+                                </div>
                             </group>
                             
                             <div class="alert alert-warning mt-3" role="alert" invisible="not auto_update">
