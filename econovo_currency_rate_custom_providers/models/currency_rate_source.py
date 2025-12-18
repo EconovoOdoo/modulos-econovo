@@ -404,77 +404,73 @@ class CurrencyRateSource(models.Model):
         string='Source Timezone',
         default=lambda self: self.env.user.tz or 'UTC',
         required=True,
-        help='Timezone for schedule configuration. All scheduled times are interpreted in this timezone. '
-             'This should typically match the timezone where the rate source publishes updates.'
+        help='Timezone for displaying scheduled times. All scheduled times in the cron are stored in UTC '
+             'but will be displayed in this timezone for convenience.'
     )
+    
+    # === CRON SCHEDULING (NATIVE ODOO PATTERN - related fields) ===
+    # Using the same pattern as res.config.settings for bidirectional sync
+    # These fields are related to the dedicated cron_id record
     auto_update = fields.Boolean(
+        related='cron_id.active',
         string='Automatic Update',
-        default=True,
+        readonly=False,
+        store=True,
         tracking=True,
-        help='Enable scheduled automatic updates'
+        help='Enable/disable scheduled automatic updates. '
+             'This controls the active state of the dedicated scheduled action.'
     )
-    update_frequency = fields.Selection(
-        [
-            ('hourly', 'Hourly'),
-            ('daily', 'Daily'),
-            ('weekly', 'Weekly'),
-            ('monthly', 'Monthly'),
-            ('specific', 'Specific Days/Hours'),
-        ],
-        string='Update Frequency',
-        default='daily',
-        help='How often to update the currency rate'
+    interval_number = fields.Integer(
+        related='cron_id.interval_number',
+        string='Execute Every',
+        readonly=False,
+        store=True,
+        help='Repeat every x (interval units)'
     )
-    hourly_interval = fields.Integer(
-        string='Every (hours)',
-        default=1,
-        help='Number of hours between each update (1-23)'
+    interval_type = fields.Selection(
+        related='cron_id.interval_type',
+        string='Interval Unit',
+        readonly=False,
+        store=True,
+        help='Unit of the interval: minutes, hours, days, weeks, months'
     )
-    preferred_hour = fields.Selection(
-        selection='_get_hour_selection',
-        string='Preferred Hour',
-        default='9:00',
-        help='Preferred hour for daily/weekly/monthly updates'
+    nextcall = fields.Datetime(
+        related='cron_id.nextcall',
+        string='Next Execution Date (UTC)',
+        readonly=False,
+        store=True,
+        help='Next planned execution date for this source (stored in UTC). '
+             'See "Next Execution (Local)" for the time in your timezone.'
     )
-    preferred_weekday = fields.Selection(
-        [
-            ('0', 'Monday'),
-            ('1', 'Tuesday'),
-            ('2', 'Wednesday'),
-            ('3', 'Thursday'),
-            ('4', 'Friday'),
-            ('5', 'Saturday'),
-            ('6', 'Sunday'),
-        ],
-        string='Preferred Day',
-        default='0',
-        help='Preferred day of week for weekly updates'
+    next_execution_display = fields.Char(
+        string='Next Execution (Local)',
+        compute='_compute_next_execution_display',
+        help='Next execution time displayed in the source timezone for convenience'
     )
-    preferred_monthdays = fields.Char(
-        string='Days of Month',
-        default='1',
-        help='Days of month for monthly updates. Comma-separated, e.g.: 1, 15, 30'
+    numbercall = fields.Integer(
+        related='cron_id.numbercall',
+        string='Number of Calls',
+        readonly=False,
+        store=True,
+        help='Number of times the scheduled action is run. '
+             'Set to -1 for unlimited executions.'
     )
-    schedule_ids = fields.One2many(
-        'currency.rate.schedule',
-        'source_id',
-        string='Specific Schedule',
-        help='Define specific day/hour combinations (only used when frequency is "Specific Days/Hours")'
+    priority = fields.Integer(
+        related='cron_id.priority',
+        string='Priority',
+        readonly=False,
+        store=True,
+        help='Lower values mean higher priority. '
+             'Cron jobs with lower priority numbers are executed first.'
     )
-    next_execution = fields.Datetime(
-        string='Next Scheduled Execution',
-        compute='_compute_next_execution',
-        store=True
+    doall = fields.Boolean(
+        related='cron_id.doall',
+        string='Execute Missed Runs',
+        readonly=False,
+        store=True,
+        help='Enable this to execute all missed runs when the server restarts. '
+             'Disable to only execute the next scheduled run.'
     )
-
-    @api.model
-    def _get_hour_selection(self):
-        """Generate hour selection options with 30-minute intervals."""
-        options = []
-        for h in range(24):
-            options.append((f'{h}:00', f'{h:02d}:00'))
-            options.append((f'{h}:30', f'{h:02d}:30'))
-        return options
 
     # === STATUS (computed) ===
     state = fields.Selection(
@@ -621,10 +617,10 @@ class CurrencyRateSource(models.Model):
         for record in self:
             record.log_count = len(record.log_ids)
 
-    @api.depends('last_error', 'last_sync_date', 'active')
+    @api.depends('last_error', 'last_sync_date', 'auto_update')
     def _compute_state(self):
         for record in self:
-            if not record.active:
+            if not record.auto_update:
                 record.state = 'draft'
             elif record.last_error:
                 record.state = 'error'
@@ -632,188 +628,27 @@ class CurrencyRateSource(models.Model):
                 record.state = 'active'
             else:
                 record.state = 'draft'
-
-    @api.depends('auto_update', 'update_frequency', 'preferred_hour', 'preferred_weekday', 'preferred_monthdays', 'schedule_ids', 'schedule_ids.dayofweek', 'schedule_ids.hour', 'source_tz')
-    def _compute_next_execution(self):
-        """Compute next scheduled execution time.
-        
-        Uses the source's configured timezone (source_tz) to calculate 
-        scheduled times, following the pattern used by calendar.event.
-        All datetimes are stored as naive UTC in the database.
-        """
+    
+    @api.depends('nextcall', 'source_tz')
+    def _compute_next_execution_display(self):
+        """Display nextcall in source timezone for user convenience."""
         for record in self:
-            if not record.auto_update:
-                record.next_execution = False
+            if not record.nextcall or not record.source_tz:
+                record.next_execution_display = False
                 continue
             
-            # Use source timezone (not user timezone) for schedule calculations
-            # This ensures consistent scheduling regardless of who views/edits
-            tz_name = record.source_tz or 'UTC'
             try:
-                source_tz = pytz.timezone(tz_name)
-            except pytz.UnknownTimeZoneError:
-                source_tz = pytz.UTC
-            
-            # Convert current UTC time to source timezone for calculations
-            utc_now = fields.Datetime.now()
-            local_now = pytz.utc.localize(utc_now).astimezone(source_tz)
-            
-            # Parse preferred hour (represents time in source_tz)
-            pref_hour = 9
-            pref_minute = 0
-            if record.preferred_hour:
-                parts = record.preferred_hour.split(':')
-                pref_hour = int(parts[0])
-                pref_minute = int(parts[1]) if len(parts) > 1 else 0
-            
-            if record.update_frequency == 'hourly':
-                # Next execution based on hourly_interval (1-23 hours)
-                interval = max(1, min(23, record.hourly_interval or 1))
-                next_exec_local = local_now.replace(minute=0, second=0, microsecond=0) + timedelta(hours=interval)
-                record.next_execution = next_exec_local.astimezone(pytz.utc).replace(tzinfo=None)
+                # Convert UTC to source timezone
+                source_tz = pytz.timezone(record.source_tz)
+                # nextcall is stored as naive UTC in database
+                utc_dt = pytz.utc.localize(record.nextcall)
+                local_dt = utc_dt.astimezone(source_tz)
                 
-            elif record.update_frequency == 'daily':
-                # Today or tomorrow at preferred hour (source timezone)
-                next_exec_local = local_now.replace(hour=pref_hour, minute=pref_minute, second=0, microsecond=0)
-                if next_exec_local <= local_now:
-                    next_exec_local += timedelta(days=1)
-                record.next_execution = next_exec_local.astimezone(pytz.utc).replace(tzinfo=None)
-                
-            elif record.update_frequency == 'weekly':
-                # Next preferred weekday at preferred hour (source timezone)
-                pref_weekday = int(record.preferred_weekday or '0')
-                days_until = (pref_weekday - local_now.weekday()) % 7
-                next_exec_local = (local_now + timedelta(days=days_until)).replace(
-                    hour=pref_hour, minute=pref_minute, second=0, microsecond=0
-                )
-                if next_exec_local <= local_now:
-                    next_exec_local += timedelta(days=7)
-                record.next_execution = next_exec_local.astimezone(pytz.utc).replace(tzinfo=None)
-                
-            elif record.update_frequency == 'monthly':
-                # Find next valid day from preferred_monthdays (source timezone)
-                pref_days = record._parse_monthdays()
-                if not pref_days:
-                    pref_days = [1]
-                
-                # Find next execution using source timezone
-                next_exec = record._find_next_monthday_execution(local_now, pref_days, pref_hour, pref_minute, source_tz)
-                record.next_execution = next_exec
-                
-            elif record.update_frequency == 'specific' and record.schedule_ids:
-                # Find next scheduled time from schedule_ids (source timezone)
-                record.next_execution = record._compute_next_specific_execution(local_now, source_tz)
-            else:
-                record.next_execution = False
-
-    def _parse_monthdays(self):
-        """Parse preferred_monthdays string into list of integers."""
-        if not self.preferred_monthdays:
-            return [1]
-        try:
-            days = []
-            for part in self.preferred_monthdays.split(','):
-                day = int(part.strip())
-                if 1 <= day <= 31:
-                    days.append(day)
-            return sorted(set(days)) if days else [1]
-        except (ValueError, AttributeError):
-            return [1]
-
-    def _find_next_monthday_execution(self, local_now, pref_days, pref_hour, pref_minute, user_tz):
-        """Find next execution datetime for monthly schedule (returns UTC)."""
-        import calendar
-        
-        # Check current month first
-        for day in pref_days:
-            # Get last day of current month
-            _, last_day = calendar.monthrange(local_now.year, local_now.month)
-            actual_day = min(day, last_day)
-            try:
-                candidate = local_now.replace(day=actual_day, hour=pref_hour, minute=pref_minute, second=0, microsecond=0)
-                if candidate > local_now:
-                    return candidate.astimezone(pytz.utc).replace(tzinfo=None)
-            except ValueError:
-                continue
-        
-        # Check next month
-        if local_now.month == 12:
-            next_year, next_month = local_now.year + 1, 1
-        else:
-            next_year, next_month = local_now.year, local_now.month + 1
-        
-        _, last_day = calendar.monthrange(next_year, next_month)
-        for day in pref_days:
-            actual_day = min(day, last_day)
-            try:
-                from datetime import datetime
-                candidate = user_tz.localize(datetime(next_year, next_month, actual_day, pref_hour, pref_minute, 0))
-                return candidate.astimezone(pytz.utc).replace(tzinfo=None)
-            except ValueError:
-                continue
-        
-        # Fallback
-        return (local_now + timedelta(days=30)).astimezone(pytz.utc).replace(tzinfo=None)
-
-    def _compute_next_specific_execution(self, local_now, user_tz):
-        """Calculate next execution time based on schedule_ids (returns UTC)."""
-        if not self.schedule_ids:
-            return False
-        
-        # Get all active schedules sorted
-        schedules = self.schedule_ids.filtered(lambda s: s.active).sorted(
-            key=lambda s: (int(s.dayofweek), s.hour)
-        )
-        if not schedules:
-            return False
-        
-        current_weekday = local_now.weekday()
-        
-        # Find next schedule
-        for days_ahead in range(8):  # Check up to a week ahead
-            check_day = (current_weekday + days_ahead) % 7
-            for schedule in schedules:
-                if int(schedule.dayofweek) == check_day:
-                    # Parse schedule hour
-                    parts = schedule.hour.split(':')
-                    sched_hour = int(parts[0])
-                    sched_minute = int(parts[1]) if len(parts) > 1 else 0
-                    
-                    next_exec_local = (local_now + timedelta(days=days_ahead)).replace(
-                        hour=sched_hour, minute=sched_minute, second=0, microsecond=0
-                    )
-                    if next_exec_local > local_now:
-                        return next_exec_local.astimezone(pytz.utc).replace(tzinfo=None)
-        
-        # Fallback: first schedule next week
-        first_sched = schedules[0]
-        parts = first_sched.hour.split(':')
-        sched_hour = int(parts[0])
-        sched_minute = int(parts[1]) if len(parts) > 1 else 0
-        days_until = (int(first_sched.dayofweek) - current_weekday) % 7 or 7
-        next_exec_local = (local_now + timedelta(days=days_until)).replace(
-            hour=sched_hour, minute=sched_minute, second=0, microsecond=0
-        )
-        return next_exec_local.astimezone(pytz.utc).replace(tzinfo=None)
-
-    def action_create_default_schedule(self):
-        """Create default schedule: weekdays at 09:00 and 15:00."""
-        self.ensure_one()
-        Schedule = self.env['currency.rate.schedule']
-        # Clear existing
-        self.schedule_ids.unlink()
-        # Set frequency to specific
-        self.update_frequency = 'specific'
-        # Create weekday schedule at 09:00 and 15:00
-        for day in ['0', '1', '2', '3', '4']:  # Mon-Fri
-            for hour in ['9:00', '15:00']:
-                Schedule.create({
-                    'source_id': self.id,
-                    'dayofweek': day,
-                    'hour': hour,
-                })
-        return True
-        return True
+                # Format: "2024-01-15 14:30:00 (America/Argentina/Cordoba)"
+                record.next_execution_display = f"{local_dt.strftime('%Y-%m-%d %H:%M:%S')} ({record.source_tz})"
+            except Exception as e:
+                _logger.warning(f"Error computing next_execution_display for {record.name}: {e}")
+                record.next_execution_display = str(record.nextcall) if record.nextcall else False
 
     # ==========================================
     # VALIDATION METHODS
@@ -1057,9 +892,10 @@ class CurrencyRateSource(models.Model):
             # Create log entry
             self.env['currency.rate.log'].create(log_vals)
             
-            # Update cron nextcall for next execution (only for cron-triggered updates)
-            if triggered_by == 'cron' and self.cron_id:
-                self._update_cron_nextcall()
+            # Note: No need to update cron nextcall here.
+            # With the related= pattern, Odoo's cron system automatically
+            # calculates the next execution based on interval_number and interval_type.
+            # Users can manually override nextcall via the related= field if needed.
             
             # Execute fallback after logging (outside try block to avoid nested exceptions)
             if fallback_triggered:
@@ -1659,59 +1495,29 @@ class CurrencyRateSource(models.Model):
         except Exception as e:
             _logger.exception('=== CRON ERROR === Scheduled update failed for source_id %s: %s', source_id, str(e))
 
-    def _get_cron_nextcall(self):
-        """Calculate the next execution datetime for cron based on source schedule.
-        
-        Forces recalculation of next_execution to ensure it's always current.
-        Returns UTC datetime for the next scheduled execution.
-        """
+    def _delete_source_cron(self):
+        """Delete the dedicated cron for this source."""
         self.ensure_one()
-        
-        # Force recalculation of next_execution since it's a stored computed field
-        # that may not be up-to-date after the current execution
-        self._compute_next_execution()
-        
-        next_exec = self.next_execution
-        if next_exec:
-            return next_exec
-        # Fallback: 1 hour from now
-        return fields.Datetime.now() + timedelta(hours=1)
-
-    def _get_cron_interval(self):
-        """Get cron interval configuration based on update_frequency.
-        
-        Returns tuple (interval_number, interval_type) for ir.cron.
-        
-        IMPORTANT: For 'specific' schedules, we use a longer interval than needed
-        because the actual execution is controlled by triggers created in 
-        _update_cron_nextcall(). The interval here is only a fallback.
-        """
-        self.ensure_one()
-        if self.update_frequency == 'hourly':
-            interval = max(1, min(23, self.hourly_interval or 1))
-            return (interval, 'hours')
-        elif self.update_frequency == 'daily':
-            return (1, 'days')
-        elif self.update_frequency == 'weekly':
-            return (7, 'days')
-        elif self.update_frequency == 'monthly':
-            return (30, 'days')
-        elif self.update_frequency == 'specific':
-            # Use a long interval (30 days) as fallback
-            # Actual execution is controlled by triggers in _update_cron_nextcall()
-            # This prevents Odoo from auto-calculating nextcall and interfering
-            # with our specific schedule
-            return (30, 'days')
-        return (1, 'days')
+        if self.cron_id:
+            cron_name = self.cron_id.name
+            self.cron_id.sudo().unlink()
+            _logger.info('Deleted cron: %s', cron_name)
 
     def _create_source_cron(self):
-        """Create a dedicated ir.cron for this source."""
+        """Create a dedicated ir.cron for this source.
+        
+        Creates a cron with reasonable defaults:
+        - Daily execution at 09:00 UTC
+        - Unlimited runs (numbercall=-1)
+        - Priority 5
+        - Active based on source's auto_update and module state
+        
+        Users can modify the schedule directly via the related= fields:
+        interval_number, interval_type, nextcall, etc.
+        """
         self.ensure_one()
         if self.cron_id:
             return self.cron_id
-        
-        interval_number, interval_type = self._get_cron_interval()
-        nextcall = self._get_cron_nextcall()
         
         # Check if module feature is globally enabled
         module_enabled = self._is_module_enabled()
@@ -1721,17 +1527,21 @@ class CurrencyRateSource(models.Model):
             ('model', '=', 'currency.rate.source')
         ], limit=1)
         
+        # Calculate initial nextcall: tomorrow at 09:00 UTC
+        # Users can adjust via the nextcall related= field
+        tomorrow_9am = fields.Datetime.now().replace(hour=9, minute=0, second=0, microsecond=0) + timedelta(days=1)
+        
         cron_vals = {
             'name': f'Currency Rate: {self.name}',
             'model_id': model.id,
             'user_id': self.env.ref('base.user_root').id,  # OdooBot
             'state': 'code',
             'code': f'model._cron_update_single_source({self.id})',
-            'interval_number': interval_number,
-            'interval_type': interval_type,
-            'nextcall': nextcall,
+            'interval_number': 1,
+            'interval_type': 'days',
+            'nextcall': tomorrow_9am,
             'numbercall': -1,
-            'active': self.active and self.auto_update and module_enabled,
+            'active': module_enabled,  # auto_update is now related= to cron active
             'doall': True,
             'priority': 5,
         }
@@ -1740,91 +1550,12 @@ class CurrencyRateSource(models.Model):
         self.sudo().write({'cron_id': cron.id})
         
         _logger.info(
-            'Created cron for source %s (ID: %s), next execution: %s',
-            self.name, cron.id, nextcall
+            'Created cron for source %s (ID: %s), next execution: %s UTC',
+            self.name, cron.id, tomorrow_9am
         )
         return cron
 
-    def _update_source_cron(self):
-        """Update the dedicated cron based on current source configuration."""
-        self.ensure_one()
-        if not self.cron_id:
-            if self.auto_update and self.active:
-                return self._create_source_cron()
-            return False
-        
-        interval_number, interval_type = self._get_cron_interval()
-        nextcall = self._get_cron_nextcall()
-        
-        # Check if module feature is globally enabled
-        module_enabled = self._is_module_enabled()
-        
-        cron_vals = {
-            'name': f'Currency Rate: {self.name}',
-            'code': f'model._cron_update_single_source({self.id})',
-            'interval_number': interval_number,
-            'interval_type': interval_type,
-            'nextcall': nextcall,
-            'active': self.active and self.auto_update and module_enabled,
-        }
-        
-        self.cron_id.sudo().write(cron_vals)
-        
-        _logger.info(
-            'Updated cron for source %s, active: %s, next execution: %s',
-            self.name, cron_vals['active'], nextcall
-        )
-        return self.cron_id
 
-    def _update_cron_nextcall(self):
-        """Schedule the next cron execution intelligently.
-        
-        Strategy:
-        1. Try to update the cron's nextcall using try_write() (no exception if locked)
-        2. If that fails or cron is locked, use _trigger() for future executions only
-        3. Clean up old triggers to prevent accumulation
-        
-        This avoids both deadlock issues and infinite execution loops.
-        """
-        self.ensure_one()
-        if not self.cron_id:
-            return
-        
-        nextcall = self._get_cron_nextcall()
-        now = fields.Datetime.now()
-        
-        # First, try to update the cron's nextcall field using try_write()
-        # This method doesn't raise an exception if the cron is locked
-        updated = self.cron_id.sudo().try_write({'nextcall': nextcall})
-        
-        if updated:
-            _logger.debug(
-                'Updated nextcall for source %s cron to: %s',
-                self.name, nextcall
-            )
-        else:
-            # Cron is locked (being executed), use trigger only for FUTURE executions
-            # Clean up any existing triggers for this cron to prevent accumulation
-            self.env['ir.cron.trigger'].sudo().search([
-                ('cron_id', '=', self.cron_id.id),
-                ('call_at', '<=', now)
-            ]).unlink()
-            
-            # Only create a trigger if nextcall is in the future
-            # This prevents infinite loop (execution -> trigger now -> execution -> ...)
-            if nextcall and nextcall > now:
-                self.cron_id.sudo()._trigger(at=nextcall)
-                _logger.debug(
-                    'Cron locked, created trigger for source %s at: %s',
-                    self.name, nextcall
-                )
-            else:
-                _logger.warning(
-                    'Skipped trigger creation for source %s: nextcall %s is not in the future (now: %s)',
-                    self.name, nextcall, now
-                )
-
-    def _delete_source_cron(self):
         """Delete the dedicated cron for this source."""
         self.ensure_one()
         if self.cron_id:
@@ -1859,36 +1590,53 @@ class CurrencyRateSource(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
-        """Override create to auto-create cron for new sources with auto_update."""
+        """Override create to auto-create cron for new sources.
+        
+        Creates a dedicated cron with default settings when auto_update is enabled.
+        The cron's active state is controlled by the source's auto_update field
+        via the related= pattern.
+        """
         records = super().create(vals_list)
         
         # Check if module feature is enabled
         enabled = self._is_module_enabled()
         
         for record in records:
-            if enabled and record.auto_update and record.active:
+            # Create cron for sources that will need it
+            # Note: auto_update is related= to cron.active, so we check if it exists in vals
+            if enabled:
                 record._create_source_cron()
         
         return records
 
     def write(self, vals):
-        """Override write to update cron when relevant fields change."""
+        """Override write to manage cron lifecycle.
+        
+        With the related= pattern, most synchronization is automatic:
+        - auto_update → cron.active (bidirectional)
+        - interval_number → cron.interval_number (bidirectional)
+        - interval_type → cron.interval_type (bidirectional)
+        - etc.
+        
+        We only need to handle cron name updates and ensure cron exists.
+        """
         result = super().write(vals)
         
-        # Fields that affect cron configuration
-        cron_affecting_fields = {
-            'name', 'active', 'auto_update', 'update_frequency',
-            'preferred_hour', 'preferred_weekday', 'preferred_monthdays',
-            'source_tz', 'schedule_ids'
-        }
-        
-        if cron_affecting_fields & set(vals.keys()):
+        # Update cron name if source name changed
+        if 'name' in vals:
             for record in self:
-                if record.auto_update and record.active:
-                    record._update_source_cron()
-                elif record.cron_id:
-                    # Deactivate cron if auto_update or active is disabled
-                    record.cron_id.sudo().write({'active': False})
+                if record.cron_id:
+                    record.cron_id.sudo().write({
+                        'name': f'Currency Rate: {record.name}'
+                    })
+        
+        # Ensure cron exists for sources that need it
+        # (in case a source was created without auto_update and later enabled)
+        if 'auto_update' in vals or 'active' in vals:
+            enabled = self._is_module_enabled()
+            for record in self:
+                if enabled and not record.cron_id:
+                    record._create_source_cron()
         
         return result
 

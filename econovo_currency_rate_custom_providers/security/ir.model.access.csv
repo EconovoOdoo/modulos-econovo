@@ -3,8 +3,6 @@ access_currency_rate_source_user,currency.rate.source.user,model_currency_rate_s
 access_currency_rate_source_manager,currency.rate.source.manager,model_currency_rate_source,account.group_account_manager,1,1,1,1
 access_currency_rate_source_notify_user_user,currency.rate.source.notify.user.user,model_currency_rate_source_notify_user,account.group_account_user,1,0,0,0
 access_currency_rate_source_notify_user_manager,currency.rate.source.notify.user.manager,model_currency_rate_source_notify_user,account.group_account_manager,1,1,1,1
-access_currency_rate_schedule_user,currency.rate.schedule.user,model_currency_rate_schedule,account.group_account_user,1,0,0,0
-access_currency_rate_schedule_manager,currency.rate.schedule.manager,model_currency_rate_schedule,account.group_account_manager,1,1,1,1
 access_currency_rate_log_user,currency.rate.log.user,model_currency_rate_log,account.group_account_user,1,0,0,0
 access_currency_rate_log_manager,currency.rate.log.manager,model_currency_rate_log,account.group_account_manager,1,1,1,1
 access_test_wizard_user,currency.rate.source.test.wizard.user,model_currency_rate_source_test_wizard,account.group_account_user,1,1,1,1

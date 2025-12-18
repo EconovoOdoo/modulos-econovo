@@ -437,83 +437,66 @@
 
                         <!-- Scheduling Tab -->
                         <page string="Scheduling" name="scheduling">
+                            <div class="alert alert-info mb-3" role="alert">
+                                <p class="mb-1"><strong>Native Cron Scheduling</strong></p>
+                                <p class="mb-0">This source uses Odoo's native cron scheduling. Configure the schedule using the fields below, which directly control the dedicated scheduled action.</p>
+                            </div>
+                            
                             <group>
                                 <group string="Automatic Updates">
                                     <field name="auto_update"/>
-                                    <field name="update_frequency" invisible="not auto_update"/>
-                                    <field name="source_tz" invisible="not auto_update"/>
+                                    <field name="source_tz" help="Timezone for displaying scheduled times. All times in the cron are stored in UTC."/>
                                 </group>
-                                <group string="Next Execution" invisible="not auto_update">
-                                    <field name="next_execution" readonly="1"/>
+                                <group string="Schedule Information">
+                                    <field name="next_execution_display" readonly="1" 
+                                           invisible="not auto_update"
+                                           help="Next execution time in your configured timezone"/>
+                                    <field name="nextcall" string="Next Execution (UTC)" 
+                                           readonly="1"
+                                           invisible="not auto_update"/>
                                     <field name="cron_id" readonly="1" 
-                                           options="{'no_create': True, 'no_open': False}"
+                                           invisible="not auto_update"
+                                           options="{'no_create': True, 'no_open': True}"
                                            help="Dedicated scheduled action for this source"/>
-                                    <div class="text-muted small" colspan="2">
-                                        <p class="mb-0">Scheduled times are configured in <strong><field name="source_tz" readonly="1" nolabel="1" class="d-inline"/></strong> timezone.</p>
-                                        <p class="mb-0 mt-1" invisible="not cron_id">Each source has its own dedicated scheduled action that runs exactly at the configured time.</p>
-                                    </div>
                                 </group>
                             </group>
                             
-                            <!-- Timing Configuration based on frequency -->
-                            <!-- Hourly Configuration -->
-                            <group string="Hourly Configuration" invisible="not auto_update or update_frequency != 'hourly'">
+                            <!-- Native Cron Configuration -->
+                            <group string="Schedule Configuration" invisible="not auto_update">
                                 <group>
-                                    <label for="hourly_interval" string="Run every"/>
+                                    <label for="interval_number" string="Execute Every"/>
                                     <div class="o_row">
-                                        <field name="hourly_interval" class="oe_inline" style="width: 60px;"/>
-                                        <span> hours (1-23)</span>
+                                        <field name="interval_number" class="oe_inline" style="width: 80px;"/>
+                                        <field name="interval_type" class="oe_inline" nolabel="1"/>
                                     </div>
-                                    <div class="text-muted small o_row">
-                                        <span>Updates run at the specified interval. Example: every 2 hours, every 4 hours, etc.</span>
+                                    <div class="text-muted small">
+                                        <p class="mb-0">Examples:</p>
+                                        <ul class="mb-0 ps-3">
+                                            <li>1 Days = Daily execution</li>
+                                            <li>7 Days = Weekly execution</li>
+                                            <li>30 Days = Monthly execution (approximate)</li>
+                                            <li>2 Hours = Every 2 hours</li>
+                                        </ul>
                                     </div>
                                 </group>
-                            </group>
-                            
-                            <group string="Timing Configuration" invisible="not auto_update or update_frequency in ('specific', 'hourly')">
                                 <group>
-                                    <!-- Daily: show preferred hour -->
-                                    <field name="preferred_hour" string="Run at Hour"
-                                           invisible="update_frequency != 'daily'"/>
-                                    <div class="text-muted small o_row" invisible="update_frequency != 'daily'">
-                                        <span>Updates run once per day at the selected hour.</span>
-                                    </div>
-                                    
-                                    <!-- Weekly: show day and hour -->
-                                    <field name="preferred_weekday" 
-                                           invisible="update_frequency != 'weekly'"/>
-                                    <field name="preferred_hour" string="Run at Hour"
-                                           invisible="update_frequency != 'weekly'"/>
-                                    <div class="text-muted small o_row" invisible="update_frequency != 'weekly'">
-                                        <span>Updates run once per week on the selected day and hour.</span>
-                                    </div>
-                                    
-                                    <!-- Monthly: show days of month and hour -->
-                                    <field name="preferred_monthdays" string="Days of Month"
-                                           invisible="update_frequency != 'monthly'"
-                                           placeholder="1, 15, 30"/>
-                                    <field name="preferred_hour" string="Run at Hour"
-                                           invisible="update_frequency != 'monthly'"/>
-                                    <div class="text-muted small o_row" invisible="update_frequency != 'monthly'">
-                                        <span>Enter days separated by commas (e.g., 1, 15, 30). Days 29-31 are skipped in shorter months.</span>
-                                    </div>
+                                    <field name="numbercall" 
+                                           help="Number of times to execute. Use -1 for unlimited executions."/>
+                                    <field name="priority" 
+                                           help="Lower values = higher priority"/>
+                                    <field name="doall" 
+                                           help="Execute missed runs after server restart"/>
                                 </group>
                             </group>
                             
-                            <!-- Schedule Lines (One2many) - Only for specific frequency -->
-                            <group string="Specific Schedule" invisible="update_frequency != 'specific' or not auto_update">
-                                <div colspan="2" class="text-muted mb-2">
-                                    <p class="mb-1">Define specific day and hour combinations when updates should run.</p>
-                                    <p class="mb-0"><em>Example: Monday 09:00, Wednesday 14:30, Friday 17:00</em></p>
-                                    <p class="mb-0 text-warning"><em>Note: Duplicate day/hour combinations are not allowed.</em></p>
-                                </div>
-                                <field name="schedule_ids" nolabel="1" colspan="2">
-                                    <tree editable="bottom">
-                                        <field name="dayofweek"/>
-                                        <field name="hour"/>
-                                    </tree>
-                                </field>
-                            </group>
+                            <div class="alert alert-warning mt-3" role="alert" invisible="not auto_update">
+                                <p class="mb-1"><strong>Important Notes:</strong></p>
+                                <ul class="mb-0">
+                                    <li><strong>Next Execution Date:</strong> You can manually modify the "Next Execution Date" above to schedule a specific time for the next run.</li>
+                                    <li><strong>Timezone Display:</strong> Times are stored in UTC but displayed in your configured Source Timezone for convenience.</li>
+                                    <li><strong>Advanced Configuration:</strong> For complex schedules, you can click on the Scheduled Action link above to access all cron options.</li>
+                                </ul>
+                            </div>
                         </page>
 
                         <!-- Companies Tab -->
