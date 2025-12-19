@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        
+        <!-- ============================================================ -->
+        <!-- GROUP: Workorder State Manager -->
+        <!-- ============================================================ -->
+        <record id="group_mrp_workorder_state_manager" model="res.groups">
+            <field name="name">Econovo MRP Workorder State Manager</field>
+            <field name="category_id" ref="base.module_category_manufacturing_manufacturing"/>
+            <field name="comment">
+                Allows users to manually change the state of workorders,
+                including reverting from 'done' to previous states.
+                
+                WARNING: This permission should only be granted to trusted users
+                as it allows modifying the normal production flow.
+            </field>
+            <field name="implied_ids" eval="[(4, ref('mrp.group_mrp_user'))]"/>
+        </record>
+
+    </data>
+</odoo>
