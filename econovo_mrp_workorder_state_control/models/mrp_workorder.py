@@ -106,39 +106,10 @@ class MrpWorkorder(models.Model):
         if state == 'cancel':
             wo_to_update.action_cancel()
         elif state == 'done':
-            wo_to_update.action_mark_as_done()
+            # Call button_finish directly to avoid conflicts with enterprise mrp_workorder module
+            wo_to_update.button_finish()
         elif state == 'progress':
             wo_to_update.button_start()
         else:
             wo_to_update.write({'state': state})
 
-    # ============================================================================
-    # ACTION_MARK_AS_DONE METHOD - Alias of button_finish (exists in Odoo 19)
-    # ============================================================================
-    # In Odoo 19 action_mark_as_done is used instead of button_finish.
-    # We create an alias to maintain exact compatibility with Odoo 19.
-    
-    def action_mark_as_done(self):
-        """
-        Mark workorder as completed.
-        
-        This method is a wrapper/alias of the existing button_finish method in Odoo 17.
-        In Odoo 19, button_finish was renamed to action_mark_as_done.
-        
-        Returns:
-            bool: Result of button_finish
-        """
-        # Verify that the workcenter is not blocked
-        for wo in self:
-            if wo.working_state == 'blocked':
-                raise UserError(_('Please unblock the work center to validate the work order'))
-            
-            # Call the standard method
-            wo.button_finish()
-            
-            # If no duration recorded, use the expected one
-            if wo.duration == 0.0:
-                wo.duration = wo.duration_expected
-                wo.duration_percent = 100
-        
-        return True
