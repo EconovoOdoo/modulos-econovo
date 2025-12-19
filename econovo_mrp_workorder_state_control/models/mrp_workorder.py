@@ -40,13 +40,14 @@ class MrpWorkorder(models.Model):
     )
 
     # ============================================================================
-    # SET_STATE METHOD - IDENTICAL code from Odoo 19
+    # SET_STATE METHOD - IDENTICAL code from Odoo 19 (with button support)
     # ============================================================================
     # Copied verbatim from odoo/addons/mrp/models/mrp_workorder.py (Odoo 19.0)
     # Commit: 3f10d3c31b9d8aa65f4006f899afea5fb26b6719
     # Lines: ~150-172 (approximate)
+    # Modified to support calls from buttons via context
     
-    def set_state(self, state):
+    def set_state(self, state=None):
         """
         Change workorder state flexibly.
         
@@ -55,6 +56,7 @@ class MrpWorkorder(models.Model):
         
         Args:
             state (str): Target state ('ready', 'progress', 'done', 'cancel')
+                        If None, reads from context['state'] (for button calls)
         
         Special behavior:
             - If the workorder is in 'done' and wants to go to 'progress',
@@ -64,6 +66,11 @@ class MrpWorkorder(models.Model):
         Returns:
             bool: True if state change completed
         """
+        # Support button calls: read state from context if not provided
+        if state is None:
+            state = self.env.context.get('state')
+        if not state:
+            return False
         ids_to_update = []
         for wo in self:
             # Do not process if already in target state or if done/cancel
