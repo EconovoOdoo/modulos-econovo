@@ -49,8 +49,8 @@
             <field name="inherit_id" ref="mrp.mrp_production_workorder_form_view_inherit"/>
             <field name="arch" type="xml">
                 
-                <!-- Add buttons in form header -->
-                <xpath expr="//header/button[@name='button_start']" position="after">
+                <!-- Add buttons in form header after the state field -->
+                <xpath expr="//header/field[@name='state']" position="after">
                     
                     <!-- Button: Revert to Ready (only visible if done) -->
                     <button name="set_state" 
