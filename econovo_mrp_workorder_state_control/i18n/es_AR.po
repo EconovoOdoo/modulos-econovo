@@ -1,0 +1,128 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* econovo_mrp_workorder_state_control
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 17.0+e-20250501\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-12-19 17:57+0000\n"
+"PO-Revision-Date: 2025-12-19 17:57+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: econovo_mrp_workorder_state_control
+#: model:res.groups,comment:econovo_mrp_workorder_state_control.group_mrp_workorder_state_manager
+msgid ""
+"\n"
+"                Allows users to manually change the state of workorders,\n"
+"                including reverting from 'done' to previous states.\n"
+"                \n"
+"                WARNING: This permission should only be granted to trusted users\n"
+"                as it allows modifying the normal production flow.\n"
+"            "
+msgstr ""
+"\n"
+"                Permite a los usuarios cambiar manualmente el estado de las órdenes de trabajo,\n"
+"                incluyendo revertir desde 'terminado' a estados anteriores.\n"
+"                \n"
+"                ADVERTENCIA: Este permiso solo debe otorgarse a usuarios de confianza\n"
+"                ya que permite modificar el flujo normal de producción.\n"
+"            "
+
+#. module: econovo_mrp_workorder_state_control
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_workorder_state_control.mrp_workorder_view_form_inherit
+msgid ""
+"<strong>State Control Enabled:</strong> \n"
+"                        You can revert this workorder from Done to Ready using the \"⟲ Revert to Ready\" button.\n"
+"                        This feature is backported from Odoo 19."
+msgstr ""
+"<strong>Control de Estados Habilitado:</strong> \n"
+"                        Puede revertir esta orden de trabajo de Terminado a Listo usando el botón \"⟲ Revertir a Listo\".\n"
+"                        Esta funcionalidad está portada desde Odoo 19."
+
+#. module: econovo_mrp_workorder_state_control
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_workorder_state_control.mrp_workorder_view_form_inherit
+msgid ""
+"Are you sure you want to revert this work order from Done to Ready? This "
+"will allow re-processing."
+msgstr ""
+"¿Está seguro que desea revertir esta orden de trabajo de Terminado a Listo? "
+"Esto permitirá volver a procesarla."
+
+#. module: econovo_mrp_workorder_state_control
+#: model:ir.model.fields.selection,name:econovo_mrp_workorder_state_control.selection__mrp_workorder__state__cancel
+msgid "Cancelled"
+msgstr "Cancelado"
+
+#. module: econovo_mrp_workorder_state_control
+#. odoo-python
+#: code:addons/econovo_mrp_workorder_state_control/models/mrp_workorder.py:0
+#, python-format
+msgid ""
+"Cannot change workorder state: Manufacturing Order \"%s\" is in state \"%s\".\n"
+"\n"
+"State changes are only allowed when the Manufacturing Order is Confirmed, Planned, or In Progress."
+msgstr ""
+"No se puede cambiar el estado de la orden de trabajo: La Orden de Fabricación \"%s\" está en estado \"%s\".\n"
+"\n"
+"Los cambios de estado solo se permiten cuando la Orden de Fabricación está Confirmada, Planificada o En Progreso."
+
+#. module: econovo_mrp_workorder_state_control
+#: model:res.groups,name:econovo_mrp_workorder_state_control.group_mrp_workorder_state_manager
+msgid "Econovo MRP Workorder State Manager"
+msgstr "Econovo - Administrador de Estados de Órdenes de Trabajo"
+
+#. module: econovo_mrp_workorder_state_control
+#: model:ir.model.fields.selection,name:econovo_mrp_workorder_state_control.selection__mrp_workorder__state__done
+msgid "Finished"
+msgstr "Terminado"
+
+#. module: econovo_mrp_workorder_state_control
+#: model:ir.model.fields.selection,name:econovo_mrp_workorder_state_control.selection__mrp_workorder__state__progress
+msgid "In Progress"
+msgstr "En progreso"
+
+#. module: econovo_mrp_workorder_state_control
+#: model:ir.model.fields.selection,name:econovo_mrp_workorder_state_control.selection__mrp_workorder__state__ready
+msgid "Ready"
+msgstr "Listo"
+
+#. module: econovo_mrp_workorder_state_control
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_workorder_state_control.mrp_workorder_view_tree_inherit
+msgid "Set to Ready"
+msgstr "Establecer como Listo"
+
+#. module: econovo_mrp_workorder_state_control
+#: model:ir.model.fields,field_description:econovo_mrp_workorder_state_control.field_mrp_workorder__state
+msgid "Status"
+msgstr "Estado"
+
+#. module: econovo_mrp_workorder_state_control
+#: model:ir.model.fields.selection,name:econovo_mrp_workorder_state_control.selection__mrp_workorder__state__pending
+msgid "Waiting for another WO"
+msgstr "En espera de otra orden de trabajo"
+
+#. module: econovo_mrp_workorder_state_control
+#: model:ir.model.fields.selection,name:econovo_mrp_workorder_state_control.selection__mrp_workorder__state__waiting
+msgid "Waiting for components"
+msgstr "En espera de componentes"
+
+#. module: econovo_mrp_workorder_state_control
+#: model:ir.model,name:econovo_mrp_workorder_state_control.model_mrp_workorder
+msgid "Work Order"
+msgstr "Orden de trabajo"
+
+#. module: econovo_mrp_workorder_state_control
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_workorder_state_control.mrp_workorder_view_form_inherit
+msgid "▶ Set to Progress"
+msgstr "▶ Establecer como En Progreso"
+
+#. module: econovo_mrp_workorder_state_control
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_workorder_state_control.mrp_workorder_view_form_inherit
+msgid "⟲ Revert to Ready"
+msgstr "⟲ Revertir a Listo"
