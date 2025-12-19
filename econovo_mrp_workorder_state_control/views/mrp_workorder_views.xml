@@ -18,6 +18,7 @@
                         <button name="set_state" 
                                 string="Set to Ready" 
                                 type="object"
+                                class="btn btn-primary text-uppercase"
                                 context="{'state': 'ready'}"
                                 groups="econovo_mrp_workorder_state_control.group_mrp_workorder_state_manager"/>
                         
@@ -25,6 +26,7 @@
                         <button name="set_state" 
                                 string="Set to Progress" 
                                 type="object"
+                                class="btn btn-warning text-uppercase"
                                 context="{'state': 'progress'}"
                                 groups="econovo_mrp_workorder_state_control.group_mrp_workorder_state_manager"/>
                         
@@ -32,6 +34,7 @@
                         <button name="set_state" 
                                 string="Set to Done" 
                                 type="object"
+                                class="btn btn-success text-uppercase"
                                 context="{'state': 'done'}"
                                 groups="econovo_mrp_workorder_state_control.group_mrp_workorder_state_manager"/>
                     </header>

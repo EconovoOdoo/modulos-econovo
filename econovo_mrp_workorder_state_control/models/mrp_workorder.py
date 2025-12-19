@@ -71,10 +71,22 @@ class MrpWorkorder(models.Model):
             state = self.env.context.get('state')
         if not state:
             return False
+        
         ids_to_update = []
         for wo in self:
-            # Do not process if already in target state or if done/cancel
-            if wo.state == state or 'done' in (wo.state, wo.production_state):
+            # Do not process if already in target state
+            if wo.state == state:
+                continue
+            
+            # Validate: Cannot change state if manufacturing order is not in valid state
+            # Only allow changes if MO is confirmed, planned, or in progress
+            if wo.production_state in ('draft', 'done', 'cancel'):
+                raise UserError(_(
+                    'Cannot change workorder state: '
+                    'Manufacturing Order "%s" is in state "%s".\n\n'
+                    'State changes are only allowed when the Manufacturing Order '
+                    'is Confirmed, Planned, or In Progress.'
+                ) % (wo.production_id.name, dict(wo.production_id._fields['state'].selection).get(wo.production_state)))
                 continue
             
             # If in progress, pause first
