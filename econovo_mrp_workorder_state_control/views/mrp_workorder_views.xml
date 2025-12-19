@@ -11,30 +11,14 @@
             <field name="inherit_id" ref="mrp.mrp_production_workorder_tree_view"/>
             <field name="arch" type="xml">
                 
-                <!-- Add mass action buttons BEFORE the native header buttons -->
+                <!-- Add SET TO READY button BEFORE native buttons (non-duplicated functionality) -->
                 <xpath expr="//header/button[@name='button_start']" position="before">
-                    <!-- Button: Set to Ready (blue like native Available button) -->
+                    <!-- Button: Set to Ready (allows reverting from done/progress states) -->
                     <button name="set_state" 
                             string="Set to Ready" 
                             type="object"
                             class="btn btn-primary text-uppercase"
                             context="{'state': 'ready'}"
-                            groups="econovo_mrp_workorder_state_control.group_mrp_workorder_state_manager"/>
-                    
-                    <!-- Button: Set to Progress (green like native Start button) -->
-                    <button name="set_state" 
-                            string="Set to Progress" 
-                            type="object"
-                            class="btn btn-success text-uppercase"
-                            context="{'state': 'progress'}"
-                            groups="econovo_mrp_workorder_state_control.group_mrp_workorder_state_manager"/>
-                    
-                    <!-- Button: Set to Done (red like native Done button) -->
-                    <button name="set_state" 
-                            string="Set to Done" 
-                            type="object"
-                            class="btn btn-danger text-uppercase"
-                            context="{'state': 'done'}"
                             groups="econovo_mrp_workorder_state_control.group_mrp_workorder_state_manager"/>
                 </xpath>
 
