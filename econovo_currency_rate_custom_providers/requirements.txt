@@ -1,0 +1,10 @@
+# Dependencies for econovo_currency_rate_custom_providers module
+
+# Required dependencies
+requests>=2.25.0
+lxml>=4.6.0
+pytz
+
+# Optional dependencies for additional extraction methods
+cssselect>=1.1.0  # For CSS selector extraction
+jsonpath-ng>=1.5.0  # For JSONPath extraction
