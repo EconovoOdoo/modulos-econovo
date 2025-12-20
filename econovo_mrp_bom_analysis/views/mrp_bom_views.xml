@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ====================================================================
+         INHERIT BOM FORM VIEW - Add Smart Button
+         ==================================================================== -->
+    <record id="mrp_bom_form_view_inherit_analysis" model="ir.ui.view">
+        <field name="name">mrp.bom.form.inherit.econovo.analysis</field>
+        <field name="model">mrp.bom</field>
+        <field name="inherit_id" ref="mrp.mrp_bom_form_view"/>
+        <field name="arch" type="xml">
+            <!-- Add smart button -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_open_component_analysis" type="object"
+                        class="oe_stat_button" icon="fa-sitemap">
+                    <field name="component_analysis_count" widget="statinfo"
+                           string="Analysis"/>
+                </button>
+            </xpath>
+
+            <!-- Add regenerate button in header -->
+            <xpath expr="//sheet" position="before">
+                <header>
+                    <button name="action_regenerate_analysis" type="object"
+                            string="Regenerate Analysis" class="btn-secondary"
+                            invisible="component_analysis_count == 0"
+                            confirm="This will delete and regenerate the component analysis. Continue?"/>
+                </header>
+            </xpath>
+
+            <!-- Add last analysis date info -->
+            <xpath expr="//field[@name='code']" position="after">
+                <field name="last_analysis_date" readonly="1"
+                       invisible="not last_analysis_date"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ====================================================================
+         INHERIT BOM TREE VIEW - Add Analysis Count
+         ==================================================================== -->
+    <record id="mrp_bom_tree_view_inherit_analysis" model="ir.ui.view">
+        <field name="name">mrp.bom.tree.inherit.econovo.analysis</field>
+        <field name="model">mrp.bom</field>
+        <field name="inherit_id" ref="mrp.mrp_bom_tree_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='product_tmpl_id']" position="after">
+                <field name="component_analysis_count" string="Analysis" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
