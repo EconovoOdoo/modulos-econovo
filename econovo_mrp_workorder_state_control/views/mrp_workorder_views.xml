@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- ============================================================ -->
+        <!-- List View: Add mass action buttons -->
+        <!-- ============================================================ -->
+        <record id="mrp_workorder_view_tree_inherit" model="ir.ui.view">
+            <field name="name">mrp.workorder.view.tree.inherit.state.control</field>
+            <field name="model">mrp.workorder</field>
+            <field name="inherit_id" ref="mrp.mrp_production_workorder_tree_view"/>
+            <field name="arch" type="xml">
+                
+                <!-- Add SET TO READY button BEFORE native buttons (non-duplicated functionality) -->
+                <xpath expr="//header/button[@name='button_start']" position="before">
+                    <!-- Button: Set to Ready (allows reverting from done/progress states) -->
+                    <button name="set_state" 
+                            string="Set to Ready" 
+                            type="object"
+                            class="btn btn-info text-uppercase"
+                            context="{'state': 'ready'}"
+                            groups="econovo_mrp_workorder_state_control.group_mrp_workorder_state_manager"/>
+                </xpath>
+
+            </field>
+        </record>
+
+        <!-- ============================================================ -->
+        <!-- Form View: Add revert button -->
+        <!-- ============================================================ -->
+        <record id="mrp_workorder_view_form_inherit" model="ir.ui.view">
+            <field name="name">mrp.workorder.view.form.inherit.state.control</field>
+            <field name="model">mrp.workorder</field>
+            <field name="inherit_id" ref="mrp.mrp_production_workorder_form_view_inherit"/>
+            <field name="arch" type="xml">
+                
+                <!-- Add buttons in form header after the state field -->
+                <xpath expr="//header/field[@name='state']" position="after">
+                    
+                    <!-- Button: Revert to Ready (only visible if done) -->
+                    <button name="set_state" 
+                            string="⟲ Revert to Ready" 
+                            type="object"
+                            class="oe_highlight"
+                            context="{'state': 'ready'}"
+                            invisible="state != 'done'"
+                            confirm="Are you sure you want to revert this work order from Done to Ready? This will allow re-processing."
+                            groups="econovo_mrp_workorder_state_control.group_mrp_workorder_state_manager"/>
+                    
+                    <!-- Button: Set to Progress (visible in ready/waiting/pending) -->
+                    <button name="set_state" 
+                            string="▶ Set to Progress" 
+                            type="object"
+                            context="{'state': 'progress'}"
+                            invisible="state not in ('ready', 'waiting', 'pending')"
+                            groups="econovo_mrp_workorder_state_control.group_mrp_workorder_state_manager"/>
+                
+                </xpath>
+
+                <!-- Add informative note in form -->
+                <xpath expr="//sheet" position="before">
+                    <div class="alert alert-info" 
+                         role="alert" 
+                         invisible="state != 'done'"
+                         groups="econovo_mrp_workorder_state_control.group_mrp_workorder_state_manager">
+                        <strong>State Control Enabled:</strong> 
+                        You can revert this workorder from Done to Ready using the "⟲ Revert to Ready" button.
+                        This feature is backported from Odoo 19.
+                    </div>
+                </xpath>
+
+            </field>
+        </record>
+
+    </data>
+</odoo>
