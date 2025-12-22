@@ -39,7 +39,6 @@ Odoo version upgrades.
         'web.assets_backend': [
             'econovo_stock_barcode_manual_entry/static/src/**/*.js',
             'econovo_stock_barcode_manual_entry/static/src/**/*.xml',
-            'econovo_stock_barcode_manual_entry/static/src/**/*.scss',
         ],
     },
     'installable': True,

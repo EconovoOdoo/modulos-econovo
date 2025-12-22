@@ -7,15 +7,17 @@
         type a barcode without requiring a physical scanner or camera.
     -->
     <t t-name="econovo_stock_barcode_manual_entry.MainMenuManualEntry" t-inherit="stock_barcode.MainMenu" t-inherit-mode="extension">
-        <!-- Add manual entry button after the scanner container -->
+        <!-- Add manual entry button after the scanner container, using native Odoo classes -->
         <xpath expr="//div[hasclass('o_stock_barcode_container')]" position="after">
-            <div class="o_manual_barcode_entry_container text-center mt-3">
-                <button class="btn btn-outline-primary o_manual_barcode_entry_btn"
-                        t-on-click="openManualBarcodeEntry"
-                        title="Enter barcode manually">
-                    <i class="fa fa-keyboard-o me-2"/>
-                    <span>Manual Entry</span>
-                </button>
+            <div class="row justify-content-center mt-3 mb-2">
+                <div class="col-auto">
+                    <button class="btn btn-primary o_manual_barcode_entry_btn"
+                            t-on-click="openManualBarcodeEntry"
+                            title="Enter barcode manually">
+                        <i class="fa fa-keyboard-o me-2"/>
+                        <span>Manual Entry</span>
+                    </button>
+                </div>
             </div>
         </xpath>
     </t>
