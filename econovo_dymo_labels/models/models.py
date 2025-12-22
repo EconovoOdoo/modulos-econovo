@@ -89,11 +89,17 @@ class ReportEconovoDymoLabels(models.AbstractModel):
             
         docs = self.env['product.product'].browse(docids)
         
+        # Check if we should skip picking info (e.g., when printing from stock.quant)
+        skip_picking_info = False
+        if data and data.get('skip_picking_info'):
+            skip_picking_info = True
+        
         picking_location_map = {}
-        for product in docs:
-            real_location = self._get_real_destination_location(product, data)
-            if real_location:
-                picking_location_map[product.id] = real_location
+        if not skip_picking_info:
+            for product in docs:
+                real_location = self._get_real_destination_location(product, data)
+                if real_location:
+                    picking_location_map[product.id] = real_location
         
         report_data = {
             'doc_ids': docids,
@@ -102,6 +108,10 @@ class ReportEconovoDymoLabels(models.AbstractModel):
             'source_picking_info': None,
             'picking_location_map': picking_location_map,
         }
+        
+        # Skip all picking info logic if flag is set
+        if skip_picking_info:
+            return report_data
         
         source_picking_names = []
         

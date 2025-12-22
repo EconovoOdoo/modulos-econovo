@@ -1,6 +1,6 @@
 {
     'name': 'Econovo DYMO Labels',
-    'version': '17.0.4.2.0',
+    'version': '17.0.4.3.0',
     'summary': 'Custom DYMO label formats 100x70mm and 100x50mm for products',
     'category': 'Reporting',
     'author': 'Jose D. Leonett',

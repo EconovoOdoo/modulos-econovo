@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Add print labels action to stock.quant context menu (Print button) -->
+    <record id="action_print_labels_from_stock_quant" model="ir.actions.act_window">
+        <field name="name">Imprimir Etiquetas de Productos</field>
+        <field name="res_model">product.label.layout</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="stock.model_stock_quant"/>
+        <field name="binding_view_types">list</field>
+    </record>
+</odoo>
