@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!--
+        Extend the stock_barcode.MainMenu template to add a manual barcode entry button.
+        This button appears below the barcode scanner image and allows users to manually
+        type a barcode without requiring a physical scanner or camera.
+    -->
+    <t t-name="econovo_stock_barcode_manual_entry.MainMenuManualEntry" t-inherit="stock_barcode.MainMenu" t-inherit-mode="extension">
+        <!-- Add manual entry button after the scanner container -->
+        <xpath expr="//div[hasclass('o_stock_barcode_container')]" position="after">
+            <div class="o_manual_barcode_entry_container text-center mt-3">
+                <button class="btn btn-outline-primary o_manual_barcode_entry_btn"
+                        t-on-click="openManualBarcodeEntry"
+                        title="Enter barcode manually">
+                    <i class="fa fa-keyboard-o me-2"/>
+                    <span>Manual Entry</span>
+                </button>
+            </div>
+        </xpath>
+    </t>
+
+</templates>
