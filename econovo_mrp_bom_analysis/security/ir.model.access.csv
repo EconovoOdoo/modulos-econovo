@@ -1,3 +1,5 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_bom_component_analysis_user,bom.component.analysis.user,model_bom_component_analysis,mrp.group_mrp_user,1,1,1,0
 access_bom_component_analysis_manager,bom.component.analysis.manager,model_bom_component_analysis,mrp.group_mrp_manager,1,1,1,1
+access_product_category_origin_type_user,product.category.origin.type.user,model_product_category_origin_type,mrp.group_mrp_user,1,0,0,0
+access_product_category_origin_type_manager,product.category.origin.type.manager,model_product_category_origin_type,mrp.group_mrp_manager,1,1,1,1

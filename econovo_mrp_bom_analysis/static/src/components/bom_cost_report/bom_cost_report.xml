@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- Recursive Tree Node Template -->
+    <t t-name="econovo_mrp_bom_analysis.BomTreeNode">
+        <t t-foreach="nodes" t-as="node" t-key="node.id">
+            <!-- Only show if visible -->
+            <t t-if="node.visible !== false">
+                <t t-set="nodeIndent" t-value="node.depth * 20"/>
+                <div t-att-class="component.getNodeClasses(node)"
+                     t-attf-style="margin-left: {{ nodeIndent }}px;"
+                     t-on-click="() => component.onNodeClick(node)">
+                    
+                    <!-- Expand/Collapse Icon (only if has children) -->
+                    <t t-if="node.children and node.children.length > 0">
+                        <span class="o_toggle_icon me-1" 
+                              t-on-click="(ev) => component.toggleNode(ev, node)"
+                              style="width: 16px; display: inline-block;">
+                            <i t-attf-class="fa fa-fw #{node.expanded ? 'fa-caret-down' : 'fa-caret-right'}"/>
+                        </span>
+                    </t>
+                    <t t-else="">
+                        <span class="me-1" style="width: 16px; display: inline-block;"/>
+                    </t>
+                    
+                    <!-- Node Icon -->
+                    <t t-if="node.hasChildBom or node.isSubassembly">
+                        <i t-attf-class="fa fa-fw #{node.expanded ? 'fa-folder-open' : 'fa-folder'} me-1"/>
+                    </t>
+                    <t t-else="">
+                        <i class="fa fa-fw fa-cube text-muted me-1"/>
+                    </t>
+                    
+                    <!-- Node Name -->
+                    <span class="o_node_name text-truncate flex-grow-1" t-att-title="node.name">
+                        <t t-esc="node.name"/>
+                    </span>
+                    
+                    <!-- Cost Badge -->
+                    <span class="badge bg-secondary ms-1">
+                        <t t-esc="component.formatCost(node.totalCost)"/>
+                    </span>
+                </div>
+                
+                <!-- Recursive children -->
+                <t t-if="node.expanded and node.children and node.children.length > 0">
+                    <t t-call="econovo_mrp_bom_analysis.BomTreeNode">
+                        <t t-set="nodes" t-value="node.children"/>
+                        <t t-set="component" t-value="component"/>
+                    </t>
+                </t>
+            </t>
+        </t>
+    </t>
+
+    <!-- Main Report Template -->
+    <t t-name="econovo_mrp_bom_analysis.BomCostReport">
+        <Layout display="displayConfig" className="'o_action o_bom_cost_report h-100'">
+            <div class="o_content d-flex flex-column h-100">
+                <!-- Loading State -->
+                <t t-if="state.loading">
+                    <div class="d-flex justify-content-center align-items-center h-100">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </t>
+                
+                <t t-else="">
+                    <!-- Report Header -->
+                    <div class="o_bom_cost_report_header bg-light p-3 border-bottom">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <h4 class="mb-1">
+                                    <i class="fa fa-cubes text-primary me-2"/>
+                                    <t t-esc="state.bomProduct"/>
+                                </h4>
+                                <small class="text-muted">
+                                    BOM: <t t-esc="state.bomName"/>
+                                </small>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <div class="h3 text-primary mb-0">
+                                    <t t-esc="state.currencySymbol"/>
+                                    <t t-esc="formatCost(state.totalCost)"/>
+                                </div>
+                                <small class="text-muted">Total Cost</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <t t-if="hasData">
+                        <!-- Two-panel layout -->
+                        <div class="row g-0 flex-grow-1 o_two_panel_layout">
+                            <!-- Left Panel: BOM Tree Navigation -->
+                            <div class="col-md-3 border-end d-flex flex-column bg-white o_left_panel">
+                                <div class="p-2 bg-light border-bottom d-flex justify-content-between align-items-center">
+                                    <strong>
+                                        <i class="fa fa-sitemap me-1"/>
+                                        BOM Structure
+                                    </strong>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-secondary" 
+                                                t-on-click="expandAll" 
+                                                title="Expand All"
+                                                t-att-class="{'active': state.allExpanded}">
+                                            <i class="fa fa-plus-square-o"/>
+                                        </button>
+                                        <button class="btn btn-outline-secondary" 
+                                                t-on-click="collapseAll" 
+                                                title="Collapse All"
+                                                t-att-class="{'active': !state.allExpanded}">
+                                            <i class="fa fa-minus-square-o"/>
+                                        </button>
+                                        <button class="btn btn-outline-secondary" 
+                                                t-on-click="onShowAll" 
+                                                title="Show All">
+                                            <i class="fa fa-refresh"/>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="o_bom_tree_content p-2 flex-grow-1" style="overflow-y: auto; overflow-x: hidden;">
+                                    <!-- Root BOM Node -->
+                                    <div class="o_bom_tree_node py-2 px-2 rounded mb-2 cursor-pointer bg-primary text-white fw-bold d-flex align-items-center"
+                                         t-att-class="{'bg-primary text-white': !state.selectedNodeId, 'bg-primary-subtle': state.selectedNodeId}"
+                                         t-on-click="onShowAll">
+                                        <i class="fa fa-cubes me-2"/>
+                                        <span class="flex-grow-1 text-truncate" t-att-title="state.bomName">
+                                            <t t-esc="state.bomName"/>
+                                        </span>
+                                        <span class="badge bg-light text-dark ms-2">
+                                            <t t-esc="state.currencySymbol"/><t t-esc="formatCost(state.totalCost)"/>
+                                        </span>
+                                    </div>
+                                    
+                                    <!-- Hierarchical Tree -->
+                                    <t t-call="econovo_mrp_bom_analysis.BomTreeNode">
+                                        <t t-set="nodes" t-value="state.treeData"/>
+                                        <t t-set="component" t-value="this"/>
+                                    </t>
+                                </div>
+                            </div>
+                            
+                            <!-- Right Panel: Embedded List View -->
+                            <div class="col-md-9 o_right_panel">
+                                <View t-props="embeddedViewProps" t-key="viewKey"/>
+                            </div>
+                        </div>
+                    </t>
+                    <t t-else="">
+                        <!-- No content -->
+                        <div class="d-flex justify-content-center align-items-center flex-grow-1">
+                            <div class="text-center text-muted">
+                                <i class="fa fa-4x fa-cubes mb-3"/>
+                                <p class="h5">No BOM data to display</p>
+                                <p>Select a BOM to analyze its cost structure.</p>
+                            </div>
+                        </div>
+                    </t>
+                </t>
+            </div>
+        </Layout>
+    </t>
+
+</templates>

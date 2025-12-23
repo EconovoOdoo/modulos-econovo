@@ -39,10 +39,20 @@ Key Features:
     ],
     'data': [
         'security/ir.model.access.csv',
+        'data/product_category_origin_type_data.xml',
+        'views/product_category_origin_type_views.xml',
         'views/product_category_views.xml',
         'views/bom_component_analysis_views.xml',
         'views/mrp_bom_views.xml',
+        'views/bom_cost_report_views.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            'econovo_mrp_bom_analysis/static/src/components/**/*.js',
+            'econovo_mrp_bom_analysis/static/src/components/**/*.xml',
+            'econovo_mrp_bom_analysis/static/src/components/**/*.scss',
+        ],
+    },
     'installable': True,
     'application': False,
     'auto_install': False,

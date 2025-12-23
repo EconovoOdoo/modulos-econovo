@@ -22,22 +22,17 @@
 
                 <!-- BOM RELATIONSHIP -->
                 <field name="root_bom_id" string="Root BOM" readonly="1" optional="hide"/>
+
+                <!-- IDENTIFICATION -->
+                <field name="product_id" string="Component" readonly="1"/>
                 <field name="source_bom_id" string="Source BOM" readonly="1" optional="show"/>
                 <field name="bom_line_id" string="BOM Line" readonly="1" optional="hide"/>
 
-                <!-- IDENTIFICATION -->
-                <field name="default_code" string="Code" readonly="1" optional="show"/>
-                <field name="product_id" string="Component" readonly="1"/>
-
                 <!-- CATEGORY -->
-                <field name="categ_id" string="Category" optional="show"/>
+                <field name="categ_name" string="Category" readonly="1" optional="show"/>
                 <field name="categ_complete_name" string="Category Path" readonly="1" optional="hide"/>
-                <field name="origin_type" string="Type" optional="show" readonly="1"
-                       widget="badge"
-                       decoration-primary="origin_type == 'raw_material'"
-                       decoration-success="origin_type == 'commercial'"
-                       decoration-warning="origin_type == 'subassembly'"
-                       decoration-info="origin_type == 'component'"/>
+                <field name="origin_type_id" string="Type" optional="show" readonly="1"
+                       widget="badge"/>
 
                 <!-- QUANTITIES -->
                 <field name="bom_line_qty" string="BOM Qty"
@@ -59,11 +54,6 @@
                        widget="progressbar" optional="show" readonly="1"/>
                 <field name="cost_share_local_pct" string="Local %"
                        widget="progressbar" optional="show" readonly="1"/>
-                <field name="cost_variation_pct" string="Var. %"
-                       decoration-danger="cost_variation_pct > 5"
-                       decoration-warning="cost_variation_pct > 0 and cost_variation_pct &lt;= 5"
-                       decoration-success="cost_variation_pct &lt; 0"
-                       optional="show" readonly="1"/>
 
                 <!-- STOCK -->
                 <field name="qty_available" string="On Hand" optional="show" readonly="1"/>
@@ -105,9 +95,9 @@
         <field name="arch" type="xml">
             <search>
                 <field name="name"/>
-                <field name="default_code"/>
                 <field name="product_id"/>
                 <field name="categ_id"/>
+                <field name="categ_name"/>
                 <field name="categ_complete_name"/>
                 <field name="supplier_name"/>
 
@@ -129,23 +119,10 @@
 
                 <separator/>
 
-                <filter name="raw_material" string="Raw Material"
-                        domain="[('origin_type', '=', 'raw_material')]"/>
-                <filter name="commercial" string="Commercial"
-                        domain="[('origin_type', '=', 'commercial')]"/>
-                <filter name="subassembly_type" string="Subassembly Type"
-                        domain="[('origin_type', '=', 'subassembly')]"/>
-
-                <separator/>
-
                 <filter name="high_impact_global" string="High Global Impact (>5%)"
                         domain="[('cost_share_global_pct', '>', 5)]"/>
                 <filter name="high_impact_local" string="High Local Impact (>20%)"
                         domain="[('cost_share_local_pct', '>', 20)]"/>
-                <filter name="cost_increased" string="Cost Increased"
-                        domain="[('cost_variation_pct', '>', 0)]"/>
-                <filter name="cost_decreased" string="Cost Decreased"
-                        domain="[('cost_variation_pct', '&lt;', 0)]"/>
 
                 <separator/>
 
@@ -156,7 +133,7 @@
                     <filter name="group_by_product" string="Product"
                             context="{'group_by': 'product_id'}"/>
                     <filter name="group_by_origin" string="Origin Type"
-                            context="{'group_by': 'origin_type'}"/>
+                            context="{'group_by': 'origin_type_id'}"/>
                     <filter name="group_by_level" string="Level"
                             context="{'group_by': 'level'}"/>
                     <filter name="group_by_source_bom" string="Source BOM"
@@ -179,7 +156,7 @@
         <field name="arch" type="xml">
             <pivot string="Component Analysis">
                 <field name="categ_complete_name" type="row"/>
-                <field name="origin_type" type="col"/>
+                <field name="origin_type_id" type="col"/>
                 <field name="total_cost" type="measure"/>
                 <field name="quantity" type="measure"/>
                 <field name="cost_share_global_pct" type="measure"/>
@@ -196,7 +173,7 @@
         <field name="model">bom.component.analysis</field>
         <field name="arch" type="xml">
             <graph string="Cost Distribution" type="pie">
-                <field name="origin_type"/>
+                <field name="origin_type_id"/>
                 <field name="total_cost" type="measure"/>
             </graph>
         </field>
@@ -225,7 +202,9 @@
         <field name="view_mode">tree,pivot,graph</field>
         <field name="search_view_id" ref="bom_component_analysis_view_search"/>
         <field name="context">{
-            'search_default_group_by_category': 1
+            'search_default_group_by_category': 1,
+            'search_default_group_by_product': 1,
+            'search_default_group_by_source_bom': 1
         }</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">

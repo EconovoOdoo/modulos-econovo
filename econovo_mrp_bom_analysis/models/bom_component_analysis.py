@@ -82,17 +82,6 @@ class BomComponentAnalysis(models.Model):
         required=True,
         index=True
     )
-    product_tmpl_id = fields.Many2one(
-        comodel_name='product.template',
-        string='Product Template',
-        related='product_id.product_tmpl_id',
-        store=True
-    )
-    default_code = fields.Char(
-        string='Internal Reference',
-        related='product_id.default_code',
-        store=True
-    )
 
     # =========================================================================
     # CATEGORY (for grouping) - Mirror from product (bidirectional sync)
@@ -107,15 +96,24 @@ class BomComponentAnalysis(models.Model):
         help='Product category (mirror of product.categ_id).\n'
              'Changes here update the product directly.'
     )
+    categ_name = fields.Char(
+        string='Category Name',
+        related='categ_id.name',
+        store=True,
+        help='Short category name (e.g., "Chapa 1/2")'
+    )
     categ_complete_name = fields.Char(
         string='Category Full Name',
         related='categ_id.complete_name',
-        store=True
+        store=True,
+        help='Full category path (e.g., "All / Materials / Chapa / Chapa 1/2")'
     )
-    origin_type = fields.Selection(
+    origin_type_id = fields.Many2one(
+        comodel_name='product.category.origin.type',
         string='Origin Type',
-        related='categ_id.origin_type',
-        store=True
+        related='categ_id.origin_type_id',
+        store=True,
+        help='Component origin type from category'
     )
 
     # =========================================================================
@@ -235,27 +233,6 @@ class BomComponentAnalysis(models.Model):
              'Ejemplo: Si el subensamblaje cuesta $60 y este componente $30 → 50%\\n'
              'Nota: Los hermanos (mismo padre) siempre suman 100%.'
     )
-    previous_cost = fields.Float(
-        string='Previous Cost',
-        digits='Product Price',
-        help='Unit cost from the previous analysis. Used to calculate cost variation.'
-    )
-    cost_variation = fields.Float(
-        string='Cost Variation',
-        compute='_compute_variation',
-        store=True,
-        help='Absolute difference between current and previous unit cost.\n'
-             'Formula: cost_variation = standard_price - previous_cost\n'
-             'Positive = cost increased, Negative = cost decreased.'
-    )
-    cost_variation_pct = fields.Float(
-        string='Variation %',
-        compute='_compute_variation',
-        store=True,
-        help='Percentage change in cost compared to previous analysis.\n'
-             'Formula: cost_variation_pct = ((standard_price - previous_cost) / previous_cost) × 100\n'
-             'Positive = cost increased, Negative = cost decreased.'
-    )
 
     # =========================================================================
     # STOCK (read-only)
@@ -313,11 +290,11 @@ class BomComponentAnalysis(models.Model):
     # COMPUTE METHODS
     # =========================================================================
 
-    @api.depends('default_code', 'product_id.name')
+    @api.depends('product_id.name', 'product_id.default_code')
     def _compute_name(self):
         for rec in self:
-            if rec.default_code:
-                rec.name = f"[{rec.default_code}] {rec.product_id.name}"
+            if rec.product_id.default_code:
+                rec.name = f"[{rec.product_id.default_code}] {rec.product_id.name}"
             else:
                 rec.name = rec.product_id.name or ''
 
@@ -399,16 +376,6 @@ class BomComponentAnalysis(models.Model):
                 rec.cost_share_local_pct = (rec.total_cost / total_local) * 100
             else:
                 rec.cost_share_local_pct = 0
-
-    @api.depends('standard_price', 'previous_cost')
-    def _compute_variation(self):
-        for rec in self:
-            if rec.previous_cost and rec.previous_cost > 0:
-                rec.cost_variation = rec.standard_price - rec.previous_cost
-                rec.cost_variation_pct = (rec.cost_variation / rec.previous_cost) * 100
-            else:
-                rec.cost_variation = 0
-                rec.cost_variation_pct = 0
 
     @api.depends('product_id')
     def _compute_seller_info(self):

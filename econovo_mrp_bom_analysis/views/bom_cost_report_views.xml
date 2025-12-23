@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Client Action for BOM Cost Report -->
+    <record id="action_bom_cost_report" model="ir.actions.client">
+        <field name="name">BOM Cost Analysis</field>
+        <field name="tag">bom_cost_report</field>
+        <field name="context">{'active_test': False}</field>
+        <field name="params" eval="{'display_name': 'BOM Cost Analysis'}"/>
+    </record>
+
+    <!-- Menu Item for BOM Cost Report (under Manufacturing > Reporting) -->
+    <menuitem 
+        id="menu_bom_cost_report"
+        name="BOM Cost Analysis"
+        parent="mrp.menu_mrp_reporting"
+        action="action_bom_cost_report"
+        sequence="50"/>
+
+</odoo>

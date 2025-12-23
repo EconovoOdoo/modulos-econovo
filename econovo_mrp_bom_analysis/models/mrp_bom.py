@@ -34,16 +34,13 @@ class MrpBom(models.Model):
             self._generate_component_analysis()
 
         return {
-            'type': 'ir.actions.act_window',
-            'name': _('Component Analysis: %s') % self.display_name,
-            'res_model': 'bom.component.analysis',
-            'view_mode': 'tree,pivot,graph',
-            'domain': [('root_bom_id', '=', self.id)],
+            'type': 'ir.actions.client',
+            'tag': 'bom_cost_report',
+            'name': _('Cost Analysis: %s') % self.display_name,
             'context': {
-                'default_root_bom_id': self.id,
-                'search_default_group_by_category': 1,
+                'active_id': self.id,
+                'bom_id': self.id,
             },
-            'target': 'current',
         }
 
     def action_regenerate_analysis(self):
@@ -124,7 +121,6 @@ class MrpBom(models.Model):
                 'uom_id': comp['uom'].id,
                 # Non-related fields that need explicit values:
                 'standard_price_usd': getattr(product, 'standard_price_usd', 0.0),
-                'previous_cost': product.standard_price,
                 'is_subassembly': bool(comp.get('bom_id')),
                 'child_bom_id': comp.get('bom_id'),
             }

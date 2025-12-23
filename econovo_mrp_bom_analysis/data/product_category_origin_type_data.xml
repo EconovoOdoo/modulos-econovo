@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <!-- Default Origin Types -->
+    <record id="origin_type_raw_material" model="product.category.origin.type">
+        <field name="name">Raw Material</field>
+        <field name="code">raw_material</field>
+        <field name="sequence">10</field>
+        <field name="color">1</field>
+        <field name="description">Basic raw materials like steel sheets, profiles, etc.</field>
+    </record>
+
+    <record id="origin_type_commercial" model="product.category.origin.type">
+        <field name="name">Commercial</field>
+        <field name="code">commercial</field>
+        <field name="sequence">20</field>
+        <field name="color">10</field>
+        <field name="description">Purchased products ready to use without transformation.</field>
+    </record>
+
+    <record id="origin_type_subassembly" model="product.category.origin.type">
+        <field name="name">Subassembly</field>
+        <field name="code">subassembly</field>
+        <field name="sequence">30</field>
+        <field name="color">3</field>
+        <field name="description">Manufactured sub-components with their own BOM.</field>
+    </record>
+
+    <record id="origin_type_component" model="product.category.origin.type">
+        <field name="name">Component</field>
+        <field name="code">component</field>
+        <field name="sequence">40</field>
+        <field name="color">4</field>
+        <field name="description">General components without specific classification.</field>
+    </record>
+
+    <record id="origin_type_consumable" model="product.category.origin.type">
+        <field name="name">Consumable</field>
+        <field name="code">consumable</field>
+        <field name="sequence">50</field>
+        <field name="color">5</field>
+        <field name="description">Consumable materials like welding wire, paint, etc.</field>
+    </record>
+
+    <record id="origin_type_service" model="product.category.origin.type">
+        <field name="name">Service</field>
+        <field name="code">service</field>
+        <field name="sequence">60</field>
+        <field name="color">6</field>
+        <field name="description">External services like machining, painting, etc.</field>
+    </record>
+
+</odoo>

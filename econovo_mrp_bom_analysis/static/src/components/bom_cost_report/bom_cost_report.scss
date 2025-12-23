@@ -1,0 +1,308 @@
+/* BOM Cost Report Styles */
+.o_bom_cost_report {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+
+    .o_content {
+        flex: 1;
+        overflow: hidden;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Header Section */
+    .o_bom_cost_report_header {
+        flex-shrink: 0;
+        background: #f8f9fa;
+    }
+
+    /* Ensure row takes remaining space */
+    .row.flex-grow-1 {
+        flex: 1;
+        min-height: 0; /* Critical for flex scroll */
+    }
+
+    /* Tree Panel (Left) */
+    .o_bom_tree_content {
+        font-size: 0.875rem;
+        min-height: 0; /* Critical for flex scroll */
+
+        .o_bom_tree_node {
+            padding: 6px 8px;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-bottom: 2px;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            min-height: 32px;
+
+            &:hover:not(.bg-primary) {
+                background-color: rgba(0, 0, 0, 0.05);
+            }
+
+            &.bg-light:hover {
+                background-color: rgba(0, 0, 0, 0.08) !important;
+            }
+
+            .o_toggle_icon {
+                cursor: pointer;
+                opacity: 0.6;
+                transition: opacity 0.15s;
+
+                &:hover {
+                    opacity: 1;
+                }
+            }
+
+            .o_node_name {
+                flex: 1;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .badge {
+                font-size: 0.7rem;
+                font-weight: normal;
+            }
+        }
+
+        /* Level-based styling */
+        .o_line_level_0 {
+            font-weight: 600;
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+
+        .o_line_level_1 {
+            font-weight: 500;
+        }
+    }
+
+    /* Details Panel (Right) */
+    .o_bom_details_panel {
+        background: #fff;
+        max-height: calc(100vh - 200px);
+        overflow-y: auto;
+
+        .o_bom_details_table {
+            margin-bottom: 0;
+            font-size: 0.875rem;
+
+            thead {
+                position: sticky;
+                top: 0;
+                z-index: 5;
+
+                th {
+                    font-weight: 600;
+                    white-space: nowrap;
+                    border-bottom-width: 2px;
+                }
+            }
+
+            tbody {
+                tr {
+                    transition: background-color 0.15s ease;
+
+                    &:hover {
+                        background-color: rgba(0, 0, 0, 0.03);
+                    }
+
+                    &.selected {
+                        background-color: rgba(var(--bs-primary-rgb), 0.1);
+                    }
+
+                    &.o_line_level_0 {
+                        background-color: rgba(0, 0, 0, 0.02);
+                        font-weight: 600;
+                    }
+                }
+
+                td {
+                    vertical-align: middle;
+                    padding: 0.5rem;
+                }
+            }
+
+            /* Column alignment classes */
+            .text-end {
+                text-align: right !important;
+            }
+
+            .text-center {
+                text-align: center !important;
+            }
+        }
+    }
+
+    /* Fold button styling */
+    .o_bom_fold_button {
+        color: inherit;
+        width: 20px;
+        height: 20px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        &:hover {
+            color: var(--bs-primary);
+        }
+
+        &:focus {
+            box-shadow: none;
+        }
+    }
+
+    /* No content styling */
+    .o_view_nocontent {
+        padding: 2rem;
+        text-align: center;
+
+        .o_view_nocontent_smiling_face {
+            font-size: 1.2rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+
+            &::before {
+                content: "😊";
+                margin-right: 0.5rem;
+            }
+        }
+    }
+
+    /* Cost highlighting */
+    .cost-high {
+        color: #dc3545;
+        font-weight: 600;
+    }
+
+    .cost-medium {
+        color: #fd7e14;
+    }
+
+    .cost-low {
+        color: #28a745;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .row.g-0 {
+            flex-direction: column;
+        }
+
+        .o_bom_tree_panel,
+        .o_bom_details_panel {
+            max-height: none;
+        }
+
+        .o_bom_tree_panel {
+            border-right: none;
+            border-bottom: 1px solid var(--bs-border-color);
+            max-height: 200px;
+        }
+    }
+}
+
+/* Loading state */
+.o_bom_cost_report.loading {
+    .o_content {
+        opacity: 0.6;
+        pointer-events: none;
+    }
+}
+
+/* Main BOM Cost Report Layout */
+.o_bom_cost_report {
+    /* Two-panel layout */
+    .o_two_panel_layout {
+        min-height: 0; /* Critical for flex scroll */
+        overflow: hidden;
+    }
+
+    /* Left Panel */
+    .o_left_panel {
+        min-height: 0;
+        overflow: hidden;
+
+        .o_bom_tree_content {
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+    }
+
+    /* Right Panel - follows Odoo's o_content pattern */
+    .o_right_panel {
+        position: relative;
+        min-height: 0;
+        overflow: hidden;
+
+        /* The View component creates these containers */
+        > .o_action,
+        > .o_view_controller,
+        .o_action_manager > .o_action {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .o_control_panel {
+            flex: 0 0 auto;
+        }
+
+        .o_content {
+            flex: 1 1 auto;
+            position: relative;
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        /* List view specific */
+        .o_list_view {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .o_list_renderer {
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow: auto;
+        }
+
+        .o_list_table {
+            thead {
+                position: sticky;
+                top: 0;
+                z-index: 2;
+                background-color: var(--o-webclient-background-color, #f8f9fa);
+
+                th {
+                    background-color: var(--o-webclient-background-color, #f8f9fa);
+                }
+            }
+
+            tfoot {
+                position: sticky;
+                bottom: 0;
+                z-index: 2;
+                background-color: var(--o-list-footer-bg-color, #f8f9fa);
+
+                td {
+                    background-color: var(--o-list-footer-bg-color, #f8f9fa);
+                }
+            }
+        }
+    }
+}
