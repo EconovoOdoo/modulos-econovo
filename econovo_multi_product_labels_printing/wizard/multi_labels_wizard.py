@@ -27,16 +27,37 @@ class ProductLabelLayout(models.TransientModel):
     multi_enable = fields.Boolean('Habilitar múltiples cantidades', default=False,
                                 help='Permite especificar diferentes cantidades de etiquetas para cada producto')
     multi_label_line_ids = fields.One2many('product.multi.label.line', 'wizard_id', string='Productos')
+    from_stock_quant = fields.Boolean('Desde Stock Quant', default=False,
+                                       help='Indica si la impresión se inició desde stock.quant')
 
     @api.model
     def default_get(self, fields):
         res = super().default_get(fields)
-        if not res.get('multi_label_line_ids'):
+        active_model = self.env.context.get('active_model')
+        active_ids = self.env.context.get('active_ids', [])
+        
+        # Handle stock.quant: extract products and set them in the wizard
+        if active_model == 'stock.quant' and active_ids:
+            quants = self.env['stock.quant'].browse(active_ids)
+            products = quants.mapped('product_id')
+            if products:
+                # Set product_ids for the native wizard to work
+                res['product_ids'] = [(6, 0, products.ids)]
+                # Mark that we're coming from stock.quant (no traceability info)
+                res['from_stock_quant'] = True
+                # Also set multi_label_line_ids for our multi-quantity feature
+                qty = res.get('custom_quantity', 1)
+                res['multi_label_line_ids'] = [(0, 0, {
+                    'product_id': product.id,
+                    'quantity': qty,
+                }) for product in products]
+        elif not res.get('multi_label_line_ids'):
+            # Handle product.product and product.template (original logic)
             products = []
-            if self.env.context.get('active_model') == 'product.product':
-                products = self.env['product.product'].browse(self.env.context.get('active_ids', []))
-            elif self.env.context.get('active_model') == 'product.template':
-                templates = self.env['product.template'].browse(self.env.context.get('active_ids', []))
+            if active_model == 'product.product':
+                products = self.env['product.product'].browse(active_ids)
+            elif active_model == 'product.template':
+                templates = self.env['product.template'].browse(active_ids)
                 products = self.env['product.product'].search([('product_tmpl_id', 'in', templates.ids)])
             
             if products:
@@ -72,6 +93,10 @@ class ProductLabelLayout(models.TransientModel):
         
         if not data:
             data = {}
+        
+        # If coming from stock.quant, skip picking/traceability info in labels
+        if self.from_stock_quant:
+            data['skip_picking_info'] = True
         
         if self.multi_enable and self.multi_label_line_ids:
             # Duplicar los productos según la cantidad especificada
@@ -127,12 +152,20 @@ class ProductLabelLayout(models.TransientModel):
             # Crear el recordset de productos
             products = self.env['product.product'].browse(products_with_quantities)
             
+            # Build report data
+            report_data = {
+                'active_model': 'product.product',
+                'active_ids': products.ids,
+            }
+            
+            # If coming from stock.quant, skip picking/traceability info
+            if self.from_stock_quant:
+                report_data['skip_picking_info'] = True
+            
             # Retornar la acción del reporte DYMO
-            return self.env.ref('econovo_dymo_labels.action_report_dymo_labels').with_context(
-                active_model='product.product',
-                active_ids=products.ids,
-                discard_logo_check=True
-            ).report_action(products)
+            return self.env.ref('econovo_dymo_labels.action_report_dymo_labels').report_action(
+                products, data=report_data
+            )
         
         # Para otros formatos, usar el comportamiento estándar
         return super().process()

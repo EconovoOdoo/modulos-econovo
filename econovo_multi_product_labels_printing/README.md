@@ -21,11 +21,21 @@ El módulo `econovo_multi_product_labels_printing` extiende la funcionalidad del
 4. Hacer clic en "Instalar"
 
 ## Uso
+
+### Desde Productos
 1. Ir al módulo Inventario > Productos
 2. Seleccionar uno o varios productos desde la vista de lista
 3. Hacer clic en "Imprimir etiquetas"
 4. Ajustar la cantidad de etiquetas para cada producto en la tabla
 5. Hacer clic en "Imprimir"
+
+### Desde Ubicaciones de Inventario (Stock Quant)
+1. Ir al módulo Inventario > Información > Ubicaciones de inventario
+2. Seleccionar uno o varios registros de stock desde la vista de lista
+3. Hacer clic en el botón "Imprimir Etiquetas" en la parte superior
+4. El wizard se abrirá automáticamente con los productos extraídos de las ubicaciones seleccionadas
+5. Ajustar la cantidad de etiquetas para cada producto si es necesario
+6. Hacer clic en "Imprimir"
 
 ## Autor
 Jose D. Leonett
