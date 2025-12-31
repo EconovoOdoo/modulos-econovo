@@ -1,6 +1,6 @@
 {
     'name': 'Inventory Count History',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.1.0',
     'category': 'Inventory/Inventory',
     'summary': 'Track inventory count history for applied and non-applied counts',
     'description': """

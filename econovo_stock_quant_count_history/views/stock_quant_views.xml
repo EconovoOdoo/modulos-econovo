@@ -10,6 +10,9 @@
             <!-- Add count_history_count field (invisible, needed for button visibility) -->
             <xpath expr="//field[@name='inventory_quantity_set']" position="after">
                 <field name="count_history_count" column_invisible="True"/>
+                <field name="last_count_quantity" optional="hide"/>
+                <field name="last_count_user_id" optional="hide"/>
+                <field name="last_count_difference" optional="hide"/>
             </xpath>
             <!-- Add bulk action button in header -->
             <xpath expr="//header/button[@name='action_reset']" position="after">
