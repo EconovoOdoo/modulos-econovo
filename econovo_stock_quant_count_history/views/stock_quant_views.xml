@@ -11,6 +11,16 @@
             <xpath expr="//field[@name='inventory_quantity_set']" position="after">
                 <field name="count_history_count" column_invisible="True"/>
             </xpath>
+            <!-- Add last count columns after inventory_diff_quantity -->
+            <xpath expr="//field[@name='inventory_diff_quantity']" position="after">
+                <field name="last_count_quantity" optional="hide"/>
+                <field name="last_count_user_id" optional="hide"/>
+                <field name="last_count_difference" optional="hide"
+                    decoration-muted="last_count_difference == 0"
+                    decoration-danger="last_count_difference &lt; 0"
+                    decoration-success="last_count_difference &gt; 0"
+                    decoration-bf="last_count_difference != 0"/>
+            </xpath>
             <!-- Add bulk action button in header -->
             <xpath expr="//header/button[@name='action_reset']" position="after">
                 <button name="action_open_save_count_wizard"

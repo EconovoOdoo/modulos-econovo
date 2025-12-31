@@ -481,3 +481,33 @@ msgstr "Almacen"
 #: model_terms:ir.ui.view,arch_db:econovo_stock_quant_count_history.stock_quant_count_history_view_search
 msgid "With Difference"
 msgstr "Con Diferencia"
+
+#. module: econovo_stock_quant_count_history
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history.field_stock_quant__last_count_quantity
+msgid "Last Counted Qty"
+msgstr "Ult. Cant. Contada"
+
+#. module: econovo_stock_quant_count_history
+#: model:ir.model.fields,help:econovo_stock_quant_count_history.field_stock_quant__last_count_quantity
+msgid "Quantity counted in the last count history record"
+msgstr "Cantidad contada en el ultimo registro del historial de conteos"
+
+#. module: econovo_stock_quant_count_history
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history.field_stock_quant__last_count_user_id
+msgid "Last Counted By"
+msgstr "Ult. Contado Por"
+
+#. module: econovo_stock_quant_count_history
+#: model:ir.model.fields,help:econovo_stock_quant_count_history.field_stock_quant__last_count_user_id
+msgid "User who performed the last count"
+msgstr "Usuario que realizo el ultimo conteo"
+
+#. module: econovo_stock_quant_count_history
+#: model:ir.model.fields,field_description:econovo_stock_quant_count_history.field_stock_quant__last_count_difference
+msgid "Diff vs Last Count"
+msgstr "Dif. vs Ult. Conteo"
+
+#. module: econovo_stock_quant_count_history
+#: model:ir.model.fields,help:econovo_stock_quant_count_history.field_stock_quant__last_count_difference
+msgid "Difference between current inventory quantity and last counted quantity"
+msgstr "Diferencia entre la cantidad actual de inventario y la ultima cantidad contada"

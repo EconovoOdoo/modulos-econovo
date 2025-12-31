@@ -14,10 +14,51 @@ class StockQuant(models.Model):
         compute='_compute_count_history_count',
     )
 
+    # Fields from last count history record
+    last_count_quantity = fields.Float(
+        string='Last Counted Qty',
+        compute='_compute_last_count_info',
+        store=True,
+        digits='Product Unit of Measure',
+        help='Quantity counted in the last count history record',
+    )
+    last_count_user_id = fields.Many2one(
+        'res.users',
+        string='Last Counted By',
+        compute='_compute_last_count_info',
+        store=True,
+        help='User who performed the last count',
+    )
+    last_count_difference = fields.Float(
+        string='Diff vs Last Count',
+        compute='_compute_last_count_difference',
+        digits='Product Unit of Measure',
+        help='Difference between current inventory quantity and last counted quantity',
+    )
+
     @api.depends('count_history_ids')
     def _compute_count_history_count(self):
         for quant in self:
             quant.count_history_count = len(quant.count_history_ids)
+
+    @api.depends('count_history_ids.quantity_counted', 'count_history_ids.counted_by_id')
+    def _compute_last_count_info(self):
+        """Compute fields from the most recent count history record."""
+        for quant in self:
+            # count_history_ids is ordered by count_datetime desc, id desc
+            last_history = quant.count_history_ids[:1]
+            if last_history:
+                quant.last_count_quantity = last_history.quantity_counted
+                quant.last_count_user_id = last_history.counted_by_id
+            else:
+                quant.last_count_quantity = 0.0
+                quant.last_count_user_id = False
+
+    @api.depends('inventory_quantity', 'last_count_quantity')
+    def _compute_last_count_difference(self):
+        """Compute difference between current inventory qty and last counted qty."""
+        for quant in self:
+            quant.last_count_difference = quant.inventory_quantity - quant.last_count_quantity
 
     def _prepare_count_history_values(self, state='applied'):
         """Prepare values for creating count history record.
