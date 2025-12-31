@@ -13,6 +13,7 @@
 		"python.autoComplete.extraPaths": [
 			"D:\\Odoo\\ODOO-SRC\\odoo-17\\odoo"
 		],
-		"powershell.cwd": "GITHUB-SRC"
+		"powershell.cwd": "GITHUB-SRC",
+		"liveServer.settings.multiRootWorkspaceName": "GITHUB-SRC"
 	}
 }

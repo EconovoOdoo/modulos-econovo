@@ -90,11 +90,11 @@
                     </div>
 
                     <t t-if="hasData">
-                        <!-- Two-panel layout -->
-                        <div class="row g-0 flex-grow-1 o_two_panel_layout">
+                        <!-- Two-panel layout: pure flexbox, robust scroll -->
+                        <div class="o_two_panel_layout d-flex flex-grow-1 w-100" style="min-height:0; overflow:hidden;">
                             <!-- Left Panel: BOM Tree Navigation -->
-                            <div class="col-md-3 border-end d-flex flex-column bg-white o_left_panel">
-                                <div class="p-2 bg-light border-bottom d-flex justify-content-between align-items-center">
+                            <div class="o_left_panel d-flex flex-column border-end bg-white" style="flex:0 0 320px; min-width:220px; max-width:400px; min-height:0; overflow:hidden;">
+                                <div class="p-2 bg-light border-bottom d-flex justify-content-between align-items-center flex-shrink-0">
                                     <strong>
                                         <i class="fa fa-sitemap me-1"/>
                                         BOM Structure
@@ -119,7 +119,7 @@
                                         </button>
                                     </div>
                                 </div>
-                                <div class="o_bom_tree_content p-2 flex-grow-1" style="overflow-y: auto; overflow-x: hidden;">
+                                <div class="o_bom_tree_content p-2 flex-grow-1" style="overflow-y:auto; overflow-x:hidden; min-height:0;">
                                     <!-- Root BOM Node -->
                                     <div class="o_bom_tree_node py-2 px-2 rounded mb-2 cursor-pointer bg-primary text-white fw-bold d-flex align-items-center"
                                          t-att-class="{'bg-primary text-white': !state.selectedNodeId, 'bg-primary-subtle': state.selectedNodeId}"
@@ -132,7 +132,6 @@
                                             <t t-esc="state.currencySymbol"/><t t-esc="formatCost(state.totalCost)"/>
                                         </span>
                                     </div>
-                                    
                                     <!-- Hierarchical Tree -->
                                     <t t-call="econovo_mrp_bom_analysis.BomTreeNode">
                                         <t t-set="nodes" t-value="state.treeData"/>
@@ -140,9 +139,8 @@
                                     </t>
                                 </div>
                             </div>
-                            
                             <!-- Right Panel: Embedded List View -->
-                            <div class="col-md-9 o_right_panel">
+                            <div class="o_right_panel d-flex flex-column flex-grow-1" style="min-width:0; min-height:0; overflow:hidden;">
                                 <View t-props="embeddedViewProps" t-key="viewKey"/>
                             </div>
                         </div>

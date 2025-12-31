@@ -18,10 +18,44 @@
         background: #f8f9fa;
     }
 
-    /* Ensure row takes remaining space */
-    .row.flex-grow-1 {
-        flex: 1;
-        min-height: 0; /* Critical for flex scroll */
+
+    /* Two-panel layout: pure flexbox, robust scroll */
+    .o_two_panel_layout {
+        display: flex;
+        flex-direction: row;
+        flex: 1 1 0%;
+        min-height: 0;
+        width: 100%;
+        overflow-y: auto; /* Permitir desplazamiento vertical */
+    }
+
+    .o_left_panel {
+        display: flex;
+        flex-direction: column;
+        flex: 0 0 320px;
+        min-width: 220px;
+        max-width: 400px;
+        min-height: 0;
+        overflow: hidden;
+        background: #fff;
+        border-right: 1px solid var(--bs-border-color, #dee2e6);
+    }
+
+    .o_bom_tree_content {
+        flex: 1 1 0%;
+        min-height: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .o_right_panel {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 0%;
+        min-width: 0;
+        min-height: 0;
+        overflow: hidden;
+        position: relative;
     }
 
     /* Tree Panel (Left) */
@@ -81,10 +115,10 @@
         }
     }
 
-    /* Details Panel (Right) */
+    /* Details Panel (Right) - legacy, now handled by .o_right_panel and Odoo's .o_content */
     .o_bom_details_panel {
         background: #fff;
-        max-height: calc(100vh - 200px);
+        /* max-height removed, now handled by flexbox */
         overflow-y: auto;
 
         .o_bom_details_table {
@@ -189,19 +223,19 @@
 
     /* Responsive adjustments */
     @media (max-width: 768px) {
-        .row.g-0 {
+        .o_two_panel_layout {
             flex-direction: column;
         }
-
-        .o_bom_tree_panel,
-        .o_bom_details_panel {
-            max-height: none;
-        }
-
-        .o_bom_tree_panel {
+        .o_left_panel {
             border-right: none;
-            border-bottom: 1px solid var(--bs-border-color);
+            border-bottom: 1px solid var(--bs-border-color, #dee2e6);
+            max-width: none;
+            min-width: 0;
             max-height: 200px;
+        }
+        .o_right_panel {
+            min-width: 0;
+            min-height: 0;
         }
     }
 }
@@ -219,7 +253,7 @@
     /* Two-panel layout */
     .o_two_panel_layout {
         min-height: 0; /* Critical for flex scroll */
-        overflow: hidden;
+        overflow: auto; // Ensure scrollbars are visible when content overflows
     }
 
     /* Left Panel */
