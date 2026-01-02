@@ -10,8 +10,9 @@ class StockQuant(models.Model):
         string='Count History',
     )
     count_history_count = fields.Integer(
-        string='Count History',
+        string='# Counts',
         compute='_compute_count_history_count',
+        help='Number of count history records for this quant',
     )
 
     # Fields from last count history record
