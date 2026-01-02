@@ -139,7 +139,7 @@
         <field name="model">stock.quant.count.history</field>
         <field name="inherit_id" ref="econovo_stock_quant_count_history.stock_quant_count_history_view_search"/>
         <field name="arch" type="xml">
-            <xpath expr="//search" position="inside">
+            <xpath expr="//filter[@name='filter_was_applied']" position="after">
                 <separator/>
                 <filter string="With Loss" name="with_loss" 
                         domain="[('is_loss', '=', True)]"/>
@@ -151,7 +151,7 @@
                 <filter string="Value Source: Snapshot" name="source_snapshot" 
                         domain="[('value_source', '=', 'snapshot')]"/>
             </xpath>
-            <xpath expr="//group" position="inside">
+            <xpath expr="//filter[@name='groupby_month']" position="after">
                 <filter string="Value Source" name="group_value_source" 
                         context="{'group_by': 'value_source'}"/>
                 <filter string="Is Loss" name="group_is_loss" 
