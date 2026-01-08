@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Tree View -->
+    <record id="comex_operation_stage_view_tree" model="ir.ui.view">
+        <field name="name">comex.operation.stage.view.tree</field>
+        <field name="model">comex.operation.stage</field>
+        <field name="arch" type="xml">
+            <tree string="COMEX Stages" editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="operation_type"/>
+                <field name="is_starting_stage"/>
+                <field name="is_closing_stage"/>
+                <field name="is_cancel_stage"/>
+                <field name="fold"/>
+                <field name="parent_location_id"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="comex_operation_stage_view_form" model="ir.ui.view">
+        <field name="name">comex.operation.stage.view.form</field>
+        <field name="model">comex.operation.stage</field>
+        <field name="arch" type="xml">
+            <form string="COMEX Stage">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="sequence"/>
+                            <field name="operation_type"/>
+                            <field name="parent_location_id"/>
+                        </group>
+                        <group>
+                            <field name="is_starting_stage"/>
+                            <field name="is_closing_stage"/>
+                            <field name="is_cancel_stage"/>
+                            <field name="fold"/>
+                            <field name="active"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="description" placeholder="Description of this stage..."/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="comex_operation_stage_action" model="ir.actions.act_window">
+        <field name="name">COMEX Stages</field>
+        <field name="res_model">comex.operation.stage</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create COMEX operation stages
+            </p>
+            <p>
+                Define the workflow stages for your COMEX operations.
+            </p>
+        </field>
+    </record>
+
+</odoo>

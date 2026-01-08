@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Root Menu -->
+    <menuitem id="menu_comex_root"
+              name="COMEX"
+              web_icon="econovo_l10n_ar_comex,static/description/icon.png"
+              sequence="45"/>
+
+    <!-- Operations Menu -->
+    <menuitem id="menu_comex_operations"
+              name="Operations"
+              parent="menu_comex_root"
+              sequence="10"/>
+
+    <menuitem id="menu_comex_operation_all"
+              name="All Operations"
+              parent="menu_comex_operations"
+              action="comex_operation_action"
+              sequence="10"/>
+
+    <menuitem id="menu_comex_operation_import"
+              name="Imports"
+              parent="menu_comex_operations"
+              action="comex_operation_action_import"
+              sequence="20"/>
+
+    <menuitem id="menu_comex_operation_export"
+              name="Exports"
+              parent="menu_comex_operations"
+              action="comex_operation_action_export"
+              sequence="30"/>
+
+    <!-- Logistics Menu -->
+    <menuitem id="menu_comex_logistics"
+              name="Logistics"
+              parent="menu_comex_root"
+              sequence="20"/>
+
+    <menuitem id="menu_comex_shipments"
+              name="Shipments"
+              parent="menu_comex_logistics"
+              action="comex_shipment_action"
+              sequence="10"/>
+
+    <!-- Customs Menu -->
+    <menuitem id="menu_comex_customs"
+              name="Customs"
+              parent="menu_comex_root"
+              sequence="30"/>
+
+    <menuitem id="menu_comex_customs_clearance"
+              name="Customs Clearances"
+              parent="menu_comex_customs"
+              action="comex_customs_clearance_action"
+              sequence="10"/>
+
+    <!-- Financial Menu -->
+    <menuitem id="menu_comex_financial"
+              name="Financial"
+              parent="menu_comex_root"
+              sequence="40"/>
+
+    <menuitem id="menu_comex_mulc"
+              name="MULC Operations"
+              parent="menu_comex_financial"
+              action="comex_mulc_action"
+              sequence="10"/>
+
+    <!-- Configuration Menu -->
+    <menuitem id="menu_comex_configuration"
+              name="Configuration"
+              parent="menu_comex_root"
+              groups="group_comex_manager"
+              sequence="100"/>
+
+    <menuitem id="menu_comex_stages"
+              name="Stages"
+              parent="menu_comex_configuration"
+              action="comex_operation_stage_action"
+              sequence="10"/>
+
+</odoo>

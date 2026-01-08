@@ -1146,21 +1146,266 @@ class ComexOperation(models.Model):
 
 ---
 
-## 14. CONSIDERACIONES FINALES
+## 14. ISSUES IDENTIFICADOS Y CORRECCIONES
 
-### 14.1 Compatibilidad
+> **Análisis de pre-implementación**: Esta sección documenta los issues técnicos identificados
+> durante la revisión del diseño contra el código fuente de Odoo 17.
+
+### 14.1 Issue Crítico: Bucle Infinito en Sincronización de Fechas
+
+**Problema**: Dependencia circular entre `comex.operation.write()` y `purchase.order.write()`.
+
+```
+comex.operation.write(date_eta) → purchase.order.write(date_planned) 
+                                → comex.operation.write(date_eta) → LOOP
+```
+
+**Solución**: Usar flag de contexto `skip_comex_sync`:
+
+```python
+# En comex.operation
+def write(self, vals):
+    res = super().write(vals)
+    if 'date_eta' in vals and not self.env.context.get('skip_comex_sync'):
+        self.with_context(skip_comex_sync=True)._sync_dates_to_purchase_stock()
+    return res
+
+def _sync_dates_to_purchase_stock(self):
+    for record in self:
+        if not record.date_eta:
+            continue
+        eta_datetime = fields.Datetime.to_datetime(record.date_eta)
+        if record.purchase_order_ids:
+            record.purchase_order_ids.with_context(skip_comex_sync=True).write({
+                'date_planned': eta_datetime
+            })
+            record.purchase_order_ids.order_line.with_context(skip_comex_sync=True).write({
+                'date_planned': eta_datetime
+            })
+
+# En purchase.order
+def write(self, vals):
+    res = super().write(vals)
+    if 'date_planned' in vals and not self.env.context.get('skip_comex_sync'):
+        for order in self.filtered('comex_operation_id'):
+            if order.date_planned:
+                order.comex_operation_id.with_context(skip_comex_sync=True).write({
+                    'date_eta': order.date_planned.date()
+                })
+    return res
+```
+
+### 14.2 Issue Crítico: Cambio de Stage sin Validar Pickings Pendientes
+
+**Problema**: Si usuario cambia stage cuando el picking anterior no está validado, 
+el stock no existe en la ubicación origen del nuevo picking.
+
+**Solución**: Bloquear cambio de stage si hay pickings pendientes:
+
+```python
+def write(self, vals):
+    if 'stage_id' in vals:
+        for record in self:
+            pending_pickings = record.picking_ids.filtered(
+                lambda p: p.state not in ('done', 'cancel')
+            )
+            if pending_pickings:
+                raise UserError(_(
+                    "Cannot change stage while there are pending transfers:\n%s\n\n"
+                    "Please validate or cancel these transfers first."
+                ) % '\n'.join(pending_pickings.mapped('name')))
+    return super().write(vals)
+```
+
+### 14.3 Issue Crítico: Salto de Stages sin Stock en Ubicación Esperada
+
+**Problema**: Usuario arrastra Kanban de "En Viaje" a "Depósito Fiscal" saltando "Puerto".
+Stock está en `COMEX/En Viaje/Marítimo` pero sistema intenta mover desde `COMEX/Puerto/X`.
+
+**Solución**: Validar ubicación actual del stock:
+
+```python
+def _validate_stage_change_stock_location(self):
+    """Verify stock exists in expected location before stage change."""
+    self.ensure_one()
+    if not self.current_location_id:
+        return
+    
+    comex_root = self.env.ref('econovo_l10n_ar_comex.comex_location_root')
+    product_ids = self.purchase_order_ids.order_line.product_id.ids
+    
+    quants = self.env['stock.quant'].search([
+        ('product_id', 'in', product_ids),
+        ('location_id', 'child_of', comex_root.id),
+        ('quantity', '>', 0),
+    ])
+    
+    if quants and self.current_location_id not in quants.mapped('location_id'):
+        raise UserError(_(
+            "Stock is not in the expected location.\n"
+            "Expected: %(expected)s\n"
+            "Actual: %(actual)s",
+            expected=self.current_location_id.complete_name,
+            actual=', '.join(quants.mapped('location_id.complete_name'))
+        ))
+```
+
+### 14.4 Issue Alto: button_confirm Override Incompleto
+
+**Problema**: `purchase_stock._get_destination_location()` usa `picking_type`, NO la ruta.
+El picking se crea con destino incorrecto.
+
+**Solución**: Override completo de `button_confirm()`:
+
+```python
+class PurchaseOrderComex(models.Model):
+    _inherit = 'purchase.order'
+    
+    def button_confirm(self):
+        res = super().button_confirm()
+        for order in self.filtered('comex_operation_id'):
+            comex_location = order.comex_operation_id.current_location_id \
+                or order.comex_operation_id._get_default_transit_location()
+            
+            if not comex_location:
+                continue
+                
+            pickings = order.picking_ids.filtered(
+                lambda p: p.state not in ('done', 'cancel') and not p.comex_operation_id
+            )
+            for picking in pickings:
+                picking.write({
+                    'comex_operation_id': order.comex_operation_id.id,
+                    'location_dest_id': comex_location.id,
+                })
+                picking.move_ids.filtered(
+                    lambda m: m.state not in ('done', 'cancel')
+                ).write({'location_dest_id': comex_location.id})
+        return res
+```
+
+### 14.5 Issue Alto: Ubicaciones COMEX Padre sin company_id
+
+**Problema**: Si ubicación padre tiene `company_id`, hijos heredan. Para multi-company,
+las ubicaciones COMEX deben ser compartidas.
+
+**Solución**: Agregar `company_id=False` en ubicaciones view:
+
+```xml
+<record id="comex_location_root" model="stock.location">
+    <field name="name">COMEX</field>
+    <field name="usage">view</field>
+    <field name="company_id" eval="False"/>
+</record>
+
+<record id="comex_location_in_transit" model="stock.location">
+    <field name="name">En Viaje</field>
+    <field name="location_id" ref="comex_location_root"/>
+    <field name="usage">view</field>
+    <field name="company_id" eval="False"/>
+</record>
+```
+
+**Nota**: Ubicaciones transit hijas pueden tener `company_id=False` (puertos son 
+infraestructura compartida) o específico por empresa según necesidad.
+
+### 14.6 Issue Alto: Falta Relación Shipment ↔ Stock
+
+**Problema**: `comex.shipment` no tiene relación con pickings ni moves.
+No se puede rastrear qué embarque generó qué movimiento de stock.
+
+**Solución**: Agregar campos de relación:
+
+```python
+class ComexShipment(models.Model):
+    _name = 'comex.shipment'
+    
+    picking_ids = fields.One2many(
+        'stock.picking', 'comex_shipment_id', 
+        string="Stock Transfers",
+    )
+    move_ids = fields.One2many(
+        'stock.move', 'comex_shipment_id',
+        string="Stock Moves",
+    )
+
+class StockPicking(models.Model):
+    _inherit = 'stock.picking'
+    
+    comex_shipment_id = fields.Many2one(
+        'comex.shipment',
+        string="COMEX Shipment",
+        index=True,
+    )
+
+class StockMove(models.Model):
+    _inherit = 'stock.move'
+    
+    comex_shipment_id = fields.Many2one(
+        'comex.shipment',
+        string="COMEX Shipment",
+        related='picking_id.comex_shipment_id',
+        store=True,
+    )
+```
+
+### 14.7 Issue Medio: Onchange para operation_type
+
+**Problema**: Domain de `stage_id` usa `operation_type` que puede no estar seteado 
+en registro nuevo.
+
+**Solución**: Agregar onchange para resetear stage:
+
+```python
+@api.onchange('operation_type')
+def _onchange_operation_type(self):
+    """Reset stage when operation type changes."""
+    self.stage_id = self._get_default_stage()
+```
+
+### 14.8 Issue Medio: _read_group_stage_ids sin Filtro Active
+
+**Problema**: Kanban muestra stages inactivas.
+
+**Solución**:
+
+```python
+@api.model
+def _read_group_stage_ids(self, stages, domain, order):
+    search_domain = [
+        ('active', '=', True),  # Filtrar activas
+        '|', 
+        ('company_id', '=', False), 
+        ('company_id', '=', self.env.company.id)
+    ]
+    return stages.search(search_domain, order=order)
+```
+
+### 14.9 Decisiones de Diseño Tomadas
+
+| Decisión | Opción Elegida | Justificación |
+|----------|----------------|---------------|
+| Transit locations company_id | `False` para puertos/DF | Infraestructura compartida en Argentina |
+| Multi-shipment stage | Operación = mínimo stage de shipments | Refleja estado real de mercadería |
+| Exportación | Fase 2 | Priorizar importación que es más compleja |
+
+---
+
+## 15. CONSIDERACIONES FINALES
+
+### 15.1 Compatibilidad
 - ✅ Compatible con Odoo 17 CE y EE
 - ✅ No modifica comportamiento nativo de Odoo
 - ✅ Sigue guías de desarrollo OCA
 - ✅ Preparado para localización argentina (l10n_ar)
 
-### 14.2 Extensibilidad
+### 15.2 Extensibilidad
 - Etapas configurables sin modificar código
 - Ubicaciones COMEX configurables por usuario (puertos, depósitos fiscales, zonas francas)
 - Campos adicionales vía herencia
 - Integración con otros módulos COMEX de OCA
 
-### 14.3 Mantenimiento
+### 15.3 Mantenimiento
 - Código documentado en inglés
 - Tests unitarios para flujos críticos
 - Versionado semántico
@@ -1169,4 +1414,4 @@ class ComexOperation(models.Model):
 
 **Documento preparado por**: Jose D. Leonett / GitHub Copilot  
 **Fecha**: 7 de Enero de 2026  
-**Revisión**: 1.3 (Agrega secciones 12-13: Trazabilidad Stock y Integración Compras/Ventas)
+**Revisión**: 1.4 (Agrega sección 14: Issues Identificados y Correcciones)

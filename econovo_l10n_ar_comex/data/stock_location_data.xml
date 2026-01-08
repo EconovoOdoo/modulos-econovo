@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!--
+        COMEX Stock Location Hierarchy
+        ==============================
+        
+        COMEX (view) [company_id=False]
+        ├── En Viaje (view) - In Transit parent
+        │   ├── Marítimo (transit) - Sea freight
+        │   └── Aéreo (transit) - Air freight
+        ├── Puerto (view) - Port parent
+        │   ├── Buenos Aires (transit)
+        │   └── Rosario (transit)
+        ├── Zona Franca (view) - Free Zone parent
+        │   ├── La Plata (transit)
+        │   └── Tierra del Fuego (transit)
+        └── Depósito Fiscal (view) - Fiscal Warehouse parent
+            ├── Exolgan (transit)
+            ├── Terminal 4 (transit)
+            └── Ezeiza (transit)
+        -->
+
+        <!-- Root COMEX Location -->
+        <record id="comex_location_root" model="stock.location">
+            <field name="name">COMEX</field>
+            <field name="usage">view</field>
+            <field name="company_id" eval="False"/>
+            <field name="comment">Parent location for all COMEX transit locations.</field>
+        </record>
+
+        <!-- In Transit - Parent -->
+        <record id="comex_location_in_transit" model="stock.location">
+            <field name="name">En Viaje</field>
+            <field name="location_id" ref="comex_location_root"/>
+            <field name="usage">view</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!-- In Transit - Sea -->
+        <record id="comex_location_in_transit_sea" model="stock.location">
+            <field name="name">Marítimo</field>
+            <field name="location_id" ref="comex_location_in_transit"/>
+            <field name="usage">transit</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!-- In Transit - Air -->
+        <record id="comex_location_in_transit_air" model="stock.location">
+            <field name="name">Aéreo</field>
+            <field name="location_id" ref="comex_location_in_transit"/>
+            <field name="usage">transit</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!-- Port - Parent -->
+        <record id="comex_location_port" model="stock.location">
+            <field name="name">Puerto</field>
+            <field name="location_id" ref="comex_location_root"/>
+            <field name="usage">view</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!-- Port - Buenos Aires -->
+        <record id="comex_location_port_bsas" model="stock.location">
+            <field name="name">Buenos Aires</field>
+            <field name="location_id" ref="comex_location_port"/>
+            <field name="usage">transit</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!-- Port - Rosario -->
+        <record id="comex_location_port_rosario" model="stock.location">
+            <field name="name">Rosario</field>
+            <field name="location_id" ref="comex_location_port"/>
+            <field name="usage">transit</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!-- Free Zone - Parent -->
+        <record id="comex_location_free_zone" model="stock.location">
+            <field name="name">Zona Franca</field>
+            <field name="location_id" ref="comex_location_root"/>
+            <field name="usage">view</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!-- Free Zone - La Plata -->
+        <record id="comex_location_free_zone_laplata" model="stock.location">
+            <field name="name">La Plata</field>
+            <field name="location_id" ref="comex_location_free_zone"/>
+            <field name="usage">transit</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!-- Free Zone - Tierra del Fuego -->
+        <record id="comex_location_free_zone_tdf" model="stock.location">
+            <field name="name">Tierra del Fuego</field>
+            <field name="location_id" ref="comex_location_free_zone"/>
+            <field name="usage">transit</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!-- Fiscal Warehouse - Parent -->
+        <record id="comex_location_fiscal_warehouse" model="stock.location">
+            <field name="name">Depósito Fiscal</field>
+            <field name="location_id" ref="comex_location_root"/>
+            <field name="usage">view</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!-- Fiscal Warehouse - Exolgan -->
+        <record id="comex_location_fiscal_exolgan" model="stock.location">
+            <field name="name">Exolgan</field>
+            <field name="location_id" ref="comex_location_fiscal_warehouse"/>
+            <field name="usage">transit</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!-- Fiscal Warehouse - Terminal 4 -->
+        <record id="comex_location_fiscal_terminal4" model="stock.location">
+            <field name="name">Terminal 4</field>
+            <field name="location_id" ref="comex_location_fiscal_warehouse"/>
+            <field name="usage">transit</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!-- Fiscal Warehouse - Ezeiza (for air cargo) -->
+        <record id="comex_location_fiscal_ezeiza" model="stock.location">
+            <field name="name">Ezeiza</field>
+            <field name="location_id" ref="comex_location_fiscal_warehouse"/>
+            <field name="usage">transit</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+    </data>
+</odoo>

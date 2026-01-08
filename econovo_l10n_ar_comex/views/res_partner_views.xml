@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Inherit Partner Form -->
+    <record id="res_partner_view_form_inherit_comex" model="ir.ui.view">
+        <field name="name">res.partner.view.form.inherit.comex</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <!-- Add COMEX stat button -->
+            <div name="button_box" position="inside">
+                <button type="object" name="action_view_comex_operations"
+                        class="oe_stat_button" icon="fa-globe"
+                        invisible="comex_operation_count == 0">
+                    <field name="comex_operation_count" widget="statinfo" string="COMEX Ops"/>
+                </button>
+            </div>
+            <!-- Add COMEX fields in Sales & Purchase tab -->
+            <page name="sales_purchases" position="inside">
+                <group string="COMEX Information" name="comex_info">
+                    <group>
+                        <field name="is_customs_broker"/>
+                        <field name="is_freight_forwarder"/>
+                        <field name="is_shipping_line"/>
+                    </group>
+                    <group>
+                        <field name="customs_broker_license" invisible="not is_customs_broker"/>
+                    </group>
+                </group>
+            </page>
+        </field>
+    </record>
+
+    <!-- Search View for COMEX Partners -->
+    <record id="res_partner_view_search_inherit_comex" model="ir.ui.view">
+        <field name="name">res.partner.view.search.inherit.comex</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_res_partner_filter"/>
+        <field name="arch" type="xml">
+            <filter name="inactive" position="before">
+                <separator/>
+                <filter name="filter_customs_brokers" string="Customs Brokers" domain="[('is_customs_broker', '=', True)]"/>
+                <filter name="filter_freight_forwarders" string="Freight Forwarders" domain="[('is_freight_forwarder', '=', True)]"/>
+                <filter name="filter_shipping_lines" string="Shipping Lines" domain="[('is_shipping_line', '=', True)]"/>
+            </filter>
+        </field>
+    </record>
+
+</odoo>

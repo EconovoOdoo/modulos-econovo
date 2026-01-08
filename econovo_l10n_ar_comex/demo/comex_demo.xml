@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Demo Partners -->
+        <record id="demo_partner_broker" model="res.partner">
+            <field name="name">Customs Broker Demo S.A.</field>
+            <field name="is_company">True</field>
+            <field name="is_customs_broker">True</field>
+            <field name="customs_broker_license">12345-AR</field>
+            <field name="country_id" ref="base.ar"/>
+        </record>
+
+        <record id="demo_partner_forwarder" model="res.partner">
+            <field name="name">Global Freight Forwarder Demo</field>
+            <field name="is_company">True</field>
+            <field name="is_freight_forwarder">True</field>
+            <field name="country_id" ref="base.ar"/>
+        </record>
+
+        <record id="demo_partner_supplier_cn" model="res.partner">
+            <field name="name">China Supplier Demo Ltd</field>
+            <field name="is_company">True</field>
+            <field name="country_id" ref="base.cn"/>
+        </record>
+
+        <!-- Demo COMEX Operations -->
+        <record id="demo_comex_operation_1" model="comex.operation">
+            <field name="operation_type">import</field>
+            <field name="partner_id" ref="demo_partner_supplier_cn"/>
+            <field name="customs_broker_id" ref="demo_partner_broker"/>
+            <field name="freight_forwarder_id" ref="demo_partner_forwarder"/>
+            <field name="stage_id" ref="stage_in_transit_sea"/>
+            <field name="transport_mode">sea</field>
+            <field name="origin_country_id" ref="base.cn"/>
+            <field name="destination_country_id" ref="base.ar"/>
+            <field name="date_operation" eval="(DateTime.today() - relativedelta(days=30)).strftime('%Y-%m-%d')"/>
+            <field name="date_etd" eval="(DateTime.today() - relativedelta(days=25)).strftime('%Y-%m-%d')"/>
+            <field name="date_eta" eval="(DateTime.today() + relativedelta(days=10)).strftime('%Y-%m-%d')"/>
+            <field name="amount_fob">50000.00</field>
+            <field name="amount_freight">3500.00</field>
+            <field name="amount_insurance">500.00</field>
+            <field name="current_location_id" ref="comex_location_in_transit_sea"/>
+        </record>
+
+        <record id="demo_comex_operation_2" model="comex.operation">
+            <field name="operation_type">import</field>
+            <field name="partner_id" ref="demo_partner_supplier_cn"/>
+            <field name="customs_broker_id" ref="demo_partner_broker"/>
+            <field name="stage_id" ref="stage_at_port"/>
+            <field name="transport_mode">sea</field>
+            <field name="origin_country_id" ref="base.cn"/>
+            <field name="destination_country_id" ref="base.ar"/>
+            <field name="date_operation" eval="(DateTime.today() - relativedelta(days=45)).strftime('%Y-%m-%d')"/>
+            <field name="date_arrival" eval="(DateTime.today() - relativedelta(days=5)).strftime('%Y-%m-%d')"/>
+            <field name="amount_fob">25000.00</field>
+            <field name="amount_freight">2000.00</field>
+            <field name="amount_insurance">250.00</field>
+            <field name="current_location_id" ref="comex_location_port_bsas"/>
+        </record>
+
+        <!-- Demo Shipment -->
+        <record id="demo_shipment_1" model="comex.shipment">
+            <field name="operation_id" ref="demo_comex_operation_1"/>
+            <field name="transport_mode">sea</field>
+            <field name="vessel_name">MSC DEMO VESSEL</field>
+            <field name="voyage_number">ABC123</field>
+            <field name="bl_number">MSCU1234567890</field>
+            <field name="bl_date" eval="(DateTime.today() - relativedelta(days=25)).strftime('%Y-%m-%d')"/>
+            <field name="origin_port">Shanghai, China</field>
+            <field name="destination_port">Buenos Aires, Argentina</field>
+            <field name="date_departure" eval="(DateTime.today() - relativedelta(days=25)).strftime('%Y-%m-%d')"/>
+            <field name="date_eta" eval="(DateTime.today() + relativedelta(days=10)).strftime('%Y-%m-%d')"/>
+        </record>
+
+        <!-- Demo Container -->
+        <record id="demo_container_1" model="comex.shipment.container">
+            <field name="shipment_id" ref="demo_shipment_1"/>
+            <field name="container_number">MSCU1234567</field>
+            <field name="container_type">40HC</field>
+            <field name="seal_number">SEAL12345</field>
+            <field name="weight_gross">25000</field>
+            <field name="weight_net">22000</field>
+            <field name="volume">67.5</field>
+        </record>
+
+    </data>
+</odoo>

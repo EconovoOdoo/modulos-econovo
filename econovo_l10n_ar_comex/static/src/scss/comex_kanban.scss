@@ -1,0 +1,50 @@
+// COMEX Kanban Styles
+// =====================
+
+.o_kanban_view.o_comex_kanban {
+  // Priority colors for COMEX operations
+  .o_kanban_record {
+    &.o_kanban_color_0 {
+      border-left-color: $success !important;
+    }
+    &.o_kanban_color_1 {
+      border-left-color: $info !important;
+    }
+    &.o_kanban_color_2 {
+      border-left-color: $warning !important;
+    }
+    &.o_kanban_color_3 {
+      border-left-color: $danger !important;
+    }
+  }
+}
+
+// Stage badges in tree views
+.o_list_view {
+  .o_field_badge {
+    &[data-value="draft"] {
+      background-color: $secondary !important;
+    }
+    &[data-value="confirmed"] {
+      background-color: $info !important;
+    }
+    &[data-value="in_transit"] {
+      background-color: $primary !important;
+    }
+    &[data-value="at_port"] {
+      background-color: $warning !important;
+    }
+    &[data-value="nationalized"] {
+      background-color: $success !important;
+    }
+    &[data-value="cancelled"] {
+      background-color: $danger !important;
+    }
+  }
+}
+
+// MULC overdue indicator
+.o_comex_mulc_overdue {
+  color: $danger;
+  font-weight: bold;
+}

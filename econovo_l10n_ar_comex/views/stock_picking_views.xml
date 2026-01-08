@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Inherit Stock Picking Form -->
+    <record id="stock_picking_view_form_inherit_comex" model="ir.ui.view">
+        <field name="name">stock.picking.view.form.inherit.comex</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <field name="origin" position="after">
+                <field name="comex_operation_id" options="{'no_create': True}"/>
+                <field name="comex_shipment_id" options="{'no_create': True}"
+                       domain="[('operation_id', '=', comex_operation_id)]"
+                       invisible="not comex_operation_id"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Inherit Stock Picking Tree -->
+    <record id="stock_picking_view_tree_inherit_comex" model="ir.ui.view">
+        <field name="name">stock.picking.view.tree.inherit.comex</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.vpicktree"/>
+        <field name="arch" type="xml">
+            <field name="origin" position="after">
+                <field name="comex_operation_id" optional="hide"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Inherit Stock Picking Search -->
+    <record id="stock_picking_view_search_inherit_comex" model="ir.ui.view">
+        <field name="name">stock.picking.view.search.inherit.comex</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_internal_search"/>
+        <field name="arch" type="xml">
+            <filter name="starred" position="after">
+                <separator/>
+                <filter name="filter_comex" string="COMEX Transfers" domain="[('comex_operation_id', '!=', False)]"/>
+            </filter>
+        </field>
+    </record>
+
+</odoo>

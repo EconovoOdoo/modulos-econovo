@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+
+        <!-- COMEX Module Category -->
+        <record id="module_category_comex" model="ir.module.category">
+            <field name="name">COMEX</field>
+            <field name="description">Foreign Trade Operations Management</field>
+            <field name="sequence">50</field>
+        </record>
+
+        <!-- COMEX User Group -->
+        <record id="group_comex_user" model="res.groups">
+            <field name="name">User</field>
+            <field name="category_id" ref="module_category_comex"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+            <field name="comment">Can view and create COMEX operations.</field>
+        </record>
+
+        <!-- COMEX Manager Group -->
+        <record id="group_comex_manager" model="res.groups">
+            <field name="name">Manager</field>
+            <field name="category_id" ref="module_category_comex"/>
+            <field name="implied_ids" eval="[(4, ref('group_comex_user'))]"/>
+            <field name="comment">Can manage all COMEX operations, stages, and configuration.</field>
+        </record>
+
+        <!-- COMEX Admin Group (for multi-company) -->
+        <record id="group_comex_admin" model="res.groups">
+            <field name="name">Administrator</field>
+            <field name="category_id" ref="module_category_comex"/>
+            <field name="implied_ids" eval="[(4, ref('group_comex_manager'))]"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+            <field name="comment">Full access to COMEX configuration and multi-company settings.</field>
+        </record>
+
+    </data>
+</odoo>

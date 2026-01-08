@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Tree View -->
+    <record id="comex_mulc_view_tree" model="ir.ui.view">
+        <field name="name">comex.mulc.view.tree</field>
+        <field name="model">comex.mulc</field>
+        <field name="arch" type="xml">
+            <tree string="MULC Operations" decoration-info="state == 'draft'" decoration-warning="state in ('requested', 'approved')" decoration-success="state == 'executed'" decoration-danger="days_to_due &lt; 0">
+                <field name="name" decoration-bf="1"/>
+                <field name="operation_id"/>
+                <field name="mulc_type"/>
+                <field name="date"/>
+                <field name="due_date"/>
+                <field name="bank_id"/>
+                <field name="amount_foreign"/>
+                <field name="currency_id"/>
+                <field name="exchange_rate"/>
+                <field name="amount_local"/>
+                <field name="company_currency_id" column_invisible="1"/>
+                <field name="boleto_number" optional="show"/>
+                <field name="days_since_shipment" optional="show"/>
+                <field name="days_to_due" optional="show"/>
+                <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-warning="state in ('requested', 'approved')" decoration-success="state == 'executed'" decoration-danger="state == 'cancelled'"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="comex_mulc_view_form" model="ir.ui.view">
+        <field name="name">comex.mulc.view.form</field>
+        <field name="model">comex.mulc</field>
+        <field name="arch" type="xml">
+            <form string="MULC Operation">
+                <header>
+                    <button name="action_request" string="Request" type="object" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_approve" string="Approve" type="object"
+                            invisible="state != 'requested'"/>
+                    <button name="action_execute" string="Execute" type="object" class="btn-success"
+                            invisible="state != 'approved'"/>
+                    <button name="action_cancel" string="Cancel" type="object"
+                            invisible="state in ('executed', 'cancelled')"/>
+                    <button name="action_draft" string="Reset to Draft" type="object"
+                            invisible="state != 'cancelled'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,requested,approved,executed"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="e.g. MULC/2026/00001"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group name="main">
+                            <field name="operation_id"/>
+                            <field name="mulc_type"/>
+                            <field name="date"/>
+                            <field name="due_date"/>
+                        </group>
+                        <group name="bank">
+                            <field name="bank_id"/>
+                            <field name="swift_code"/>
+                            <field name="boleto_number"/>
+                            <field name="concept_code"/>
+                        </group>
+                    </group>
+                    <group string="Amounts">
+                        <group>
+                            <field name="currency_id"/>
+                            <field name="amount_foreign"/>
+                            <field name="exchange_rate"/>
+                        </group>
+                        <group>
+                            <field name="company_currency_id" invisible="1"/>
+                            <field name="amount_local"/>
+                            <label for="days_since_shipment"/>
+                            <div>
+                                <field name="days_since_shipment" class="oe_inline"/> days
+                            </div>
+                            <label for="days_to_due"/>
+                            <div class="text-danger" invisible="days_to_due >= 0">
+                                <field name="days_to_due" class="oe_inline"/> days (OVERDUE)
+                            </div>
+                            <div invisible="days_to_due &lt; 0">
+                                <field name="days_to_due" class="oe_inline"/> days
+                            </div>
+                        </group>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="comex_mulc_action" model="ir.actions.act_window">
+        <field name="name">MULC Operations</field>
+        <field name="res_model">comex.mulc</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a MULC (forex) operation
+            </p>
+            <p>
+                Track your foreign exchange operations required by BCRA regulations.
+            </p>
+        </field>
+    </record>
+
+</odoo>

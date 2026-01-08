@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Inherit Purchase Order Form -->
+    <record id="purchase_order_view_form_inherit_comex" model="ir.ui.view">
+        <field name="name">purchase.order.view.form.inherit.comex</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+            <!-- Add COMEX button box -->
+            <div name="button_box" position="inside">
+                <button name="action_view_comex_operation" type="object" 
+                        class="oe_stat_button" icon="fa-globe"
+                        invisible="not comex_operation_id">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">COMEX</span>
+                    </div>
+                </button>
+                <button name="action_create_comex_operation" type="object"
+                        class="oe_stat_button" icon="fa-plus-circle"
+                        invisible="comex_operation_id or state == 'cancel'">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">Create</span>
+                        <span class="o_stat_text">COMEX</span>
+                    </div>
+                </button>
+            </div>
+            <!-- Add COMEX field in main group -->
+            <field name="partner_ref" position="after">
+                <field name="comex_operation_id" 
+                       options="{'no_create': True}"
+                       context="{'default_partner_id': partner_id, 'default_operation_type': 'import'}"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Inherit Purchase Order Tree -->
+    <record id="purchase_order_view_tree_inherit_comex" model="ir.ui.view">
+        <field name="name">purchase.order.view.tree.inherit.comex</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_kpis_tree"/>
+        <field name="arch" type="xml">
+            <field name="partner_id" position="after">
+                <field name="comex_operation_id" optional="show"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Inherit Purchase Order Search -->
+    <record id="purchase_order_view_search_inherit_comex" model="ir.ui.view">
+        <field name="name">purchase.order.view.search.inherit.comex</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.view_purchase_order_filter"/>
+        <field name="arch" type="xml">
+            <field name="origin" position="after">
+                <field name="comex_operation_id" string="COMEX Operation"/>
+            </field>
+            <filter name="starred" position="before">
+                <filter name="filter_comex" string="COMEX Operations" domain="[('comex_operation_id', '!=', False)]"/>
+                <separator/>
+            </filter>
+            <filter name="vendor" position="after">
+                <filter name="group_comex" string="COMEX Operation" context="{'group_by': 'comex_operation_id'}"/>
+            </filter>
+        </field>
+    </record>
+
+</odoo>

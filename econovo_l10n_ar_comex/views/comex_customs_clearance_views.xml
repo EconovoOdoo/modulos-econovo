@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Tree View -->
+    <record id="comex_customs_clearance_view_tree" model="ir.ui.view">
+        <field name="name">comex.customs.clearance.view.tree</field>
+        <field name="model">comex.customs.clearance</field>
+        <field name="arch" type="xml">
+            <tree string="Customs Clearances" decoration-info="state == 'draft'" decoration-warning="state in ('submitted', 'approved')" decoration-success="state == 'released'">
+                <field name="name" decoration-bf="1"/>
+                <field name="operation_id"/>
+                <field name="clearance_type"/>
+                <field name="dispatch_number"/>
+                <field name="date_clearance"/>
+                <field name="date_nationalization"/>
+                <field name="customs_office"/>
+                <field name="amount_cif" optional="hide"/>
+                <field name="amount_duties"/>
+                <field name="amount_taxes"/>
+                <field name="amount_total" sum="Total"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-warning="state in ('submitted', 'approved', 'paid')" decoration-success="state == 'released'" decoration-danger="state == 'cancelled'"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="comex_customs_clearance_view_form" model="ir.ui.view">
+        <field name="name">comex.customs.clearance.view.form</field>
+        <field name="model">comex.customs.clearance</field>
+        <field name="arch" type="xml">
+            <form string="Customs Clearance">
+                <header>
+                    <button name="action_submit" string="Submit to ARCA" type="object" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_approve" string="Mark Approved" type="object"
+                            invisible="state != 'submitted'"/>
+                    <button name="action_pay" string="Mark Paid" type="object"
+                            invisible="state != 'approved'"/>
+                    <button name="action_release" string="Mark Released" type="object" class="btn-success"
+                            invisible="state != 'paid'"/>
+                    <button name="action_cancel" string="Cancel" type="object"
+                            invisible="state in ('released', 'cancelled')"/>
+                    <button name="action_draft" string="Reset to Draft" type="object"
+                            invisible="state != 'cancelled'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved,paid,released"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="e.g. DSP/2026/00001"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group name="main">
+                            <field name="operation_id"/>
+                            <field name="clearance_type"/>
+                            <field name="dispatch_number"/>
+                            <field name="customs_office"/>
+                        </group>
+                        <group name="dates">
+                            <field name="date_clearance"/>
+                            <field name="date_nationalization"/>
+                            <field name="fiscal_warehouse_id"/>
+                        </group>
+                    </group>
+                    <group string="Amounts">
+                        <group>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="amount_cif"/>
+                            <field name="amount_duties"/>
+                        </group>
+                        <group>
+                            <field name="amount_taxes"/>
+                            <field name="amount_fees"/>
+                            <field name="amount_total"/>
+                        </group>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="comex_customs_clearance_action" model="ir.actions.act_window">
+        <field name="name">Customs Clearances</field>
+        <field name="res_model">comex.customs.clearance</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a customs clearance (Despacho de Aduana)
+            </p>
+        </field>
+    </record>
+
+</odoo>

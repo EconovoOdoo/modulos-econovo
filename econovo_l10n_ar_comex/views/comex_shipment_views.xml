@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Tree View -->
+    <record id="comex_shipment_view_tree" model="ir.ui.view">
+        <field name="name">comex.shipment.view.tree</field>
+        <field name="model">comex.shipment</field>
+        <field name="arch" type="xml">
+            <tree string="Shipments">
+                <field name="name" decoration-bf="1"/>
+                <field name="operation_id"/>
+                <field name="transport_mode"/>
+                <field name="vessel_name"/>
+                <field name="bl_number"/>
+                <field name="date_departure"/>
+                <field name="date_eta"/>
+                <field name="date_arrival"/>
+                <field name="origin_port"/>
+                <field name="destination_port"/>
+                <field name="container_count"/>
+                <field name="stage_id" widget="badge" optional="show"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="comex_shipment_view_form" model="ir.ui.view">
+        <field name="name">comex.shipment.view.form</field>
+        <field name="model">comex.shipment</field>
+        <field name="arch" type="xml">
+            <form string="Shipment">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_pickings" type="object" class="oe_stat_button" icon="fa-truck"
+                                invisible="picking_count == 0">
+                            <field name="picking_count" widget="statinfo" string="Transfers"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="e.g. SHP/2026/00001"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group name="main">
+                            <field name="operation_id"/>
+                            <field name="stage_id"/>
+                            <field name="current_location_id"/>
+                            <field name="transport_mode" widget="radio" options="{'horizontal': true}"/>
+                        </group>
+                        <group name="transport">
+                            <field name="vessel_name"/>
+                            <field name="voyage_number"/>
+                            <field name="bl_number"/>
+                            <field name="bl_date"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group name="ports">
+                            <field name="origin_port"/>
+                            <field name="destination_port"/>
+                        </group>
+                        <group name="dates">
+                            <field name="date_departure"/>
+                            <field name="date_eta"/>
+                            <field name="date_arrival"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Containers" name="containers">
+                            <field name="container_ids">
+                                <tree editable="bottom">
+                                    <field name="container_number"/>
+                                    <field name="container_type"/>
+                                    <field name="seal_number"/>
+                                    <field name="weight_gross"/>
+                                    <field name="weight_net"/>
+                                    <field name="volume"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="comex_shipment_action" model="ir.actions.act_window">
+        <field name="name">Shipments</field>
+        <field name="res_model">comex.shipment</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first shipment
+            </p>
+        </field>
+    </record>
+
+</odoo>
