@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============================================ -->
+    <!-- CUSTOMS OFFICE VIEWS                         -->
+    <!-- ============================================ -->
+
+    <!-- Tree View -->
+    <record id="comex_customs_office_view_tree" model="ir.ui.view">
+        <field name="name">comex.customs.office.view.tree</field>
+        <field name="model">comex.customs.office</field>
+        <field name="arch" type="xml">
+            <tree string="Customs Offices">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="city"/>
+                <field name="office_type"/>
+                <field name="active" column_invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="comex_customs_office_view_form" model="ir.ui.view">
+        <field name="name">comex.customs.office.view.form</field>
+        <field name="model">comex.customs.office</field>
+        <field name="arch" type="xml">
+            <form string="Customs Office">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="toggle_active" type="object"
+                                class="oe_stat_button" icon="fa-archive">
+                            <field name="active" widget="boolean_button"
+                                   options='{"terminology": "archive"}'/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="Customs office name..."/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="office_type"/>
+                        </group>
+                        <group>
+                            <field name="city"/>
+                            <field name="state_id" options="{'no_create': True}"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="comex_customs_office_view_search" model="ir.ui.view">
+        <field name="name">comex.customs.office.view.search</field>
+        <field name="model">comex.customs.office</field>
+        <field name="arch" type="xml">
+            <search string="Search Customs Offices">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="city"/>
+                <separator/>
+                <filter string="Main" name="main" domain="[('office_type', '=', 'main')]"/>
+                <filter string="Secondary" name="secondary" domain="[('office_type', '=', 'secondary')]"/>
+                <filter string="Checkpoint" name="checkpoint" domain="[('office_type', '=', 'checkpoint')]"/>
+                <separator/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Type" name="group_type" context="{'group_by': 'office_type'}"/>
+                    <filter string="Province" name="group_province" context="{'group_by': 'state_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="comex_customs_office_action" model="ir.actions.act_window">
+        <field name="name">Customs Offices</field>
+        <field name="res_model">comex.customs.office</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="comex_customs_office_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first customs office
+            </p>
+            <p>
+                Define customs offices (Aduanas) for your import/export operations.
+            </p>
+        </field>
+    </record>
+
+</odoo>

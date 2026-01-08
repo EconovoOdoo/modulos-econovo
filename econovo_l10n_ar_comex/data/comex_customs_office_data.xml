@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- ============================================ -->
+        <!-- ARGENTINIAN CUSTOMS OFFICES (ARCA)           -->
+        <!-- ============================================ -->
+
+        <!-- Main Customs (Aduanas Principales) -->
+        <record id="customs_buenos_aires" model="comex.customs.office">
+            <field name="name">Aduana de Buenos Aires</field>
+            <field name="code">001</field>
+            <field name="office_type">main</field>
+            <field name="city">Buenos Aires</field>
+        </record>
+
+        <record id="customs_campana" model="comex.customs.office">
+            <field name="name">Aduana de Campana</field>
+            <field name="code">011</field>
+            <field name="office_type">main</field>
+            <field name="city">Campana</field>
+        </record>
+
+        <record id="customs_rosario" model="comex.customs.office">
+            <field name="name">Aduana de Rosario</field>
+            <field name="code">007</field>
+            <field name="office_type">main</field>
+            <field name="city">Rosario</field>
+        </record>
+
+        <record id="customs_cordoba" model="comex.customs.office">
+            <field name="name">Aduana de Córdoba</field>
+            <field name="code">018</field>
+            <field name="office_type">main</field>
+            <field name="city">Córdoba</field>
+        </record>
+
+        <record id="customs_mendoza" model="comex.customs.office">
+            <field name="name">Aduana de Mendoza</field>
+            <field name="code">024</field>
+            <field name="office_type">main</field>
+            <field name="city">Mendoza</field>
+        </record>
+
+        <record id="customs_bahia_blanca" model="comex.customs.office">
+            <field name="name">Aduana de Bahía Blanca</field>
+            <field name="code">008</field>
+            <field name="office_type">main</field>
+            <field name="city">Bahía Blanca</field>
+        </record>
+
+        <record id="customs_la_plata" model="comex.customs.office">
+            <field name="name">Aduana de La Plata</field>
+            <field name="code">010</field>
+            <field name="office_type">main</field>
+            <field name="city">La Plata</field>
+        </record>
+
+        <record id="customs_mar_del_plata" model="comex.customs.office">
+            <field name="name">Aduana de Mar del Plata</field>
+            <field name="code">009</field>
+            <field name="office_type">main</field>
+            <field name="city">Mar del Plata</field>
+        </record>
+
+        <record id="customs_santa_fe" model="comex.customs.office">
+            <field name="name">Aduana de Santa Fe</field>
+            <field name="code">025</field>
+            <field name="office_type">main</field>
+            <field name="city">Santa Fe</field>
+        </record>
+
+        <record id="customs_tucuman" model="comex.customs.office">
+            <field name="name">Aduana de Tucumán</field>
+            <field name="code">027</field>
+            <field name="office_type">main</field>
+            <field name="city">San Miguel de Tucumán</field>
+        </record>
+
+        <!-- Border Customs (Aduanas de Frontera) -->
+        <record id="customs_paso_de_los_libres" model="comex.customs.office">
+            <field name="name">Aduana de Paso de los Libres</field>
+            <field name="code">033</field>
+            <field name="office_type">checkpoint</field>
+            <field name="city">Paso de los Libres</field>
+        </record>
+
+        <record id="customs_posadas" model="comex.customs.office">
+            <field name="name">Aduana de Posadas</field>
+            <field name="code">032</field>
+            <field name="office_type">main</field>
+            <field name="city">Posadas</field>
+        </record>
+
+        <record id="customs_iguazu" model="comex.customs.office">
+            <field name="name">Aduana de Puerto Iguazú</field>
+            <field name="code">055</field>
+            <field name="office_type">checkpoint</field>
+            <field name="city">Puerto Iguazú</field>
+        </record>
+
+        <record id="customs_clorinda" model="comex.customs.office">
+            <field name="name">Aduana de Clorinda</field>
+            <field name="code">034</field>
+            <field name="office_type">checkpoint</field>
+            <field name="city">Clorinda</field>
+        </record>
+
+        <record id="customs_uspallata" model="comex.customs.office">
+            <field name="name">Aduana de Uspallata (Los Horcones)</field>
+            <field name="code">037</field>
+            <field name="office_type">checkpoint</field>
+            <field name="city">Uspallata</field>
+        </record>
+
+        <!-- Tierra del Fuego -->
+        <record id="customs_ushuaia" model="comex.customs.office">
+            <field name="name">Aduana de Ushuaia</field>
+            <field name="code">028</field>
+            <field name="office_type">main</field>
+            <field name="city">Ushuaia</field>
+        </record>
+
+        <record id="customs_rio_grande" model="comex.customs.office">
+            <field name="name">Aduana de Río Grande</field>
+            <field name="code">057</field>
+            <field name="office_type">main</field>
+            <field name="city">Río Grande</field>
+        </record>
+
+        <!-- Airport Customs -->
+        <record id="customs_ezeiza" model="comex.customs.office">
+            <field name="name">Aduana de Ezeiza</field>
+            <field name="code">049</field>
+            <field name="office_type">main</field>
+            <field name="city">Ezeiza</field>
+        </record>
+
+        <record id="customs_aeroparque" model="comex.customs.office">
+            <field name="name">Aduana Aeroparque</field>
+            <field name="code">051</field>
+            <field name="office_type">secondary</field>
+            <field name="city">Buenos Aires</field>
+        </record>
+
+    </data>
+</odoo>

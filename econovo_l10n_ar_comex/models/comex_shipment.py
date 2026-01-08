@@ -108,13 +108,66 @@ class ComexShipment(models.Model):
     )
 
     # Ports
-    origin_port = fields.Char(
+    origin_port_id = fields.Many2one(
+        'comex.port',
         string="Origin Port",
         tracking=True,
     )
-    destination_port = fields.Char(
+    destination_port_id = fields.Many2one(
+        'comex.port',
         string="Destination Port",
         tracking=True,
+    )
+    # Keep char fields for backwards compatibility
+    origin_port = fields.Char(
+        string="Origin Port (Text)",
+    )
+    destination_port = fields.Char(
+        string="Destination Port (Text)",
+    )
+
+    # Carrier
+    carrier_id = fields.Many2one(
+        'res.partner',
+        string="Carrier",
+        domain="[('is_shipping_line', '=', True)]",
+        tracking=True,
+    )
+
+    # Weights and measures
+    weight_gross = fields.Float(
+        string="Gross Weight (Kg)",
+    )
+    weight_net = fields.Float(
+        string="Net Weight (Kg)",
+    )
+    volume = fields.Float(
+        string="Volume (m³)",
+    )
+    packages_qty = fields.Integer(
+        string="Packages",
+    )
+    packages_type = fields.Char(
+        string="Package Type",
+    )
+
+    # State
+    state = fields.Selection(
+        selection=[
+            ('pending', 'Pending'),
+            ('loaded', 'Loaded'),
+            ('in_transit', 'In Transit'),
+            ('arrived', 'Arrived'),
+            ('delivered', 'Delivered'),
+        ],
+        string="State",
+        default='pending',
+        tracking=True,
+    )
+    transit_days = fields.Integer(
+        string="Transit Days",
+        compute='_compute_transit_days',
+        store=True,
     )
 
     # Related stock
@@ -138,6 +191,16 @@ class ComexShipment(models.Model):
     def _compute_picking_count(self):
         for record in self:
             record.picking_count = len(record.picking_ids)
+
+    @api.depends('date_departure', 'date_arrival')
+    def _compute_transit_days(self):
+        for record in self:
+            if record.date_departure and record.date_arrival:
+                record.transit_days = (record.date_arrival - record.date_departure).days
+            elif record.date_departure and record.date_eta:
+                record.transit_days = (record.date_eta - record.date_departure).days
+            else:
+                record.transit_days = 0
 
     # -------------------------------------------------------------------------
     # CRUD METHODS
@@ -182,6 +245,11 @@ class ComexShipmentContainer(models.Model):
         string="Container Number",
         required=True,
     )
+    container_type_id = fields.Many2one(
+        'comex.container.type',
+        string="Container Type",
+    )
+    # Keep selection for backwards compatibility
     container_type = fields.Selection(
         selection=[
             ('20GP', "20' General Purpose"),
@@ -191,7 +259,7 @@ class ComexShipmentContainer(models.Model):
             ('40RF', "40' Reefer"),
             ('other', "Other"),
         ],
-        string="Container Type",
+        string="Container Type (Legacy)",
         default='40HC',
     )
     seal_number = fields.Char(

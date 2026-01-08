@@ -73,9 +73,35 @@ class ComexMulc(models.Model):
         string="Bank",
         tracking=True,
     )
+    bank_partner_id = fields.Many2one(
+        'res.partner',
+        string="Bank (Partner)",
+        domain="[('is_company', '=', True)]",
+        tracking=True,
+        help="Bank as a partner for accounting purposes.",
+    )
     swift_code = fields.Char(
         string="SWIFT/BIC Code",
         related='bank_id.bic',
+    )
+
+    # === INTEGRATION WITH ODOO NATIVE ===
+    # Link to payment (for tracking the actual payment made)
+    payment_id = fields.Many2one(
+        'account.payment',
+        string="Payment",
+        tracking=True,
+        copy=False,
+        help="Link to the payment record in Accounting.",
+    )
+    # Link to vendor bill being paid
+    vendor_bill_id = fields.Many2one(
+        'account.move',
+        string="Vendor Bill",
+        domain="[('move_type', '=', 'in_invoice'), ('state', '=', 'posted')]",
+        tracking=True,
+        copy=False,
+        help="The vendor bill being paid through this MULC operation.",
     )
 
     # Amounts
@@ -89,6 +115,19 @@ class ComexMulc(models.Model):
         string="Foreign Amount",
         currency_field='currency_id',
         required=True,
+        tracking=True,
+    )
+    # Exchange rate details
+    rate_type = fields.Selection(
+        selection=[
+            ('official', 'Official'),
+            ('mep', 'MEP'),
+            ('ccl', 'CCL'),
+            ('blue', 'Blue'),
+            ('other', 'Other'),
+        ],
+        string="Rate Type",
+        default='official',
         tracking=True,
     )
     exchange_rate = fields.Float(

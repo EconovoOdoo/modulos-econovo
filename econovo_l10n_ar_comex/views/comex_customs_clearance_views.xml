@@ -58,11 +58,21 @@
                             <field name="clearance_type"/>
                             <field name="dispatch_number"/>
                             <field name="customs_office"/>
+                            <field name="customs_office_id"/>
+                            <field name="channel"/>
                         </group>
                         <group name="dates">
                             <field name="date_clearance"/>
                             <field name="date_nationalization"/>
                             <field name="fiscal_warehouse_id"/>
+                        </group>
+                    </group>
+                    <group string="Integration">
+                        <group>
+                            <field name="vendor_bill_id"/>
+                        </group>
+                        <group>
+                            <field name="landed_cost_id"/>
                         </group>
                     </group>
                     <group string="Amounts">

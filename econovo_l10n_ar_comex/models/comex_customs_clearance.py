@@ -70,9 +70,12 @@ class ComexCustomsClearance(models.Model):
 
     # Customs location
     customs_office = fields.Char(
+        string="Customs Office (Text)",
+    )
+    customs_office_id = fields.Many2one(
+        'comex.customs.office',
         string="Customs Office",
         tracking=True,
-        help="ARCA customs office code.",
     )
     fiscal_warehouse_id = fields.Many2one(
         'stock.location',
@@ -81,7 +84,44 @@ class ComexCustomsClearance(models.Model):
         tracking=True,
     )
 
-    # Amounts
+    # Channel
+    channel = fields.Selection(
+        selection=[
+            ('green', 'Green'),
+            ('orange', 'Orange'),
+            ('red', 'Red'),
+            ('purple', 'Purple'),
+        ],
+        string="Customs Channel",
+        tracking=True,
+        help="Inspection channel assigned by customs.",
+    )
+
+    # === INTEGRATION WITH ODOO NATIVE ===
+    # Link to vendor bill (Despacho de Importación - Document Type 66)
+    vendor_bill_id = fields.Many2one(
+        'account.move',
+        string="Vendor Bill (DI)",
+        domain="[('move_type', '=', 'in_invoice'), ('state', '!=', 'cancel')]",
+        tracking=True,
+        copy=False,
+        help="Link to the Despacho de Importación (Document Type 66) in Accounting.",
+    )
+    # Link to Landed Costs
+    landed_cost_id = fields.Many2one(
+        'stock.landed.cost',
+        string="Landed Cost",
+        tracking=True,
+        copy=False,
+        help="Link to the Landed Cost record for cost distribution.",
+    )
+
+    # Amounts - Currency for taxes is always ARS
+    currency_ars_id = fields.Many2one(
+        'res.currency',
+        string="Currency (ARS)",
+        default=lambda self: self.env.ref('base.ARS', raise_if_not_found=False),
+    )
     currency_id = fields.Many2one(
         'res.currency',
         string="Currency",
@@ -92,26 +132,57 @@ class ComexCustomsClearance(models.Model):
         currency_field='currency_id',
         tracking=True,
     )
+    # Tributes in ARS
     amount_duties = fields.Monetary(
-        string="Import Duties",
-        currency_field='currency_id',
+        string="Import Duties (DIE)",
+        currency_field='currency_ars_id',
+        tracking=True,
+        help="Derecho de Importación Extrazona",
+    )
+    amount_statistics = fields.Monetary(
+        string="Statistics Fee",
+        currency_field='currency_ars_id',
+        tracking=True,
+        help="Tasa de Estadística (3%)",
+    )
+    amount_vat = fields.Monetary(
+        string="VAT",
+        currency_field='currency_ars_id',
         tracking=True,
     )
+    amount_vat_additional = fields.Monetary(
+        string="Additional VAT",
+        currency_field='currency_ars_id',
+        tracking=True,
+        help="IVA Adicional",
+    )
+    amount_income_tax = fields.Monetary(
+        string="Income Tax Perception",
+        currency_field='currency_ars_id',
+        tracking=True,
+        help="Percepción de Ganancias",
+    )
+    amount_gross_income = fields.Monetary(
+        string="Gross Income Perception",
+        currency_field='currency_ars_id',
+        tracking=True,
+        help="Percepción de IIBB",
+    )
     amount_taxes = fields.Monetary(
-        string="Taxes (IVA, etc.)",
-        currency_field='currency_id',
+        string="Other Taxes",
+        currency_field='currency_ars_id',
         tracking=True,
     )
     amount_fees = fields.Monetary(
         string="Other Fees",
-        currency_field='currency_id',
+        currency_field='currency_ars_id',
         tracking=True,
     )
     amount_total = fields.Monetary(
         string="Total Clearance Cost",
         compute='_compute_amount_total',
         store=True,
-        currency_field='currency_id',
+        currency_field='currency_ars_id',
     )
 
     # Documents
@@ -132,10 +203,20 @@ class ComexCustomsClearance(models.Model):
     # -------------------------------------------------------------------------
     # COMPUTE METHODS
     # -------------------------------------------------------------------------
-    @api.depends('amount_duties', 'amount_taxes', 'amount_fees')
+    @api.depends('amount_duties', 'amount_statistics', 'amount_vat', 'amount_vat_additional',
+                 'amount_income_tax', 'amount_gross_income', 'amount_taxes', 'amount_fees')
     def _compute_amount_total(self):
         for record in self:
-            record.amount_total = record.amount_duties + record.amount_taxes + record.amount_fees
+            record.amount_total = (
+                record.amount_duties +
+                record.amount_statistics +
+                record.amount_vat +
+                record.amount_vat_additional +
+                record.amount_income_tax +
+                record.amount_gross_income +
+                record.amount_taxes +
+                record.amount_fees
+            )
 
     # -------------------------------------------------------------------------
     # CRUD METHODS

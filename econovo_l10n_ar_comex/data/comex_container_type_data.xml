@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- ============================================ -->
+        <!-- STANDARD CONTAINER TYPES                     -->
+        <!-- ============================================ -->
+
+        <!-- 20 Foot Containers -->
+        <record id="container_20gp" model="comex.container.type">
+            <field name="name">20' Dry Standard</field>
+            <field name="code">20GP</field>
+            <field name="sequence">10</field>
+            <field name="size_feet">20</field>
+            <field name="container_type">dry</field>
+            <field name="max_weight_kg">28200</field>
+            <field name="tare_weight_kg">2300</field>
+            <field name="capacity_cbm">33.2</field>
+            <field name="internal_length_m">5.9</field>
+            <field name="internal_width_m">2.35</field>
+            <field name="internal_height_m">2.39</field>
+        </record>
+
+        <record id="container_20rf" model="comex.container.type">
+            <field name="name">20' Reefer</field>
+            <field name="code">20RF</field>
+            <field name="sequence">20</field>
+            <field name="size_feet">20</field>
+            <field name="container_type">reefer</field>
+            <field name="max_weight_kg">27400</field>
+            <field name="tare_weight_kg">3100</field>
+            <field name="capacity_cbm">28.3</field>
+            <field name="internal_length_m">5.45</field>
+            <field name="internal_width_m">2.29</field>
+            <field name="internal_height_m">2.27</field>
+        </record>
+
+        <record id="container_20ot" model="comex.container.type">
+            <field name="name">20' Open Top</field>
+            <field name="code">20OT</field>
+            <field name="sequence">30</field>
+            <field name="size_feet">20</field>
+            <field name="container_type">open_top</field>
+            <field name="max_weight_kg">28000</field>
+            <field name="tare_weight_kg">2400</field>
+            <field name="capacity_cbm">32.5</field>
+        </record>
+
+        <record id="container_20fr" model="comex.container.type">
+            <field name="name">20' Flat Rack</field>
+            <field name="code">20FR</field>
+            <field name="sequence">40</field>
+            <field name="size_feet">20</field>
+            <field name="container_type">flat_rack</field>
+            <field name="max_weight_kg">27500</field>
+            <field name="tare_weight_kg">2800</field>
+        </record>
+
+        <!-- 40 Foot Containers -->
+        <record id="container_40gp" model="comex.container.type">
+            <field name="name">40' Dry Standard</field>
+            <field name="code">40GP</field>
+            <field name="sequence">50</field>
+            <field name="size_feet">40</field>
+            <field name="container_type">dry</field>
+            <field name="max_weight_kg">28800</field>
+            <field name="tare_weight_kg">3800</field>
+            <field name="capacity_cbm">67.7</field>
+            <field name="internal_length_m">12.03</field>
+            <field name="internal_width_m">2.35</field>
+            <field name="internal_height_m">2.39</field>
+        </record>
+
+        <record id="container_40hc" model="comex.container.type">
+            <field name="name">40' High Cube</field>
+            <field name="code">40HC</field>
+            <field name="sequence">60</field>
+            <field name="size_feet">40</field>
+            <field name="container_type">hc</field>
+            <field name="max_weight_kg">28600</field>
+            <field name="tare_weight_kg">4000</field>
+            <field name="capacity_cbm">76.3</field>
+            <field name="internal_length_m">12.03</field>
+            <field name="internal_width_m">2.35</field>
+            <field name="internal_height_m">2.69</field>
+        </record>
+
+        <record id="container_40rf" model="comex.container.type">
+            <field name="name">40' Reefer</field>
+            <field name="code">40RF</field>
+            <field name="sequence">70</field>
+            <field name="size_feet">40</field>
+            <field name="container_type">reefer</field>
+            <field name="max_weight_kg">27700</field>
+            <field name="tare_weight_kg">4900</field>
+            <field name="capacity_cbm">59.3</field>
+            <field name="internal_length_m">11.57</field>
+            <field name="internal_width_m">2.29</field>
+            <field name="internal_height_m">2.24</field>
+        </record>
+
+        <record id="container_40hcrf" model="comex.container.type">
+            <field name="name">40' High Cube Reefer</field>
+            <field name="code">40HR</field>
+            <field name="sequence">80</field>
+            <field name="size_feet">40</field>
+            <field name="container_type">reefer</field>
+            <field name="max_weight_kg">29520</field>
+            <field name="tare_weight_kg">5080</field>
+            <field name="capacity_cbm">67.3</field>
+            <field name="internal_length_m">11.59</field>
+            <field name="internal_width_m">2.29</field>
+            <field name="internal_height_m">2.54</field>
+        </record>
+
+        <record id="container_40ot" model="comex.container.type">
+            <field name="name">40' Open Top</field>
+            <field name="code">40OT</field>
+            <field name="sequence">90</field>
+            <field name="size_feet">40</field>
+            <field name="container_type">open_top</field>
+            <field name="max_weight_kg">26680</field>
+            <field name="tare_weight_kg">4000</field>
+            <field name="capacity_cbm">65.9</field>
+        </record>
+
+        <record id="container_40fr" model="comex.container.type">
+            <field name="name">40' Flat Rack</field>
+            <field name="code">40FR</field>
+            <field name="sequence">100</field>
+            <field name="size_feet">40</field>
+            <field name="container_type">flat_rack</field>
+            <field name="max_weight_kg">39200</field>
+            <field name="tare_weight_kg">5100</field>
+        </record>
+
+        <!-- 45 Foot Containers -->
+        <record id="container_45hc" model="comex.container.type">
+            <field name="name">45' High Cube</field>
+            <field name="code">45HC</field>
+            <field name="sequence">110</field>
+            <field name="size_feet">45</field>
+            <field name="container_type">hc</field>
+            <field name="max_weight_kg">27600</field>
+            <field name="tare_weight_kg">4800</field>
+            <field name="capacity_cbm">86.0</field>
+            <field name="internal_length_m">13.56</field>
+            <field name="internal_width_m">2.35</field>
+            <field name="internal_height_m">2.70</field>
+        </record>
+
+        <!-- Tank Container -->
+        <record id="container_20tk" model="comex.container.type">
+            <field name="name">20' Tank Container</field>
+            <field name="code">20TK</field>
+            <field name="sequence">120</field>
+            <field name="size_feet">20</field>
+            <field name="container_type">tank</field>
+            <field name="max_weight_kg">30480</field>
+            <field name="tare_weight_kg">3600</field>
+            <field name="capacity_cbm">26.0</field>
+        </record>
+
+    </data>
+</odoo>

@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- ============================================ -->
+        <!-- ARGENTINIAN PORTS                            -->
+        <!-- ============================================ -->
+
+        <!-- Seaports -->
+        <record id="port_buenos_aires" model="comex.port">
+            <field name="name">Puerto Buenos Aires</field>
+            <field name="code">ARBUE</field>
+            <field name="country_id" ref="base.ar"/>
+            <field name="port_type">sea</field>
+        </record>
+
+        <record id="port_rosario" model="comex.port">
+            <field name="name">Puerto Rosario</field>
+            <field name="code">ARROS</field>
+            <field name="country_id" ref="base.ar"/>
+            <field name="port_type">sea</field>
+        </record>
+
+        <record id="port_bahia_blanca" model="comex.port">
+            <field name="name">Puerto Bahía Blanca</field>
+            <field name="code">ARBHI</field>
+            <field name="country_id" ref="base.ar"/>
+            <field name="port_type">sea</field>
+        </record>
+
+        <record id="port_quequen" model="comex.port">
+            <field name="name">Puerto Quequén</field>
+            <field name="code">ARQQN</field>
+            <field name="country_id" ref="base.ar"/>
+            <field name="port_type">sea</field>
+        </record>
+
+        <record id="port_san_lorenzo" model="comex.port">
+            <field name="name">Puerto San Lorenzo</field>
+            <field name="code">ARSLO</field>
+            <field name="country_id" ref="base.ar"/>
+            <field name="port_type">sea</field>
+        </record>
+
+        <record id="port_ushuaia" model="comex.port">
+            <field name="name">Puerto Ushuaia</field>
+            <field name="code">ARUSH</field>
+            <field name="country_id" ref="base.ar"/>
+            <field name="port_type">sea</field>
+        </record>
+
+        <record id="port_madryn" model="comex.port">
+            <field name="name">Puerto Madryn</field>
+            <field name="code">ARPMY</field>
+            <field name="country_id" ref="base.ar"/>
+            <field name="port_type">sea</field>
+        </record>
+
+        <!-- River Ports -->
+        <record id="port_zarate" model="comex.port">
+            <field name="name">Puerto Zárate</field>
+            <field name="code">ARZTE</field>
+            <field name="country_id" ref="base.ar"/>
+            <field name="port_type">river</field>
+        </record>
+
+        <record id="port_campana" model="comex.port">
+            <field name="name">Puerto Campana</field>
+            <field name="code">ARCPN</field>
+            <field name="country_id" ref="base.ar"/>
+            <field name="port_type">river</field>
+        </record>
+
+        <!-- Airports -->
+        <record id="port_ezeiza" model="comex.port">
+            <field name="name">Aeropuerto Internacional Ezeiza</field>
+            <field name="code">AREZE</field>
+            <field name="country_id" ref="base.ar"/>
+            <field name="port_type">air</field>
+        </record>
+
+        <record id="port_aeroparque" model="comex.port">
+            <field name="name">Aeroparque Jorge Newbery</field>
+            <field name="code">ARAEP</field>
+            <field name="country_id" ref="base.ar"/>
+            <field name="port_type">air</field>
+        </record>
+
+        <record id="port_cordoba" model="comex.port">
+            <field name="name">Aeropuerto Internacional Córdoba</field>
+            <field name="code">ARCOR</field>
+            <field name="country_id" ref="base.ar"/>
+            <field name="port_type">air</field>
+        </record>
+
+        <record id="port_mendoza" model="comex.port">
+            <field name="name">Aeropuerto Internacional Mendoza</field>
+            <field name="code">ARMDZ</field>
+            <field name="country_id" ref="base.ar"/>
+            <field name="port_type">air</field>
+        </record>
+
+        <!-- Land Borders -->
+        <record id="port_paso_de_los_libres" model="comex.port">
+            <field name="name">Paso de los Libres</field>
+            <field name="code">ARPLL</field>
+            <field name="country_id" ref="base.ar"/>
+            <field name="port_type">land</field>
+        </record>
+
+        <record id="port_mendoza_land" model="comex.port">
+            <field name="name">Paso Los Libertadores (Mendoza)</field>
+            <field name="code">ARMZA</field>
+            <field name="country_id" ref="base.ar"/>
+            <field name="port_type">land</field>
+        </record>
+
+        <!-- ============================================ -->
+        <!-- COMMON INTERNATIONAL PORTS                   -->
+        <!-- ============================================ -->
+
+        <!-- China -->
+        <record id="port_shanghai" model="comex.port">
+            <field name="name">Shanghai</field>
+            <field name="code">CNSHA</field>
+            <field name="country_id" ref="base.cn"/>
+            <field name="port_type">sea</field>
+        </record>
+
+        <record id="port_ningbo" model="comex.port">
+            <field name="name">Ningbo-Zhoushan</field>
+            <field name="code">CNNGB</field>
+            <field name="country_id" ref="base.cn"/>
+            <field name="port_type">sea</field>
+        </record>
+
+        <record id="port_shenzhen" model="comex.port">
+            <field name="name">Shenzhen</field>
+            <field name="code">CNSZX</field>
+            <field name="country_id" ref="base.cn"/>
+            <field name="port_type">sea</field>
+        </record>
+
+        <record id="port_guangzhou" model="comex.port">
+            <field name="name">Guangzhou</field>
+            <field name="code">CNGZH</field>
+            <field name="country_id" ref="base.cn"/>
+            <field name="port_type">sea</field>
+        </record>
+
+        <record id="port_qingdao" model="comex.port">
+            <field name="name">Qingdao</field>
+            <field name="code">CNTAO</field>
+            <field name="country_id" ref="base.cn"/>
+            <field name="port_type">sea</field>
+        </record>
+
+        <!-- USA -->
+        <record id="port_miami" model="comex.port">
+            <field name="name">Port of Miami</field>
+            <field name="code">USMIA</field>
+            <field name="country_id" ref="base.us"/>
+            <field name="port_type">sea</field>
+        </record>
+
+        <record id="port_los_angeles" model="comex.port">
+            <field name="name">Port of Los Angeles</field>
+            <field name="code">USLAX</field>
+            <field name="country_id" ref="base.us"/>
+            <field name="port_type">sea</field>
+        </record>
+
+        <record id="port_new_york" model="comex.port">
+            <field name="name">Port of New York/New Jersey</field>
+            <field name="code">USNYC</field>
+            <field name="country_id" ref="base.us"/>
+            <field name="port_type">sea</field>
+        </record>
+
+        <!-- Europe -->
+        <record id="port_rotterdam" model="comex.port">
+            <field name="name">Rotterdam</field>
+            <field name="code">NLRTM</field>
+            <field name="country_id" ref="base.nl"/>
+            <field name="port_type">sea</field>
+        </record>
+
+        <record id="port_hamburg" model="comex.port">
+            <field name="name">Hamburg</field>
+            <field name="code">DEHAM</field>
+            <field name="country_id" ref="base.de"/>
+            <field name="port_type">sea</field>
+        </record>
+
+        <record id="port_antwerp" model="comex.port">
+            <field name="name">Antwerp</field>
+            <field name="code">BEANR</field>
+            <field name="country_id" ref="base.be"/>
+            <field name="port_type">sea</field>
+        </record>
+
+        <record id="port_barcelona" model="comex.port">
+            <field name="name">Barcelona</field>
+            <field name="code">ESBCN</field>
+            <field name="country_id" ref="base.es"/>
+            <field name="port_type">sea</field>
+        </record>
+
+        <!-- Brazil -->
+        <record id="port_santos" model="comex.port">
+            <field name="name">Porto de Santos</field>
+            <field name="code">BRSTS</field>
+            <field name="country_id" ref="base.br"/>
+            <field name="port_type">sea</field>
+        </record>
+
+        <record id="port_paranagua" model="comex.port">
+            <field name="name">Porto de Paranaguá</field>
+            <field name="code">BRPNG</field>
+            <field name="country_id" ref="base.br"/>
+            <field name="port_type">sea</field>
+        </record>
+
+    </data>
+</odoo>

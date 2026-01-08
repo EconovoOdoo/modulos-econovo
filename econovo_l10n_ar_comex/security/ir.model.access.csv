@@ -11,3 +11,11 @@ access_comex_customs_clearance_user,comex.customs.clearance.user,model_comex_cus
 access_comex_customs_clearance_manager,comex.customs.clearance.manager,model_comex_customs_clearance,group_comex_manager,1,1,1,1
 access_comex_mulc_user,comex.mulc.user,model_comex_mulc,group_comex_user,1,1,1,0
 access_comex_mulc_manager,comex.mulc.manager,model_comex_mulc,group_comex_manager,1,1,1,1
+access_comex_port_user,comex.port.user,model_comex_port,group_comex_user,1,0,0,0
+access_comex_port_manager,comex.port.manager,model_comex_port,group_comex_manager,1,1,1,1
+access_comex_container_type_user,comex.container.type.user,model_comex_container_type,group_comex_user,1,0,0,0
+access_comex_container_type_manager,comex.container.type.manager,model_comex_container_type,group_comex_manager,1,1,1,1
+access_comex_customs_office_user,comex.customs.office.user,model_comex_customs_office,group_comex_user,1,0,0,0
+access_comex_customs_office_manager,comex.customs.office.manager,model_comex_customs_office,group_comex_manager,1,1,1,1
+access_hs_code_user,hs.code.user,model_hs_code,group_comex_user,1,0,0,0
+access_hs_code_manager,hs.code.manager,model_hs_code,group_comex_manager,1,1,1,1

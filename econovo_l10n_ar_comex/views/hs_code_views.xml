@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============================================ -->
+    <!-- HS CODE VIEWS                                -->
+    <!-- ============================================ -->
+
+    <!-- Tree View -->
+    <record id="hs_code_view_tree" model="ir.ui.view">
+        <field name="name">hs.code.view.tree</field>
+        <field name="model">hs.code</field>
+        <field name="arch" type="xml">
+            <tree string="HS Codes">
+                <field name="local_code"/>
+                <field name="description"/>
+                <field name="import_duty_rate" string="Import Duty %"/>
+                <field name="vat_rate" string="VAT %"/>
+                <field name="mulc_days"/>
+                <field name="active" column_invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="hs_code_view_form" model="ir.ui.view">
+        <field name="name">hs.code.view.form</field>
+        <field name="model">hs.code</field>
+        <field name="arch" type="xml">
+            <form string="HS Code">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="toggle_active" type="object"
+                                class="oe_stat_button" icon="fa-archive">
+                            <field name="active" widget="boolean_button"
+                                   options='{"terminology": "archive"}'/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <label for="local_code"/>
+                        <h1>
+                            <field name="local_code" placeholder="NCM Code (8-14 digits)..."/>
+                        </h1>
+                        <label for="description"/>
+                        <h2>
+                            <field name="description" placeholder="Description..."/>
+                        </h2>
+                    </div>
+                    <group>
+                        <group string="Code Structure">
+                            <field name="hs_code"/>
+                            <field name="chapter"/>
+                            <field name="heading"/>
+                            <field name="subheading"/>
+                        </group>
+                        <group string="MULC Requirement">
+                            <field name="mulc_days"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Tax Rates" name="taxes">
+                            <group>
+                                <group string="Import Taxes">
+                                    <field name="import_duty_rate"/>
+                                    <field name="statistics_rate"/>
+                                    <field name="vat_rate"/>
+                                    <field name="vat_additional_rate"/>
+                                    <field name="income_tax_rate"/>
+                                </group>
+                                <group string="Export Taxes">
+                                    <field name="export_duty_rate"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Requirements" name="requirements">
+                            <group>
+                                <group>
+                                    <field name="requires_license"/>
+                                    <field name="requires_certificate"/>
+                                </group>
+                                <group>
+                                    <field name="certificate_type" 
+                                           invisible="not requires_certificate"/>
+                                </group>
+                            </group>
+                            <field name="notes" placeholder="Additional notes..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="hs_code_view_search" model="ir.ui.view">
+        <field name="name">hs.code.view.search</field>
+        <field name="model">hs.code</field>
+        <field name="arch" type="xml">
+            <search string="Search HS Codes">
+                <field name="local_code"/>
+                <field name="hs_code"/>
+                <field name="description"/>
+                <separator/>
+                <filter string="Requires License" name="license" domain="[('requires_license', '=', True)]"/>
+                <filter string="Requires Certificate" name="certificate" domain="[('requires_certificate', '=', True)]"/>
+                <separator/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Chapter" name="group_chapter" context="{'group_by': 'chapter'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="hs_code_action" model="ir.actions.act_window">
+        <field name="name">HS Codes (NCM)</field>
+        <field name="res_model">hs.code</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="hs_code_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first HS Code
+            </p>
+            <p>
+                Define HS Codes (NCM - Nomenclatura Común del Mercosur) with their duty rates
+                and requirements for import/export operations.
+            </p>
+        </field>
+    </record>
+
+    <!-- ============================================ -->
+    <!-- PRODUCT TEMPLATE EXTENSION VIEW              -->
+    <!-- ============================================ -->
+
+    <record id="product_template_form_view_comex" model="ir.ui.view">
+        <field name="name">product.template.form.inherit.comex</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='general_information']" position="after">
+                <page string="Foreign Trade" name="comex">
+                    <group>
+                        <group>
+                            <field name="hs_code_id"/>
+                        </group>
+                        <group>
+                            <field name="origin_country_id"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

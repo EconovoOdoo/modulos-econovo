@@ -80,4 +80,28 @@
               action="comex_operation_stage_action"
               sequence="10"/>
 
+    <menuitem id="menu_comex_ports"
+              name="Ports"
+              parent="menu_comex_configuration"
+              action="comex_port_action"
+              sequence="20"/>
+
+    <menuitem id="menu_comex_container_types"
+              name="Container Types"
+              parent="menu_comex_configuration"
+              action="comex_container_type_action"
+              sequence="30"/>
+
+    <menuitem id="menu_comex_customs_offices"
+              name="Customs Offices"
+              parent="menu_comex_configuration"
+              action="comex_customs_office_action"
+              sequence="40"/>
+
+    <menuitem id="menu_comex_hs_codes"
+              name="HS Codes (NCM)"
+              parent="menu_comex_configuration"
+              action="hs_code_action"
+              sequence="50"/>
+
 </odoo>

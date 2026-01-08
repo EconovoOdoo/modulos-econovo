@@ -61,15 +61,25 @@
                         </group>
                         <group name="bank">
                             <field name="bank_id"/>
+                            <field name="bank_partner_id"/>
                             <field name="swift_code"/>
                             <field name="boleto_number"/>
                             <field name="concept_code"/>
+                        </group>
+                    </group>
+                    <group string="Integration">
+                        <group>
+                            <field name="vendor_bill_id"/>
+                        </group>
+                        <group>
+                            <field name="payment_id"/>
                         </group>
                     </group>
                     <group string="Amounts">
                         <group>
                             <field name="currency_id"/>
                             <field name="amount_foreign"/>
+                            <field name="rate_type"/>
                             <field name="exchange_rate"/>
                         </group>
                         <group>
