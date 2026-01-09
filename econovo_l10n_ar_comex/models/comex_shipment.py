@@ -151,17 +151,18 @@ class ComexShipment(models.Model):
         string="Package Type",
     )
 
-    # State
+    # State (computed from pickings)
     state = fields.Selection(
         selection=[
             ('pending', 'Pending'),
-            ('loaded', 'Loaded'),
             ('in_transit', 'In Transit'),
-            ('arrived', 'Arrived'),
-            ('delivered', 'Delivered'),
+            ('at_port', 'At Port'),
+            ('at_fiscal', 'At Fiscal Depot'),
+            ('nationalized', 'Nationalized'),
         ],
         string="State",
-        default='pending',
+        compute='_compute_state',
+        store=True,
         tracking=True,
     )
     transit_days = fields.Integer(
@@ -191,6 +192,33 @@ class ComexShipment(models.Model):
     def _compute_picking_count(self):
         for record in self:
             record.picking_count = len(record.picking_ids)
+
+    @api.depends('picking_ids.state', 'picking_ids.picking_type_id.sequence_code')
+    def _compute_state(self):
+        """Compute shipment state based on related picking states."""
+        for shipment in self:
+            pickings = shipment.picking_ids
+            if not pickings:
+                shipment.state = 'pending'
+                continue
+
+            # Check pickings by type (most advanced first)
+            nat_pickings = pickings.filtered(lambda p: p.picking_type_id.sequence_code == 'COMEX/NAC')
+            fiscal_pickings = pickings.filtered(lambda p: p.picking_type_id.sequence_code == 'COMEX/FIS')
+            port_pickings = pickings.filtered(lambda p: p.picking_type_id.sequence_code == 'COMEX/ARR')
+            receipt_pickings = pickings.filtered(lambda p: p.picking_type_id.sequence_code == 'COMEX/IN')
+
+            # Determine state based on most advanced completed picking type
+            if nat_pickings and all(p.state == 'done' for p in nat_pickings):
+                shipment.state = 'nationalized'
+            elif fiscal_pickings and all(p.state == 'done' for p in fiscal_pickings):
+                shipment.state = 'at_fiscal'
+            elif port_pickings and all(p.state == 'done' for p in port_pickings):
+                shipment.state = 'at_port'
+            elif receipt_pickings and all(p.state == 'done' for p in receipt_pickings):
+                shipment.state = 'in_transit'
+            else:
+                shipment.state = 'pending'
 
     @api.depends('date_departure', 'date_arrival')
     def _compute_transit_days(self):

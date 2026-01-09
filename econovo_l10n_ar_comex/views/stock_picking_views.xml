@@ -13,6 +13,33 @@
                        domain="[('operation_id', '=', comex_operation_id)]"
                        invisible="not comex_operation_id"/>
             </field>
+            <!-- Add COMEX page/tab when shipment is set -->
+            <page name="extra" position="before">
+                <page string="COMEX" name="comex" invisible="not comex_shipment_id">
+                    <group>
+                        <group string="Shipment Info">
+                            <field name="comex_shipment_id" string="Shipment" readonly="1"/>
+                            <field name="comex_shipment_bl" readonly="1"/>
+                            <field name="comex_shipment_transport" readonly="1"/>
+                            <field name="comex_shipment_vessel" readonly="1"/>
+                        </group>
+                        <group string="Ports">
+                            <field name="comex_shipment_origin_port" readonly="1"/>
+                            <field name="comex_shipment_destination_port" readonly="1"/>
+                            <field name="comex_shipment_departure" readonly="1"/>
+                            <field name="comex_shipment_eta" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Carrier">
+                            <field name="comex_shipment_carrier" readonly="1"/>
+                        </group>
+                        <group string="Containers">
+                            <field name="comex_shipment_container_count" readonly="1"/>
+                        </group>
+                    </group>
+                </page>
+            </page>
         </field>
     </record>
 
@@ -24,6 +51,7 @@
         <field name="arch" type="xml">
             <field name="origin" position="after">
                 <field name="comex_operation_id" optional="hide"/>
+                <field name="comex_shipment_id" optional="hide"/>
             </field>
         </field>
     </record>
@@ -37,8 +65,92 @@
             <filter name="starred" position="after">
                 <separator/>
                 <filter name="filter_comex" string="COMEX Transfers" domain="[('comex_operation_id', '!=', False)]"/>
+                <filter name="filter_comex_shipment" string="With Shipment" domain="[('comex_shipment_id', '!=', False)]"/>
             </filter>
+            <field name="origin" position="after">
+                <field name="comex_operation_id"/>
+                <field name="comex_shipment_id"/>
+            </field>
         </field>
+    </record>
+
+    <!-- =========================================================== -->
+    <!-- COMEX Picking Type Actions (filtered by sequence_code)      -->
+    <!-- =========================================================== -->
+
+    <!-- COMEX/IN - Recepciones COMEX -->
+    <record id="action_comex_picking_in" model="ir.actions.act_window">
+        <field name="name">Recepciones COMEX</field>
+        <field name="res_model">stock.picking</field>
+        <field name="view_mode">tree,kanban,form,calendar</field>
+        <field name="domain">[('picking_type_id.sequence_code', '=', 'COMEX/IN')]</field>
+        <field name="context">{'default_picking_type_id': False}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No COMEX receipts found
+            </p>
+            <p>
+                COMEX receipts are created automatically from purchase orders
+                that use the COMEX receipt type.
+            </p>
+        </field>
+    </record>
+
+    <!-- COMEX/ARR - Llegadas a Puerto -->
+    <record id="action_comex_picking_arrival" model="ir.actions.act_window">
+        <field name="name">Llegadas a Puerto</field>
+        <field name="res_model">stock.picking</field>
+        <field name="view_mode">tree,kanban,form,calendar</field>
+        <field name="domain">[('picking_type_id.sequence_code', '=', 'COMEX/ARR')]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No port arrivals found
+            </p>
+            <p>
+                Port arrival transfers are created automatically when a COMEX receipt is validated.
+            </p>
+        </field>
+    </record>
+
+    <!-- COMEX/FIS - Ingresos Depósito Fiscal -->
+    <record id="action_comex_picking_fiscal" model="ir.actions.act_window">
+        <field name="name">Depósito Fiscal</field>
+        <field name="res_model">stock.picking</field>
+        <field name="view_mode">tree,kanban,form,calendar</field>
+        <field name="domain">[('picking_type_id.sequence_code', '=', 'COMEX/FIS')]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No fiscal depot entries found
+            </p>
+            <p>
+                Fiscal depot transfers are created automatically when a port arrival is validated.
+            </p>
+        </field>
+    </record>
+
+    <!-- COMEX/NAC - Nacionalizaciones -->
+    <record id="action_comex_picking_nationalize" model="ir.actions.act_window">
+        <field name="name">Nacionalizaciones</field>
+        <field name="res_model">stock.picking</field>
+        <field name="view_mode">tree,kanban,form,calendar</field>
+        <field name="domain">[('picking_type_id.sequence_code', '=', 'COMEX/NAC')]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No nationalizations found
+            </p>
+            <p>
+                Nationalization transfers are created automatically when a fiscal depot entry is validated.
+            </p>
+        </field>
+    </record>
+
+    <!-- All COMEX Transfers -->
+    <record id="action_comex_picking_all" model="ir.actions.act_window">
+        <field name="name">All COMEX Transfers</field>
+        <field name="res_model">stock.picking</field>
+        <field name="view_mode">tree,kanban,form,calendar</field>
+        <field name="domain">[('picking_type_id.sequence_code', 'in', ['COMEX/IN', 'COMEX/ARR', 'COMEX/FIS', 'COMEX/NAC'])]</field>
+        <field name="context">{'search_default_filter_comex': 1}</field>
     </record>
 
 </odoo>

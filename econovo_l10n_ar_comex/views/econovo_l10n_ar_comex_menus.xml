@@ -43,6 +43,42 @@
               action="comex_shipment_action"
               sequence="10"/>
 
+    <!-- Stock Transfers Menu (under Logistics) -->
+    <menuitem id="menu_comex_stock"
+              name="Stock Transfers"
+              parent="menu_comex_logistics"
+              sequence="20"/>
+
+    <menuitem id="menu_comex_picking_all"
+              name="All COMEX Transfers"
+              parent="menu_comex_stock"
+              action="action_comex_picking_all"
+              sequence="5"/>
+
+    <menuitem id="menu_comex_picking_in"
+              name="Recepciones COMEX"
+              parent="menu_comex_stock"
+              action="action_comex_picking_in"
+              sequence="10"/>
+
+    <menuitem id="menu_comex_picking_arrival"
+              name="Llegadas a Puerto"
+              parent="menu_comex_stock"
+              action="action_comex_picking_arrival"
+              sequence="20"/>
+
+    <menuitem id="menu_comex_picking_fiscal"
+              name="Depósito Fiscal"
+              parent="menu_comex_stock"
+              action="action_comex_picking_fiscal"
+              sequence="30"/>
+
+    <menuitem id="menu_comex_picking_nationalize"
+              name="Nacionalizaciones"
+              parent="menu_comex_stock"
+              action="action_comex_picking_nationalize"
+              sequence="40"/>
+
     <!-- Customs Menu -->
     <menuitem id="menu_comex_customs"
               name="Customs"

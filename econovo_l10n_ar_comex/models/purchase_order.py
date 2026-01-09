@@ -53,15 +53,19 @@ class PurchaseOrder(models.Model):
             )
             
             for picking in pickings:
-                # Update picking destination
+                # Update picking destination and COMEX link
                 picking.write({
                     'comex_operation_id': order.comex_operation_id.id,
                     'location_dest_id': comex_location.id,
                 })
-                # Update moves destination
-                picking.move_ids.filtered(
+                # Update moves destination AND comex_operation_id (for push rules)
+                moves_to_update = picking.move_ids.filtered(
                     lambda m: m.state not in ('done', 'cancel')
-                ).write({'location_dest_id': comex_location.id})
+                )
+                moves_to_update.write({
+                    'location_dest_id': comex_location.id,
+                    'comex_operation_id': order.comex_operation_id.id,
+                })
         
         return res
 

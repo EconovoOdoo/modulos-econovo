@@ -32,6 +32,44 @@ class StockPicking(models.Model):
         store=True,
     )
 
+    # Related fields from shipment (for COMEX tab in form view)
+    comex_shipment_bl = fields.Char(
+        string="BL/AWB Number",
+        related='comex_shipment_id.bl_number',
+    )
+    comex_shipment_transport = fields.Selection(
+        string="Transport Mode",
+        related='comex_shipment_id.transport_mode',
+    )
+    comex_shipment_vessel = fields.Char(
+        string="Vessel/Flight",
+        related='comex_shipment_id.vessel_name',
+    )
+    comex_shipment_origin_port = fields.Many2one(
+        string="Origin Port",
+        related='comex_shipment_id.origin_port_id',
+    )
+    comex_shipment_destination_port = fields.Many2one(
+        string="Destination Port",
+        related='comex_shipment_id.destination_port_id',
+    )
+    comex_shipment_departure = fields.Date(
+        string="Departure Date",
+        related='comex_shipment_id.date_departure',
+    )
+    comex_shipment_eta = fields.Date(
+        string="ETA",
+        related='comex_shipment_id.date_eta',
+    )
+    comex_shipment_carrier = fields.Many2one(
+        string="Carrier",
+        related='comex_shipment_id.carrier_id',
+    )
+    comex_shipment_container_count = fields.Integer(
+        string="Containers",
+        related='comex_shipment_id.container_count',
+    )
+
     # -------------------------------------------------------------------------
     # COMPUTE METHODS
     # -------------------------------------------------------------------------

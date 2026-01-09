@@ -15,14 +15,32 @@ class StockMove(models.Model):
     comex_shipment_id = fields.Many2one(
         'comex.shipment',
         string="COMEX Shipment",
-        related='picking_id.comex_shipment_id',
-        store=True,
+        copy=True,
         index=True,
+        help="COMEX shipment this move belongs to. Propagated through push rules.",
     )
     comex_operation_id = fields.Many2one(
         'comex.operation',
         string="COMEX Operation",
-        related='picking_id.comex_operation_id',
-        store=True,
+        copy=True,
         index=True,
+        help="COMEX operation this move belongs to. Propagated through push rules.",
     )
+
+    # -------------------------------------------------------------------------
+    # BUSINESS METHODS
+    # -------------------------------------------------------------------------
+    def _assign_picking(self):
+        """Override to propagate COMEX fields to the picking."""
+        result = super()._assign_picking()
+        # After picking is assigned, update COMEX fields on picking
+        for move in self:
+            if move.picking_id and (move.comex_shipment_id or move.comex_operation_id):
+                vals = {}
+                if move.comex_shipment_id and not move.picking_id.comex_shipment_id:
+                    vals['comex_shipment_id'] = move.comex_shipment_id.id
+                if move.comex_operation_id and not move.picking_id.comex_operation_id:
+                    vals['comex_operation_id'] = move.comex_operation_id.id
+                if vals:
+                    move.picking_id.write(vals)
+        return result
