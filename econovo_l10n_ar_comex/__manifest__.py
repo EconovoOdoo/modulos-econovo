@@ -16,11 +16,11 @@ This module provides comprehensive management of international trade operations
 * Dynamic stage management (Kanban-style like CRM/Project)
 * MULC (Mercado Único y Libre de Cambios) operations tracking
 * Integration with purchase orders and stock movements
-* Transit stock locations for COMEX stages (En Viaje, Puerto, Zona Franca, Depósito Fiscal)
 * Customs clearance tracking (Despacho de Aduana)
 * NCM code management (Nomenclatura Común del Mercosur)
 * Bidirectional date synchronization with purchase orders and pickings
 * Full traceability with lots and serial numbers
+* Support for custom stock locations and routes (user-configured)
 
 **Regulatory Compliance:**
 * ARCA (ex-AFIP) requirements
@@ -28,9 +28,15 @@ This module provides comprehensive management of international trade operations
 * Argentine customs procedures
 
 **Integration:**
-* purchase_stock: Automatic picking redirection to COMEX locations
-* stock: Transit location hierarchy and internal transfers
+* purchase_stock: Integration with purchase order picking redirection
+* stock: Support for transit locations and internal transfers
 * account: MULC exchange rate tracking
+
+**Configuration Required:**
+* Stock locations for COMEX transit (En Viaje, Puerto, Zona Franca, Depósito Fiscal)
+* Stock routes for COMEX import/export operations
+* Picking types for COMEX workflow (COMEX/IN, COMEX/ARR, COMEX/FIS, COMEX/NAC)
+* Push rules for automated stock flow between COMEX locations
     """,
     'author': 'Jose D. Leonett',
     'website': 'https://github.com/josedleonett',
@@ -50,10 +56,8 @@ This module provides comprehensive management of international trade operations
         'security/econovo_l10n_ar_comex_groups.xml',
         'security/ir.model.access.csv',
         'security/econovo_l10n_ar_comex_security.xml',
-        # Data - Order matters: locations first, then stages that reference them
-        'data/stock_location_data.xml',
+        # Data
         'data/comex_operation_stage_data.xml',
-        'data/stock_route_data.xml',
         'data/comex_port_data.xml',
         'data/comex_container_type_data.xml',
         'data/comex_customs_office_data.xml',
@@ -83,5 +87,4 @@ This module provides comprehensive management of international trade operations
     'installable': True,
     'application': True,
     'auto_install': False,
-    'post_init_hook': '_post_init_hook',
 }

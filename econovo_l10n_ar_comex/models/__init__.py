@@ -20,4 +20,3 @@ from . import stock_picking
 from . import stock_move
 from . import stock_rule
 from . import res_partner
-from . import res_company
