@@ -40,7 +40,6 @@
             <field name="amount_fob">50000.00</field>
             <field name="amount_freight">3500.00</field>
             <field name="amount_insurance">500.00</field>
-            <field name="current_location_id" ref="comex_location_in_transit_sea"/>
         </record>
 
         <record id="demo_comex_operation_2" model="comex.operation">
@@ -56,7 +55,6 @@
             <field name="amount_fob">25000.00</field>
             <field name="amount_freight">2000.00</field>
             <field name="amount_insurance">250.00</field>
-            <field name="current_location_id" ref="comex_location_port_bsas"/>
         </record>
 
         <!-- Demo Shipment -->
@@ -67,21 +65,21 @@
             <field name="voyage_number">ABC123</field>
             <field name="bl_number">MSCU1234567890</field>
             <field name="bl_date" eval="(DateTime.today() - relativedelta(days=25)).strftime('%Y-%m-%d')"/>
-            <field name="origin_port">Shanghai, China</field>
-            <field name="destination_port">Buenos Aires, Argentina</field>
+            <field name="origin_port_id" ref="port_shanghai"/>
+            <field name="destination_port_id" ref="port_buenos_aires"/>
             <field name="date_departure" eval="(DateTime.today() - relativedelta(days=25)).strftime('%Y-%m-%d')"/>
             <field name="date_eta" eval="(DateTime.today() + relativedelta(days=10)).strftime('%Y-%m-%d')"/>
         </record>
 
         <!-- Demo Container -->
-        <record id="demo_container_1" model="comex.shipment.container">
-            <field name="shipment_id" ref="demo_shipment_1"/>
-            <field name="container_number">MSCU1234567</field>
-            <field name="container_type">40HC</field>
-            <field name="seal_number">SEAL12345</field>
-            <field name="weight_gross">25000</field>
-            <field name="weight_net">22000</field>
-            <field name="volume">67.5</field>
+        <record id="demo_container_1" model="stock.quant.package">
+            <field name="comex_shipment_id" ref="demo_shipment_1"/>
+            <field name="comex_container_number">MSCU1234567</field>
+            <field name="package_type_id" ref="package_type_40hc"/>
+            <field name="comex_seal_number">SEAL12345</field>
+            <field name="comex_weight_gross">25000</field>
+            <field name="comex_weight_net">22000</field>
+            <field name="comex_volume">67.5</field>
         </record>
 
     </data>

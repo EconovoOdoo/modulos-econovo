@@ -35,14 +35,23 @@ Argentine regulatory requirements.
 2. Update the module list: `Apps > Update Apps List`
 3. Search for "COMEX" and install
 
+**Important**: This module automatically enables the "Packages" feature in Inventory 
+settings for all COMEX users. This is required for shipping container tracking using 
+the native Odoo package system (`stock.quant.package`).
+
 ### Dependencies
 - base
 - mail
 - purchase_stock
 - sale_stock
 - stock
+- stock_landed_costs
 - account
 - contacts
+
+**Technical Note**: The COMEX User group (`group_comex_user`) includes the 
+`stock.group_tracking_lot` implied group, which automatically enables Packages feature 
+for users with COMEX access.
 
 ## Configuration
 

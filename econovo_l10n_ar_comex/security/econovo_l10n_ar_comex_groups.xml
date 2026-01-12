@@ -13,8 +13,8 @@
         <record id="group_comex_user" model="res.groups">
             <field name="name">User</field>
             <field name="category_id" ref="module_category_comex"/>
-            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
-            <field name="comment">Can view and create COMEX operations.</field>
+            <field name="implied_ids" eval="[(4, ref('base.group_user')), (4, ref('stock.group_tracking_lot'))]"/>
+            <field name="comment">Can view and create COMEX operations. Requires Packages feature for container tracking.</field>
         </record>
 
         <!-- COMEX Manager Group -->

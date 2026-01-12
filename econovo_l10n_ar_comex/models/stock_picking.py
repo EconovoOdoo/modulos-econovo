@@ -68,6 +68,7 @@ class StockPicking(models.Model):
     comex_shipment_container_count = fields.Integer(
         string="Containers",
         related='comex_shipment_id.container_count',
+        help="Number of shipping containers in this shipment",
     )
 
     # -------------------------------------------------------------------------

@@ -18,5 +18,7 @@ from . import comex_mulc
 from . import purchase_order
 from . import stock_picking
 from . import stock_move
+from . import stock_quant_package
+from . import stock_package_type
 from . import stock_rule
 from . import res_partner

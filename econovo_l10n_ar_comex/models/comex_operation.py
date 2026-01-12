@@ -185,6 +185,24 @@ class ComexOperation(models.Model):
         compute='_compute_picking_count',
     )
 
+    # Invoices and Bills
+    invoice_ids = fields.Many2many(
+        'account.move',
+        'comex_operation_invoice_rel',
+        'operation_id',
+        'invoice_id',
+        string="Invoices/Bills",
+        compute='_compute_invoice_ids',
+        inverse='_inverse_invoice_ids',
+        store=True,
+        domain="[('move_type', 'in', ['out_invoice', 'out_refund', 'in_invoice', 'in_refund'])]",
+        help="All invoices and bills: automatic (from purchase orders) + manually added",
+    )
+    invoice_count = fields.Integer(
+        string="Invoice Count",
+        compute='_compute_invoice_count',
+    )
+
     # Amounts
     currency_id = fields.Many2one(
         'res.currency',
@@ -284,6 +302,27 @@ class ComexOperation(models.Model):
     def _compute_picking_count(self):
         for record in self:
             record.picking_count = len(record.picking_ids)
+
+    @api.depends('purchase_order_ids.invoice_ids')
+    def _compute_invoice_ids(self):
+        """Auto-add invoices from purchase orders, keep manual ones."""
+        for record in self:
+            # Get invoices from purchase orders
+            auto_invoices = record.purchase_order_ids.mapped('invoice_ids')
+            # Combine with existing manual invoices (already in invoice_ids)
+            if auto_invoices:
+                # Add automatic invoices if not already present
+                record.invoice_ids = [(4, inv.id) for inv in auto_invoices if inv not in record.invoice_ids]
+    
+    def _inverse_invoice_ids(self):
+        """Allow manual editing of invoice_ids field."""
+        # No action needed - field is stored and editable
+        pass
+
+    def _compute_invoice_count(self):
+        """Count total invoices."""
+        for record in self:
+            record.invoice_count = len(record.invoice_ids)
 
     # -------------------------------------------------------------------------
     # KANBAN METHODS
@@ -463,7 +502,10 @@ class ComexOperation(models.Model):
             'res_model': 'purchase.order',
             'view_mode': 'tree,form',
             'domain': [('id', 'in', self.purchase_order_ids.ids)],
-            'context': {'default_comex_operation_id': self.id},
+            'context': {
+                'default_comex_operation_id': self.id,
+                'default_partner_id': self.partner_id.id if self.partner_id else False,
+            },
         }
 
     def action_view_shipments(self):
@@ -475,7 +517,10 @@ class ComexOperation(models.Model):
             'res_model': 'comex.shipment',
             'view_mode': 'tree,form',
             'domain': [('id', 'in', self.shipment_ids.ids)],
-            'context': {'default_operation_id': self.id},
+            'context': {
+                'default_operation_id': self.id,
+                'default_partner_id': self.partner_id.id if self.partner_id else False,
+            },
         }
 
     def action_view_customs_clearances(self):
@@ -512,4 +557,24 @@ class ComexOperation(models.Model):
             'view_mode': 'tree,form',
             'domain': [('id', 'in', self.picking_ids.ids)],
             'context': {'default_comex_operation_id': self.id},
+        }
+
+    def action_view_invoices(self):
+        """Open all related invoices and bills."""
+        self.ensure_one()
+        # Default move type based on operation type
+        default_move_type = 'in_invoice' if self.operation_type == 'import' else 'out_invoice'
+        
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Invoices & Bills'),
+            'res_model': 'account.move',
+            'view_mode': 'tree,form',
+            'domain': [('id', 'in', self.invoice_ids.ids)],
+            'context': dict(
+                self.env.context,
+                default_move_type=default_move_type,
+                move_type=default_move_type,
+                default_partner_id=self.partner_id.id if self.partner_id else False,
+            ),
         }

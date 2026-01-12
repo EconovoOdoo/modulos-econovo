@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        
+        <!-- ================================================================ -->
+        <!-- 20 FEET CONTAINERS -->
+        <!-- ================================================================ -->
+        
+        <!-- 20' General Purpose -->
+        <record id="package_type_20gp" model="stock.package.type">
+            <field name="name">20' GP Container</field>
+            <field name="sequence">10</field>
+            <field name="is_comex_container" eval="True"/>
+            <field name="container_size">20</field>
+            <field name="container_category">GP</field>
+            <field name="packaging_length">5.9</field>
+            <field name="width">2.35</field>
+            <field name="height">2.39</field>
+            <field name="max_weight">28200</field>
+            <field name="base_weight">2200</field>
+        </record>
+
+        <!-- 20' High Cube -->
+        <record id="package_type_20hc" model="stock.package.type">
+            <field name="name">20' HC Container</field>
+            <field name="sequence">11</field>
+            <field name="is_comex_container" eval="True"/>
+            <field name="container_size">20</field>
+            <field name="container_category">HC</field>
+            <field name="packaging_length">5.9</field>
+            <field name="width">2.35</field>
+            <field name="height">2.69</field>
+            <field name="max_weight">28200</field>
+            <field name="base_weight">2350</field>
+        </record>
+
+        <!-- 20' Reefer -->
+        <record id="package_type_20rf" model="stock.package.type">
+            <field name="name">20' RF Container</field>
+            <field name="sequence">12</field>
+            <field name="is_comex_container" eval="True"/>
+            <field name="container_size">20</field>
+            <field name="container_category">RF</field>
+            <field name="packaging_length">5.45</field>
+            <field name="width">2.29</field>
+            <field name="height">2.27</field>
+            <field name="max_weight">27400</field>
+            <field name="base_weight">3000</field>
+        </record>
+
+        <!-- 20' Open Top -->
+        <record id="package_type_20ot" model="stock.package.type">
+            <field name="name">20' OT Container</field>
+            <field name="sequence">13</field>
+            <field name="is_comex_container" eval="True"/>
+            <field name="container_size">20</field>
+            <field name="container_category">OT</field>
+            <field name="packaging_length">5.9</field>
+            <field name="width">2.35</field>
+            <field name="height">2.39</field>
+            <field name="max_weight">28200</field>
+            <field name="base_weight">2400</field>
+        </record>
+
+        <!-- ================================================================ -->
+        <!-- 40 FEET CONTAINERS -->
+        <!-- ================================================================ -->
+
+        <!-- 40' General Purpose -->
+        <record id="package_type_40gp" model="stock.package.type">
+            <field name="name">40' GP Container</field>
+            <field name="sequence">20</field>
+            <field name="is_comex_container" eval="True"/>
+            <field name="container_size">40</field>
+            <field name="container_category">GP</field>
+            <field name="packaging_length">12.03</field>
+            <field name="width">2.35</field>
+            <field name="height">2.39</field>
+            <field name="max_weight">28600</field>
+            <field name="base_weight">3750</field>
+        </record>
+
+        <!-- 40' High Cube -->
+        <record id="package_type_40hc" model="stock.package.type">
+            <field name="name">40' HC Container</field>
+            <field name="sequence">21</field>
+            <field name="is_comex_container" eval="True"/>
+            <field name="container_size">40</field>
+            <field name="container_category">HC</field>
+            <field name="packaging_length">12.03</field>
+            <field name="width">2.35</field>
+            <field name="height">2.69</field>
+            <field name="max_weight">28600</field>
+            <field name="base_weight">3900</field>
+        </record>
+
+        <!-- 40' Reefer -->
+        <record id="package_type_40rf" model="stock.package.type">
+            <field name="name">40' RF Container</field>
+            <field name="sequence">22</field>
+            <field name="is_comex_container" eval="True"/>
+            <field name="container_size">40</field>
+            <field name="container_category">RF</field>
+            <field name="packaging_length">11.58</field>
+            <field name="width">2.29</field>
+            <field name="height">2.27</field>
+            <field name="max_weight">27700</field>
+            <field name="base_weight">4800</field>
+        </record>
+
+        <!-- 40' High Cube Reefer -->
+        <record id="package_type_40rf_hc" model="stock.package.type">
+            <field name="name">40' RF HC Container</field>
+            <field name="sequence">23</field>
+            <field name="is_comex_container" eval="True"/>
+            <field name="container_size">40</field>
+            <field name="container_category">RF</field>
+            <field name="packaging_length">11.58</field>
+            <field name="width">2.29</field>
+            <field name="height">2.54</field>
+            <field name="max_weight">27700</field>
+            <field name="base_weight">4950</field>
+        </record>
+
+        <!-- 40' Open Top -->
+        <record id="package_type_40ot" model="stock.package.type">
+            <field name="name">40' OT Container</field>
+            <field name="sequence">24</field>
+            <field name="is_comex_container" eval="True"/>
+            <field name="container_size">40</field>
+            <field name="container_category">OT</field>
+            <field name="packaging_length">12.03</field>
+            <field name="width">2.35</field>
+            <field name="height">2.39</field>
+            <field name="max_weight">28600</field>
+            <field name="base_weight">3850</field>
+        </record>
+
+        <!-- 40' Flat Rack -->
+        <record id="package_type_40fr" model="stock.package.type">
+            <field name="name">40' FR Container</field>
+            <field name="sequence">25</field>
+            <field name="is_comex_container" eval="True"/>
+            <field name="container_size">40</field>
+            <field name="container_category">FR</field>
+            <field name="packaging_length">12.08</field>
+            <field name="width">2.44</field>
+            <field name="height">2.13</field>
+            <field name="max_weight">40000</field>
+            <field name="base_weight">5000</field>
+        </record>
+
+        <!-- ================================================================ -->
+        <!-- 45 FEET CONTAINERS -->
+        <!-- ================================================================ -->
+
+        <!-- 45' High Cube -->
+        <record id="package_type_45hc" model="stock.package.type">
+            <field name="name">45' HC Container</field>
+            <field name="sequence">30</field>
+            <field name="is_comex_container" eval="True"/>
+            <field name="container_size">45</field>
+            <field name="container_category">HC</field>
+            <field name="packaging_length">13.56</field>
+            <field name="width">2.35</field>
+            <field name="height">2.69</field>
+            <field name="max_weight">28600</field>
+            <field name="base_weight">4800</field>
+        </record>
+
+    </data>
+</odoo>

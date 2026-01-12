@@ -49,6 +49,12 @@
               parent="menu_comex_logistics"
               sequence="20"/>
 
+    <menuitem id="menu_stock_quant_package_comex"
+              name="Containers"
+              parent="menu_comex_logistics"
+              action="action_stock_quant_package_comex"
+              sequence="30"/>
+
     <menuitem id="menu_comex_picking_all"
               name="All COMEX Transfers"
               parent="menu_comex_stock"

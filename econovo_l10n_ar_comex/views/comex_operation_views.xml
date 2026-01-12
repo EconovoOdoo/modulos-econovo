@@ -127,6 +127,10 @@
                                 invisible="picking_count == 0">
                             <field name="picking_count" widget="statinfo" string="Transfers"/>
                         </button>
+                        <button name="action_view_invoices" type="object" class="oe_stat_button" icon="fa-file-text-o"
+                                invisible="invoice_count == 0">
+                            <field name="invoice_count" widget="statinfo" string="Invoices"/>
+                        </button>
                     </div>
                     <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
                     <div class="oe_title">
@@ -179,6 +183,27 @@
                                     <field name="freight_forwarder_id"/>
                                 </group>
                             </group>
+                        </page>
+                        <page string="Invoices/Bills" name="invoices">
+                            <field name="invoice_ids" nolabel="1">
+                                <tree editable="bottom"
+                                      decoration-success="state == 'posted'" 
+                                      decoration-warning="state == 'draft'"
+                                      decoration-muted="state == 'cancel'">
+                                    <field name="name" readonly="1"/>
+                                    <field name="partner_id" readonly="1"/>
+                                    <field name="move_type" optional="hide" readonly="1"/>
+                                    <field name="invoice_date" readonly="1"/>
+                                    <field name="amount_total" sum="Total" readonly="1"/>
+                                    <field name="currency_id" optional="hide" readonly="1"/>
+                                    <field name="state" widget="badge" readonly="1"
+                                           decoration-success="state == 'posted'"
+                                           decoration-info="state == 'draft'"/>
+                                </tree>
+                            </field>
+                            <div class="alert alert-info" role="alert" style="margin-top: 10px;">
+                                <i class="fa fa-info-circle"/> Invoices from Purchase Orders are automatically added. You can also add additional invoices manually using the "Add a line" button above.
+                            </div>
                         </page>
                         <page string="Notes" name="notes">
                             <field name="description" placeholder="Add internal notes..."/>

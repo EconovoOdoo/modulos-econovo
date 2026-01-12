@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============================================================ -->
+    <!-- STOCK.QUANT.PACKAGE COMEX VIEWS -->
+    <!-- ============================================================ -->
+
+    <!-- Tree View: COMEX Containers -->
+    <record id="stock_quant_package_comex_tree" model="ir.ui.view">
+        <field name="name">stock.quant.package.comex.tree</field>
+        <field name="model">stock.quant.package</field>
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <tree string="COMEX Containers" decoration-info="is_comex_container">
+                <field name="comex_container_number" string="Container #"/>
+                <field name="package_type_id"/>
+                <field name="comex_shipment_id"/>
+                <field name="comex_seal_number"/>
+                <field name="location_id"/>
+                <field name="comex_weight_gross" string="Gross Weight" sum="total_weight"/>
+                <field name="comex_volume" string="Volume" sum="total_volume"/>
+                <field name="is_comex_container" column_invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View: COMEX Container -->
+    <record id="stock_quant_package_comex_form" model="ir.ui.view">
+        <field name="name">stock.quant.package.comex.form</field>
+        <field name="model">stock.quant.package</field>
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <form string="COMEX Container">
+                <header invisible="not is_comex_container">
+                    <button name="action_view_comex_shipment" 
+                            type="object" 
+                            string="View Shipment" 
+                            class="oe_highlight"
+                            invisible="not comex_shipment_id"/>
+                    <button name="action_view_stock_moves" 
+                            type="object" 
+                            string="View Moves"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_comex_shipment"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-ship"
+                                invisible="not comex_shipment_id">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">Shipment</span>
+                            </div>
+                        </button>
+                        <button name="action_view_stock_moves"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-exchange">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">Moves</span>
+                            </div>
+                        </button>
+                    </div>
+
+                    <field name="is_comex_container" invisible="1"/>
+                    
+                    <group name="main">
+                        <group name="container_info" string="Container Information">
+                            <field name="comex_container_number" 
+                                   placeholder="e.g., MAEU1234567890"
+                                   readonly="not is_comex_container"/>
+                            <field name="package_type_id" 
+                                   domain="[('is_comex_container', '=', True)]"
+                                   readonly="not is_comex_container"/>
+                            <field name="comex_seal_number" 
+                                   placeholder="Customs seal number"
+                                   readonly="not is_comex_container"/>
+                            <field name="location_id"/>
+                            <field name="comex_shipment_id" 
+                                   readonly="not is_comex_container"/>
+                            <field name="comex_operation_id" readonly="1"/>
+                        </group>
+
+                        <group name="weights" string="Weights &amp; Measures">
+                            <field name="comex_weight_gross" 
+                                   widget="float" 
+                                   readonly="not is_comex_container"/>
+                            <field name="comex_weight_net" 
+                                   widget="float"
+                                   readonly="not is_comex_container"/>
+                            <field name="comex_weight_tare" 
+                                   widget="float" 
+                                   readonly="1"/>
+                            <field name="comex_volume" 
+                                   widget="float"
+                                   readonly="not is_comex_container"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Contents" name="contents">
+                            <field name="quant_ids" context="{'tree_view_ref': 'stock.view_stock_quant_tree'}">
+                                <tree>
+                                    <field name="product_id"/>
+                                    <field name="lot_id" optional="show"/>
+                                    <field name="quantity"/>
+                                    <field name="product_uom_id" groups="uom.group_uom"/>
+                                    <field name="location_id"/>
+                                </tree>
+                            </field>
+                        </page>
+
+                        <page string="Package Details" name="package_details" invisible="not is_comex_container">
+                            <group>
+                                <field name="name"/>
+                                <field name="package_use"/>
+                                <field name="owner_id"/>
+                                <field name="company_id" groups="base.group_multi_company"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View: COMEX Containers -->
+    <record id="stock_quant_package_comex_search" model="ir.ui.view">
+        <field name="name">stock.quant.package.comex.search</field>
+        <field name="model">stock.quant.package</field>
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <search string="COMEX Containers">
+                <field name="comex_container_number" string="Container Number"/>
+                <field name="comex_shipment_id" string="Shipment"/>
+                <field name="comex_operation_id" string="COMEX Operation"/>
+                <field name="location_id" string="Location"/>
+                <field name="package_type_id" string="Container Type"/>
+                
+                <filter name="comex_containers" 
+                        string="COMEX Containers" 
+                        domain="[('is_comex_container', '=', True)]"/>
+                <filter name="in_transit" 
+                        string="In Transit" 
+                        domain="[('location_id.usage', '=', 'transit')]"/>
+                <filter name="at_warehouse" 
+                        string="At Warehouse" 
+                        domain="[('location_id.usage', '=', 'internal')]"/>
+                
+                <separator/>
+                <filter name="filter_comex_shipment_id" 
+                        string="Shipment" 
+                        context="{'group_by': 'comex_shipment_id'}"/>
+                <filter name="filter_location" 
+                        string="Location" 
+                        context="{'group_by': 'location_id'}"/>
+                <filter name="filter_package_type" 
+                        string="Container Type" 
+                        context="{'group_by': 'package_type_id'}"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action: COMEX Containers -->
+    <record id="action_stock_quant_package_comex" model="ir.actions.act_window">
+        <field name="name">COMEX Containers</field>
+        <field name="res_model">stock.quant.package</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('is_comex_container', '=', True)]</field>
+        <field name="context">{
+            'search_default_comex_containers': 1,
+            'search_default_in_transit': 1,
+        }</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'tree', 'view_id': ref('stock_quant_package_comex_tree')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('stock_quant_package_comex_form')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No COMEX containers found
+            </p>
+            <p>
+                COMEX containers are shipping containers tracked through your COMEX operations.
+                They are automatically created when you receive goods via COMEX shipments.
+            </p>
+        </field>
+    </record>
+
+</odoo>

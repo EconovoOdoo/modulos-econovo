@@ -82,11 +82,13 @@ class ComexShipment(models.Model):
         tracking=True,
     )
 
-    # Container details
-    container_ids = fields.One2many(
-        'comex.shipment.container',
-        'shipment_id',
+    # Containers (using native stock.quant.package)
+    package_ids = fields.One2many(
+        'stock.quant.package',
+        'comex_shipment_id',
         string="Containers",
+        domain="[('comex_shipment_id', '!=', False)]",
+        help="Shipping containers for this shipment (tracked as packages)",
     )
     container_count = fields.Integer(
         string="Container Count",
@@ -117,13 +119,6 @@ class ComexShipment(models.Model):
         'comex.port',
         string="Destination Port",
         tracking=True,
-    )
-    # Keep char fields for backwards compatibility
-    origin_port = fields.Char(
-        string="Origin Port (Text)",
-    )
-    destination_port = fields.Char(
-        string="Destination Port (Text)",
     )
 
     # Carrier
@@ -186,8 +181,9 @@ class ComexShipment(models.Model):
     # COMPUTE METHODS
     # -------------------------------------------------------------------------
     def _compute_container_count(self):
+        """Count shipping containers (packages) for this shipment."""
         for record in self:
-            record.container_count = len(record.container_ids)
+            record.container_count = len(record.package_ids)
 
     def _compute_picking_count(self):
         for record in self:
@@ -254,51 +250,17 @@ class ComexShipment(models.Model):
             'domain': [('id', 'in', self.picking_ids.ids)],
             'context': {'default_comex_shipment_id': self.id},
         }
-
-
-class ComexShipmentContainer(models.Model):
-    """Container details for shipments."""
-
-    _name = 'comex.shipment.container'
-    _description = 'COMEX Shipment Container'
-    _order = 'container_number'
-
-    shipment_id = fields.Many2one(
-        'comex.shipment',
-        string="Shipment",
-        required=True,
-        ondelete='cascade',
-    )
-    container_number = fields.Char(
-        string="Container Number",
-        required=True,
-    )
-    container_type_id = fields.Many2one(
-        'comex.container.type',
-        string="Container Type",
-    )
-    # Keep selection for backwards compatibility
-    container_type = fields.Selection(
-        selection=[
-            ('20GP', "20' General Purpose"),
-            ('40GP', "40' General Purpose"),
-            ('40HC', "40' High Cube"),
-            ('20RF', "20' Reefer"),
-            ('40RF', "40' Reefer"),
-            ('other', "Other"),
-        ],
-        string="Container Type (Legacy)",
-        default='40HC',
-    )
-    seal_number = fields.Char(
-        string="Seal Number",
-    )
-    weight_gross = fields.Float(
-        string="Gross Weight (kg)",
-    )
-    weight_net = fields.Float(
-        string="Net Weight (kg)",
-    )
-    volume = fields.Float(
-        string="Volume (m³)",
-    )
+    def action_view_containers(self):
+        """Open related containers (packages)."""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Containers'),
+            'res_model': 'stock.quant.package',
+            'view_mode': 'tree,form',
+            'domain': [('id', 'in', self.package_ids.ids)],
+            'context': {
+                'default_comex_shipment_id': self.id,
+                'search_default_comex_shipment_id': self.id,
+            },
+        }
