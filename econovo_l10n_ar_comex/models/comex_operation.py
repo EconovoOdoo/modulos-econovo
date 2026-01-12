@@ -203,6 +203,14 @@ class ComexOperation(models.Model):
         compute='_compute_invoice_count',
     )
 
+    # Container/Package Count
+    container_total_count = fields.Integer(
+        string="Total Containers",
+        compute='_compute_container_total_count',
+        store=True,
+        help="Total number of containers/packages in all shipments",
+    )
+
     # Amounts
     currency_id = fields.Many2one(
         'res.currency',
@@ -323,6 +331,12 @@ class ComexOperation(models.Model):
         """Count total invoices."""
         for record in self:
             record.invoice_count = len(record.invoice_ids)
+
+    @api.depends('shipment_ids.package_ids')
+    def _compute_container_total_count(self):
+        """Calculate total number of containers from all shipments."""
+        for record in self:
+            record.container_total_count = len(record.shipment_ids.mapped('package_ids'))
 
     # -------------------------------------------------------------------------
     # KANBAN METHODS
@@ -578,3 +592,25 @@ class ComexOperation(models.Model):
                 default_partner_id=self.partner_id.id if self.partner_id else False,
             ),
         }
+
+    def action_view_containers(self):
+        """Open all containers/packages from shipments."""
+        self.ensure_one()
+        # Get all packages from all shipments
+        packages = self.shipment_ids.mapped('package_ids')
+        
+        action = {
+            'type': 'ir.actions.act_window',
+            'name': _('Containers'),
+            'res_model': 'stock.quant.package',
+            'view_mode': 'tree,form',
+            'domain': [('id', 'in', packages.ids)],
+            'context': {'default_comex_operation_id': self.id},
+        }
+        
+        # If only one package, open form view directly
+        if len(packages) == 1:
+            action['view_mode'] = 'form'
+            action['res_id'] = packages.id
+        
+        return action

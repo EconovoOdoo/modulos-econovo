@@ -90,6 +90,13 @@
                 <field name="currency_id" column_invisible="1"/>
                 <field name="purchase_order_count" string="POs"/>
                 <field name="shipment_count" string="Shipments" optional="show"/>
+                <field name="container_total_count" string="Containers" optional="show"/>
+                <button name="action_view_containers" 
+                        type="object" 
+                        icon="fa-cube" 
+                        title="View Containers"
+                        invisible="container_total_count == 0"
+                        class="btn-link"/>
                 <field name="company_id" groups="base.group_multi_company" optional="show"/>
                 <field name="priority" widget="priority" optional="hide"/>
             </tree>
@@ -284,7 +291,7 @@
     <record id="comex_operation_action" model="ir.actions.act_window">
         <field name="name">COMEX Operations</field>
         <field name="res_model">comex.operation</field>
-        <field name="view_mode">kanban,tree,form,calendar,pivot,graph</field>
+        <field name="view_mode">tree,kanban,form,calendar,pivot,graph</field>
         <field name="search_view_id" ref="comex_operation_view_search"/>
         <field name="context">{'default_operation_type': 'import'}</field>
         <field name="help" type="html">
@@ -301,7 +308,7 @@
     <record id="comex_operation_action_import" model="ir.actions.act_window">
         <field name="name">Imports</field>
         <field name="res_model">comex.operation</field>
-        <field name="view_mode">kanban,tree,form,calendar,pivot,graph</field>
+        <field name="view_mode">tree,kanban,form,calendar,pivot,graph</field>
         <field name="search_view_id" ref="comex_operation_view_search"/>
         <field name="domain">[('operation_type', '=', 'import')]</field>
         <field name="context">{'default_operation_type': 'import', 'search_default_filter_import': 1}</field>
@@ -310,7 +317,7 @@
     <record id="comex_operation_action_export" model="ir.actions.act_window">
         <field name="name">Exports</field>
         <field name="res_model">comex.operation</field>
-        <field name="view_mode">kanban,tree,form,calendar,pivot,graph</field>
+        <field name="view_mode">tree,kanban,form,calendar,pivot,graph</field>
         <field name="search_view_id" ref="comex_operation_view_search"/>
         <field name="domain">[('operation_type', '=', 'export')]</field>
         <field name="context">{'default_operation_type': 'export', 'search_default_filter_export': 1}</field>
