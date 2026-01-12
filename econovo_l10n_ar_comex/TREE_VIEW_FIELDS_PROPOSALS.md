@@ -5,7 +5,7 @@
 
 ## Progress Checklist
 
-- [ ] 1. Fc n° (invoice_numbers) - Multiple invoices
+- [x] 1. Fc n° (invoice_numbers) - Multiple invoices ✅ IMPLEMENTED (Alt 1: many2many_tags)
 - [ ] 2. BL n° (bl_numbers) - Multiple shipments  
 - [x] 3. Cant cont (container_total_count) - Sum of containers ✅ IMPLEMENTED & FIXED
 - [ ] 4. Producto (product_names) - Multiple products

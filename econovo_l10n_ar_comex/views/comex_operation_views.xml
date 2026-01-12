@@ -97,6 +97,11 @@
                         title="View Containers"
                         invisible="container_total_count == 0"
                         class="btn-link"/>
+                <field name="invoice_ids" 
+                       widget="many2many_tags" 
+                       string="Invoices"
+                       options="{'color_field': 'state', 'no_create': True, 'limit': 5}"
+                       optional="show"/>
                 <field name="company_id" groups="base.group_multi_company" optional="show"/>
                 <field name="priority" widget="priority" optional="hide"/>
             </tree>

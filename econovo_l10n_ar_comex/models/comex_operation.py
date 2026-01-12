@@ -196,7 +196,7 @@ class ComexOperation(models.Model):
         inverse='_inverse_invoice_ids',
         store=True,
         domain="[('move_type', 'in', ['out_invoice', 'out_refund', 'in_invoice', 'in_refund'])]",
-        help="All invoices and bills: automatic (from purchase orders) + manually added",
+        help="All invoices and bills: from purchase orders, customs clearances (DI), and landed costs (despachante, local freight, etc.)",
     )
     invoice_count = fields.Integer(
         string="Invoice Count",
@@ -311,16 +311,30 @@ class ComexOperation(models.Model):
         for record in self:
             record.picking_count = len(record.picking_ids)
 
-    @api.depends('purchase_order_ids.invoice_ids')
+    @api.depends(
+        'purchase_order_ids.invoice_ids',
+        'customs_clearance_ids.vendor_bill_id',
+        'customs_clearance_ids.landed_cost_id.vendor_bill_id',
+    )
     def _compute_invoice_ids(self):
-        """Auto-add invoices from purchase orders, keep manual ones."""
+        """Auto-add all related invoices: POs + Despachos + Landed Costs."""
         for record in self:
-            # Get invoices from purchase orders
-            auto_invoices = record.purchase_order_ids.mapped('invoice_ids')
-            # Combine with existing manual invoices (already in invoice_ids)
-            if auto_invoices:
-                # Add automatic invoices if not already present
-                record.invoice_ids = [(4, inv.id) for inv in auto_invoices if inv not in record.invoice_ids]
+            invoices = self.env['account.move']
+            
+            # 1. Invoices from purchase orders
+            invoices |= record.purchase_order_ids.mapped('invoice_ids')
+            
+            # 2. Vendor bills from customs clearances (Despacho DI)
+            invoices |= record.customs_clearance_ids.mapped('vendor_bill_id')
+            
+            # 3. Vendor bills from landed costs
+            invoices |= record.customs_clearance_ids.mapped('landed_cost_id.vendor_bill_id')
+            
+            # Filter valid invoices (exclude cancelled)
+            invoices = invoices.filtered(lambda inv: inv.state != 'cancel')
+            
+            # Update field (replace all)
+            record.invoice_ids = [(6, 0, invoices.ids)]
     
     def _inverse_invoice_ids(self):
         """Allow manual editing of invoice_ids field."""
