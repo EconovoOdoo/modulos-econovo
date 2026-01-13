@@ -238,6 +238,24 @@ class ComexOperation(models.Model):
         store=True,
         help="Combined display of payment instrument and timing",
     )
+    
+    # Bank Intervention (computed from payment instrument)
+    requires_bank_intervention = fields.Boolean(
+        compute='_compute_requires_bank_intervention',
+        store=True,
+        string="Requires Bank",
+        help="Indicates if payment instrument requires bank intervention (L/C, D/P, D/A)",
+    )
+    
+    # Nominated Bank
+    nominated_bank_id = fields.Many2one(
+        'res.partner',
+        string="Nominated Bank",
+        domain="[('is_company', '=', True)]",
+        tracking=True,
+        help="Bank nominated for this COMEX operation (for L/C, payments, etc.)",
+    )
+    
     amount_fob = fields.Monetary(
         string="FOB Amount",
         currency_field='currency_id',
@@ -308,6 +326,15 @@ class ComexOperation(models.Model):
                 record.payment_terms_display = record.payment_timing_id.name
             else:
                 record.payment_terms_display = False
+
+    @api.depends('payment_instrument_id.bank_intervention')
+    def _compute_requires_bank_intervention(self):
+        """Determine if payment instrument requires bank intervention."""
+        for record in self:
+            record.requires_bank_intervention = bool(
+                record.payment_instrument_id and 
+                record.payment_instrument_id.bank_intervention
+            )
 
     @api.depends('amount_fob', 'amount_freight', 'amount_insurance')
     def _compute_amount_cif(self):
@@ -438,6 +465,20 @@ class ComexOperation(models.Model):
         if self.partner_id and self.partner_id.country_id:
             self.origin_country_id = self.partner_id.country_id
 
+    @api.onchange('payment_instrument_id', 'nominated_bank_id')
+    def _onchange_check_bank_required(self):
+        """Warning if payment instrument requires bank but no bank is nominated."""
+        if self.requires_bank_intervention and not self.nominated_bank_id:
+            return {
+                'warning': {
+                    'title': _('Bank Required'),
+                    'message': _(
+                        'Payment instrument "%s" typically requires bank intervention. '
+                        'Consider nominating a bank for this operation.'
+                    ) % self.payment_instrument_id.name,
+                }
+            }
+
     # -------------------------------------------------------------------------
     # CRUD METHODS
     # -------------------------------------------------------------------------
@@ -556,6 +597,51 @@ class ComexOperation(models.Model):
     # -------------------------------------------------------------------------
     # ACTION METHODS
     # -------------------------------------------------------------------------
+    def action_create_shipment(self):
+        """Create a new shipment linked to this operation."""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Create Shipment'),
+            'res_model': 'comex.shipment',
+            'view_mode': 'form',
+            'target': 'current',
+            'context': {
+                'default_operation_id': self.id,
+                'default_partner_id': self.partner_id.id if self.partner_id else False,
+            },
+        }
+
+    def action_create_customs_clearance(self):
+        """Create a new customs clearance linked to this operation."""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Create Customs Clearance'),
+            'res_model': 'comex.customs.clearance',
+            'view_mode': 'form',
+            'target': 'current',
+            'context': {
+                'default_operation_id': self.id,
+                'default_operation_type': self.operation_type,
+            },
+        }
+
+    def action_create_mulc(self):
+        """Create a new MULC operation linked to this operation."""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Create MULC'),
+            'res_model': 'comex.mulc',
+            'view_mode': 'form',
+            'target': 'current',
+            'context': {
+                'default_operation_id': self.id,
+                'default_currency_id': self.currency_id.id if self.currency_id else False,
+            },
+        }
+
     def action_view_purchase_orders(self):
         """Open related purchase orders."""
         self.ensure_one()
@@ -663,3 +749,44 @@ class ComexOperation(models.Model):
             action['res_id'] = packages.id
         
         return action
+
+    def action_create_shipment(self):
+        """Create a new shipment linked to this operation."""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Create Shipment'),
+            'res_model': 'comex.shipment',
+            'view_mode': 'form',
+            'target': 'current',
+            'context': {
+                'default_operation_id': self.id,
+                'default_operation_type': self.operation_type,
+                'default_transport_mode': self.transport_mode,
+                'default_etd': self.date_etd,
+                'default_eta': self.date_eta,
+            },
+        }
+
+    def action_create_mulc(self):
+        """Create a new MULC operation linked to this operation with smart defaults."""
+        self.ensure_one()
+        
+        # Prepare context with all smart defaults
+        context = {
+            'default_operation_id': self.id,
+            'default_mulc_type': 'import_payment' if self.operation_type == 'import' else 'export_collection',
+            'default_currency_id': self.currency_id.id if self.currency_id else False,
+        }
+        
+        # Note: Bank, due_date, and concept_code will be auto-filled by default_get()
+        # in comex.mulc model based on operation's nominated_bank_id and payment terms
+        
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Create MULC Operation'),
+            'res_model': 'comex.mulc',
+            'view_mode': 'form',
+            'target': 'current',
+            'context': context,
+        }

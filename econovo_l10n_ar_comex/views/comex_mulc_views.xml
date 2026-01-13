@@ -6,13 +6,16 @@
         <field name="name">comex.mulc.view.tree</field>
         <field name="model">comex.mulc</field>
         <field name="arch" type="xml">
-            <tree string="MULC Operations" decoration-info="state == 'draft'" decoration-warning="state in ('requested', 'approved')" decoration-success="state == 'executed'" decoration-danger="days_to_due &lt; 0">
+            <tree string="MULC Operations" decoration-info="state == 'draft'" decoration-warning="state in ('requested', 'approved')" decoration-success="state == 'executed'" decoration-danger="days_to_due &lt; 0 or not is_within_bcra_limit">
                 <field name="name" decoration-bf="1"/>
                 <field name="operation_id"/>
                 <field name="mulc_type"/>
                 <field name="date"/>
                 <field name="due_date"/>
                 <field name="bank_id"/>
+                <field name="bank_partner_id" optional="show"/>
+                <field name="uses_nominated_bank" optional="show"/>
+                <field name="is_within_bcra_limit" optional="show"/>
                 <field name="amount_foreign"/>
                 <field name="currency_id"/>
                 <field name="exchange_rate"/>
@@ -46,6 +49,14 @@
                     <field name="state" widget="statusbar" statusbar_visible="draft,requested,approved,executed"/>
                 </header>
                 <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="toggle_active" type="object" class="oe_stat_button" icon="fa-archive">
+                            <field name="active" widget="boolean_button" options="{'terminology': 'archive'}"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Using Nominated Bank" bg_color="bg-success" invisible="not uses_nominated_bank"/>
+                    <widget name="web_ribbon" title="Different Bank" bg_color="bg-warning" invisible="uses_nominated_bank or not operation_id or not operation_id.nominated_bank_id"/>
+                    <widget name="web_ribbon" title="BCRA Limit Exceeded" bg_color="bg-danger" invisible="is_within_bcra_limit"/>
                     <div class="oe_title">
                         <label for="name"/>
                         <h1>
@@ -57,11 +68,14 @@
                             <field name="operation_id"/>
                             <field name="mulc_type"/>
                             <field name="date"/>
+                            <field name="suggested_due_date" readonly="1"/>
                             <field name="due_date"/>
                         </group>
                         <group name="bank">
                             <field name="bank_id"/>
                             <field name="bank_partner_id"/>
+                            <field name="uses_nominated_bank" invisible="1"/>
+                            <field name="is_within_bcra_limit" invisible="1"/>
                             <field name="swift_code"/>
                             <field name="boleto_number"/>
                             <field name="concept_code"/>

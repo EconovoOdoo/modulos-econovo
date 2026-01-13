@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 # Part of Econovo. See LICENSE file for full copyright and licensing details.
 
+from datetime import timedelta
+
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
 
@@ -66,6 +68,11 @@ class ComexMulc(models.Model):
         tracking=True,
         help="Date when foreign exchange access expires.",
     )
+    suggested_due_date = fields.Date(
+        compute='_compute_suggested_due_date',
+        string="Suggested Due Date",
+        help="Calculated from shipment date + payment timing days (for reference)",
+    )
 
     # Bank details
     bank_id = fields.Many2one(
@@ -83,6 +90,20 @@ class ComexMulc(models.Model):
     swift_code = fields.Char(
         string="SWIFT/BIC Code",
         related='bank_id.bic',
+    )
+    
+    # Bank Match Indicator
+    uses_nominated_bank = fields.Boolean(
+        compute='_compute_uses_nominated_bank',
+        string="Using Nominated Bank",
+        help="Indicates if MULC bank matches the operation's nominated bank",
+    )
+    
+    # BCRA Compliance Indicator
+    is_within_bcra_limit = fields.Boolean(
+        compute='_compute_is_within_bcra_limit',
+        string="Within BCRA Limit",
+        help="Indicates if MULC is within BCRA payment timing limits",
     )
 
     # === INTEGRATION WITH ODOO NATIVE ===
@@ -213,6 +234,36 @@ class ComexMulc(models.Model):
             else:
                 record.days_to_due = 0
 
+    @api.depends('operation_id.nominated_bank_id', 'bank_partner_id')
+    def _compute_uses_nominated_bank(self):
+        """Check if MULC bank matches operation's nominated bank."""
+        for record in self:
+            record.uses_nominated_bank = (
+                record.operation_id.nominated_bank_id and 
+                record.bank_partner_id == record.operation_id.nominated_bank_id
+            )
+
+    @api.depends('operation_id.payment_timing_id.bcra_max_days', 'days_since_shipment')
+    def _compute_is_within_bcra_limit(self):
+        """Check if MULC is within BCRA payment timing limits."""
+        for record in self:
+            if record.operation_id.payment_timing_id and record.operation_id.payment_timing_id.bcra_max_days:
+                max_days = record.operation_id.payment_timing_id.bcra_max_days
+                record.is_within_bcra_limit = (record.days_since_shipment <= max_days)
+            else:
+                # No limit configured = always compliant
+                record.is_within_bcra_limit = True
+
+    @api.depends('operation_id.date_etd', 'operation_id.payment_timing_id.days')
+    def _compute_suggested_due_date(self):
+        """Calculate suggested due date from shipment + payment timing."""
+        for record in self:
+            if record.operation_id.date_etd and record.operation_id.payment_timing_id:
+                timing_days = record.operation_id.payment_timing_id.days or 0
+                record.suggested_due_date = record.operation_id.date_etd + timedelta(days=timing_days)
+            else:
+                record.suggested_due_date = False
+
     # -------------------------------------------------------------------------
     # CONSTRAINTS
     # -------------------------------------------------------------------------
@@ -225,6 +276,37 @@ class ComexMulc(models.Model):
     # -------------------------------------------------------------------------
     # CRUD METHODS
     # -------------------------------------------------------------------------
+    @api.model
+    def default_get(self, fields_list):
+        """Auto-populate bank, due date, and concept code from operation."""
+        res = super().default_get(fields_list)
+        
+        # If creating from operation context, inherit values intelligently
+        if self.env.context.get('default_operation_id'):
+            operation = self.env['comex.operation'].browse(
+                self.env.context['default_operation_id']
+            )
+            
+            # Auto-fill nominated bank
+            if operation.nominated_bank_id:
+                res['bank_partner_id'] = operation.nominated_bank_id.id
+                if operation.nominated_bank_id.bank_ids:
+                    res['bank_id'] = operation.nominated_bank_id.bank_ids[0].id
+            
+            # Auto-fill due date from shipment + payment timing
+            if operation.date_etd and operation.payment_timing_id:
+                timing_days = operation.payment_timing_id.days or 0
+                res['due_date'] = operation.date_etd + timedelta(days=timing_days)
+            
+            # Auto-fill concept code from payment instrument
+            if operation.payment_instrument_id and hasattr(operation.payment_instrument_id, 'bcra_concept_code'):
+                if operation.payment_instrument_id.bcra_concept_code:
+                    res['concept_code'] = operation.payment_instrument_id.bcra_concept_code
+        
+        return res
+        
+        return res
+
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
@@ -241,6 +323,25 @@ class ComexMulc(models.Model):
 
     def action_approve(self):
         """Mark as approved by bank/BCRA."""
+        # Validate BCRA timing limits
+        for record in self:
+            if not record.is_within_bcra_limit:
+                timing = record.operation_id.payment_timing_id
+                if timing and timing.bcra_max_days:
+                    raise ValidationError(
+                        _("Cannot approve MULC %(mulc)s: Payment exceeds BCRA limit!\n\n"
+                          "Payment Timing: %(timing)s (Max %(max)d days)\n"
+                          "Days Since Shipment: %(days)d days\n"
+                          "Shipment Date: %(etd)s\n\n"
+                          "This MULC violates BCRA regulations. Please adjust dates or payment timing.") % {
+                            'mulc': record.name,
+                            'timing': timing.name,
+                            'max': timing.bcra_max_days,
+                            'days': record.days_since_shipment,
+                            'etd': record.operation_id.date_etd or _('Not set'),
+                        }
+                    )
+        
         self.write({'state': 'approved'})
 
     def action_execute(self):

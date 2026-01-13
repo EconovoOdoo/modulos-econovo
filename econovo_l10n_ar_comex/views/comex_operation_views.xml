@@ -103,6 +103,7 @@
                        options="{'no_create': True, 'limit': 5}"
                        optional="show"/>
                 <field name="payment_terms_display" string="Payment Terms" optional="show"/>
+                <field name="nominated_bank_id" optional="show"/>
                 <field name="invoice_ids" 
                        widget="many2many_tags" 
                        string="Invoices"
@@ -121,6 +122,12 @@
         <field name="arch" type="xml">
             <form string="COMEX Operation">
                 <header>
+                    <button name="action_create_shipment" string="Create Shipment" type="object" 
+                            class="btn-primary" icon="fa-ship"/>
+                    <button name="action_create_mulc" string="Create MULC" type="object" 
+                            icon="fa-usd"/>
+                    <button name="action_create_customs_clearance" string="Create Customs Clearance" type="object" 
+                            icon="fa-gavel"/>
                     <field name="stage_id" widget="statusbar" options="{'clickable': '1', 'fold_field': 'fold'}"/>
                 </header>
                 <sheet>
@@ -189,19 +196,28 @@
                         </page>
                         <page string="Financial" name="financial">
                             <group>
-                                <group name="amounts">
+                                <group name="payment_terms">
                                     <field name="currency_id"/>
                                     <field name="payment_instrument_id"/>
                                     <field name="payment_timing_id"/>
+                                    <field name="requires_bank_intervention" invisible="1"/>
+                                    <field name="nominated_bank_id" 
+                                           widget="res_partner_many2one"
+                                           context="{'default_is_company': True, 'show_vat': True}"/>
+                                </group>
+                                <group name="amounts">
                                     <field name="amount_fob"/>
                                     <field name="amount_freight"/>
                                     <field name="amount_insurance"/>
                                     <field name="amount_cif"/>
                                 </group>
+                            </group>
+                            <group>
                                 <group name="partners">
                                     <field name="customs_broker_id"/>
                                     <field name="freight_forwarder_id"/>
                                 </group>
+                                <group name="empty"/>
                             </group>
                         </page>
                         <page string="Invoices/Bills" name="invoices">
