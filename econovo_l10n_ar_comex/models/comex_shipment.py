@@ -16,12 +16,19 @@ class ComexShipment(models.Model):
     # FIELDS
     # -------------------------------------------------------------------------
     name = fields.Char(
-        string="Reference",
+        string="BL/AWB Number",
         required=True,
         copy=False,
-        readonly=True,
-        default=lambda self: _('New'),
         tracking=True,
+        index='trigram',
+        help="Bill of Lading or Air Waybill number - Primary identifier for this shipment.",
+    )
+    internal_reference = fields.Char(
+        string="Internal Reference",
+        readonly=True,
+        copy=False,
+        default=lambda self: _('New'),
+        help="Internal tracking number (auto-generated for audit purposes).",
     )
     active = fields.Boolean(
         string="Active",
@@ -72,14 +79,10 @@ class ComexShipment(models.Model):
         string="Voyage/Flight Number",
         tracking=True,
     )
-    bl_number = fields.Char(
-        string="BL/AWB Number",
-        tracking=True,
-        help="Bill of Lading or Air Waybill number.",
-    )
     bl_date = fields.Date(
         string="BL/AWB Date",
         tracking=True,
+        help="Issue date of Bill of Lading or Air Waybill.",
     )
 
     # Containers (using native stock.quant.package)
@@ -180,6 +183,17 @@ class ComexShipment(models.Model):
     # -------------------------------------------------------------------------
     # COMPUTE METHODS
     # -------------------------------------------------------------------------
+    def name_get(self):
+        """Show BL number when available, otherwise shipment reference."""
+        result = []
+        for shipment in self:
+            if shipment.bl_number:
+                name = shipment.bl_number
+            else:
+                name = shipment.name
+            result.append((shipment.id, name))
+        return result
+
     def _compute_container_count(self):
         """Count shipping containers (packages) for this shipment."""
         for record in self:
@@ -232,8 +246,8 @@ class ComexShipment(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
-            if vals.get('name', _('New')) == _('New'):
-                vals['name'] = self.env['ir.sequence'].next_by_code('comex.shipment') or _('New')
+            if vals.get('internal_reference', _('New')) == _('New'):
+                vals['internal_reference'] = self.env['ir.sequence'].next_by_code('comex.shipment') or _('New')
         return super().create(vals_list)
 
     # -------------------------------------------------------------------------

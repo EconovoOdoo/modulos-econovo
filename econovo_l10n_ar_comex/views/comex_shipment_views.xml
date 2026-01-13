@@ -7,11 +7,11 @@
         <field name="model">comex.shipment</field>
         <field name="arch" type="xml">
             <tree string="Shipments">
-                <field name="name" decoration-bf="1"/>
+                <field name="name" decoration-bf="1" string="BL/AWB Number"/>
+                <field name="internal_reference" optional="hide"/>
                 <field name="operation_id"/>
                 <field name="transport_mode"/>
                 <field name="vessel_name"/>
-                <field name="bl_number"/>
                 <field name="date_departure"/>
                 <field name="date_eta"/>
                 <field name="date_arrival"/>
@@ -43,11 +43,12 @@
                     <div class="oe_title">
                         <label for="name"/>
                         <h1>
-                            <field name="name" placeholder="e.g. SHP/2026/00001"/>
+                            <field name="name" placeholder="e.g. BL-MAEU-123456 or AWB-456789"/>
                         </h1>
                     </div>
                     <group>
                         <group name="main">
+                            <field name="internal_reference" readonly="1"/>
                             <field name="operation_id"/>
                             <field name="stage_id"/>
                             <field name="current_location_id"/>
@@ -56,7 +57,6 @@
                         <group name="transport">
                             <field name="vessel_name"/>
                             <field name="voyage_number"/>
-                            <field name="bl_number"/>
                             <field name="bl_date"/>
                         </group>
                     </group>

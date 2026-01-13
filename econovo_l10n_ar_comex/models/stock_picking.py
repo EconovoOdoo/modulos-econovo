@@ -35,7 +35,7 @@ class StockPicking(models.Model):
     # Related fields from shipment (for COMEX tab in form view)
     comex_shipment_bl = fields.Char(
         string="BL/AWB Number",
-        related='comex_shipment_id.bl_number',
+        related='comex_shipment_id.name',
     )
     comex_shipment_transport = fields.Selection(
         string="Transport Mode",

@@ -6,7 +6,7 @@
 ## Progress Checklist
 
 - [x] 1. Fc n° (invoice_numbers) - Multiple invoices ✅ IMPLEMENTED (Alt 1: many2many_tags)
-- [ ] 2. BL n° (bl_numbers) - Multiple shipments  
+- [x] 2. BL n° (bl_numbers) - Multiple shipments ✅ IMPLEMENTED (Alt 1: name_get() override)
 - [x] 3. Cant cont (container_total_count) - Sum of containers ✅ IMPLEMENTED & FIXED
 - [ ] 4. Producto (product_names) - Multiple products
 - [ ] 5. Forma de pago (payment_term_id) - Payment Terms
@@ -47,9 +47,58 @@ def _compute_invoice_numbers(self):
 
 ---
 
-## 2. BL n° (bl_numbers) - Multiple shipments
+## 2. BL n° (bl_numbers) - Multiple shipments ✅ IMPLEMENTED
 
-### Alternativa A ⭐ RECOMMENDED
+**Implementation:** Using `shipment_ids` One2many with `many2many_tags` widget. BL number is now the `name` field.
+**Display:** Individual BL numbers as clickable tags (max 5 visible)
+**Pattern:** Following `stock.lot` pattern (name = real identifier + internal_reference for audit)
+
+```python
+# In models/comex_shipment.py
+name = fields.Char(
+    string="BL/AWB Number",
+    required=True,
+    copy=False,
+    tracking=True,
+    index='trigram',
+    help="Bill of Lading or Air Waybill number - Primary identifier for this shipment.",
+)
+internal_reference = fields.Char(
+    string="Internal Reference",
+    readonly=True,
+    copy=False,
+    default=lambda self: _('New'),
+    help="Internal tracking number (auto-generated for audit purposes).",
+)
+
+@api.model_create_multi
+def create(self, vals_list):
+    for vals in vals_list:
+        if vals.get('internal_reference', _('New')) == _('New'):
+            vals['internal_reference'] = self.env['ir.sequence'].next_by_code('comex.shipment')
+    return super().create(vals_list)
+```
+
+```xml
+<!-- In views/comex_operation_views.xml -->
+<field name="shipment_ids" 
+       widget="many2many_tags"
+       string="BL Numbers"
+       options="{'no_create': True, 'limit': 5}"
+       optional="show"/>
+```
+
+**Benefits:**
+- ✅ BL is the primary identifier (follows `stock.lot` pattern from Odoo native)
+- ✅ Each BL is clickable (opens shipment detail)
+- ✅ Limit of 5 tags prevents visual saturation
+- ✅ BL appears everywhere: tags, breadcrumbs, selects, searches
+- ✅ `internal_reference` maintains audit trail (SHP/2026/00001)
+- ✅ No `name_get()` override needed (simpler, better performance)
+- ✅ Indexed with trigram for fast searches
+- ✅ Aligned with COMEX business logic (BL is the real identifier)
+
+### ~~Alternativa A~~ (Not used)
 **Type:** `Char` computed, stored, searchable
 **Display:** "BL-123, BL-456 (2)"
 ```python

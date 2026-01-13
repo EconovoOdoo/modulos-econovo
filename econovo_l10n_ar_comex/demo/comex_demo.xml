@@ -59,11 +59,11 @@
 
         <!-- Demo Shipment -->
         <record id="demo_shipment_1" model="comex.shipment">
+            <field name="name">MSCU1234567890</field>
             <field name="operation_id" ref="demo_comex_operation_1"/>
             <field name="transport_mode">sea</field>
             <field name="vessel_name">MSC DEMO VESSEL</field>
             <field name="voyage_number">ABC123</field>
-            <field name="bl_number">MSCU1234567890</field>
             <field name="bl_date" eval="(DateTime.today() - relativedelta(days=25)).strftime('%Y-%m-%d')"/>
             <field name="origin_port_id" ref="port_shanghai"/>
             <field name="destination_port_id" ref="port_buenos_aires"/>
