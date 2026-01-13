@@ -102,10 +102,10 @@ class ComexCustomsClearance(models.Model):
     vendor_bill_id = fields.Many2one(
         'account.move',
         string="Vendor Bill (DI)",
-        domain="[('move_type', '=', 'in_invoice'), ('state', '!=', 'cancel')]",
+        domain=[('move_type', '=', 'in_invoice'), ('state', '!=', 'cancel')],
         tracking=True,
         copy=False,
-        help="Link to the Despacho de Importación (Document Type 66) in Accounting.",
+        help="Link to the Despacho de Importación (Document Type 66) in Accounting. Preferably use invoices with Document Type 66 (Import Dispatch).",
     )
     # Link to Landed Costs
     landed_cost_id = fields.Many2one(
@@ -217,6 +217,30 @@ class ComexCustomsClearance(models.Model):
                 record.amount_taxes +
                 record.amount_fees
             )
+
+    # -------------------------------------------------------------------------
+    # ONCHANGE METHODS
+    # -------------------------------------------------------------------------
+    @api.onchange('operation_id')
+    def _onchange_operation_id_vendor_bill_domain(self):
+        """Return domain for vendor_bill_id to filter only Document Type 66."""
+        domain = [('move_type', '=', 'in_invoice'), ('state', '!=', 'cancel')]
+        
+        # Check if l10n_latam fields exist
+        if hasattr(self.env['account.move'], '_fields') and 'l10n_latam_document_type_id' in self.env['account.move']._fields:
+            domain.append(('l10n_latam_document_type_id.code', '=', '66'))
+        
+        return {'domain': {'vendor_bill_id': domain}}
+
+    @api.onchange('vendor_bill_id')
+    def _onchange_vendor_bill_id_dispatch_number(self):
+        """Auto-fill dispatch_number from vendor bill document number."""
+        if self.vendor_bill_id:
+            # Check if l10n_latam_document_number field exists
+            if hasattr(self.vendor_bill_id, 'l10n_latam_document_number'):
+                doc_number = self.vendor_bill_id.l10n_latam_document_number
+                if doc_number:
+                    self.dispatch_number = doc_number
 
     # -------------------------------------------------------------------------
     # CRUD METHODS

@@ -202,6 +202,11 @@ class ComexOperation(models.Model):
         string="Invoice Count",
         compute='_compute_invoice_count',
     )
+    dispatch_invoice_numbers = fields.Char(
+        string="N° Despacho",
+        compute='_compute_dispatch_invoice_numbers',
+        help="Document numbers of Import Dispatch invoices (Document Type 66)",
+    )
 
     # Container/Package Count
     container_total_count = fields.Integer(
@@ -407,6 +412,28 @@ class ComexOperation(models.Model):
         """Count total invoices."""
         for record in self:
             record.invoice_count = len(record.invoice_ids)
+
+    @api.depends('invoice_ids')
+    def _compute_dispatch_invoice_numbers(self):
+        """Extract document numbers from Import Dispatch invoices (Type 66)."""
+        for record in self:
+            dispatch_invoices = self.env['account.move']
+            
+            # Filter invoices with document type 66 (Despacho de Importación)
+            # Check if l10n_latam fields exist (requires l10n_ar module)
+            if hasattr(self.env['account.move'], '_fields') and 'l10n_latam_document_type_id' in self.env['account.move']._fields:
+                dispatch_invoices = record.invoice_ids.filtered(
+                    lambda inv: inv.l10n_latam_document_type_id and inv.l10n_latam_document_type_id.code == '66'
+                )
+            
+            if dispatch_invoices:
+                # Get document numbers (l10n_latam_document_number is the official number)
+                numbers = dispatch_invoices.mapped('l10n_latam_document_number')
+                # Remove False/empty values
+                numbers = [n for n in numbers if n]
+                record.dispatch_invoice_numbers = ', '.join(numbers[:3]) + (f' (+{len(numbers) - 3})' if len(numbers) > 3 else '')
+            else:
+                record.dispatch_invoice_numbers = False
 
     @api.depends('shipment_ids.package_ids')
     def _compute_container_total_count(self):
