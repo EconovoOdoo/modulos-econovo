@@ -146,4 +146,16 @@
               action="hs_code_action"
               sequence="50"/>
 
+    <menuitem id="menu_comex_payment_instruments"
+              name="Payment Instruments"
+              parent="menu_comex_configuration"
+              action="comex_payment_instrument_action"
+              sequence="60"/>
+
+    <menuitem id="menu_comex_payment_timings"
+              name="Payment Timings"
+              parent="menu_comex_configuration"
+              action="comex_payment_timing_action"
+              sequence="70"/>
+
 </odoo>

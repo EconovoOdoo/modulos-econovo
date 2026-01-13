@@ -102,6 +102,7 @@
                        string="BL Numbers"
                        options="{'no_create': True, 'limit': 5}"
                        optional="show"/>
+                <field name="payment_terms_display" string="Payment Terms" optional="show"/>
                 <field name="invoice_ids" 
                        widget="many2many_tags" 
                        string="Invoices"
@@ -190,6 +191,8 @@
                             <group>
                                 <group name="amounts">
                                     <field name="currency_id"/>
+                                    <field name="payment_instrument_id"/>
+                                    <field name="payment_timing_id"/>
                                     <field name="amount_fob"/>
                                     <field name="amount_freight"/>
                                     <field name="amount_insurance"/>

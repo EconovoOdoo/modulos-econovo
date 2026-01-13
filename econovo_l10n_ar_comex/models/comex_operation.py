@@ -218,6 +218,26 @@ class ComexOperation(models.Model):
         default=lambda self: self.env.ref('base.USD', raise_if_not_found=False),
         tracking=True,
     )
+    
+    # Payment Terms (COMEX-specific: Instrument + Timing)
+    payment_instrument_id = fields.Many2one(
+        'comex.payment.instrument',
+        string="Payment Instrument",
+        tracking=True,
+        help="Method of payment (e.g., TT, L/C, D/P, D/A)",
+    )
+    payment_timing_id = fields.Many2one(
+        'comex.payment.timing',
+        string="Payment Timing",
+        tracking=True,
+        help="When payment is due (e.g., Advance, At Sight, 180 days)",
+    )
+    payment_terms_display = fields.Char(
+        string="Payment Terms",
+        compute='_compute_payment_terms_display',
+        store=True,
+        help="Combined display of payment instrument and timing",
+    )
     amount_fob = fields.Monetary(
         string="FOB Amount",
         currency_field='currency_id',
@@ -274,6 +294,21 @@ class ComexOperation(models.Model):
     # -------------------------------------------------------------------------
     # COMPUTE METHODS
     # -------------------------------------------------------------------------
+    @api.depends('payment_instrument_id.name', 'payment_timing_id.name')
+    def _compute_payment_terms_display(self):
+        """Compute combined payment terms display."""
+        for record in self:
+            if record.payment_instrument_id and record.payment_timing_id:
+                instrument = record.payment_instrument_id.code
+                timing = record.payment_timing_id.name
+                record.payment_terms_display = f"{instrument} - {timing}"
+            elif record.payment_instrument_id:
+                record.payment_terms_display = record.payment_instrument_id.code
+            elif record.payment_timing_id:
+                record.payment_terms_display = record.payment_timing_id.name
+            else:
+                record.payment_terms_display = False
+
     @api.depends('amount_fob', 'amount_freight', 'amount_insurance')
     def _compute_amount_cif(self):
         for record in self:

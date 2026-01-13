@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Payment Timing Options -->
+        
+        <record id="payment_timing_advance" model="comex.payment.timing">
+            <field name="name">Anticipado</field>
+            <field name="code">ADV</field>
+            <field name="sequence">5</field>
+            <field name="days">0</field>
+            <field name="timing_type">advance</field>
+            <field name="description">Pago 100% antes del embarque. Máxima seguridad para el exportador.</field>
+            <field name="bcra_max_days">0</field>
+        </record>
+
+        <record id="payment_timing_sight" model="comex.payment.timing">
+            <field name="name">A la Vista</field>
+            <field name="code">SIGHT</field>
+            <field name="sequence">10</field>
+            <field name="days">0</field>
+            <field name="timing_type">sight</field>
+            <field name="description">Pago inmediato al presentar documentos de embarque (BL, factura, etc.).</field>
+            <field name="bcra_max_days">0</field>
+        </record>
+
+        <record id="payment_timing_15d" model="comex.payment.timing">
+            <field name="name">15 días</field>
+            <field name="code">15D</field>
+            <field name="sequence">15</field>
+            <field name="days">15</field>
+            <field name="timing_type">days</field>
+            <field name="description">Pago a 15 días desde presentación de documentos o fecha de embarque.</field>
+            <field name="bcra_max_days">15</field>
+        </record>
+
+        <record id="payment_timing_30d" model="comex.payment.timing">
+            <field name="name">30 días</field>
+            <field name="code">30D</field>
+            <field name="sequence">20</field>
+            <field name="days">30</field>
+            <field name="timing_type">days</field>
+            <field name="description">Pago a 30 días desde presentación de documentos o fecha de embarque.</field>
+            <field name="bcra_max_days">30</field>
+        </record>
+
+        <record id="payment_timing_60d" model="comex.payment.timing">
+            <field name="name">60 días</field>
+            <field name="code">60D</field>
+            <field name="sequence">30</field>
+            <field name="days">60</field>
+            <field name="timing_type">days</field>
+            <field name="description">Pago a 60 días desde presentación de documentos o fecha de embarque.</field>
+            <field name="bcra_max_days">60</field>
+        </record>
+
+        <record id="payment_timing_90d" model="comex.payment.timing">
+            <field name="name">90 días</field>
+            <field name="code">90D</field>
+            <field name="sequence">40</field>
+            <field name="days">90</field>
+            <field name="timing_type">days</field>
+            <field name="description">Pago a 90 días desde presentación de documentos o fecha de embarque.</field>
+            <field name="bcra_max_days">90</field>
+        </record>
+
+        <record id="payment_timing_120d" model="comex.payment.timing">
+            <field name="name">120 días</field>
+            <field name="code">120D</field>
+            <field name="sequence">50</field>
+            <field name="days">120</field>
+            <field name="timing_type">days</field>
+            <field name="description">Pago a 120 días desde presentación de documentos o fecha de embarque.</field>
+            <field name="bcra_max_days">120</field>
+        </record>
+
+        <record id="payment_timing_180d" model="comex.payment.timing">
+            <field name="name">180 días</field>
+            <field name="code">180D</field>
+            <field name="sequence">60</field>
+            <field name="days">180</field>
+            <field name="timing_type">days</field>
+            <field name="description">Pago a 180 días desde presentación de documentos o fecha de embarque. Plazo máximo común para L/C con garantía bancaria.</field>
+            <field name="bcra_max_days">180</field>
+        </record>
+
+        <record id="payment_timing_360d" model="comex.payment.timing">
+            <field name="name">360 días</field>
+            <field name="code">360D</field>
+            <field name="sequence">70</field>
+            <field name="days">360</field>
+            <field name="timing_type">days</field>
+            <field name="description">Pago a 360 días (1 año). Solo para bienes de capital con L/C. Requiere autorización especial BCRA según NCM.</field>
+            <field name="bcra_max_days">360</field>
+        </record>
+
+    </data>
+</odoo>

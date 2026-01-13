@@ -419,9 +419,53 @@ def _compute_product_names(self):
 
 ---
 
-## 5. Forma de pago (payment_term_id) - Payment Terms
+## 5. Forma de pago (payment_term_id) - Payment Terms ✅ IMPLEMENTED
 
-### Alternativa A ⭐ RECOMMENDED
+**Implementation Status**: 🟢 COMPLETE & TESTED
+
+**Type:** `Many2one('account.payment.term')`
+**Standard Odoo:** Uses existing payment terms (Contabilidad > Configuración > Plazos de pago)
+
+```python
+# In models/comex_operation.py
+payment_term_id = fields.Many2one(
+    'account.payment.term',
+    string="Payment Terms",
+    tracking=True,
+    help="Default payment terms for this COMEX operation",
+)
+```
+
+**Tree View XML:**
+```xml
+<!-- In views/comex_operation_views.xml -->
+<field name="payment_term_id" optional="show"/>
+```
+
+**Form View XML:**
+```xml
+<!-- In Financial page, amounts group -->
+<group name="amounts">
+    <field name="currency_id"/>
+    <field name="payment_term_id"/>
+    <field name="amount_fob"/>
+    <!-- ... -->
+</group>
+```
+
+**Benefits:**
+- ✅ Uses native Odoo payment terms (immediate, net 30, net 60, etc.)
+- ✅ Automatically available in tree and form views
+- ✅ Searchable and filterable
+- ✅ Can propagate to purchase orders if needed
+- ✅ Standard field type (no custom logic needed)
+- ✅ Tracking enabled for audit trail
+
+**Placement:**
+- **Tree View**: After BL Numbers, before invoices (financial flow visibility)
+- **Form View**: Financial page > Amounts group (after currency, before FOB amounts)
+
+### ~~Alternativa A~~ (Not used)
 **Type:** `Many2one('account.payment.term')`
 **Standard Odoo:** Uses existing payment terms
 ```python

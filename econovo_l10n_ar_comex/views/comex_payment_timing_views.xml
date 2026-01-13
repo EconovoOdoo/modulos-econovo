@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Tree view -->
+    <record id="comex_payment_timing_view_tree" model="ir.ui.view">
+        <field name="name">comex.payment.timing.view.tree</field>
+        <field name="model">comex.payment.timing</field>
+        <field name="arch" type="xml">
+            <tree string="Payment Timings" editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="timing_type"/>
+                <field name="days"/>
+                <field name="bcra_max_days" optional="show"/>
+                <field name="description" optional="hide"/>
+                <field name="active" optional="show" widget="boolean_toggle"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form view -->
+    <record id="comex_payment_timing_view_form" model="ir.ui.view">
+        <field name="name">comex.payment.timing.view.form</field>
+        <field name="model">comex.payment.timing</field>
+        <field name="arch" type="xml">
+            <form string="Payment Timing">
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="e.g. 180 días"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="code" placeholder="e.g. 180D"/>
+                            <field name="timing_type"/>
+                            <field name="days"/>
+                            <field name="sequence"/>
+                            <field name="active" widget="boolean_toggle"/>
+                        </group>
+                        <group>
+                            <field name="bcra_max_days" 
+                                   help="Maximum days allowed by BCRA for MULC access"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="description" placeholder="Detailed description of this payment timing..."/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="comex_payment_timing_action" model="ir.actions.act_window">
+        <field name="name">Payment Timings</field>
+        <field name="res_model">comex.payment.timing</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new payment timing
+            </p>
+            <p>
+                Define the payment timings available for COMEX operations,
+                such as Advance Payment, At Sight, 180 days, etc.
+            </p>
+        </field>
+    </record>
+
+</odoo>

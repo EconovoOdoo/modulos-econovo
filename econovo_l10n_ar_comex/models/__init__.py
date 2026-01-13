@@ -5,6 +5,8 @@
 from . import comex_port
 from . import comex_container_type
 from . import comex_customs_office
+from . import comex_payment_instrument
+from . import comex_payment_timing
 from . import hs_code
 
 # Main models

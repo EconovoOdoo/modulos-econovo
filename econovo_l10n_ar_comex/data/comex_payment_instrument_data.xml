@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Payment Instruments (based on ICC standards) -->
+        
+        <record id="payment_instrument_tt" model="comex.payment.instrument">
+            <field name="name">Telegraphic Transfer (Wire Transfer)</field>
+            <field name="code">TT</field>
+            <field name="sequence">10</field>
+            <field name="description">Direct bank-to-bank electronic transfer. Fast and simple, but offers no protection to buyer or seller. High risk for both parties if there's lack of trust.</field>
+            <field name="risk_level">high</field>
+            <field name="bank_intervention" eval="False"/>
+            <field name="typical_cost_pct">0.0</field>
+        </record>
+
+        <record id="payment_instrument_lc" model="comex.payment.instrument">
+            <field name="name">Letter of Credit</field>
+            <field name="code">L/C</field>
+            <field name="sequence">20</field>
+            <field name="description">Bank guarantee ensuring payment to seller if all terms are met. Most secure method for both parties. Requires strict compliance with documentation.</field>
+            <field name="risk_level">low</field>
+            <field name="bank_intervention" eval="True"/>
+            <field name="typical_cost_pct">0.15</field>
+        </record>
+
+        <record id="payment_instrument_dp" model="comex.payment.instrument">
+            <field name="name">Documents against Payment (Cash against Documents)</field>
+            <field name="code">D/P</field>
+            <field name="sequence">30</field>
+            <field name="description">Bank releases documents to buyer only upon payment. Safer than TT but riskier than L/C for the seller.</field>
+            <field name="risk_level">medium</field>
+            <field name="bank_intervention" eval="True"/>
+            <field name="typical_cost_pct">0.05</field>
+        </record>
+
+        <record id="payment_instrument_da" model="comex.payment.instrument">
+            <field name="name">Documents against Acceptance</field>
+            <field name="code">D/A</field>
+            <field name="sequence">40</field>
+            <field name="description">Bank releases documents when buyer accepts a draft (promise to pay). Buyer gets goods before payment. Higher risk for seller.</field>
+            <field name="risk_level">medium</field>
+            <field name="bank_intervention" eval="True"/>
+            <field name="typical_cost_pct">0.05</field>
+        </record>
+
+        <record id="payment_instrument_oa" model="comex.payment.instrument">
+            <field name="name">Open Account</field>
+            <field name="code">OA</field>
+            <field name="sequence">50</field>
+            <field name="description">Seller ships goods and buyer pays later according to agreed terms. Highest risk for seller, best terms for buyer. Only for established relationships.</field>
+            <field name="risk_level">high</field>
+            <field name="bank_intervention" eval="False"/>
+            <field name="typical_cost_pct">0.0</field>
+        </record>
+
+        <record id="payment_instrument_cia" model="comex.payment.instrument">
+            <field name="name">Cash in Advance</field>
+            <field name="code">CIA</field>
+            <field name="sequence">5</field>
+            <field name="description">Full payment before shipment. Lowest risk for seller, highest risk for buyer. Common for new business relationships.</field>
+            <field name="risk_level">low</field>
+            <field name="bank_intervention" eval="False"/>
+            <field name="typical_cost_pct">0.0</field>
+        </record>
+
+    </data>
+</odoo>

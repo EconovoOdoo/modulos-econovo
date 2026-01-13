@@ -61,6 +61,8 @@ This module provides comprehensive management of international trade operations
         'security/econovo_l10n_ar_comex_security.xml',
         # Data
         'data/comex_operation_stage_data.xml',
+        'data/comex_payment_instrument_data.xml',
+        'data/comex_payment_timing_data.xml',
         'data/comex_port_data.xml',
         'data/comex_container_type_data.xml',
         'data/comex_customs_office_data.xml',
@@ -74,6 +76,8 @@ This module provides comprehensive management of international trade operations
         'views/comex_port_views.xml',
         'views/comex_container_type_views.xml',
         'views/comex_customs_office_views.xml',
+        'views/comex_payment_instrument_views.xml',
+        'views/comex_payment_timing_views.xml',
         'views/hs_code_views.xml',
         'views/purchase_order_views.xml',
         'views/stock_picking_views.xml',
