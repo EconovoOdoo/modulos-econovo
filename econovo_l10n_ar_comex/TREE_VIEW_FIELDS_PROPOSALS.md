@@ -9,10 +9,10 @@
 - [x] 2. BL n° (bl_numbers) - Multiple shipments ✅ IMPLEMENTED (Alt 1: name_get() override)
 - [x] 3. Cant cont (container_total_count) - Sum of containers ✅ IMPLEMENTED & FIXED
 - [ ] 4. Producto (product_names) - Multiple products
-- [ ] 5. Forma de pago (payment_term_id) - Payment Terms
-- [ ] 6. N° despacho (customs_clearance_numbers) - Multiple clearances
-- [ ] 7. Banco nominado (nominated_bank_id) - Nominated Bank
-- [ ] 8. Update tree view XML with all 17 fields
+- [x] 5. Forma de pago (payment_term_id) - Payment Terms
+- [x] 6. N° despacho (customs_clearance_numbers) - Multiple clearances
+- [x] 7. Banco nominado (nominated_bank_id) - Nominated Bank
+- [x] 8. Update tree view XML with all 17 fields
 - [x] 9. Change default view from kanban to tree ✅ DONE
 
 ---

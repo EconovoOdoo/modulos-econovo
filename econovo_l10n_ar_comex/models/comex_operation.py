@@ -300,6 +300,75 @@ class ComexOperation(models.Model):
              "Always in ARS as per Argentine customs regulations.",
     )
 
+    # === PAYMENT STATUS - COMMERCIAL ===
+    commercial_payment_status = fields.Selection(
+        selection=[
+            ('not_paid', 'Not Paid'),
+            ('partial', 'Partially Paid'),
+            ('paid', 'Paid'),
+            ('overpaid', 'Overpaid'),
+        ],
+        string="Commercial Payment Status",
+        compute='_compute_commercial_payment_status',
+        store=True,
+        help="Payment status of commercial invoices (suppliers and customers, excluding customs tributes).",
+    )
+    commercial_total_amount = fields.Monetary(
+        string="Commercial Total",
+        compute='_compute_commercial_totals',
+        store=True,
+        currency_field='currency_id',
+        help="Total amount of commercial invoices (from purchase orders and sales orders).",
+    )
+    commercial_paid_amount = fields.Monetary(
+        string="Commercial Paid",
+        compute='_compute_commercial_totals',
+        store=True,
+        currency_field='currency_id',
+        help="Amount paid on commercial invoices.",
+    )
+    commercial_due_amount = fields.Monetary(
+        string="Commercial Due",
+        compute='_compute_commercial_totals',
+        store=True,
+        currency_field='currency_id',
+        help="Amount pending on commercial invoices.",
+    )
+
+    # === PAYMENT STATUS - CUSTOMS ===
+    customs_payment_status = fields.Selection(
+        selection=[
+            ('not_paid', 'Not Paid'),
+            ('partial', 'Partially Paid'),
+            ('paid', 'Paid'),
+        ],
+        string="Customs Payment Status",
+        compute='_compute_customs_payment_status',
+        store=True,
+        help="Payment status of customs tributes (VEP - Volante Electrónico de Pago from ARCA).",
+    )
+    customs_total_amount = fields.Monetary(
+        string="Customs Total",
+        compute='_compute_customs_totals',
+        store=True,
+        currency_field='currency_ars_id',
+        help="Total amount of customs tributes (VEP payments to ARCA). Always in ARS.",
+    )
+    customs_paid_amount = fields.Monetary(
+        string="Customs Paid",
+        compute='_compute_customs_totals',
+        store=True,
+        currency_field='currency_ars_id',
+        help="Amount paid on customs tributes. Always in ARS.",
+    )
+    customs_due_amount = fields.Monetary(
+        string="Customs Due",
+        compute='_compute_customs_totals',
+        store=True,
+        currency_field='currency_ars_id',
+        help="Amount pending on customs tributes. Always in ARS.",
+    )
+
     # Incoterm
     incoterm_id = fields.Many2one(
         'account.incoterms',
@@ -378,6 +447,228 @@ class ComexOperation(models.Model):
         """
         for record in self:
             record.vep_amount = sum(record.customs_clearance_ids.mapped('vep_amount'))
+
+    @api.depends('invoice_ids.amount_total', 'invoice_ids.amount_residual', 'invoice_ids.state')
+    def _compute_commercial_totals(self):
+        """Calculate commercial payment totals (excluding customs invoices and refunds).
+        
+        Counts ONLY invoices (not refunds) for amount calculations.
+        Refunds/credit notes should only affect the payment_state of the original invoice
+        (which Odoo handles automatically), but should NOT be counted as separate amounts.
+        
+        Filters out:
+        - Refunds (in_refund, out_refund) - handled via payment_state
+        - Document Type 66 (Despacho de Importación) - goes to Customs status
+        
+        Includes:
+        - Supplier invoices (from purchase orders)
+        - Customer invoices (from sales orders)
+        - Local costs: customs brokers, freight forwarders, local transport, storage, etc.
+        
+        Uses native Odoo amount_residual field for automatic payment tracking.
+        """
+        for record in self:
+            # Filter: Posted invoices (EXCLUDE refunds and type 66)
+            commercial_invoices = record.invoice_ids.filtered(
+                lambda inv: inv.state == 'posted' and
+                inv.move_type in ('out_invoice', 'in_invoice', 'out_receipt', 'in_receipt') and
+                (not hasattr(inv, 'l10n_latam_document_type_id') or
+                 not inv.l10n_latam_document_type_id or
+                 inv.l10n_latam_document_type_id.code != '66')
+            )
+            
+            # Calculate totals from invoices only (not refunds)
+            record.commercial_total_amount = sum(commercial_invoices.mapped('amount_total'))
+            record.commercial_paid_amount = sum(
+                inv.amount_total - inv.amount_residual
+                for inv in commercial_invoices
+            )
+            record.commercial_due_amount = sum(commercial_invoices.mapped('amount_residual'))
+
+    @api.depends('invoice_ids.payment_state', 'invoice_ids.state', 'invoice_ids.move_type',
+                 'invoice_ids.amount_total', 'invoice_ids.amount_residual',
+                 'purchase_order_ids.invoice_status')
+    def _compute_commercial_payment_status(self):
+        """Determine commercial payment status considering:
+        1. Quantities pending to invoice in PO/SO (invoice_status)
+        2. Invoices issued and their payment status
+        
+        Logic:
+        - If pending to invoice → Can be "not_paid" or "partial" (never "paid")
+        - If all invoiced → Can be "not_paid", "partial", or "paid" based on payments
+        
+        Examples:
+        - Order 45, Invoiced 15 fully paid → "partial" (30 pending to invoice)
+        - Order 12, Invoiced 12 partially paid → "partial" (all invoiced, partial payment)
+        - Order 12, Invoiced 12 fully paid → "paid" (all invoiced and paid)
+        """
+        for record in self:
+            # Check if there are quantities pending to invoice in orders
+            has_pending_to_invoice = any(
+                po.invoice_status == 'to invoice'
+                for po in record.purchase_order_ids
+            )
+            
+            # Get commercial invoices (exclude type 66)
+            commercial_invoices = record.invoice_ids.filtered(
+                lambda inv: inv.state == 'posted' and
+                inv.move_type in ('out_invoice', 'in_invoice', 'out_receipt', 'in_receipt') and
+                (not hasattr(inv, 'l10n_latam_document_type_id') or
+                 not inv.l10n_latam_document_type_id or
+                 inv.l10n_latam_document_type_id.code != '66')
+            )
+            
+            # Get commercial refunds (credit notes)
+            commercial_refunds = record.invoice_ids.filtered(
+                lambda inv: inv.state == 'posted' and
+                inv.move_type in ('out_refund', 'in_refund') and
+                (not hasattr(inv, 'l10n_latam_document_type_id') or
+                 not inv.l10n_latam_document_type_id or
+                 inv.l10n_latam_document_type_id.code != '66')
+            )
+            
+            if not commercial_invoices and not commercial_refunds:
+                record.commercial_payment_status = 'not_paid'
+                continue
+            
+            # Calculate net amounts (invoices - refunds)
+            invoice_total = sum(commercial_invoices.mapped('amount_total'))
+            invoice_residual = sum(commercial_invoices.mapped('amount_residual'))
+            refund_total = sum(commercial_refunds.mapped('amount_total'))
+            
+            net_total = invoice_total - refund_total
+            net_residual = invoice_residual - refund_total
+            paid_amount = invoice_total - invoice_residual
+            
+            # Status based on pending to invoice + payment status
+            if net_total <= 0:
+                # No net amount to pay (refunds >= invoices)
+                record.commercial_payment_status = 'not_paid'
+            elif has_pending_to_invoice:
+                # There are quantities pending to invoice
+                # Can NEVER be "paid", only "not_paid" or "partial"
+                if paid_amount > 0:
+                    # Something is paid, but still pending to invoice
+                    record.commercial_payment_status = 'partial'
+                else:
+                    # Nothing paid yet
+                    record.commercial_payment_status = 'not_paid'
+            else:
+                # All quantities are invoiced, check payment status
+                if net_residual <= 0:
+                    # Net fully paid (all invoiced and all paid)
+                    record.commercial_payment_status = 'paid'
+                elif paid_amount == 0:
+                    # All invoiced but no payments registered yet
+                    record.commercial_payment_status = 'not_paid'
+                else:
+                    # All invoiced with partial payment
+                    record.commercial_payment_status = 'partial'
+
+    @api.depends('invoice_ids.amount_total', 'invoice_ids.amount_residual', 
+                 'invoice_ids.state', 'customs_clearance_ids.vep_amount')
+    def _compute_customs_totals(self):
+        """Calculate customs payment totals (Document Type 66 only, exclude refunds).
+        
+        Counts ONLY invoices (not refunds) for amount calculations.
+        Refunds/credit notes should only affect the payment_state of the original invoice
+        (which Odoo handles automatically), but should NOT be counted as separate amounts.
+        
+        Filters ONLY Document Type 66 invoices (Despacho de Importación).
+        Total expected is based on VEP amounts entered in clearances.
+        Paid amount is tracked automatically from invoice payments.
+        
+        Always in ARS as per Argentine customs regulations.
+        """
+        for record in self:
+            # Filter: Posted invoices (EXCLUDE refunds), ONLY Document Type 66
+            customs_invoices = self.env['account.move']
+            if hasattr(self.env['account.move'], '_fields') and \
+               'l10n_latam_document_type_id' in self.env['account.move']._fields:
+                customs_invoices = record.invoice_ids.filtered(
+                    lambda inv: inv.state == 'posted' and
+                    inv.move_type in ('out_invoice', 'in_invoice', 'out_receipt', 'in_receipt') and
+                    inv.l10n_latam_document_type_id and
+                    inv.l10n_latam_document_type_id.code == '66'
+                )
+            
+            # Total = VEP amounts (entered manually once per clearance)
+            record.customs_total_amount = sum(record.customs_clearance_ids.mapped('vep_amount'))
+            
+            # If no VEP amounts entered yet, use invoice amounts as fallback
+            if record.customs_total_amount == 0 and customs_invoices:
+                record.customs_total_amount = sum(customs_invoices.mapped('amount_total'))
+            
+            # Paid amount from invoices (automatic from Odoo payment tracking)
+            record.customs_paid_amount = sum(
+                inv.amount_total - inv.amount_residual
+                for inv in customs_invoices
+            )
+            
+            # Due = Total - Paid
+            record.customs_due_amount = record.customs_total_amount - record.customs_paid_amount
+
+    @api.depends('invoice_ids.payment_state', 'invoice_ids.state', 'invoice_ids.move_type',
+                 'invoice_ids.amount_total', 'invoice_ids.amount_residual', 'customs_clearance_ids.vep_amount')
+    def _compute_customs_payment_status(self):
+        """Determine customs payment status considering invoices, refunds, and payments.
+        
+        Logic:
+        1. Calculate net amounts (invoices - refunds)
+        2. If net due amount > 0 → pending payment
+        3. If net due amount <= 0 → paid
+        
+        This correctly handles:
+        - Invoice paid → Credit note → New invoice paid = "Paid" (if net is covered)
+        - Invoice paid → Credit note → Not reinvoiced = "Not Paid" (net is negative)
+        """
+        for record in self:
+            # Get customs invoices (type 66 only)
+            customs_invoices = self.env['account.move']
+            customs_refunds = self.env['account.move']
+            
+            if hasattr(self.env['account.move'], '_fields') and \
+               'l10n_latam_document_type_id' in self.env['account.move']._fields:
+                customs_invoices = record.invoice_ids.filtered(
+                    lambda inv: inv.state == 'posted' and
+                    inv.move_type in ('out_invoice', 'in_invoice', 'out_receipt', 'in_receipt') and
+                    inv.l10n_latam_document_type_id and
+                    inv.l10n_latam_document_type_id.code == '66'
+                )
+                
+                customs_refunds = record.invoice_ids.filtered(
+                    lambda inv: inv.state == 'posted' and
+                    inv.move_type in ('out_refund', 'in_refund') and
+                    inv.l10n_latam_document_type_id and
+                    inv.l10n_latam_document_type_id.code == '66'
+                )
+            
+            if not customs_invoices and not customs_refunds:
+                record.customs_payment_status = 'not_paid'
+                continue
+            
+            # Calculate net amounts (invoices - refunds)
+            invoice_total = sum(customs_invoices.mapped('amount_total'))
+            invoice_residual = sum(customs_invoices.mapped('amount_residual'))
+            refund_total = sum(customs_refunds.mapped('amount_total'))
+            
+            net_total = invoice_total - refund_total
+            net_residual = invoice_residual - refund_total
+            paid_amount = invoice_total - invoice_residual
+            
+            # Status based on net amounts
+            if net_total <= 0:
+                # No net amount to pay (refunds >= invoices)
+                record.customs_payment_status = 'not_paid'
+            elif net_residual <= 0:
+                # Net fully paid (invoices > refunds and all paid)
+                record.customs_payment_status = 'paid'
+            elif paid_amount == 0:
+                # No payments registered yet
+                record.customs_payment_status = 'not_paid'
+            else:
+                # Partial payment (some amount paid but not all)
+                record.customs_payment_status = 'partial'
 
     @api.depends('picking_ids.date_done')
     def _compute_date_arrival(self):
