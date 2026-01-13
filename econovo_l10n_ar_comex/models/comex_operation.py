@@ -282,6 +282,23 @@ class ComexOperation(models.Model):
         store=True,
         currency_field='currency_id',
     )
+    
+    # VEP (Volante Electrónico de Pago) - Always in ARS
+    currency_ars_id = fields.Many2one(
+        'res.currency',
+        string="ARS Currency",
+        default=lambda self: self.env.ref('base.ARS', raise_if_not_found=False),
+        readonly=True,
+    )
+    vep_amount = fields.Monetary(
+        string="VEP Amount",
+        compute='_compute_vep_amount',
+        store=True,
+        currency_field='currency_ars_id',
+        help="Total VEP (Volante Electrónico de Pago) amount from AFIP/ARCA. "
+             "Sum of all customs clearance tributes (DIE, VAT, statistics, perceptions). "
+             "Always in ARS as per Argentine customs regulations.",
+    )
 
     # Incoterm
     incoterm_id = fields.Many2one(
@@ -345,6 +362,22 @@ class ComexOperation(models.Model):
     def _compute_amount_cif(self):
         for record in self:
             record.amount_cif = record.amount_fob + record.amount_freight + record.amount_insurance
+
+    @api.depends('customs_clearance_ids.vep_amount')
+    def _compute_vep_amount(self):
+        """Calculate total VEP amount from all customs clearances.
+        
+        VEP (Volante Electrónico de Pago) is the electronic payment voucher
+        generated in AFIP/ARCA system for customs duty payments.
+        
+        The VEP amount is entered manually in each clearance record.
+        Details of tributes (DIE, VAT, Statistics, etc.) are found in
+        Document Type 66 (Despacho de Importación) in Accounting.
+        
+        Always in ARS as per Argentine customs regulations.
+        """
+        for record in self:
+            record.vep_amount = sum(record.customs_clearance_ids.mapped('vep_amount'))
 
     @api.depends('picking_ids.date_done')
     def _compute_date_arrival(self):

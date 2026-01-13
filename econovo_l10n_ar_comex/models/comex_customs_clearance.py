@@ -184,6 +184,12 @@ class ComexCustomsClearance(models.Model):
         store=True,
         currency_field='currency_ars_id',
     )
+    vep_amount = fields.Monetary(
+        string="VEP Amount",
+        currency_field='currency_ars_id',
+        tracking=True,
+        help="VEP (Volante Electrónico de Pago) total amount paid to ARCA for this clearance. Details are in Document Type 66 (Despacho de Importación).",
+    )
 
     # Documents
     state = fields.Selection(

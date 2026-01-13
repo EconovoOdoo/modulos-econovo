@@ -18,6 +18,7 @@
                 <field name="amount_duties"/>
                 <field name="amount_taxes"/>
                 <field name="amount_total" sum="Total"/>
+                <field name="vep_amount" optional="show" sum="Total VEP"/>
                 <field name="currency_id" column_invisible="1"/>
                 <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-warning="state in ('submitted', 'approved', 'paid')" decoration-success="state == 'released'" decoration-danger="state == 'cancelled'"/>
             </tree>
@@ -85,6 +86,7 @@
                             <field name="amount_taxes"/>
                             <field name="amount_fees"/>
                             <field name="amount_total"/>
+                            <field name="vep_amount"/>
                         </group>
                     </group>
                 </sheet>

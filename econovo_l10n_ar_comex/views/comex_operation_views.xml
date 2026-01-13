@@ -105,6 +105,7 @@
                 <field name="payment_terms_display" string="Payment Terms" optional="show"/>
                 <field name="nominated_bank_id" optional="show"/>
                 <field name="dispatch_invoice_numbers" string="N° Despacho" optional="show"/>
+                <field name="vep_amount" string="VEP Amount" optional="show" widget="monetary"/>
                 <field name="invoice_ids" 
                        widget="many2many_tags" 
                        string="Invoices"
@@ -211,6 +212,10 @@
                                     <field name="amount_freight"/>
                                     <field name="amount_insurance"/>
                                     <field name="amount_cif"/>
+                                    <field name="currency_ars_id" invisible="1"/>
+                                    <field name="vep_amount" 
+                                           widget="monetary"
+                                           options="{'currency_field': 'currency_ars_id'}"/>
                                 </group>
                             </group>
                             <group>
