@@ -208,6 +208,18 @@ class ComexOperation(models.Model):
         help="Document numbers of Import Dispatch invoices (Document Type 66)",
     )
 
+    # Product Lines (Auto-synchronized from PO/SO lines)
+    product_line_ids = fields.One2many(
+        'comex.operation.product.line',
+        'operation_id',
+        string="Product Lines",
+        help="Auto-synchronized from PO/SO lines when accessing the Product Lines view",
+    )
+    product_line_count = fields.Integer(
+        string="Product Line Count",
+        compute='_compute_product_line_count',
+    )
+
     # Container/Package Count
     container_total_count = fields.Integer(
         string="Total Containers",
@@ -765,6 +777,67 @@ class ComexOperation(models.Model):
         for record in self:
             record.container_total_count = len(record.shipment_ids.mapped('package_ids'))
 
+    def _compute_product_line_count(self):
+        """Calculate number of product lines."""
+        for record in self:
+            record.product_line_count = len(record.product_line_ids)
+
+    # -------------------------------------------------------------------------
+    # PRODUCT LINE SYNCHRONIZATION (Manual trigger)
+    # -------------------------------------------------------------------------
+    def _sync_product_lines_from_purchase(self):
+        """Synchronize product lines from purchase order lines.
+        
+        Creates/updates product lines when PO lines are added/modified.
+        This method should be called when purchase orders change.
+        """
+        ProductLine = self.env['comex.operation.product.line']
+        
+        for operation in self:
+            # Get existing product lines from purchase orders
+            existing_lines = operation.product_line_ids.filtered(
+                lambda l: l.origin_type == 'purchase' and l.purchase_line_id
+            )
+            existing_po_lines = existing_lines.mapped('purchase_line_id')
+            
+            # Get all PO lines from operation's purchase orders
+            current_po_lines = operation.purchase_order_ids.mapped('order_line')
+            
+            # Lines to create (new PO lines not yet in product_line_ids)
+            lines_to_create = current_po_lines - existing_po_lines
+            
+            # Lines to delete (product lines whose PO line no longer exists)
+            lines_to_delete = existing_lines.filtered(
+                lambda l: l.purchase_line_id not in current_po_lines
+            )
+            
+            # Create new product lines
+            for po_line in lines_to_create:
+                ProductLine.create({
+                    'operation_id': operation.id,
+                    'product_id': po_line.product_id.id,
+                    'name': po_line.name,
+                    'product_qty': po_line.product_qty,
+                    'product_uom': po_line.product_uom.id,
+                    'price_unit': po_line.price_unit,
+                    'qty_received': po_line.qty_received,
+                    'origin_type': 'purchase',
+                    'purchase_line_id': po_line.id,
+                })
+            
+            # Delete obsolete lines
+            if lines_to_delete:
+                lines_to_delete.unlink()
+            
+            # Update existing lines with latest PO data
+            for product_line in existing_lines - lines_to_delete:
+                po_line = product_line.purchase_line_id
+                product_line.write({
+                    'product_qty': po_line.product_qty,
+                    'qty_received': po_line.qty_received,
+                    'price_unit': po_line.price_unit,
+                })
+
     # -------------------------------------------------------------------------
     # KANBAN METHODS
     # -------------------------------------------------------------------------
@@ -1100,6 +1173,45 @@ class ComexOperation(models.Model):
             action['res_id'] = packages.id
         
         return action
+
+    def action_view_product_lines(self):
+        """Open product lines for this operation."""
+        self.ensure_one()
+        
+        action = {
+            'type': 'ir.actions.act_window',
+            'name': _('Product Lines'),
+            'res_model': 'comex.operation.product.line',
+            'view_mode': 'tree,form',
+            'domain': [('operation_id', '=', self.id)],
+            'context': {
+                'default_operation_id': self.id,
+                'search_default_group_product': 1,  # Default grouping by product
+            },
+        }
+        
+        return action
+
+    def action_sync_product_lines(self):
+        """Manually trigger synchronization of product lines.
+        
+        Forces immediate sync of this operation's product lines.
+        """
+        self.ensure_one()
+        # Use the product line model's sync method
+        ProductLine = self.env['comex.operation.product.line']
+        ProductLine._sync_operation(self)
+        
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('Product Lines Refreshed'),
+                'message': _('Product lines have been refreshed from purchase orders.'),
+                'type': 'success',
+                'sticky': False,
+            }
+        }
 
     def action_create_shipment(self):
         """Create a new shipment linked to this operation."""

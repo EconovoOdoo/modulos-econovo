@@ -12,6 +12,7 @@ from . import hs_code
 # Main models
 from . import comex_operation_stage
 from . import comex_operation
+from . import comex_operation_product_line
 from . import comex_shipment
 from . import comex_customs_clearance
 from . import comex_mulc

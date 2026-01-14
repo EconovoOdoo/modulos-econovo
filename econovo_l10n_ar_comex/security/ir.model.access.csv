@@ -21,3 +21,5 @@ access_comex_payment_instrument_user,comex.payment.instrument.user,model_comex_p
 access_comex_payment_instrument_manager,comex.payment.instrument.manager,model_comex_payment_instrument,group_comex_manager,1,1,1,1
 access_comex_payment_timing_user,comex.payment.timing.user,model_comex_payment_timing,group_comex_user,1,0,0,0
 access_comex_payment_timing_manager,comex.payment.timing.manager,model_comex_payment_timing,group_comex_manager,1,1,1,1
+access_comex_operation_product_line_user,comex.operation.product.line.user,model_comex_operation_product_line,group_comex_user,1,0,0,0
+access_comex_operation_product_line_manager,comex.operation.product.line.manager,model_comex_operation_product_line,group_comex_manager,1,0,0,0

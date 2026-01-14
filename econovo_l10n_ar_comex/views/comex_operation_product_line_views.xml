@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tree View (Read-Only) -->
+    <record id="comex_operation_product_line_view_tree" model="ir.ui.view">
+        <field name="name">comex.operation.product.line.view.tree</field>
+        <field name="model">comex.operation.product.line</field>
+        <field name="arch" type="xml">
+            <tree create="false" delete="false" edit="false" decoration-info="origin_type == 'purchase'" decoration-success="origin_type == 'sale'">
+                <field name="sequence" widget="handle"/>
+                <field name="operation_id"/>
+                <field name="product_id"/>
+                <field name="name" optional="hide"/>
+                <field name="product_qty" sum="Total Quantity"/>
+                <field name="product_uom" optional="show"/>
+                <field name="qty_received" optional="show" sum="Total Received"/>
+                <field name="qty_delivered" optional="show" sum="Total Delivered"/>
+                <field name="price_unit" optional="show"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="price_subtotal" sum="Total Amount"/>
+                <field name="origin_type" optional="show"/>
+                <field name="purchase_order_id" optional="show"/>
+                <field name="sale_order_id" optional="show"/>
+                <field name="package_id" optional="hide"/>
+                <field name="container_number" optional="show"/>
+                <field name="company_id" column_invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View (Read-Only) -->
+    <record id="comex_operation_product_line_view_form" model="ir.ui.view">
+        <field name="name">comex.operation.product.line.view.form</field>
+        <field name="model">comex.operation.product.line</field>
+        <field name="arch" type="xml">
+            <form create="false" delete="false" edit="false">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_purchase_order" 
+                                type="object" 
+                                class="oe_stat_button" 
+                                icon="fa-shopping-cart"
+                                invisible="not purchase_order_id">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">Purchase</span>
+                                <span class="o_stat_text">Order</span>
+                            </div>
+                        </button>
+                        <button name="action_view_sale_order" 
+                                type="object" 
+                                class="oe_stat_button" 
+                                icon="fa-usd"
+                                invisible="not sale_order_id">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">Sale</span>
+                                <span class="o_stat_text">Order</span>
+                            </div>
+                        </button>
+                        <button name="action_view_container" 
+                                type="object" 
+                                class="oe_stat_button" 
+                                icon="fa-cube"
+                                invisible="not package_id">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">Container</span>
+                            </div>
+                        </button>
+                    </div>
+                    
+                    <group name="main">
+                        <group name="product_info">
+                            <field name="operation_id"/>
+                            <field name="product_id"/>
+                            <field name="product_tmpl_id" invisible="1"/>
+                            <field name="name"/>
+                            <field name="company_id" invisible="1"/>
+                        </group>
+                        <group name="quantities">
+                            <field name="product_qty"/>
+                            <field name="product_uom"/>
+                            <field name="qty_received" invisible="origin_type != 'purchase'"/>
+                            <field name="qty_delivered" invisible="origin_type != 'sale'"/>
+                        </group>
+                    </group>
+                    
+                    <group name="pricing">
+                        <group name="price_info">
+                            <field name="currency_id" invisible="1"/>
+                            <field name="price_unit"/>
+                            <field name="price_subtotal"/>
+                        </group>
+                        <group name="origin_info">
+                            <field name="origin_type"/>
+                            <field name="purchase_line_id" invisible="origin_type != 'purchase'"/>
+                            <field name="purchase_order_id" invisible="origin_type != 'purchase'"/>
+                            <field name="sale_line_id" invisible="origin_type != 'sale'"/>
+                            <field name="sale_order_id" invisible="origin_type != 'sale'"/>
+                        </group>
+                    </group>
+                    
+                    <group name="logistics" string="Logistics">
+                        <field name="package_id"/>
+                        <field name="container_number"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="comex_operation_product_line_view_search" model="ir.ui.view">
+        <field name="name">comex.operation.product.line.view.search</field>
+        <field name="model">comex.operation.product.line</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="operation_id"/>
+                <field name="product_id"/>
+                <field name="name"/>
+                <field name="purchase_order_id"/>
+                <field name="sale_order_id"/>
+                
+                <filter name="filter_purchase" string="From Purchase Orders" 
+                        domain="[('origin_type', '=', 'purchase')]"/>
+                <filter name="filter_sale" string="From Sale Orders" 
+                        domain="[('origin_type', '=', 'sale')]"/>
+                <filter name="filter_manual" string="Manual Entries" 
+                        domain="[('origin_type', '=', 'manual')]"/>
+                
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter name="group_operation" string="Operation" 
+                            context="{'group_by': 'operation_id'}"/>
+                    <filter name="group_product" string="Product" 
+                            context="{'group_by': 'product_id'}"/>
+                    <filter name="group_origin" string="Origin Type" 
+                            context="{'group_by': 'origin_type'}"/>
+                    <filter name="group_purchase_order" string="Purchase Order" 
+                            context="{'group_by': 'purchase_order_id'}"/>
+                    <filter name="group_sale_order" string="Sale Order" 
+                            context="{'group_by': 'sale_order_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="comex_operation_product_line_action" model="ir.actions.act_window">
+        <field name="name">Product Lines</field>
+        <field name="res_model">comex.operation.product.line</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No product lines found
+            </p>
+            <p>
+                Product lines are automatically synchronized from purchase and sale orders
+                linked to COMEX operations. This is a read-only view that updates in real-time.
+            </p>
+            <p>
+                To add products, create or modify purchase/sale orders associated with operations.
+            </p>
+        </field>
+    </record>
+</odoo>

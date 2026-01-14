@@ -70,6 +70,7 @@ This module provides comprehensive management of international trade operations
         # Views
         'views/comex_operation_views.xml',
         'views/comex_operation_stage_views.xml',
+        'views/comex_operation_product_line_views.xml',
         'views/comex_shipment_views.xml',
         'views/comex_customs_clearance_views.xml',
         'views/comex_mulc_views.xml',
