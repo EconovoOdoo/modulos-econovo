@@ -69,40 +69,37 @@ class PurchaseOrder(models.Model):
             order.is_comex = bool(order.comex_operation_id)
 
     # -------------------------------------------------------------------------
+    # HELPER METHODS
+    # -------------------------------------------------------------------------
+    def _link_pickings_to_comex_operation(self):
+        """Link all pickings from this PO to its COMEX operation.
+        
+        Simply assigns comex_operation_id on all pickings (including done/canceled).
+        Does NOT modify locations - that's handled manually by stage advancement.
+        """
+        for order in self:
+            if order.comex_operation_id:
+                # Link all pickings to the operation (including done/canceled)
+                order.picking_ids.write({
+                    'comex_operation_id': order.comex_operation_id.id
+                })
+            else:
+                # Unlink pickings when operation is removed
+                order.picking_ids.write({
+                    'comex_operation_id': False
+                })
+
+    # -------------------------------------------------------------------------
     # OVERRIDE METHODS
     # -------------------------------------------------------------------------
     def button_confirm(self):
-        """Override to redirect picking destination to COMEX location and sync product lines."""
+        """Override to link pickings to COMEX operation and sync product lines."""
         res = super().button_confirm()
         
-        for order in self.filtered('comex_operation_id'):
-            comex_location = order.comex_operation_id.current_location_id \
-                or order.comex_operation_id._get_default_transit_location()
-            
-            if not comex_location:
-                continue
-            
-            # Find pickings not yet linked to COMEX
-            pickings = order.picking_ids.filtered(
-                lambda p: p.state not in ('done', 'cancel') and not p.comex_operation_id
-            )
-            
-            for picking in pickings:
-                # Update picking destination and COMEX link
-                picking.write({
-                    'comex_operation_id': order.comex_operation_id.id,
-                    'location_dest_id': comex_location.id,
-                })
-                # Update moves destination AND comex_operation_id (for push rules)
-                moves_to_update = picking.move_ids.filtered(
-                    lambda m: m.state not in ('done', 'cancel')
-                )
-                moves_to_update.write({
-                    'location_dest_id': comex_location.id,
-                    'comex_operation_id': order.comex_operation_id.id,
-                })
+        # Link newly created pickings to COMEX operation
+        self._link_pickings_to_comex_operation()
         
-        # Sync product lines after confirmation to ensure deleted lines are removed
+        # Sync product lines after confirmation
         operations = self.filtered('comex_operation_id').comex_operation_id
         if operations:
             self.env['comex.operation.product.line'].sudo()._sync_operations(operations)
@@ -110,7 +107,10 @@ class PurchaseOrder(models.Model):
         return res
 
     def write(self, vals):
-        """Sync date_planned to COMEX operation and trigger product line sync on state changes."""
+        """Sync date_planned, link/unlink pickings when comex_operation_id changes, and trigger sync on state changes."""
+        # Store old operations BEFORE write (for product line sync)
+        old_operations = self.mapped('comex_operation_id') if 'comex_operation_id' in vals else self.env['comex.operation']
+        
         res = super().write(vals)
         
         if 'date_planned' in vals and not self.env.context.get('skip_comex_sync'):
@@ -120,7 +120,16 @@ class PurchaseOrder(models.Model):
                         'date_eta': order.date_planned.date()
                     })
         
-        # Sync product lines when PO state changes (especially to cancel)
+        # Link/unlink pickings when comex_operation_id changes (assigned or removed)
+        if 'comex_operation_id' in vals:
+            self._link_pickings_to_comex_operation()
+            # Sync product lines for both old and new operations
+            new_operations = self.mapped('comex_operation_id')
+            all_operations = old_operations | new_operations
+            if all_operations:
+                self.env['comex.operation.product.line'].sudo()._sync_operations(all_operations)
+        
+        # Sync product lines when PO state changes
         if 'state' in vals:
             operations = self.filtered('comex_operation_id').comex_operation_id
             if operations:
@@ -145,12 +154,12 @@ class PurchaseOrder(models.Model):
         }
 
     def action_create_comex_operation(self):
-        """Create a new COMEX operation for this purchase order."""
+        """Create a new COMEX operation for this purchase order and link existing pickings."""
         self.ensure_one()
         if self.comex_operation_id:
             return self.action_view_comex_operation()
         
-        # Create new COMEX operation
+        # Create new COMEX operation (stage will be assigned by default via model)
         operation = self.env['comex.operation'].create({
             'operation_type': 'import',
             'partner_id': self.partner_id.id,
@@ -160,7 +169,7 @@ class PurchaseOrder(models.Model):
             'amount_fob': self.amount_total,
         })
         
-        # Link to purchase order
+        # Link to purchase order (this will trigger _link_pickings_to_comex_operation via write)
         self.comex_operation_id = operation.id
         
         return {

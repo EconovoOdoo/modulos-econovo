@@ -149,8 +149,17 @@
         <field name="name">All COMEX Transfers</field>
         <field name="res_model">stock.picking</field>
         <field name="view_mode">tree,kanban,form,calendar</field>
-        <field name="domain">[('picking_type_id.sequence_code', 'in', ['COMEX/IN', 'COMEX/ARR', 'COMEX/FIS', 'COMEX/NAC'])]</field>
+        <field name="domain">[('comex_operation_id', '!=', False)]</field>
         <field name="context">{'search_default_filter_comex': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No COMEX transfers found
+            </p>
+            <p>
+                COMEX transfers are pickings linked to COMEX operations.
+                They are automatically linked when you create or assign a COMEX operation to a purchase order.
+            </p>
+        </field>
     </record>
 
 </odoo>

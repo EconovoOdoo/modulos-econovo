@@ -290,8 +290,10 @@ class ComexOperationProductLine(models.Model):
         
         existing_po_lines = {line.purchase_line_id.id: line for line in existing_lines if line.purchase_line_id}
         
-        # Get all PO lines from operation's purchase orders (only confirmed POs)
-        confirmed_pos = operation.purchase_order_ids.filtered(lambda po: po.state in ['purchase', 'done'])
+        # Get all PO lines from operation's purchase orders (only confirmed POs with active comex link)
+        confirmed_pos = operation.purchase_order_ids.filtered(
+            lambda po: po.state in ['purchase', 'done'] and po.comex_operation_id == operation
+        )
         current_po_lines = confirmed_pos.mapped('order_line')
         _logger.info(f"  Current PO lines: {len(current_po_lines)} from {len(confirmed_pos)} confirmed POs")
         
