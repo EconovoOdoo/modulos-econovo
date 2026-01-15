@@ -72,7 +72,7 @@ class PurchaseOrder(models.Model):
     # OVERRIDE METHODS
     # -------------------------------------------------------------------------
     def button_confirm(self):
-        """Override to redirect picking destination to COMEX location."""
+        """Override to redirect picking destination to COMEX location and sync product lines."""
         res = super().button_confirm()
         
         for order in self.filtered('comex_operation_id'):
@@ -102,10 +102,15 @@ class PurchaseOrder(models.Model):
                     'comex_operation_id': order.comex_operation_id.id,
                 })
         
+        # Sync product lines after confirmation to ensure deleted lines are removed
+        operations = self.filtered('comex_operation_id').comex_operation_id
+        if operations:
+            self.env['comex.operation.product.line'].sudo()._sync_operations(operations)
+        
         return res
 
     def write(self, vals):
-        """Sync date_planned to COMEX operation (prevent infinite loop)."""
+        """Sync date_planned to COMEX operation and trigger product line sync on state changes."""
         res = super().write(vals)
         
         if 'date_planned' in vals and not self.env.context.get('skip_comex_sync'):
@@ -114,6 +119,12 @@ class PurchaseOrder(models.Model):
                     order.comex_operation_id.with_context(skip_comex_sync=True).write({
                         'date_eta': order.date_planned.date()
                     })
+        
+        # Sync product lines when PO state changes (especially to cancel)
+        if 'state' in vals:
+            operations = self.filtered('comex_operation_id').comex_operation_id
+            if operations:
+                self.env['comex.operation.product.line'].sudo()._sync_operations(operations)
         
         return res
 

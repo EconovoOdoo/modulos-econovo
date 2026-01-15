@@ -778,7 +778,12 @@ class ComexOperation(models.Model):
             record.container_total_count = len(record.shipment_ids.mapped('package_ids'))
 
     def _compute_product_line_count(self):
-        """Calculate number of product lines."""
+        """Calculate number of product lines (triggers sync if needed)."""
+        # Ensure product lines are synced before computing count
+        operations_to_sync = self.filtered('purchase_order_ids')
+        if operations_to_sync:
+            self.env['comex.operation.product.line'].sudo()._sync_operations(operations_to_sync)
+        
         for record in self:
             record.product_line_count = len(record.product_line_ids)
 
