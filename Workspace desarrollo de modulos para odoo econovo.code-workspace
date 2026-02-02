@@ -13,6 +13,12 @@
 		"python.autoComplete.extraPaths": [
 			"D:\\Odoo\\ODOO-SRC\\odoo-17\\odoo"
 		],
-		"powershell.cwd": "GITHUB-SRC"
+		"powershell.cwd": "GITHUB-SRC",
+		"chat.tools.terminal.autoApprove": {
+			"/^python -m py_compile \"D:\\\\Odoo\\\\GITHUB-SRC\\\\econovo\\\\EconovoOdoo\\\\modulos-econovo\\\\econovo_l10n_ar_comex\\\\models\\\\comex_operation\\.py\"$/": {
+				"approve": true,
+				"matchCommandLine": true
+			}
+		}
 	}
 }

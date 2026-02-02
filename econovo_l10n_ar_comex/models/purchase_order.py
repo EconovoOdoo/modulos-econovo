@@ -53,6 +53,7 @@ class PurchaseOrder(models.Model):
         tracking=True,
         copy=False,
         index=True,
+        domain="[('operation_type', '=', 'import')]",
     )
     is_comex = fields.Boolean(
         string="Is COMEX",

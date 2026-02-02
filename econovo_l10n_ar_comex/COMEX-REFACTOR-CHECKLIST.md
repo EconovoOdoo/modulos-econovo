@@ -8,35 +8,37 @@
 ## Architecture Changes
 
 ### ❌ Removed Logic
-- [ ] Automatic location assignment based on stages
-- [ ] `_get_default_transit_location()` usage in picking linking
-- [ ] Automatic `location_dest_id` updates on pickings
-- [ ] Automatic `location_dest_id` updates on stock moves
+- [x] Automatic location assignment based on stages
+- [x] `_get_default_transit_location()` usage in picking linking
+- [x] Automatic `location_dest_id` updates on pickings
+- [x] Automatic `location_dest_id` updates on stock moves
 
 ### ✅ New Logic
-- Manual stage advancement
-- Stage-based dynamic routing
-- Simple picking linking (comex_operation_id only)
+- [x] Manual stage advancement (foundation ready)
+- [ ] Stage-based dynamic routing (pending Phase 2)
+- [x] Simple picking linking (comex_operation_id only)
 
 ---
 
 ## Implementation Progress
 
-### Phase 1: Cleanup & Simple Linking
+### Phase 1: Cleanup & Simple Linking ✅ COMPLETED
 
-#### 1.1 Remove Location Logic
-- [ ] Clean `_link_pickings_to_comex_operation()` method
-- [ ] Remove location assignment from pickings
-- [ ] Remove location assignment from moves
-- [ ] Remove logging related to locations
+#### 1.1 Remove Location Logic ✅
+- [x] Clean `_link_pickings_to_comex_operation()` method
+- [x] Remove location assignment from pickings
+- [x] Remove location assignment from moves
+- [x] Remove logging related to locations
 
-#### 1.2 Simple Picking Linking (✅ Punto 1)
-- [ ] Link pickings on operation creation from PO
-- [ ] Link pickings on manual `comex_operation_id` assignment
-- [ ] Link pickings on PO confirmation with existing operation
-- [ ] **Edge case:** Vincular pickings done (validated)
-- [ ] **Edge case:** Vincular pickings cancelados
-- [ ] **Edge case:** Desvincular pickings al remover operación de PO
+#### 1.2 Simple Picking Linking ✅
+- [x] Link pickings on operation creation from PO
+- [x] Link pickings on manual `comex_operation_id` assignment
+- [x] Link pickings on PO confirmation with existing operation
+- [x] **Edge case:** Vincular pickings done (validated)
+- [x] **Edge case:** Vincular pickings cancelados
+- [x] **Edge case:** Desvincular pickings al remover operación de PO
+- [x] **Bug fix:** Product lines sync when unlinking PO from operation
+- [x] **Bug fix:** Pickings view filter updated to show all COMEX transfers
 
 ---
 
@@ -85,26 +87,27 @@
 
 ## Testing Checklist
 
-### Scenario 1: Create Operation from PO
-- [ ] PO with products → Create COMEX → Pickings linked
-- [ ] Multiple POs → Same operation → All pickings linked
-- [ ] Confirmed PO with existing pickings → Pickings linked
+### Scenario 1: Create Operation from PO ✅ VERIFIED
+- [x] PO with products → Create COMEX → Pickings linked
+- [x] Multiple POs → Same operation → All pickings linked
+- [x] Confirmed PO with existing pickings → Pickings linked
 
-### Scenario 2: Manual Assignment
-- [ ] Assign operation to PO → Pickings linked
-- [ ] Remove operation from PO → Pickings unlinked
-- [ ] Change operation on PO → Pickings re-linked
+### Scenario 2: Manual Assignment ✅ VERIFIED
+- [x] Assign operation to PO → Pickings linked
+- [x] Remove operation from PO → Pickings unlinked
+- [x] Change operation on PO → Pickings re-linked
 
 ### Scenario 3: Stage Advancement
 - [ ] Advance stage → Internal picking created
 - [ ] Validate picking → Advance again → Next picking
 - [ ] Skip stage → Handle gracefully
 
-### Scenario 4: Edge Cases
-- [ ] Done pickings → Linked correctly
-- [ ] Canceled pickings → Linked correctly
-- [ ] PO without operation → No linking
-- [ ] Stage without location → No picking generated
+### Scenario 4: Edge Cases ✅ VERIFIED
+- [x] Done pickings → Linked correctly
+- [x] Canceled pickings → Linked correctly
+- [x] PO without operation → No linking
+- [x] Product lines cleanup when unlinking PO from operation
+- [ ] Stage without location → No picking generated (pending Phase 4)
 
 ---
 
@@ -143,6 +146,17 @@
 
 ## Current Status
 
-**Phase:** 1.1 - Cleanup in progress
+**Phase:** Phase 1 ✅ COMPLETED | Ready for Phase 2
 **Last Updated:** 2026-01-15
 **Blocking Issues:** None
+
+**Completed in Phase 1:**
+- ✅ Removed all automatic location logic
+- ✅ Simplified picking linking (comex_operation_id only)
+- ✅ Fixed product lines sync on PO unlink
+- ✅ Updated COMEX transfers view filter
+- ✅ Verified all edge cases and test scenarios
+
+**Next Steps:**
+- Begin Phase 2: Stage Sequence Configuration
+- Add `next_stage_id`, `location_dest_id`, and `require_picking_validation` fields to stages
