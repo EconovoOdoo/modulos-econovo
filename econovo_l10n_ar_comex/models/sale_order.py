@@ -117,6 +117,8 @@ class SaleOrder(models.Model):
             'date_operation': fields.Date.context_today(self),
             'date_eta': self.commitment_date,
             'currency_id': self.currency_id.id,
+            'origin_country_id': self.company_id.country_id.id if self.company_id.country_id else False,
+            'destination_country_id': self.partner_id.country_id.id if self.partner_id.country_id else False,
         }
         
         # Create operation
