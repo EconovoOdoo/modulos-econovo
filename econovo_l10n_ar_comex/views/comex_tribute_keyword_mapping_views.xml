@@ -14,7 +14,7 @@
                   decoration-muted="not active">
                 <field name="sequence" widget="handle"/>
                 <field name="active" widget="boolean_toggle"/>
-                <field name="priority" widget="priority"/>
+                <field name="priority"/>
                 <field name="name"/>
                 <field name="match_type"/>
                 <field name="tribute_field"/>
@@ -39,7 +39,7 @@
                     <group>
                         <group name="pattern">
                             <field name="sequence"/>
-                            <field name="priority" widget="priority"/>
+                            <field name="priority"/>
                             <field name="name" 
                                    placeholder='e.g., "tasa estadística" or "perc.*iigg" for regex'/>
                             <field name="match_type"/>
