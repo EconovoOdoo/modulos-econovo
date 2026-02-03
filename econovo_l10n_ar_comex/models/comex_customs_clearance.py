@@ -239,14 +239,85 @@ class ComexCustomsClearance(models.Model):
         return {'domain': {'vendor_bill_id': domain}}
 
     @api.onchange('vendor_bill_id')
-    def _onchange_vendor_bill_id_dispatch_number(self):
-        """Auto-fill dispatch_number from vendor bill document number."""
-        if self.vendor_bill_id:
-            # Check if l10n_latam_document_number field exists
-            if hasattr(self.vendor_bill_id, 'l10n_latam_document_number'):
-                doc_number = self.vendor_bill_id.l10n_latam_document_number
-                if doc_number:
-                    self.dispatch_number = doc_number
+    def _onchange_vendor_bill_id_auto_fill(self):
+        """Auto-fill data from vendor bill (Document Type 66).
+        
+        This populates:
+        - dispatch_number: From l10n_latam_document_number
+        - amount_cif: From first invoice line (usually contains CIF value)
+        - vep_amount: From total invoice amount (sum of all tributes)
+        - Individual tributes: Parsed from invoice lines based on product/account
+        
+        User only needs to register the Type 66 invoice once with proper line items.
+        """
+        if not self.vendor_bill_id:
+            return
+        
+        bill = self.vendor_bill_id
+        
+        # 1. Auto-fill dispatch number
+        if hasattr(bill, 'l10n_latam_document_number') and bill.l10n_latam_document_number:
+            self.dispatch_number = bill.l10n_latam_document_number
+        
+        # 2. Auto-fill VEP amount (total of invoice)
+        if bill.amount_total:
+            self.vep_amount = bill.amount_total
+        
+        # 3. Parse invoice lines to fill individual tribute amounts
+        # Parse tribute amounts using configured mappings
+        self._parse_tribute_lines_from_invoice(bill)
+
+    def _parse_tribute_lines_from_invoice(self, invoice):
+        """Parse invoice lines using configured product mappings (zero hardcoding).
+        
+        Parsing logic:
+        1. Load active product mappings for current company
+        2. Build product_id → tribute_field lookup dictionary
+        3. Iterate invoice lines and match by product_id
+        4. Accumulate amounts to corresponding tribute fields
+        
+        Benefits:
+        - Zero hardcoding - all mappings configurable from UI
+        - Supports custom products per client
+        - Multiple products can map to same tribute field (amounts summed)
+        - Multi-company compatible
+        
+        Example:
+            Product "DIE - Derecho de Importación" → amount_duties
+            Product "Tasa de Estadística" → amount_statistics
+        
+        See Settings > COMEX > Tribute Product Mappings for configuration.
+        """
+        if not invoice or not invoice.invoice_line_ids:
+            return
+        
+        # Reset amounts before parsing
+        tribute_fields = [
+            'amount_duties', 'amount_statistics', 'amount_vat', 'amount_vat_additional',
+            'amount_income_tax', 'amount_gross_income', 'amount_taxes', 'amount_fees'
+        ]
+        for field in tribute_fields:
+            setattr(self, field, 0)
+        
+        # Load active product mappings
+        ProductMapping = self.env['comex.tribute.product.mapping'].sudo()
+        product_mappings = ProductMapping.search([
+            ('active', '=', True),
+            '|', ('company_id', '=', False), ('company_id', '=', self.company_id.id)
+        ])
+        
+        # Build fast lookup: product_id → tribute_field
+        product_to_field = {m.product_id.id: m.tribute_field for m in product_mappings}
+        
+        # Parse invoice lines
+        for line in invoice.invoice_line_ids:
+            amount = abs(line.price_subtotal)  # Use abs to handle credit notes
+            
+            # Try product mapping (exact match by product_id)
+            if line.product_id and line.product_id.id in product_to_field:
+                field_name = product_to_field[line.product_id.id]
+                current_value = getattr(self, field_name, 0)
+                setattr(self, field_name, current_value + amount)
 
     # -------------------------------------------------------------------------
     # CRUD METHODS

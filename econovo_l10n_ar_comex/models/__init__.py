@@ -9,6 +9,9 @@ from . import comex_payment_instrument
 from . import comex_payment_timing
 from . import hs_code
 
+# Tribute mappings
+from . import comex_tribute_product_mapping
+
 # Main models
 from . import comex_operation_stage
 from . import comex_operation
