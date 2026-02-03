@@ -164,4 +164,29 @@
               action="comex_payment_timing_action"
               sequence="70"/>
 
+    <!-- Tribute Mappings (Settings) -->
+    <menuitem id="menu_comex_tribute_config"
+              name="Tribute Mappings"
+              parent="base.menu_administration"
+              sequence="100"/>
+
+    <menuitem id="menu_comex_tribute_product_mapping"
+              name="Product Mappings"
+              parent="menu_comex_tribute_config"
+              action="action_comex_tribute_product_mapping"
+              sequence="10"/>
+
+    <menuitem id="menu_comex_tribute_keyword_mapping"
+              name="Keyword Mappings"
+              parent="menu_comex_tribute_config"
+              action="action_comex_tribute_keyword_mapping"
+              sequence="20"/>
+
+    <menuitem id="menu_comex_tribute_parse_log"
+              name="Parsing Logs (Debug)"
+              parent="menu_comex_tribute_config"
+              action="action_comex_tribute_parse_log"
+              sequence="30"
+              groups="base.group_no_one"/>
+
 </odoo>

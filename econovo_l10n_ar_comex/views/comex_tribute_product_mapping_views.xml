@@ -124,16 +124,4 @@
         </field>
     </record>
 
-    <!-- Menu item in Settings > COMEX -->
-    <menuitem id="menu_comex_tribute_config"
-              name="Tribute Mappings"
-              parent="base.menu_administration"
-              sequence="100"/>
-
-    <menuitem id="menu_comex_tribute_product_mapping"
-              name="Product Mappings"
-              parent="menu_comex_tribute_config"
-              action="action_comex_tribute_product_mapping"
-              sequence="10"/>
-
 </odoo>

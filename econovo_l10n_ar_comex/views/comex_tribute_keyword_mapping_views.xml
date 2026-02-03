@@ -154,11 +154,5 @@
         </field>
     </record>
 
-    <!-- Menu item in Settings > COMEX > Tribute Mappings -->
-    <menuitem id="menu_comex_tribute_keyword_mapping"
-              name="Keyword Mappings"
-              parent="menu_comex_tribute_config"
-              action="action_comex_tribute_keyword_mapping"
-              sequence="20"/>
 
 </odoo>

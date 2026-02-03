@@ -127,12 +127,4 @@
         </field>
     </record>
 
-    <!-- Menu in Settings > COMEX > Tribute Mappings (Technical) -->
-    <menuitem id="menu_comex_tribute_parse_log"
-              name="Parsing Logs (Debug)"
-              parent="menu_comex_tribute_config"
-              action="action_comex_tribute_parse_log"
-              sequence="30"
-              groups="base.group_no_one"/>
-
 </odoo>
