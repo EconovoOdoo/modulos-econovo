@@ -47,6 +47,18 @@
                     <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved,paid,released"/>
                 </header>
                 <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_parse_logs" type="object" class="oe_stat_button" icon="fa-search" invisible="parse_log_count == 0">
+                            <div class="o_stat_info">
+                                <field name="parse_log_count" widget="statinfo" string="Parsing"/>
+                                <span class="o_stat_text">Logs</span>
+                            </div>
+                            <field name="parse_log_unmatched_count" invisible="1"/>
+                            <div class="badge badge-danger" invisible="parse_log_unmatched_count == 0">
+                                <field name="parse_log_unmatched_count"/> Unmatched
+                            </div>
+                        </button>
+                    </div>
                     <div class="oe_title">
                         <label for="name"/>
                         <h1>

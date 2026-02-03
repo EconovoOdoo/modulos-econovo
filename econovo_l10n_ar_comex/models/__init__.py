@@ -12,6 +12,7 @@ from . import hs_code
 # Tribute mappings
 from . import comex_tribute_product_mapping
 from . import comex_tribute_keyword_mapping
+from . import comex_tribute_parse_log
 
 # Main models
 from . import comex_operation_stage

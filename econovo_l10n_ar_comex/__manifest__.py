@@ -89,6 +89,7 @@ This module provides comprehensive management of international trade operations
         'views/res_partner_views.xml',
         'views/comex_tribute_product_mapping_views.xml',
         'views/comex_tribute_keyword_mapping_views.xml',
+        'views/comex_tribute_parse_log_views.xml',
         'views/econovo_l10n_ar_comex_menus.xml',
     ],
     'demo': [

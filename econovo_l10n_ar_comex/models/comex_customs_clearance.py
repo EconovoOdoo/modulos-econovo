@@ -149,7 +149,33 @@ class ComexCustomsClearance(models.Model):
         string="VAT",
         currency_field='currency_ars_id',
         tracking=True,
+        help="IVA de Importación (21%)",
     )
+    
+    # Parse logs for audit
+    parse_log_ids = fields.One2many(
+        'comex.tribute.parse.log',
+        'customs_clearance_id',
+        string="Parse Logs",
+    )
+    parse_log_count = fields.Integer(
+        string="Parse Logs",
+        compute='_compute_parse_log_count',
+    )
+    parse_log_unmatched_count = fields.Integer(
+        string="Unmatched Lines",
+        compute='_compute_parse_log_count',
+    )
+    
+    @api.depends('parse_log_ids')
+    def _compute_parse_log_count(self):
+        """Count parse logs and unmatched lines."""
+        for record in self:
+            record.parse_log_count = len(record.parse_log_ids)
+            record.parse_log_unmatched_count = len(record.parse_log_ids.filtered(
+                lambda l: l.matched_by == 'unmatched'
+            ))
+    
     amount_vat_additional = fields.Monetary(
         string="Additional VAT",
         currency_field='currency_ars_id',
@@ -264,33 +290,40 @@ class ComexCustomsClearance(models.Model):
             self.vep_amount = bill.amount_total
         
         # 3. Parse invoice lines to fill individual tribute amounts
-        # Parse tribute amounts using configured mappings
+        # Parse tribute amounts using configured mappings with audit logging
         self._parse_tribute_lines_from_invoice(bill)
 
     def _parse_tribute_lines_from_invoice(self, invoice):
-        """Parse invoice lines using configured mappings with dual-layer fallback (zero hardcoding).
+        """Parse invoice lines using configured mappings with comprehensive audit logging.
         
-        Parsing logic (two-layer approach):
+        Parsing logic (three-layer approach):
         1. Try product mapping (exact match by product_id)
         2. If no product match, try keyword mapping (text pattern matching)
-        3. Accumulate amounts to corresponding tribute fields
+        3. Log every line (matched or unmatched) for audit trail
         
         Benefits:
         - Zero hardcoding - all mappings configurable from UI
         - Handles lines with or without products
-        - Supports custom products and keywords per client
+        - Full audit trail of all parsing decisions
+        - Unmatched lines easily identified for refinement
         - Multiple patterns can map to same tribute field (amounts summed)
         - Multi-company compatible
-        - Flexible pattern matching (contains, regex, etc.)
         
         Examples:
             Layer 1 (Product): Product "DIE - Derecho de Importación" → amount_duties
             Layer 2 (Keyword): Line with text "tasa estadística" → amount_statistics
+            Layer 3 (Audit): Every line logged with match result
         
         See Settings > COMEX > Tribute Mappings for configuration.
+        See Settings > COMEX > Parsing Logs for audit trail.
         """
         if not invoice or not invoice.invoice_line_ids:
             return
+        
+        # Delete old logs for this clearance (clean slate)
+        self.env['comex.tribute.parse.log'].sudo().search([
+            ('customs_clearance_id', '=', self.id)
+        ]).unlink()
         
         # Reset amounts before parsing
         tribute_fields = [
@@ -307,8 +340,11 @@ class ComexCustomsClearance(models.Model):
             '|', ('company_id', '=', False), ('company_id', '=', self.company_id.id)
         ])
         
-        # Build fast lookup: product_id → tribute_field
-        product_to_field = {m.product_id.id: m.tribute_field for m in product_mappings}
+        # Build fast lookup: product_id → (tribute_field, mapping_id)
+        product_to_field = {
+            m.product_id.id: (m.tribute_field, m.id) 
+            for m in product_mappings
+        }
         
         # Load active keyword mappings (ordered by priority desc)
         KeywordMapping = self.env['comex.tribute.keyword.mapping'].sudo()
@@ -317,17 +353,25 @@ class ComexCustomsClearance(models.Model):
             '|', ('company_id', '=', False), ('company_id', '=', self.company_id.id)
         ], order='priority desc, sequence')
         
+        ParseLog = self.env['comex.tribute.parse.log'].sudo()
+        
         # Parse invoice lines
         for line in invoice.invoice_line_ids:
             amount = abs(line.price_subtotal)  # Use abs to handle credit notes
             matched = False
+            match_info = {}
             
             # LAYER 1: Try product mapping (exact match)
             if line.product_id and line.product_id.id in product_to_field:
-                field_name = product_to_field[line.product_id.id]
+                field_name, mapping_id = product_to_field[line.product_id.id]
                 current_value = getattr(self, field_name, 0)
                 setattr(self, field_name, current_value + amount)
                 matched = True
+                match_info = {
+                    'matched_by': 'product',
+                    'mapping_record': f'comex.tribute.product.mapping,{mapping_id}',
+                    'tribute_field': field_name,
+                }
             
             # LAYER 2: Try keyword mapping (if no product match)
             if not matched and keyword_mappings:
@@ -341,9 +385,61 @@ class ComexCustomsClearance(models.Model):
                         current_value = getattr(self, field_name, 0)
                         setattr(self, field_name, current_value + amount)
                         matched = True
+                        match_info = {
+                            'matched_by': 'keyword',
+                            'mapping_record': f'comex.tribute.keyword.mapping,{mapping.id}',
+                            'tribute_field': field_name,
+                        }
                         
                         if mapping.stop_on_match:
                             break  # Stop checking other keywords
+            
+            # LAYER 3: Create audit log for this line
+            log_vals = {
+                'customs_clearance_id': self.id,
+                'invoice_id': invoice.id,
+                'invoice_line_id': line.id,
+                'amount_parsed': amount if matched else 0,
+                'currency_id': invoice.currency_id.id,
+                'line_description': line.name or '',
+                'product_name': line.product_id.name if line.product_id else '',
+            }
+            
+            if matched:
+                log_vals.update(match_info)
+            else:
+                log_vals['matched_by'] = 'unmatched'
+            
+            ParseLog.create(log_vals)
+        
+        # Show notification if there are unmatched lines
+        unmatched_count = self.parse_log_unmatched_count
+        if unmatched_count > 0:
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': _('Parsing Warning'),
+                    'message': _('%s invoice lines could not be matched. Check Parsing Logs to refine your configuration.', unmatched_count),
+                    'type': 'warning',
+                    'sticky': False,
+                }
+            }
+
+    # -------------------------------------------------------------------------
+    # ACTION METHODS
+    # -------------------------------------------------------------------------
+    def action_view_parse_logs(self):
+        """Open parse logs for this customs clearance."""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Tribute Parsing Logs'),
+            'res_model': 'comex.tribute.parse.log',
+            'view_mode': 'tree,form',
+            'domain': [('customs_clearance_id', '=', self.id)],
+            'context': {'default_customs_clearance_id': self.id},
+        }
 
     # -------------------------------------------------------------------------
     # CRUD METHODS
