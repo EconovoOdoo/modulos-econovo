@@ -31,11 +31,6 @@
         <field name="arch" type="xml">
             <form string="Tribute Keyword Mapping">
                 <sheet>
-                    <div class="oe_button_box" name="button_box">
-                        <field name="active" widget="boolean_button" 
-                               options="{'terminology': 'active'}"/>
-                    </div>
-                    
                     <group>
                         <group name="pattern">
                             <field name="sequence"/>
