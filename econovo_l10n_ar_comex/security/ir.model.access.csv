@@ -25,3 +25,5 @@ access_comex_operation_product_line_user,comex.operation.product.line.user,model
 access_comex_operation_product_line_manager,comex.operation.product.line.manager,model_comex_operation_product_line,group_comex_manager,1,0,0,0
 access_comex_tribute_product_mapping_user,comex.tribute.product.mapping.user,model_comex_tribute_product_mapping,group_comex_user,1,0,0,0
 access_comex_tribute_product_mapping_manager,comex.tribute.product.mapping.manager,model_comex_tribute_product_mapping,group_comex_manager,1,1,1,1
+access_comex_tribute_keyword_mapping_user,comex.tribute.keyword.mapping.user,model_comex_tribute_keyword_mapping,group_comex_user,1,0,0,0
+access_comex_tribute_keyword_mapping_manager,comex.tribute.keyword.mapping.manager,model_comex_tribute_keyword_mapping,group_comex_manager,1,1,1,1

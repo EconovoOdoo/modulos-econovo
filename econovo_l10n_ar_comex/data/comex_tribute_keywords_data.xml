@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <!-- ============================================================ -->
+    <!-- Keyword Mappings (Fallback when no product match)          -->
+    <!-- ============================================================ -->
+
+    <!-- DIE / Import Duties -->
+    <record id="mapping_keyword_die_1" model="comex.tribute.keyword.mapping">
+        <field name="sequence">10</field>
+        <field name="priority">100</field>
+        <field name="name">die</field>
+        <field name="match_type">contains</field>
+        <field name="tribute_field">amount_duties</field>
+        <field name="stop_on_match" eval="True"/>
+        <field name="notes">Matches: DIE, D.I.E., die, etc.</field>
+    </record>
+
+    <record id="mapping_keyword_die_2" model="comex.tribute.keyword.mapping">
+        <field name="sequence">11</field>
+        <field name="priority">95</field>
+        <field name="name">derecho de importación</field>
+        <field name="match_type">contains</field>
+        <field name="tribute_field">amount_duties</field>
+        <field name="stop_on_match" eval="True"/>
+        <field name="notes">Full Spanish name for import duties</field>
+    </record>
+
+    <record id="mapping_keyword_arancel" model="comex.tribute.keyword.mapping">
+        <field name="sequence">12</field>
+        <field name="priority">90</field>
+        <field name="name">arancel</field>
+        <field name="match_type">contains</field>
+        <field name="tribute_field">amount_duties</field>
+        <field name="stop_on_match" eval="True"/>
+        <field name="notes">Tariff also goes to duties field</field>
+    </record>
+
+    <!-- Statistics Fee -->
+    <record id="mapping_keyword_statistics_1" model="comex.tribute.keyword.mapping">
+        <field name="sequence">20</field>
+        <field name="priority">100</field>
+        <field name="name">tasa estadística</field>
+        <field name="match_type">contains</field>
+        <field name="tribute_field">amount_statistics</field>
+        <field name="stop_on_match" eval="True"/>
+        <field name="notes">Statistics fee (3% of CIF)</field>
+    </record>
+
+    <record id="mapping_keyword_statistics_2" model="comex.tribute.keyword.mapping">
+        <field name="sequence">21</field>
+        <field name="priority">95</field>
+        <field name="name">estadística</field>
+        <field name="match_type">contains</field>
+        <field name="tribute_field">amount_statistics</field>
+        <field name="stop_on_match" eval="True"/>
+        <field name="notes">Shortened version</field>
+    </record>
+
+    <!-- VAT -->
+    <record id="mapping_keyword_vat_additional" model="comex.tribute.keyword.mapping">
+        <field name="sequence">30</field>
+        <field name="priority">100</field>
+        <field name="name">iva adicional</field>
+        <field name="match_type">contains</field>
+        <field name="tribute_field">amount_vat_additional</field>
+        <field name="stop_on_match" eval="True"/>
+        <field name="notes">Must be checked before regular IVA (higher priority)</field>
+    </record>
+
+    <record id="mapping_keyword_vat" model="comex.tribute.keyword.mapping">
+        <field name="sequence">31</field>
+        <field name="priority">90</field>
+        <field name="name">iva importación</field>
+        <field name="match_type">contains</field>
+        <field name="tribute_field">amount_vat</field>
+        <field name="stop_on_match" eval="True"/>
+        <field name="notes">Import VAT</field>
+    </record>
+
+    <record id="mapping_keyword_vat_short" model="comex.tribute.keyword.mapping">
+        <field name="sequence">32</field>
+        <field name="priority">85</field>
+        <field name="name">iva</field>
+        <field name="match_type">contains</field>
+        <field name="tribute_field">amount_vat</field>
+        <field name="stop_on_match" eval="True"/>
+        <field name="notes">Generic IVA (low priority to avoid false matches)</field>
+    </record>
+
+    <!-- Income Tax Perception (IIGG) -->
+    <record id="mapping_keyword_perc_iigg_1" model="comex.tribute.keyword.mapping">
+        <field name="sequence">40</field>
+        <field name="priority">100</field>
+        <field name="name">percepción ganancias</field>
+        <field name="match_type">contains</field>
+        <field name="tribute_field">amount_income_tax</field>
+        <field name="stop_on_match" eval="True"/>
+        <field name="notes">Full name perception</field>
+    </record>
+
+    <record id="mapping_keyword_perc_iigg_2" model="comex.tribute.keyword.mapping">
+        <field name="sequence">41</field>
+        <field name="priority">95</field>
+        <field name="name">perc. iigg</field>
+        <field name="match_type">contains</field>
+        <field name="tribute_field">amount_income_tax</field>
+        <field name="stop_on_match" eval="True"/>
+        <field name="notes">Common abbreviation</field>
+    </record>
+
+    <record id="mapping_keyword_perc_iigg_regex" model="comex.tribute.keyword.mapping">
+        <field name="sequence">42</field>
+        <field name="priority">90</field>
+        <field name="name">perc(epción)?.*?(ganancias|iigg|ii\.gg)</field>
+        <field name="match_type">regex</field>
+        <field name="tribute_field">amount_income_tax</field>
+        <field name="stop_on_match" eval="True"/>
+        <field name="notes">Regex to catch variants: "PERC GANANCIAS", "Percepción IIGG", etc.</field>
+    </record>
+
+    <!-- Gross Income Perception (IIBB) -->
+    <record id="mapping_keyword_perc_iibb_1" model="comex.tribute.keyword.mapping">
+        <field name="sequence">50</field>
+        <field name="priority">100</field>
+        <field name="name">percepción iibb</field>
+        <field name="match_type">contains</field>
+        <field name="tribute_field">amount_gross_income</field>
+        <field name="stop_on_match" eval="True"/>
+        <field name="notes">Gross income perception (provincial)</field>
+    </record>
+
+    <record id="mapping_keyword_perc_iibb_2" model="comex.tribute.keyword.mapping">
+        <field name="sequence">51</field>
+        <field name="priority">95</field>
+        <field name="name">ingresos brutos</field>
+        <field name="match_type">contains</field>
+        <field name="tribute_field">amount_gross_income</field>
+        <field name="stop_on_match" eval="True"/>
+        <field name="notes">Full Spanish name</field>
+    </record>
+
+    <record id="mapping_keyword_perc_iibb_regex" model="comex.tribute.keyword.mapping">
+        <field name="sequence">52</field>
+        <field name="priority">90</field>
+        <field name="name">perc(epción)?.*?(iibb|ii\.bb|ingresos brutos)</field>
+        <field name="match_type">regex</field>
+        <field name="tribute_field">amount_gross_income</field>
+        <field name="stop_on_match" eval="True"/>
+        <field name="notes">Regex to catch variants of IIBB perception</field>
+    </record>
+
+    <!-- Guard Service / Fees -->
+    <record id="mapping_keyword_guard" model="comex.tribute.keyword.mapping">
+        <field name="sequence">60</field>
+        <field name="priority">100</field>
+        <field name="name">servicio de guarda</field>
+        <field name="match_type">contains</field>
+        <field name="tribute_field">amount_fees</field>
+        <field name="stop_on_match" eval="True"/>
+        <field name="notes">Warehouse guard service fees</field>
+    </record>
+
+    <record id="mapping_keyword_storage" model="comex.tribute.keyword.mapping">
+        <field name="sequence">61</field>
+        <field name="priority">95</field>
+        <field name="name">almacenaje</field>
+        <field name="match_type">contains</field>
+        <field name="tribute_field">amount_fees</field>
+        <field name="stop_on_match" eval="True"/>
+        <field name="notes">Storage fees</field>
+    </record>
+
+</odoo>

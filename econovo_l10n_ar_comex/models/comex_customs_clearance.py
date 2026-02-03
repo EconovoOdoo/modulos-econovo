@@ -268,25 +268,26 @@ class ComexCustomsClearance(models.Model):
         self._parse_tribute_lines_from_invoice(bill)
 
     def _parse_tribute_lines_from_invoice(self, invoice):
-        """Parse invoice lines using configured product mappings (zero hardcoding).
+        """Parse invoice lines using configured mappings with dual-layer fallback (zero hardcoding).
         
-        Parsing logic:
-        1. Load active product mappings for current company
-        2. Build product_id → tribute_field lookup dictionary
-        3. Iterate invoice lines and match by product_id
-        4. Accumulate amounts to corresponding tribute fields
+        Parsing logic (two-layer approach):
+        1. Try product mapping (exact match by product_id)
+        2. If no product match, try keyword mapping (text pattern matching)
+        3. Accumulate amounts to corresponding tribute fields
         
         Benefits:
         - Zero hardcoding - all mappings configurable from UI
-        - Supports custom products per client
-        - Multiple products can map to same tribute field (amounts summed)
+        - Handles lines with or without products
+        - Supports custom products and keywords per client
+        - Multiple patterns can map to same tribute field (amounts summed)
         - Multi-company compatible
+        - Flexible pattern matching (contains, regex, etc.)
         
-        Example:
-            Product "DIE - Derecho de Importación" → amount_duties
-            Product "Tasa de Estadística" → amount_statistics
+        Examples:
+            Layer 1 (Product): Product "DIE - Derecho de Importación" → amount_duties
+            Layer 2 (Keyword): Line with text "tasa estadística" → amount_statistics
         
-        See Settings > COMEX > Tribute Product Mappings for configuration.
+        See Settings > COMEX > Tribute Mappings for configuration.
         """
         if not invoice or not invoice.invoice_line_ids:
             return
@@ -309,15 +310,40 @@ class ComexCustomsClearance(models.Model):
         # Build fast lookup: product_id → tribute_field
         product_to_field = {m.product_id.id: m.tribute_field for m in product_mappings}
         
+        # Load active keyword mappings (ordered by priority desc)
+        KeywordMapping = self.env['comex.tribute.keyword.mapping'].sudo()
+        keyword_mappings = KeywordMapping.search([
+            ('active', '=', True),
+            '|', ('company_id', '=', False), ('company_id', '=', self.company_id.id)
+        ], order='priority desc, sequence')
+        
         # Parse invoice lines
         for line in invoice.invoice_line_ids:
             amount = abs(line.price_subtotal)  # Use abs to handle credit notes
+            matched = False
             
-            # Try product mapping (exact match by product_id)
+            # LAYER 1: Try product mapping (exact match)
             if line.product_id and line.product_id.id in product_to_field:
                 field_name = product_to_field[line.product_id.id]
                 current_value = getattr(self, field_name, 0)
                 setattr(self, field_name, current_value + amount)
+                matched = True
+            
+            # LAYER 2: Try keyword mapping (if no product match)
+            if not matched and keyword_mappings:
+                # Combine line description and product name for searching
+                line_text = (line.name or '') + ' ' + (line.product_id.name or '') if line.product_id else (line.name or '')
+                line_text = line_text.lower().strip()
+                
+                for mapping in keyword_mappings:
+                    if mapping.check_match(line_text):
+                        field_name = mapping.tribute_field
+                        current_value = getattr(self, field_name, 0)
+                        setattr(self, field_name, current_value + amount)
+                        matched = True
+                        
+                        if mapping.stop_on_match:
+                            break  # Stop checking other keywords
 
     # -------------------------------------------------------------------------
     # CRUD METHODS
