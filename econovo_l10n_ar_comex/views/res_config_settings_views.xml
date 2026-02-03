@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- ============================================ -->
+    <!-- Settings View: Tribute Invoice Configuration -->
+    <!-- ============================================ -->
+    
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.comex</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <form position="inside">
+                <app string="COMEX" name="econovo_l10n_ar_comex">
+                    <block title="Tribute Invoice Settings" name="econovo_comex_tribute_invoice_settings">
+                        <setting id="econovo_comex_auto_prefill_invoice" 
+                                 string="Auto-fill Tribute Invoice Lines"
+                                 help="When creating tribute invoice from clearance, automatically pre-fill lines with tribute amounts">
+                            <field name="comex_auto_prefill_invoice"/>
+                            <div class="content-group" invisible="not comex_auto_prefill_invoice">
+                                <div class="row mt16">
+                                    <label for="comex_tribute_line_filter" class="col-3 col-lg-3 o_light_label"/>
+                                    <field name="comex_tribute_line_filter" class="oe_inline"/>
+                                </div>
+                                
+                                <!-- Tribute Configuration Table -->
+                                <div class="mt16" invisible="comex_tribute_line_filter != 'selected'">
+                                    <label for="comex_tribute_line_config_ids" string="Configure Tributes to Include"/>
+                                    <field name="comex_tribute_line_config_ids" 
+                                           nolabel="1"
+                                           context="{'default_company_id': company_id}">
+                                        <tree editable="bottom">
+                                            <field name="company_id" column_invisible="1"/>
+                                            <field name="sequence" widget="handle"/>
+                                            <field name="tribute_field_id" 
+                                                   options="{'no_create': True, 'no_open': True}"/>
+                                            <field name="product_id" 
+                                                   optional="show"
+                                                   options="{'no_create': True}"/>
+                                            <field name="include_if_zero"/>
+                                            <field name="description" optional="hide"/>
+                                            <field name="active" widget="boolean_toggle"/>
+                                        </tree>
+                                    </field>
+                                </div>
+                            </div>
+                        </setting>
+                        
+                        <setting id="econovo_comex_default_tribute_vendor" 
+                                 string="Default Tribute Vendor"
+                                 help="Default vendor for tribute invoices (e.g., AFIP, Customs Broker)">
+                            <field name="comex_default_tribute_vendor_id" 
+                                   placeholder="Select default vendor..."
+                                   options="{'no_create': True}"/>
+                        </setting>
+                        
+                        <setting id="econovo_comex_default_tribute_doc_type" 
+                                 string="Default Tribute Doc Type"
+                                 help="Default document type for tribute invoices (e.g., Type 66)">
+                            <field name="comex_default_tribute_doc_type_id" 
+                                   placeholder="Select default document type..."
+                                   options="{'no_create': True}"/>
+                        </setting>
+                    </block>
+                </app>
+            </form>
+        </field>
+    </record>
+    
+</odoo>

@@ -270,11 +270,10 @@ class ComexCustomsClearance(models.Model):
         
         This populates:
         - dispatch_number: From l10n_latam_document_number
-        - amount_cif: From first invoice line (usually contains CIF value)
         - vep_amount: From total invoice amount (sum of all tributes)
-        - Individual tributes: Parsed from invoice lines based on product/account
         
-        User only needs to register the Type 66 invoice once with proper line items.
+        Note: Tribute parsing happens after save (in create/write) to avoid
+        constraint violations with NewId during onchange.
         """
         if not self.vendor_bill_id:
             return
@@ -289,9 +288,7 @@ class ComexCustomsClearance(models.Model):
         if bill.amount_total:
             self.vep_amount = bill.amount_total
         
-        # 3. Parse invoice lines to fill individual tribute amounts
-        # Parse tribute amounts using configured mappings with audit logging
-        self._parse_tribute_lines_from_invoice(bill)
+        # Note: Tribute parsing will happen automatically after save
 
     def _parse_tribute_lines_from_invoice(self, invoice):
         """Parse invoice lines using configured mappings with comprehensive audit logging.
@@ -449,7 +446,36 @@ class ComexCustomsClearance(models.Model):
         for vals in vals_list:
             if vals.get('name', _('New')) == _('New'):
                 vals['name'] = self.env['ir.sequence'].next_by_code('comex.customs.clearance') or _('New')
-        return super().create(vals_list)
+        records = super().create(vals_list)
+        
+        # Parse vendor bill tributes after creation (when record has real ID)
+        for record in records:
+            if record.vendor_bill_id:
+                record._parse_tribute_lines_from_invoice(record.vendor_bill_id)
+        
+        return records
+    
+    def write(self, vals):
+        result = super().write(vals)
+        
+        # Re-parse tributes if vendor_bill_id changed
+        if 'vendor_bill_id' in vals:
+            for record in self:
+                if record.vendor_bill_id:
+                    record._parse_tribute_lines_from_invoice(record.vendor_bill_id)
+                else:
+                    # Clear logs if vendor bill removed
+                    self.env['comex.tribute.parse.log'].sudo().search([
+                        ('customs_clearance_id', '=', record.id)
+                    ]).unlink()
+                    # Reset tribute amounts
+                    tribute_fields = [
+                        'amount_duties', 'amount_statistics', 'amount_vat', 'amount_vat_additional',
+                        'amount_income_tax', 'amount_gross_income', 'amount_taxes', 'amount_fees'
+                    ]
+                    record.write({field: 0 for field in tribute_fields})
+        
+        return result
 
     # -------------------------------------------------------------------------
     # ACTION METHODS
@@ -486,3 +512,171 @@ class ComexCustomsClearance(models.Model):
     def action_draft(self):
         """Reset to draft."""
         self.write({'state': 'draft'})
+
+    def action_create_tribute_invoice(self):
+        """Open native invoice form with configurable pre-filled values.
+        
+        Configuration via Settings > General Settings > COMEX:
+        - Auto pre-fill lines (on/off)
+        - Which tributes to include
+        - Default vendor
+        - Default document type
+        """
+        self.ensure_one()
+        
+        ICP = self.env['ir.config_parameter'].sudo()
+        
+        # Get configuration
+        auto_prefill = ICP.get_param('econovo_l10n_ar_comex.auto_prefill_invoice', default='False')
+        default_vendor_id = ICP.get_param('econovo_l10n_ar_comex.default_tribute_vendor_id', default='0')
+        default_doc_type_id = ICP.get_param('econovo_l10n_ar_comex.default_tribute_doc_type_id', default='0')
+        
+        # Convert string parameters to proper types
+        auto_prefill = auto_prefill == 'True'
+        default_vendor_id = int(default_vendor_id) if default_vendor_id and default_vendor_id != '0' else False
+        default_doc_type_id = int(default_doc_type_id) if default_doc_type_id and default_doc_type_id != '0' else False
+        
+        # Build context with defaults
+        context = {
+            'default_move_type': 'in_invoice',
+            'default_invoice_date': fields.Date.context_today(self),
+            'default_ref': self.dispatch_number or f"Despacho {self.name}",
+        }
+        
+        # Add vendor if configured
+        if default_vendor_id:
+            context['default_partner_id'] = default_vendor_id
+        
+        # Add document type if configured
+        if default_doc_type_id:
+            context['default_l10n_latam_document_type_id'] = default_doc_type_id
+        
+        # Pre-fill invoice lines if enabled
+        if auto_prefill:
+            invoice_lines = self._prepare_tribute_invoice_lines()
+            if invoice_lines:
+                context['default_invoice_line_ids'] = invoice_lines
+        
+        return {
+            'name': _('Create Tribute Invoice'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'account.move',
+            'view_mode': 'form',
+            'view_id': self.env.ref('account.view_move_form').id,
+            'target': 'current',
+            'context': context,
+        }
+
+    def _prepare_tribute_invoice_lines(self):
+        """Prepare invoice lines based on configuration.
+        
+        Returns:
+            list: List of (0, 0, vals) tuples for invoice lines
+        """
+        ICP = self.env['ir.config_parameter'].sudo()
+        line_filter = ICP.get_param('econovo_l10n_ar_comex.tribute_line_filter', default='all')
+        
+        # Get product mappings for fallback labels
+        ProductMapping = self.env['comex.tribute.product.mapping'].sudo()
+        mappings = ProductMapping.search([
+            ('active', '=', True),
+            '|', ('company_id', '=', False), ('company_id', '=', self.company_id.id)
+        ])
+        
+        import logging
+        _logger = logging.getLogger(__name__)
+        _logger.info("=== TRIBUTE INVOICE DEBUG ===")
+        _logger.info(f"Found {len(mappings)} active product mappings for company {self.company_id.name}")
+        
+        field_to_product = {}
+        for mapping in mappings:
+            field_name = mapping.tribute_field_id.technical_name
+            _logger.info(f"Mapping: field={field_name}, product={mapping.product_id.name if mapping.product_id else 'NONE'}")
+            if field_name not in field_to_product:
+                field_to_product[field_name] = mapping.product_id
+        
+        _logger.info(f"field_to_product dict keys: {list(field_to_product.keys())}")
+        
+        tribute_field_labels = {
+            'amount_duties': _('Import Duties (DIE)'),
+            'amount_statistics': _('Statistics Fee'),
+            'amount_vat': _('VAT'),
+            'amount_vat_additional': _('Additional VAT'),
+            'amount_income_tax': _('Income Tax Perception'),
+            'amount_gross_income': _('Gross Income Perception'),
+            'amount_taxes': _('Other Taxes'),
+            'amount_fees': _('Other Fees'),
+        }
+        
+        lines = []
+        
+        # Build lines based on filter mode
+        if line_filter == 'selected':
+            # Use configured tribute lines (ordered by sequence)
+            LineConfig = self.env['comex.tribute.invoice.line.config'].sudo()
+            configured_lines = LineConfig.search([
+                ('company_id', '=', self.company_id.id),
+                ('active', '=', True)
+            ], order='sequence, id')
+            
+            if not configured_lines:
+                # No configuration found, return empty
+                return lines
+            
+            for config_line in configured_lines:
+                field_name = config_line.tribute_field_id.technical_name
+                amount = getattr(self, field_name, 0)
+                
+                # Skip if zero and not configured to include
+                if amount == 0 and not config_line.include_if_zero:
+                    continue
+                
+                # Use override product if specified, otherwise fallback to mapping
+                product = config_line.product_id or field_to_product.get(field_name)
+                
+                # Use custom description if provided, otherwise use product name or field label
+                if config_line.description:
+                    description = config_line.description
+                elif product:
+                    description = product.name
+                else:
+                    description = tribute_field_labels.get(field_name, field_name)
+                
+                line_vals = {
+                    'product_id': product.id if product else False,
+                    'name': description,
+                    'quantity': 1,
+                    'price_unit': amount,
+                }
+                
+                if product and product.property_account_expense_id:
+                    line_vals['account_id'] = product.property_account_expense_id.id
+                
+                lines.append((0, 0, line_vals))
+        
+        else:
+            # Include all non-zero tributes (default behavior)
+            all_fields = [
+                'amount_duties', 'amount_statistics', 'amount_vat', 'amount_vat_additional',
+                'amount_income_tax', 'amount_gross_income', 'amount_taxes', 'amount_fees'
+            ]
+            
+            for field_name in all_fields:
+                amount = getattr(self, field_name, 0)
+                if amount > 0:
+                    product = field_to_product.get(field_name)
+                    
+                    line_vals = {
+                        'product_id': product.id if product else False,
+                        'name': product.name if product else tribute_field_labels.get(field_name, field_name),
+                        'quantity': 1,
+                        'price_unit': amount,
+                    }
+                    
+                    if product and product.property_account_expense_id:
+                        line_vals['account_id'] = product.property_account_expense_id.id
+                    
+                    lines.append((0, 0, line_vals))
+        
+        return lines
+

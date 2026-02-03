@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    
+    <!-- ============================================ -->
+    <!-- Tribute Field Master Data                    -->
+    <!-- ============================================ -->
+    
+    <record id="tribute_field_duties" model="comex.tribute.field">
+        <field name="sequence">10</field>
+        <field name="technical_name">amount_duties</field>
+    </record>
+    
+    <record id="tribute_field_statistics" model="comex.tribute.field">
+        <field name="sequence">20</field>
+        <field name="technical_name">amount_statistics</field>
+    </record>
+    
+    <record id="tribute_field_vat" model="comex.tribute.field">
+        <field name="sequence">30</field>
+        <field name="technical_name">amount_vat</field>
+    </record>
+    
+    <record id="tribute_field_vat_additional" model="comex.tribute.field">
+        <field name="sequence">40</field>
+        <field name="technical_name">amount_vat_additional</field>
+    </record>
+    
+    <record id="tribute_field_income_tax" model="comex.tribute.field">
+        <field name="sequence">50</field>
+        <field name="technical_name">amount_income_tax</field>
+    </record>
+    
+    <record id="tribute_field_gross_income" model="comex.tribute.field">
+        <field name="sequence">60</field>
+        <field name="technical_name">amount_gross_income</field>
+    </record>
+    
+    <record id="tribute_field_taxes" model="comex.tribute.field">
+        <field name="sequence">70</field>
+        <field name="technical_name">amount_taxes</field>
+    </record>
+    
+    <record id="tribute_field_fees" model="comex.tribute.field">
+        <field name="sequence">80</field>
+        <field name="technical_name">amount_fees</field>
+    </record>
+    
+</odoo>

@@ -775,10 +775,559 @@ def _check_keyword_match(self, text, mapping):
 9. ✅ Vista de logs con filtros
 10. ✅ Notificaciones de líneas no parseadas
 
-### **Fase 4: Extras (Opcional)**
-11. ⚡ Wizard para crear factura tipo 66 desde clearance
-12. ⚡ Reportes de tributos por operación/período
-13. ⚡ Sugerencias automáticas de nuevos mappings
+### **Fase 4: Extras (Opcionales)**
+11. ⚡ **Botón para crear factura desde clearance** (sin wizard, formulario nativo)
+    - Configuración parametrizable:
+      - Tipo documento por defecto (ej: 66)
+      - Proveedor por defecto (ej: AFIP)
+      - Auto pre-llenar líneas (on/off)
+      - Qué tributos incluir en líneas
+12. ⚡ **Reportes de tributos** por operación/período (SQL View + Pivot/Graph)
+
+---
+
+## 📋 Fase 4.1: Crear Factura desde Clearance (Parametrizable)
+
+### **Configuración en `res.config.settings`**
+
+Agregar campos configurables para controlar el comportamiento del botón "Create Tribute Invoice":
+
+```python
+class ResConfigSettings(models.TransientModel):
+    _inherit = 'res.config.settings'
+    
+    # Tribute Invoice Settings
+    comex_auto_prefill_invoice = fields.Boolean(
+        string="Auto-fill Tribute Invoice Lines",
+        config_parameter='econovo_l10n_ar_comex.auto_prefill_invoice',
+        help="When creating tribute invoice from clearance, automatically pre-fill lines with tribute amounts",
+    )
+    
+    comex_default_tribute_vendor_id = fields.Many2one(
+        'res.partner',
+        string="Default Tribute Vendor",
+        config_parameter='econovo_l10n_ar_comex.default_tribute_vendor_id',
+        domain="[('supplier_rank', '>', 0)]",
+        help="Default vendor when creating tribute invoices (e.g., AFIP, Customs Broker)",
+    )
+    
+    comex_default_tribute_doc_type_id = fields.Many2one(
+        'l10n_latam.document.type',
+        string="Default Tribute Doc Type",
+        config_parameter='econovo_l10n_ar_comex.default_tribute_doc_type_id',
+        domain="[('country_id.code', '=', 'AR'), ('internal_type', '=', 'invoice')]",
+        help="Default document type for tribute invoices (e.g., Type 66 - Import Clearance)",
+    )
+    
+    comex_tribute_line_filter = fields.Selection(
+        selection=[
+            ('all', 'All Non-Zero Tributes'),
+            ('selected', 'Only Selected Tributes'),
+        ],
+        string="Invoice Lines to Include",
+        config_parameter='econovo_l10n_ar_comex.tribute_line_filter',
+        default='all',
+        help="Which tribute amounts to include in invoice lines",
+    )
+    
+    comex_tribute_line_config_ids = fields.Many2many(
+        'comex.tribute.invoice.line.config',
+        string="Tributes to Include",
+        compute='_compute_tribute_line_config_ids',
+        inverse='_inverse_tribute_line_config_ids',
+        help="Configure which tribute fields should be included as invoice lines (only if 'Only Selected' is chosen above)",
+    )
+    
+    @api.depends('company_id')
+    def _compute_tribute_line_config_ids(self):
+        """Load tribute line configurations for current company."""
+        for record in self:
+            if record.company_id:
+                configs = self.env['comex.tribute.invoice.line.config'].search([
+                    ('company_id', '=', record.company_id.id)
+                ])
+                record.comex_tribute_line_config_ids = configs
+            else:
+                record.comex_tribute_line_config_ids = False
+    
+    def _inverse_tribute_line_config_ids(self):
+        """Save changes to tribute line configurations."""
+        for record in self:
+            if not record.company_id:
+                continue
+            
+            # Get current configs for this company
+            existing_configs = self.env['comex.tribute.invoice.line.config'].search([
+                ('company_id', '=', record.company_id.id)
+            ])
+            
+            # Compute difference
+            to_remove = existing_configs - record.comex_tribute_line_config_ids
+            to_add = record.comex_tribute_line_config_ids - existing_configs
+            
+            # Remove old configs
+            to_remove.unlink()
+            
+            # Update company_id for new configs
+            for config in to_add:
+                if not config.company_id or config.company_id.id != record.company_id.id:
+                    config.company_id = record.company_id
+```
+
+### **Modelo de Configuración de Líneas (Tabla Relacional)**
+
+```python
+class ComexTributeInvoiceLineConfig(models.Model):
+    """Configuration for tribute fields to include in invoice pre-fill."""
+    
+    _name = 'comex.tribute.invoice.line.config'
+    _description = 'COMEX Tribute Invoice Line Configuration'
+    _order = 'company_id, sequence, id'
+    
+    sequence = fields.Integer(
+        string="Sequence",
+        default=10,
+        help="Order in which tributes will appear in invoice lines",
+    )
+    
+    company_id = fields.Many2one(
+        'res.company',
+        string="Company",
+        required=True,
+        default=lambda self: self.env.company,
+        help="Company for which this configuration applies",
+    )
+    
+    tribute_field_id = fields.Many2one(
+        'comex.tribute.field',
+        string="Tribute Field",
+        required=True,
+        help="Tribute field to include in invoice",
+    )
+    
+    product_id = fields.Many2one(
+        'product.product',
+        string="Override Product",
+        domain="[('detailed_type', '=', 'service')]",
+        help="Optional: Use this specific product instead of auto-detected from mappings",
+    )
+    
+    include_if_zero = fields.Boolean(
+        string="Include if Zero",
+        default=False,
+        help="Include this line even if amount is zero",
+    )
+    
+    description = fields.Text(
+        string="Custom Description",
+        help="Optional: Override the default line description",
+    )
+    
+    active = fields.Boolean(
+        string="Active",
+        default=True,
+        help="Uncheck to temporarily disable this line configuration",
+    )
+```
+
+### **Modelo Auxiliar para Selección de Tributos**
+
+```python
+class ComexTributeField(models.Model):
+    """Master data for tribute field selection in configurations."""
+    
+    _name = 'comex.tribute.field'
+    _description = 'COMEX Tribute Field Definition'
+    _order = 'sequence, name'
+    
+    sequence = fields.Integer(default=10)
+    
+    technical_name = fields.Selection(
+        selection=[
+            ('amount_duties', 'Import Duties (DIE)'),
+            ('amount_statistics', 'Statistics Fee'),
+            ('amount_vat', 'VAT'),
+            ('amount_vat_additional', 'Additional VAT'),
+            ('amount_income_tax', 'Income Tax Perception'),
+            ('amount_gross_income', 'Gross Income Perception'),
+            ('amount_taxes', 'Other Taxes'),
+            ('amount_fees', 'Other Fees'),
+        ],
+        string="Field Name",
+        required=True,
+    )
+    
+    name = fields.Char(
+        string="Display Name",
+        compute='_compute_name',
+        store=True,
+    )
+    
+    @api.depends('technical_name')
+    def _compute_name(self):
+        """Get display name from selection."""
+        selection_dict = dict(self._fields['technical_name'].selection)
+        for record in self:
+            record.name = selection_dict.get(record.technical_name, record.technical_name)
+```
+
+### **Data para Tributos Configurables**
+
+```xml
+<!-- data/comex_tribute_fields_data.xml -->
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    
+    <record id="tribute_field_duties" model="comex.tribute.field">
+        <field name="sequence">10</field>
+        <field name="technical_name">amount_duties</field>
+    </record>
+    
+    <record id="tribute_field_statistics" model="comex.tribute.field">
+        <field name="sequence">20</field>
+        <field name="technical_name">amount_statistics</field>
+    </record>
+    
+    <record id="tribute_field_vat" model="comex.tribute.field">
+        <field name="sequence">30</field>
+        <field name="technical_name">amount_vat</field>
+    </record>
+    
+    <record id="tribute_field_vat_additional" model="comex.tribute.field">
+        <field name="sequence">40</field>
+        <field name="technical_name">amount_vat_additional</field>
+    </record>
+    
+    <record id="tribute_field_income_tax" model="comex.tribute.field">
+        <field name="sequence">50</field>
+        <field name="technical_name">amount_income_tax</field>
+    </record>
+    
+    <record id="tribute_field_gross_income" model="comex.tribute.field">
+        <field name="sequence">60</field>
+        <field name="technical_name">amount_gross_income</field>
+    </record>
+    
+    <record id="tribute_field_taxes" model="comex.tribute.field">
+        <field name="sequence">70</field>
+        <field name="technical_name">amount_taxes</field>
+    </record>
+    
+    <record id="tribute_field_fees" model="comex.tribute.field">
+        <field name="sequence">80</field>
+        <field name="technical_name">amount_fees</field>
+    </record>
+    
+                                               nolabel="1"
+                                               context="{'default_company_id': company_id}">
+                                            <tree editable="bottom">
+                                                <field name="company_id" column_invisible="1"/>
+                                                <field name="sequence" widget="handle"/>
+                                                <field name="tribute_field_id" 
+                                                       options="{'no_create': True, 'no_open': True}"/>
+                                                <field name="product_id" 
+                                                       optional="show"
+                                                       options="{'no_create': True}"/>
+                                                <field name="include_if_zero"/>
+                                                <field name="description" optional="hide"/>
+                                                <field name="active" widget="boolean_toggl
+        <field name="name">res.config.settings.view.form.inherit.comex</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('settings')]" position="inside">
+                <div class="app_settings_block" data-string="COMEX" string="COMEX" data-key="econovo_l10n_ar_comex">
+                    <h2>Tribute Invoice Settings</h2>
+                    
+                    <div class="row mt16 o_settings_container">
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_left_pane">
+                                <field name="comex_auto_prefill_invoice"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="comex_auto_prefill_invoice"/>
+                                <div class="text-muted">
+                                    Automatically pre-fill invoice lines when creating tribute invoice from customs clearance
+                                </div>
+                                
+                                <div class="content-group" invisible="not comex_auto_prefill_invoice">
+                                    <div class="mt16">
+                                        <label for="comex_tribute_line_filter" class="o_light_label"/>
+                                        <field name="comex_tribute_line_filter" class="oe_inline"/>
+                                    </div>
+                                    <div class="mt16" invisible="comex_tribute_line_filter != 'selected'">
+                                        <label for="comex_tribute_line_config_ids" string="Configure Tributes to Include"/>
+                                        <field name="comex_tribute_line_config_ids" nolabel="1">
+                                            <tree editable="bottom">
+                                                <field name="sequence" widget="handle"/>
+                                                <field name="tribute_field_id" 
+                                                       options="{'no_create': True, 'no_open': True}"/>
+                                                <field name="product_id" 
+                                                       optional="show"
+                                                       options="{'no_create': True}"/>
+                                                <field name="include_if_zero"/>
+                                                <field name="description" optional="hide"/>
+                                            </tree>
+                                        </field>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_left_pane"/>
+                            <div class="o_setting_right_pane">
+                                <label for="comex_default_tribute_vendor_id"/>
+                                <div class="text-muted">
+                                    Default vendor for tribute invoices (e.g., AFIP, Customs Broker)
+                                </div>
+                                <field name="comex_default_tribute_vendor_id" 
+                                       placeholder="Select default vendor..."
+                                       options="{'no_create': True}"/>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_left_pane"/>
+                            <div class="o_setting_right_pane">
+                                <label for="comex_default_tribute_doc_type_id"/>
+                                <div class="text-muted">
+                                    Default document type for tribute invoices (e.g., Type 66)
+                                </div>
+                                <field name="comex_default_tribute_doc_type_id" 
+                                       placeholder="Select default document type..."
+                                       options="{'no_create': True}"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>
+```
+
+### **Método Actualizado en `comex_customs_clearance.py`**
+
+```python
+def action_create_tribute_invoice(self):
+    """Open native invoice form with configurable pre-filled values.
+    
+    Configuration via Settings > COMEX:
+    - Auto pre-fill lines (on/off)
+    - Which tributes to include
+    - Default vendor
+    - Default document type
+    """
+    self.ensure_one()
+    
+    ICP = self.env['ir.config_parameter'].sudo()
+    
+    # Get configuration
+    auto_prefill = ICP.get_param('econovo_l10n_ar_comex.auto_prefill_invoice', default=False)
+    default_vendor_id = int(ICP.get_param('econovo_l10n_ar_comex.default_tribute_vendor_id', default=0))
+    default_doc_type_id = int(ICP.get_param('econovo_l10n_ar_comex.default_tribute_doc_type_id', default=0))
+    
+    # Build context with defaults
+    context = {
+        'default_move_type': 'in_invoice',
+        'default_invoice_date': fields.Date.context_today(self),
+        'default_ref': self.dispatch_number or f"Despacho {self.name}",
+    }
+    
+    # Add vendor if configured
+    if default_vendor_id:
+        context['default_partner_id'] = default_vendor_id
+    
+    # Add document type if configured
+    if default_doc_type_id:
+        context['default_l10n_latam_document_type_id'] = default_doc_type_id
+    
+    # Pre-fill invoice lines if enabled
+    if auto_prefill:
+        invoice_lines = self._prepare_tribute_invoice_lines()
+        if invoice_lines:
+            context['default_invoice_line_ids'] = invoice_lines
+    
+    return {
+        'name': _('Create Tribute Invoice'),
+        'type': 'ir.actions.act_window',
+        'res_model': 'account.move',
+        'view_mode': 'form',
+        'view_id': self.env.ref('account.view_move_form').id,
+        'target': 'current',
+        'context': context,
+    }
+
+def _prepare_tribute_invoice_lines(self):
+    """Prepare invoice lines based on configuration."""
+    ICP = self.env['ir.config_parameter'].sudo()
+    line_filter = ICP.get_param('econovo_l10n_ar_comex.tribute_line_filter', default='all')
+    
+    # Get product mappings for fallback labels
+    ProductMapping = self.env['comex.tribute.product.mapping'].sudo()
+    mappings = ProductMapping.search([
+        ('active', '=', True),
+        '|', ('company_id', '=', False), ('company_id', '=', self.company_id.id)
+    ])
+    
+    field_to_product = {}
+    for mapping in mappings:
+        if mapping.tribute_field not in field_to_product:
+            field_to_product[mapping.tribute_field] = mapping.product_id
+    
+    tribute_field_labels = {
+        'amount_duties': 'Import Duties (DIE)',
+        'amount_statistics': 'Statistics Fee',
+        'amount_vat': 'VAT',
+        'amount_vat_additional': 'Additional VAT',
+        'amount_income_tax': 'Income Tax Perception',
+        'amount_gross_income': 'Gross Income Perception',
+        'amount_taxes': 'Other Taxes',
+        'amount_fees': 'Other Fees',
+    }
+    
+    lines = []
+    
+    # Build lines based on filter mode
+    if line_ficompany_id', '=', self.company_id.id),
+            ('active', '=', True
+        # Use configured tribute lines (ordered by sequence)
+        LineConfig = self.env['comex.tribute.invoice.line.config'].sudo()
+        configured_lines = LineConfig.search([
+            ('res_config_id.company_id', '=', self.company_id.id)
+        ], order='sequence, id')
+        
+        if not configured_lines:
+            # No configuration found, return empty
+            return lines
+        
+        for config_line in configured_lines:
+            field_name = config_line.tribute_field_id.technical_name
+            amount = getattr(self, field_name, 0)
+            
+            # Skip if zero and not configured to include
+            if amount == 0 and not config_line.include_if_zero:
+                continue
+            
+            # Use override product if specified, otherwise fallback to mapping
+            product = config_line.product_id or field_to_product.get(field_name)
+            
+            # Use custom description if provided, otherwise use product name or field label
+            if config_line.description:
+                description = config_line.description
+            elif product:
+                description = product.name
+            else:
+                description = tribute_field_labels.get(field_name, field_name)
+            
+            line_vals = {
+                'product_id': product.id if product else False,
+                'name': description,
+                'quantity': 1,
+                'price_unit': amount,
+            }
+            
+            if product and product.property_account_expense_id:
+                line_vals['account_id'] = product.property_account_expense_id.id
+            
+            lines.append((0, 0, line_vals))
+    
+    else:
+        # Include all non-zero tributes (default behavior)
+        all_fields = [
+            'amount_duties', 'amount_statistics', 'amount_vat', 'amount_vat_additional',
+            'amount_income_tax', 'amount_gross_income', 'amount_taxes', 'amount_fees'
+        ]
+        
+        for field_name in all_fields:configures en tabla
+
+3. ✅ **Configure Tributes to Include** (tabla editable, solo si "Only Selected")
+   - Vista de tabla con columnas:
+     - **Sequence** (handle draggable) → Orden de líneas en factura
+     - **Tribute Field** → Qué tributo incluir
+     - **Override Product** → Opcional: forzar producto específico
+     - **Include if Zero** → Checkbox: incluir aunque sea $0
+     - **Custom Description** → Opcional: texto personalizado para línea
+   - Editable inline (editable="bottom")
+   - Drag & drop para reordenar
+                line_vals = {
+                    'product_id': product.id if product else False,
+                    'name': product.name if product else tribute_field_labels.get(field_name, field_name),
+                    'quantity': 1,
+                    'price_unit': amount,
+                }
+                
+                if product and product.property_account_expense_id:
+                    line_vals['account_id'] = product.property_account_expense_id.id
+                
+                lines.append((0, 0, line_vals))
+    
+    return lines
+```
+
+---
+
+## 🎯 Configuración desde UI
+
+### **Ruta:** `Settings > General Settings > COMEX > Tribute Invoice Settings`
+
+**Opciones configurables:**
+
+1. ✅ **Auto-fill Tribute Invoice Lines** (checkbox)
+   - Si está activo → Pre-llena líneas automáticamente
+   - Si está inactivo → Factura en blanco
+
+2. ✅ **Invoice Lines to Include** (cuando auto-fill activo)
+   - **All Non-Zero Tributes** → Incluye todos los tributos > 0
+   - **Only Selected Tributes** → Solo los que selecciones abajo
+
+3. ✅ **Select Tributes** (many2many tags, solo si "Only Selected")
+   - DIE, Statistics Fee, VAT, etc.
+   - Multi-selección visual con tags
+
+4. ✅ **Default Tribute Vendor** (Many2one)
+   - AFIP, Aduana, Despachante, etc.
+   - Opcional (puede quedar vacío)
+
+5. ✅ **Default Document Type** (Many2one)
+   - Tipo 66, Tipo 01, etc.
+   - Opcional
+
+---
+
+## 📋 Flujo Usuario Final
+
+1. **Configurar una vez** (Settings > COMEX):
+   - ✅ Auto pre-llenar: ON
+   - ✅ Incluir: All tributes
+   - ✅ Vendor: AFIP
+   - ✅ Doc Type: 66
+
+2. **Uso diario** (Clearance Form):
+   - Click "Create Tribute Invoice"
+   - Formulario nativo abre con TODO pre-llenado
+   - Usuario ajusta si necesita
+   - Guardar → Done
+
+---
+
+## ⚡ Ventajas del Enfoque Parametrizable
++ orden |
+| **Productos** | Auto-detectados | Override por tributo |
+| **Descripciones** | Fijas | Personalizables por línea 
+| Aspecto | Hardcoded | Parametrizable |
+|---------|-----------|----------------|
+| **Flexibilidad** | Fijo en código | Configurable por usuario |
+| **Vendors** | Solo AFIP | Cualquier proveedor |
+| **Doc Types** | Solo 66 | Cualquier tipo |
+| **Líneas** | Todos los tributos | Selección específica |
+| **Actualizaciones** | Cambios en código | Cambios en Settings |
+| **Multi-company** | Un solo setup | Config por compañía |
+
+---
+
+¿Procedo con esta implementación parametrizable?
 
 ---
 

@@ -44,6 +44,7 @@ This module provides comprehensive management of international trade operations
     'depends': [
         'base',
         'mail',
+        'purchase',
         'purchase_stock',
         'sale_stock',
         'stock',
@@ -69,6 +70,7 @@ This module provides comprehensive management of international trade operations
         'data/stock_package_type_data.xml',
         'data/comex_tribute_products_data.xml',
         'data/comex_tribute_keywords_data.xml',
+        'data/comex_tribute_fields_data.xml',
         # Views
         'views/comex_operation_views.xml',
         'views/comex_operation_stage_views.xml',
@@ -89,6 +91,7 @@ This module provides comprehensive management of international trade operations
         'views/comex_tribute_product_mapping_views.xml',
         'views/comex_tribute_keyword_mapping_views.xml',
         'views/comex_tribute_parse_log_views.xml',
+        'views/res_config_settings_views.xml',
         'views/econovo_l10n_ar_comex_menus.xml',
     ],
     'demo': [

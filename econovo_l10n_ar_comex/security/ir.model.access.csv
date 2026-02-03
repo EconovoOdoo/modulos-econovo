@@ -27,3 +27,8 @@ access_comex_tribute_keyword_mapping_user,comex.tribute.keyword.mapping.user,mod
 access_comex_tribute_keyword_mapping_manager,comex.tribute.keyword.mapping.manager,model_comex_tribute_keyword_mapping,group_comex_manager,1,1,1,1
 access_comex_tribute_parse_log_user,comex.tribute.parse.log.user,model_comex_tribute_parse_log,group_comex_user,1,0,0,0
 access_comex_tribute_parse_log_manager,comex.tribute.parse.log.manager,model_comex_tribute_parse_log,group_comex_manager,1,0,0,1
+access_comex_tribute_field_user,comex.tribute.field.user,model_comex_tribute_field,group_comex_user,1,0,0,0
+access_comex_tribute_field_manager,comex.tribute.field.manager,model_comex_tribute_field,group_comex_manager,1,1,1,1
+access_comex_tribute_invoice_line_config_user,comex.tribute.invoice.line.config.user,model_comex_tribute_invoice_line_config,group_comex_user,1,0,0,0
+access_comex_tribute_invoice_line_config_manager,comex.tribute.invoice.line.config.manager,model_comex_tribute_invoice_line_config,group_comex_manager,1,1,1,1
+access_comex_tribute_invoice_line_config_settings,comex.tribute.invoice.line.config.settings,model_comex_tribute_invoice_line_config,base.group_system,1,1,1,1

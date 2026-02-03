@@ -40,6 +40,9 @@
                             invisible="state != 'approved'"/>
                     <button name="action_release" string="Mark Released" type="object" class="btn-success"
                             invisible="state != 'paid'"/>
+                    <button name="action_create_tribute_invoice" string="Create Tribute Invoice" type="object" class="btn-secondary"
+                            invisible="state not in ('approved', 'paid', 'released')"
+                            help="Create a vendor bill for customs tributes based on clearance amounts"/>
                     <button name="action_cancel" string="Cancel" type="object"
                             invisible="state in ('released', 'cancelled')"/>
                     <button name="action_draft" string="Reset to Draft" type="object"

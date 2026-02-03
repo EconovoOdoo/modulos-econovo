@@ -12,6 +12,8 @@ from . import comex_payment_timing
 from . import comex_tribute_product_mapping
 from . import comex_tribute_keyword_mapping
 from . import comex_tribute_parse_log
+from . import comex_tribute_field
+from . import comex_tribute_invoice_line_config
 
 # Main models
 from . import comex_operation_stage
@@ -30,3 +32,4 @@ from . import stock_quant_package
 from . import stock_package_type
 from . import stock_rule
 from . import res_partner
+from . import res_config_settings
