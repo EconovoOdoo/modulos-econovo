@@ -158,11 +158,11 @@
               action="comex_payment_timing_action"
               sequence="70"/>
 
-    <!-- Tribute Mappings (Settings) -->
+    <!-- Tribute Mappings (Configuration) -->
     <menuitem id="menu_comex_tribute_config"
               name="Tribute Mappings"
-              parent="base.menu_administration"
-              sequence="100"/>
+              parent="menu_comex_configuration"
+              sequence="80"/>
 
     <menuitem id="menu_comex_tribute_product_mapping"
               name="Product Mappings"
