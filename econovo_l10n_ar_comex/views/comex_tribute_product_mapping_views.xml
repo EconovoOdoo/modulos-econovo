@@ -50,11 +50,12 @@
                         </group>
                     </group>
                     
-                    <group name="notes">
-                        <field name="notes" 
-                               placeholder="Optional: Add internal documentation about this mapping..."
-                               nolabel="1"/>
-                    </group>
+                    <notebook>
+                        <page string="Notes" name="notes">
+                            <field name="notes" 
+                                   placeholder="Optional: Add internal documentation about this mapping..."/>
+                        </page>
+                    </notebook>
                 </sheet>
             </form>
         </field>

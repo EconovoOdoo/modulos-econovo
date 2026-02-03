@@ -54,25 +54,25 @@
                         </group>
                     </group>
                     
-                    <group name="help_text">
-                        <div class="alert alert-info" role="alert">
-                            <strong>Pattern Matching Tips:</strong>
-                            <ul>
-                                <li><strong>Contains:</strong> Keyword appears anywhere (e.g., "estadística" matches "Tasa Estadística 3%")</li>
-                                <li><strong>Exact:</strong> Must match exactly (case-insensitive)</li>
-                                <li><strong>Starts With:</strong> Text must begin with keyword</li>
-                                <li><strong>Ends With:</strong> Text must end with keyword</li>
-                                <li><strong>Regex:</strong> Use Python regex (e.g., "perc(epción)?.*?(ganancias|iigg)" matches variants)</li>
-                            </ul>
-                            <strong>Priority:</strong> Higher priority patterns are checked first. Use for disambiguation.
-                        </div>
-                    </group>
-                    
-                    <group name="notes">
-                        <field name="notes" 
-                               placeholder="Optional: Add examples or documentation..."
-                               nolabel="1"/>
-                    </group>
+                    <notebook>
+                        <page string="Help" name="help">
+                            <div class="alert alert-info" role="alert">
+                                <strong>Pattern Matching Tips:</strong>
+                                <ul>
+                                    <li><strong>Contains:</strong> Keyword appears anywhere (e.g., "estadística" matches "Tasa Estadística 3%")</li>
+                                    <li><strong>Exact:</strong> Must match exactly (case-insensitive)</li>
+                                    <li><strong>Starts With:</strong> Text must begin with keyword</li>
+                                    <li><strong>Ends With:</strong> Text must end with keyword</li>
+                                    <li><strong>Regex:</strong> Use Python regex (e.g., "perc(epción)?.*?(ganancias|iigg)" matches variants)</li>
+                                </ul>
+                                <strong>Priority:</strong> Higher priority patterns are checked first. Use for disambiguation.
+                            </div>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="notes" 
+                                   placeholder="Optional: Add examples or documentation..."/>
+                        </page>
+                    </notebook>
                 </sheet>
             </form>
         </field>
