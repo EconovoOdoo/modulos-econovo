@@ -81,7 +81,6 @@ This module provides comprehensive management of international trade operations
         'views/comex_customs_office_views.xml',
         'views/comex_payment_instrument_views.xml',
         'views/comex_payment_timing_views.xml',
-        'views/hs_code_views.xml',
         'views/purchase_order_views.xml',
         'views/sale_order_views.xml',
         'views/stock_picking_views.xml',

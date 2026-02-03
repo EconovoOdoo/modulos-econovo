@@ -15,8 +15,6 @@ access_comex_container_type_user,comex.container.type.user,model_comex_container
 access_comex_container_type_manager,comex.container.type.manager,model_comex_container_type,group_comex_manager,1,1,1,1
 access_comex_customs_office_user,comex.customs.office.user,model_comex_customs_office,group_comex_user,1,0,0,0
 access_comex_customs_office_manager,comex.customs.office.manager,model_comex_customs_office,group_comex_manager,1,1,1,1
-access_hs_code_user,hs.code.user,model_hs_code,group_comex_user,1,0,0,0
-access_hs_code_manager,hs.code.manager,model_hs_code,group_comex_manager,1,1,1,1
 access_comex_payment_instrument_user,comex.payment.instrument.user,model_comex_payment_instrument,group_comex_user,1,0,0,0
 access_comex_payment_instrument_manager,comex.payment.instrument.manager,model_comex_payment_instrument,group_comex_manager,1,1,1,1
 access_comex_payment_timing_user,comex.payment.timing.user,model_comex_payment_timing,group_comex_user,1,0,0,0

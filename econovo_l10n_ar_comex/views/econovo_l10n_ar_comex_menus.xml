@@ -146,12 +146,6 @@
               action="comex_customs_office_action"
               sequence="40"/>
 
-    <menuitem id="menu_comex_hs_codes"
-              name="HS Codes (NCM)"
-              parent="menu_comex_configuration"
-              action="hs_code_action"
-              sequence="50"/>
-
     <menuitem id="menu_comex_payment_instruments"
               name="Payment Instruments"
               parent="menu_comex_configuration"
