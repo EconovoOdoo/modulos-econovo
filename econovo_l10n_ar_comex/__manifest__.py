@@ -68,9 +68,9 @@ This module provides comprehensive management of international trade operations
         'data/comex_container_type_data.xml',
         'data/comex_customs_office_data.xml',
         'data/stock_package_type_data.xml',
+        'data/comex_tribute_fields_data.xml',
         'data/comex_tribute_products_data.xml',
         'data/comex_tribute_keywords_data.xml',
-        'data/comex_tribute_fields_data.xml',
         # Views
         'views/comex_operation_views.xml',
         'views/comex_operation_stage_views.xml',
