@@ -133,18 +133,24 @@ class ComexCustomsClearance(models.Model):
         tracking=True,
         help="CIF (Cost, Insurance, Freight): FOB + Insurance + Freight. This is the customs value in foreign currency.",
     )
-    # Tributes in ARS
+    # Tributes in ARS (Computed from invoice, editable before invoice creation)
     amount_duties = fields.Monetary(
         string="Import Duties (DIE)",
         currency_field='currency_ars_id',
+        compute='_compute_tribute_amounts',
+        inverse='_inverse_amount_duties',
+        store=True,
         tracking=True,
-        help="DIE (Derecho de Importación Extrazona): Import duties charged by customs on CIF value.",
+        help="DIE (Derecho de Importación Extrazona): Import duties charged by customs on CIF value. Synced with invoice lines when vendor bill is linked.",
     )
     amount_statistics = fields.Monetary(
         string="Statistics Fee",
         currency_field='currency_ars_id',
+        compute='_compute_tribute_amounts',
+        inverse='_inverse_amount_statistics',
+        store=True,
         tracking=True,
-        help="Statistics Fee (Tasa de Estadística): Usually 3% of CIF value for statistical purposes.",
+        help="Statistics Fee (Tasa de Estadística): Usually 3% of CIF value for statistical purposes. Synced with invoice lines when vendor bill is linked.",
     )
     
     # Parse logs for audit
@@ -174,8 +180,11 @@ class ComexCustomsClearance(models.Model):
     amount_fees = fields.Monetary(
         string="Other Fees",
         currency_field='currency_ars_id',
+        compute='_compute_tribute_amounts',
+        inverse='_inverse_amount_fees',
+        store=True,
         tracking=True,
-        help="Other Fees: Warehouse service, customs broker fees, or other administrative charges.",
+        help="Other Fees: Warehouse service, customs broker fees, or other administrative charges. Synced with invoice lines when vendor bill is linked.",
     )
     amount_total = fields.Monetary(
         string="Total Clearance Cost",
@@ -210,6 +219,286 @@ class ComexCustomsClearance(models.Model):
     # -------------------------------------------------------------------------
     # COMPUTE METHODS
     # -------------------------------------------------------------------------
+    @api.depends('vendor_bill_id.invoice_line_ids.price_subtotal', 
+                 'vendor_bill_id.invoice_line_ids.product_id')
+    def _compute_tribute_amounts(self):
+        """Compute tribute amounts from vendor bill invoice lines.
+        
+        Smart bidirectional sync:
+        - If vendor_bill_id exists: read from invoice lines (single source of truth)
+        - If no vendor_bill_id: preserve manual values (editable before invoice creation)
+        
+        This ensures amounts are always in sync with the invoice when linked.
+        """
+        for record in self:
+            if not record.vendor_bill_id or not record.vendor_bill_id.invoice_line_ids:
+                # No invoice: keep current values (manual entry or defaults)
+                # Important: Don't set to 0, preserve what user entered
+                continue
+            
+            # Parse invoice lines to compute amounts
+            record._compute_from_invoice_lines()
+    
+    def _compute_from_invoice_lines(self):
+        """Helper: Parse invoice lines and compute tribute amounts.
+        
+        Called by:
+        - _compute_tribute_amounts (automatic trigger)
+        - write() method when vendor_bill_id changes
+        """
+        self.ensure_one()
+        
+        if not self.vendor_bill_id:
+            return
+        
+        # Load product mappings
+        ProductMapping = self.env['comex.tribute.product.mapping'].sudo()
+        product_mappings = ProductMapping.search([
+            ('active', '=', True),
+            '|', ('company_id', '=', False), ('company_id', '=', self.company_id.id)
+        ])
+        
+        # Build fast lookup: product_id → tribute_field_name
+        product_to_field = {
+            m.product_id.id: m.tribute_field_id.technical_name
+            for m in product_mappings
+        }
+        
+        # Load keyword mappings
+        KeywordMapping = self.env['comex.tribute.keyword.mapping'].sudo()
+        keyword_mappings = KeywordMapping.search([
+            ('active', '=', True),
+            '|', ('company_id', '=', False), ('company_id', '=', self.company_id.id)
+        ], order='priority desc, sequence')
+        
+        # Initialize amounts
+        amounts = {
+            'amount_duties': 0,
+            'amount_statistics': 0,
+            'amount_fees': 0,
+        }
+        
+        # Parse invoice lines
+        for line in self.vendor_bill_id.invoice_line_ids:
+            amount = abs(line.price_subtotal)
+            matched_field = None
+            
+            # Try product mapping
+            if line.product_id and line.product_id.id in product_to_field:
+                matched_field = product_to_field[line.product_id.id]
+            
+            # Try keyword mapping
+            if not matched_field and keyword_mappings:
+                line_text = (line.name or '') + ' ' + (line.product_id.name or '') if line.product_id else (line.name or '')
+                line_text = line_text.lower().strip()
+                
+                for mapping in keyword_mappings:
+                    if mapping.check_match(line_text):
+                        matched_field = mapping.tribute_field_id.technical_name
+                        if mapping.stop_on_match:
+                            break
+            
+            # Accumulate amount
+            if matched_field and matched_field in amounts:
+                amounts[matched_field] += amount
+        
+        # Update fields (this will NOT trigger inverse because we're in compute)
+        self.amount_duties = amounts['amount_duties']
+        self.amount_statistics = amounts['amount_statistics']
+        self.amount_fees = amounts['amount_fees']
+    
+    def _update_parse_logs(self):
+        """Update parse logs for audit trail.
+        
+        Creates parse log entries for each invoice line showing how it was matched.
+        Called after vendor_bill_id changes to maintain audit trail.
+        """
+        self.ensure_one()
+        
+        if not self.vendor_bill_id or not self.vendor_bill_id.invoice_line_ids:
+            return
+        
+        # Delete old logs
+        self.env['comex.tribute.parse.log'].sudo().search([
+            ('customs_clearance_id', '=', self.id)
+        ]).unlink()
+        
+        # Load mappings
+        ProductMapping = self.env['comex.tribute.product.mapping'].sudo()
+        product_mappings = ProductMapping.search([
+            ('active', '=', True),
+            '|', ('company_id', '=', False), ('company_id', '=', self.company_id.id)
+        ])
+        
+        product_to_mapping = {m.product_id.id: m for m in product_mappings}
+        
+        KeywordMapping = self.env['comex.tribute.keyword.mapping'].sudo()
+        keyword_mappings = KeywordMapping.search([
+            ('active', '=', True),
+            '|', ('company_id', '=', False), ('company_id', '=', self.company_id.id)
+        ], order='priority desc, sequence')
+        
+        ParseLog = self.env['comex.tribute.parse.log'].sudo()
+        
+        # Create logs for each line
+        for line in self.vendor_bill_id.invoice_line_ids:
+            amount = abs(line.price_subtotal)
+            matched = False
+            match_info = {}
+            
+            # Try product mapping
+            if line.product_id and line.product_id.id in product_to_mapping:
+                mapping = product_to_mapping[line.product_id.id]
+                matched = True
+                match_info = {
+                    'matched_by': 'product',
+                    'mapping_record': f'comex.tribute.product.mapping,{mapping.id}',
+                    'tribute_field': mapping.tribute_field_id.technical_name,
+                }
+            
+            # Try keyword mapping
+            if not matched and keyword_mappings:
+                line_text = (line.name or '') + ' ' + (line.product_id.name or '') if line.product_id else (line.name or '')
+                line_text = line_text.lower().strip()
+                
+                for mapping in keyword_mappings:
+                    if mapping.check_match(line_text):
+                        matched = True
+                        match_info = {
+                            'matched_by': 'keyword',
+                            'mapping_record': f'comex.tribute.keyword.mapping,{mapping.id}',
+                            'tribute_field': mapping.tribute_field_id.technical_name,
+                        }
+                        if mapping.stop_on_match:
+                            break
+            
+            # Create log
+            log_vals = {
+                'customs_clearance_id': self.id,
+                'invoice_id': self.vendor_bill_id.id,
+                'invoice_line_id': line.id,
+                'amount_parsed': amount if matched else 0,
+                'currency_id': self.vendor_bill_id.currency_id.id,
+                'line_description': line.name or '',
+                'product_name': line.product_id.name if line.product_id else '',
+            }
+            
+            if matched:
+                log_vals.update(match_info)
+            else:
+                log_vals['matched_by'] = 'unmatched'
+            
+            ParseLog.create(log_vals)
+    
+    def _inverse_amount_duties(self):
+        """Update invoice line when amount_duties is edited manually."""
+        self._inverse_tribute_amount('amount_duties')
+    
+    def _inverse_amount_statistics(self):
+        """Update invoice line when amount_statistics is edited manually."""
+        self._inverse_tribute_amount('amount_statistics')
+    
+    def _inverse_amount_fees(self):
+        """Update invoice line when amount_fees is edited manually."""
+        self._inverse_tribute_amount('amount_fees')
+    
+    def _inverse_tribute_amount(self, field_name):
+        """Update corresponding invoice line when tribute amount is edited.
+        
+        Args:
+            field_name: 'amount_duties', 'amount_statistics', or 'amount_fees'
+        
+        Behavior:
+        - If no invoice: do nothing (manual value preserved for later invoice creation)
+        - If invoice exists: find corresponding line and update price_unit
+        - If line doesn't exist: create new line with configured product
+        """
+        for record in self:
+            if not record.vendor_bill_id:
+                # No invoice yet: manual value will be used when creating invoice
+                continue
+            
+            if record.vendor_bill_id.state == 'posted':
+                # Don't modify posted invoices
+                continue
+            
+            new_amount = getattr(record, field_name)
+            
+            # Find the invoice line for this tribute field
+            line = record._find_invoice_line_for_field(field_name)
+            
+            if line:
+                # Update existing line
+                if new_amount > 0:
+                    line.price_unit = new_amount
+                else:
+                    # Remove line if amount is 0
+                    line.unlink()
+            elif new_amount > 0:
+                # Create new line if amount > 0 and no line exists
+                record._create_invoice_line_for_field(field_name, new_amount)
+    
+    def _find_invoice_line_for_field(self, field_name):
+        """Find the invoice line corresponding to a tribute field.
+        
+        Returns:
+            account.move.line or False
+        """
+        self.ensure_one()
+        
+        if not self.vendor_bill_id:
+            return False
+        
+        # Load product mappings for this field
+        ProductMapping = self.env['comex.tribute.product.mapping'].sudo()
+        mapping = ProductMapping.search([
+            ('tribute_field_id.technical_name', '=', field_name),
+            ('active', '=', True),
+            '|', ('company_id', '=', False), ('company_id', '=', self.company_id.id)
+        ], limit=1)
+        
+        if not mapping or not mapping.product_id:
+            return False
+        
+        # Find line with this product
+        return self.vendor_bill_id.invoice_line_ids.filtered(
+            lambda l: l.product_id == mapping.product_id
+        )[:1]  # First match
+    
+    def _create_invoice_line_for_field(self, field_name, amount):
+        """Create invoice line for a tribute field.
+        
+        Args:
+            field_name: 'amount_duties', 'amount_statistics', or 'amount_fees'
+            amount: Amount to set
+        """
+        self.ensure_one()
+        
+        if not self.vendor_bill_id or self.vendor_bill_id.state == 'posted':
+            return
+        
+        # Load product mapping
+        ProductMapping = self.env['comex.tribute.product.mapping'].sudo()
+        mapping = ProductMapping.search([
+            ('tribute_field_id.technical_name', '=', field_name),
+            ('active', '=', True),
+            '|', ('company_id', '=', False), ('company_id', '=', self.company_id.id)
+        ], limit=1)
+        
+        if not mapping or not mapping.product_id:
+            return
+        
+        # Create invoice line
+        self.env['account.move.line'].with_context(check_move_validity=False).create({
+            'move_id': self.vendor_bill_id.id,
+            'product_id': mapping.product_id.id,
+            'name': mapping.product_id.name,
+            'quantity': 1,
+            'price_unit': amount,
+            'account_id': mapping.product_id.property_account_expense_id.id or 
+                         mapping.product_id.categ_id.property_account_expense_categ_id.id,
+        })
+
     @api.depends('amount_duties', 'amount_statistics', 'amount_fees')
     def _compute_amount_total(self):
         """Calculate total clearance cost (base amounts only - taxes calculated on invoice)."""
@@ -323,7 +612,7 @@ class ComexCustomsClearance(models.Model):
         
         # Parse invoice lines
         for line in invoice.invoice_line_ids:
-            amount = abs(line.price_subtotal)  # Use abs to handle credit notes
+            amount = abs(line.price_subtotal)
             matched = False
             match_info = {}
             
@@ -417,23 +706,23 @@ class ComexCustomsClearance(models.Model):
                 vals['name'] = self.env['ir.sequence'].next_by_code('comex.customs.clearance') or _('New')
         records = super().create(vals_list)
         
-        # Parse vendor bill tributes after creation (when record has real ID)
-        for record in records:
-            if record.vendor_bill_id:
-                record._parse_tribute_lines_from_invoice(record.vendor_bill_id)
+        # Parse logs are created automatically via compute dependency
+        # No need to manually call _parse_tribute_lines_from_invoice
+        # The compute method handles synchronization
         
         return records
     
     def write(self, vals):
         result = super().write(vals)
         
-        # Re-parse tributes if vendor_bill_id changed
+        # Manage parse logs when vendor_bill_id changes
         if 'vendor_bill_id' in vals:
             for record in self:
                 if record.vendor_bill_id:
-                    record._parse_tribute_lines_from_invoice(record.vendor_bill_id)
+                    # Trigger parse log creation for audit
+                    record._update_parse_logs()
                 else:
-                    # Clear logs if vendor bill removed (amounts are preserved)
+                    # Clear logs if vendor bill removed (amounts are preserved by compute)
                     self.env['comex.tribute.parse.log'].sudo().search([
                         ('customs_clearance_id', '=', record.id)
                     ]).unlink()
