@@ -308,7 +308,7 @@ class ComexCustomsClearance(models.Model):
         
         # Build fast lookup: product_id → (tribute_field_name, mapping_id)
         product_to_field = {
-            m.product_id.id: (m.tribute_field_id.name, m.id) 
+            m.product_id.id: (m.tribute_field_id.technical_name, m.id) 
             for m in product_mappings
         }
         
