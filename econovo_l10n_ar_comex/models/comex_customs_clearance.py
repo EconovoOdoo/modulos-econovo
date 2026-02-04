@@ -306,9 +306,9 @@ class ComexCustomsClearance(models.Model):
             '|', ('company_id', '=', False), ('company_id', '=', self.company_id.id)
         ])
         
-        # Build fast lookup: product_id → (tribute_field, mapping_id)
+        # Build fast lookup: product_id → (tribute_field_name, mapping_id)
         product_to_field = {
-            m.product_id.id: (m.tribute_field, m.id) 
+            m.product_id.id: (m.tribute_field_id.name, m.id) 
             for m in product_mappings
         }
         
@@ -433,15 +433,10 @@ class ComexCustomsClearance(models.Model):
                 if record.vendor_bill_id:
                     record._parse_tribute_lines_from_invoice(record.vendor_bill_id)
                 else:
-                    # Clear logs if vendor bill removed
+                    # Clear logs if vendor bill removed (amounts are preserved)
                     self.env['comex.tribute.parse.log'].sudo().search([
                         ('customs_clearance_id', '=', record.id)
                     ]).unlink()
-                    # Reset tribute amounts
-                    tribute_fields = [
-                        'amount_duties', 'amount_statistics', 'amount_fees'
-                    ]
-                    record.write({field: 0 for field in tribute_fields})
         
         return result
 
