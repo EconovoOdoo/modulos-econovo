@@ -535,6 +535,7 @@ class ComexCustomsClearance(models.Model):
         invoice = self.env['account.move'].create(invoice_vals)
         
         # Link invoice to clearance
+        self.vendor_bill_id = invoice.id
         self.message_post(
             body=_("Tribute invoice created: %s", invoice.name),
             message_type='notification',
