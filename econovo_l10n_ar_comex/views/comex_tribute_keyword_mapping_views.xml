@@ -17,7 +17,7 @@
                 <field name="priority"/>
                 <field name="name"/>
                 <field name="match_type"/>
-                <field name="tribute_field"/>
+                <field name="tribute_field_id"/>
                 <field name="stop_on_match" widget="boolean_toggle"/>
                 <field name="company_id" groups="base.group_multi_company"/>
             </tree>
@@ -38,7 +38,7 @@
                             <field name="name" 
                                    placeholder='e.g., "tasa estadística" or "perc.*iigg" for regex'/>
                             <field name="match_type"/>
-                            <field name="tribute_field"/>
+                            <field name="tribute_field_id"/>
                         </group>
                         <group name="options">
                             <field name="stop_on_match"/>
@@ -80,7 +80,7 @@
         <field name="arch" type="xml">
             <search string="Tribute Keyword Mappings">
                 <field name="name"/>
-                <field name="tribute_field"/>
+                <field name="tribute_field_id"/>
                 <field name="match_type"/>
                 <field name="company_id" groups="base.group_multi_company"/>
                 
@@ -100,22 +100,11 @@
                 
                 <separator/>
                 
-                <filter string="Import Duties" name="filter_duties" 
-                        domain="[('tribute_field', '=', 'amount_duties')]"/>
-                <filter string="Statistics Fee" name="filter_statistics" 
-                        domain="[('tribute_field', '=', 'amount_statistics')]"/>
-                <filter string="VAT" name="filter_vat" 
-                        domain="[('tribute_field', '=', 'amount_vat')]"/>
-                <filter string="Perceptions" name="filter_perceptions" 
-                        domain="[('tribute_field', 'in', ('amount_income_tax', 'amount_gross_income'))]"/>
-                
-                <separator/>
-                
                 <group expand="0" string="Group By">
                     <filter string="Match Type" name="group_match_type" 
                             context="{'group_by': 'match_type'}"/>
                     <filter string="Tribute Field" name="group_tribute_field" 
-                            context="{'group_by': 'tribute_field'}"/>
+                            context="{'group_by': 'tribute_field_id'}"/>
                     <filter string="Company" name="group_company" 
                             context="{'group_by': 'company_id'}" 
                             groups="base.group_multi_company"/>

@@ -47,17 +47,8 @@ class ComexTributeProductMapping(models.Model):
     )
     
     # Target field in customs_clearance
-    tribute_field = fields.Selection(
-        selection=[
-            ('amount_duties', 'Import Duties (DIE)'),
-            ('amount_statistics', 'Statistics Fee'),
-            ('amount_vat', 'VAT'),
-            ('amount_vat_additional', 'Additional VAT'),
-            ('amount_income_tax', 'Income Tax Perception'),
-            ('amount_gross_income', 'Gross Income Perception'),
-            ('amount_taxes', 'Other Taxes'),
-            ('amount_fees', 'Other Fees'),
-        ],
+    tribute_field_id = fields.Many2one(
+        'comex.tribute.field',
         string="Tribute Field",
         required=True,
         help="Target field in Customs Clearance where amount will be accumulated. "
@@ -107,12 +98,9 @@ class ComexTributeProductMapping(models.Model):
         """Display product name → tribute field for better readability."""
         result = []
         for record in self:
-            tribute_label = dict(self._fields['tribute_field'].selection).get(
-                record.tribute_field, record.tribute_field
-            )
             name = '%s → %s' % (
                 record.product_id.display_name,
-                tribute_label
+                record.tribute_field_id.display_name if record.tribute_field_id else 'N/A'
             )
             result.append((record.id, name))
         return result

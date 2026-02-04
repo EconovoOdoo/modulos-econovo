@@ -11,7 +11,7 @@
         <field name="priority">100</field>
         <field name="name">die</field>
         <field name="match_type">contains</field>
-        <field name="tribute_field">amount_duties</field>
+        <field name="tribute_field_id" ref="tribute_field_amount_duties"/>
         <field name="stop_on_match" eval="True"/>
         <field name="notes">Matches: DIE, D.I.E., die, etc.</field>
     </record>
@@ -21,7 +21,7 @@
         <field name="priority">95</field>
         <field name="name">derecho de importación</field>
         <field name="match_type">contains</field>
-        <field name="tribute_field">amount_duties</field>
+        <field name="tribute_field_id" ref="tribute_field_amount_duties"/>
         <field name="stop_on_match" eval="True"/>
         <field name="notes">Full Spanish name for import duties</field>
     </record>
@@ -31,7 +31,7 @@
         <field name="priority">90</field>
         <field name="name">arancel</field>
         <field name="match_type">contains</field>
-        <field name="tribute_field">amount_duties</field>
+        <field name="tribute_field_id" ref="tribute_field_amount_duties"/>
         <field name="stop_on_match" eval="True"/>
         <field name="notes">Tariff also goes to duties field</field>
     </record>
@@ -42,7 +42,7 @@
         <field name="priority">100</field>
         <field name="name">tasa estadística</field>
         <field name="match_type">contains</field>
-        <field name="tribute_field">amount_statistics</field>
+        <field name="tribute_field_id" ref="tribute_field_amount_statistics"/>
         <field name="stop_on_match" eval="True"/>
         <field name="notes">Statistics fee (3% of CIF)</field>
     </record>
@@ -52,7 +52,7 @@
         <field name="priority">95</field>
         <field name="name">estadística</field>
         <field name="match_type">contains</field>
-        <field name="tribute_field">amount_statistics</field>
+        <field name="tribute_field_id" ref="tribute_field_amount_statistics"/>
         <field name="stop_on_match" eval="True"/>
         <field name="notes">Shortened version</field>
     </record>
@@ -63,7 +63,7 @@
         <field name="priority">100</field>
         <field name="name">iva adicional</field>
         <field name="match_type">contains</field>
-        <field name="tribute_field">amount_vat_additional</field>
+        <field name="tribute_field_id" ref="tribute_field_amount_vat_additional"/>
         <field name="stop_on_match" eval="True"/>
         <field name="notes">Must be checked before regular IVA (higher priority)</field>
     </record>
@@ -73,7 +73,7 @@
         <field name="priority">90</field>
         <field name="name">iva importación</field>
         <field name="match_type">contains</field>
-        <field name="tribute_field">amount_vat</field>
+        <field name="tribute_field_id" ref="tribute_field_amount_vat"/>
         <field name="stop_on_match" eval="True"/>
         <field name="notes">Import VAT</field>
     </record>
@@ -83,7 +83,7 @@
         <field name="priority">85</field>
         <field name="name">iva</field>
         <field name="match_type">contains</field>
-        <field name="tribute_field">amount_vat</field>
+        <field name="tribute_field_id" ref="tribute_field_amount_vat"/>
         <field name="stop_on_match" eval="True"/>
         <field name="notes">Generic IVA (low priority to avoid false matches)</field>
     </record>
@@ -94,7 +94,7 @@
         <field name="priority">100</field>
         <field name="name">percepción ganancias</field>
         <field name="match_type">contains</field>
-        <field name="tribute_field">amount_income_tax</field>
+        <field name="tribute_field_id" ref="tribute_field_amount_income_tax"/>
         <field name="stop_on_match" eval="True"/>
         <field name="notes">Full name perception</field>
     </record>
@@ -104,7 +104,7 @@
         <field name="priority">95</field>
         <field name="name">perc. iigg</field>
         <field name="match_type">contains</field>
-        <field name="tribute_field">amount_income_tax</field>
+        <field name="tribute_field_id" ref="tribute_field_amount_income_tax"/>
         <field name="stop_on_match" eval="True"/>
         <field name="notes">Common abbreviation</field>
     </record>
@@ -114,7 +114,7 @@
         <field name="priority">90</field>
         <field name="name">perc(epción)?.*?(ganancias|iigg|ii\.gg)</field>
         <field name="match_type">regex</field>
-        <field name="tribute_field">amount_income_tax</field>
+        <field name="tribute_field_id" ref="tribute_field_amount_income_tax"/>
         <field name="stop_on_match" eval="True"/>
         <field name="notes">Regex to catch variants: "PERC GANANCIAS", "Percepción IIGG", etc.</field>
     </record>
@@ -125,7 +125,7 @@
         <field name="priority">100</field>
         <field name="name">percepción iibb</field>
         <field name="match_type">contains</field>
-        <field name="tribute_field">amount_gross_income</field>
+        <field name="tribute_field_id" ref="tribute_field_amount_gross_income"/>
         <field name="stop_on_match" eval="True"/>
         <field name="notes">Gross income perception (provincial)</field>
     </record>
@@ -135,7 +135,7 @@
         <field name="priority">95</field>
         <field name="name">ingresos brutos</field>
         <field name="match_type">contains</field>
-        <field name="tribute_field">amount_gross_income</field>
+        <field name="tribute_field_id" ref="tribute_field_amount_gross_income"/>
         <field name="stop_on_match" eval="True"/>
         <field name="notes">Full Spanish name</field>
     </record>
@@ -145,7 +145,7 @@
         <field name="priority">90</field>
         <field name="name">perc(epción)?.*?(iibb|ii\.bb|ingresos brutos)</field>
         <field name="match_type">regex</field>
-        <field name="tribute_field">amount_gross_income</field>
+        <field name="tribute_field_id" ref="tribute_field_amount_gross_income"/>
         <field name="stop_on_match" eval="True"/>
         <field name="notes">Regex to catch variants of IIBB perception</field>
     </record>
@@ -156,7 +156,7 @@
         <field name="priority">100</field>
         <field name="name">servicio de guarda</field>
         <field name="match_type">contains</field>
-        <field name="tribute_field">amount_fees</field>
+        <field name="tribute_field_id" ref="tribute_field_amount_fees"/>
         <field name="stop_on_match" eval="True"/>
         <field name="notes">Warehouse guard service fees</field>
     </record>
@@ -166,7 +166,7 @@
         <field name="priority">95</field>
         <field name="name">almacenaje</field>
         <field name="match_type">contains</field>
-        <field name="tribute_field">amount_fees</field>
+        <field name="tribute_field_id" ref="tribute_field_amount_fees"/>
         <field name="stop_on_match" eval="True"/>
         <field name="notes">Storage fees</field>
     </record>

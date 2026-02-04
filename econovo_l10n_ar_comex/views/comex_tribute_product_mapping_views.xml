@@ -15,7 +15,7 @@
                 <field name="sequence" widget="handle"/>
                 <field name="active" widget="boolean_toggle"/>
                 <field name="product_id"/>
-                <field name="tribute_field"/>
+                <field name="tribute_field_id"/>
                 <field name="company_id" groups="base.group_multi_company"/>
                 <field name="notes" optional="hide"/>
             </tree>
@@ -35,7 +35,7 @@
                             <field name="product_id" 
                                    placeholder="Select a service product (e.g., DIE, Tasa Estadística)"
                                    options="{'no_create': True}"/>
-                            <field name="tribute_field"/>
+                            <field name="tribute_field_id"/>
                         </group>
                         <group name="company">
                             <field name="company_id" 
@@ -64,7 +64,7 @@
             <search string="Tribute Product Mappings">
                 <field name="product_id" 
                        filter_domain="['|', ('product_id', 'ilike', self), ('notes', 'ilike', self)]"/>
-                <field name="tribute_field"/>
+                <field name="tribute_field_id"/>
                 <field name="company_id" groups="base.group_multi_company"/>
                 
                 <filter string="Active" name="filter_active" 
@@ -74,20 +74,9 @@
                 
                 <separator/>
                 
-                <filter string="Import Duties" name="filter_duties" 
-                        domain="[('tribute_field', '=', 'amount_duties')]"/>
-                <filter string="Statistics Fee" name="filter_statistics" 
-                        domain="[('tribute_field', '=', 'amount_statistics')]"/>
-                <filter string="VAT" name="filter_vat" 
-                        domain="[('tribute_field', '=', 'amount_vat')]"/>
-                <filter string="Perceptions" name="filter_perceptions" 
-                        domain="[('tribute_field', 'in', ('amount_income_tax', 'amount_gross_income'))]"/>
-                
-                <separator/>
-                
                 <group expand="0" string="Group By">
                     <filter string="Tribute Field" name="group_tribute_field" 
-                            context="{'group_by': 'tribute_field'}"/>
+                            context="{'group_by': 'tribute_field_id'}"/>
                     <filter string="Company" name="group_company" 
                             context="{'group_by': 'company_id'}" 
                             groups="base.group_multi_company"/>

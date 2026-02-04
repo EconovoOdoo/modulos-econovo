@@ -73,17 +73,8 @@ class ComexTributeKeywordMapping(models.Model):
     )
     
     # Target field in customs_clearance
-    tribute_field = fields.Selection(
-        selection=[
-            ('amount_duties', 'Import Duties (DIE)'),
-            ('amount_statistics', 'Statistics Fee'),
-            ('amount_vat', 'VAT'),
-            ('amount_vat_additional', 'Additional VAT'),
-            ('amount_income_tax', 'Income Tax Perception'),
-            ('amount_gross_income', 'Gross Income Perception'),
-            ('amount_taxes', 'Other Taxes'),
-            ('amount_fees', 'Other Fees'),
-        ],
+    tribute_field_id = fields.Many2one(
+        'comex.tribute.field',
         string="Tribute Field",
         required=True,
         help="Target field in Customs Clearance where amount will be accumulated.",

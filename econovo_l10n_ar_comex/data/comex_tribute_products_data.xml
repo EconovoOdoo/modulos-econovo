@@ -89,49 +89,49 @@
     <record id="mapping_product_die" model="comex.tribute.product.mapping">
         <field name="sequence">10</field>
         <field name="product_id" ref="product_comex_die"/>
-        <field name="tribute_field">amount_duties</field>
+        <field name="tribute_field_id" ref="tribute_field_amount_duties"/>
         <field name="notes">Default mapping for Import Duties (DIE - Derecho de Importación Extrazona)</field>
     </record>
 
     <record id="mapping_product_statistics" model="comex.tribute.product.mapping">
         <field name="sequence">20</field>
         <field name="product_id" ref="product_comex_statistics"/>
-        <field name="tribute_field">amount_statistics</field>
+        <field name="tribute_field_id" ref="tribute_field_amount_statistics"/>
         <field name="notes">Default mapping for Statistics Fee (3% of CIF value)</field>
     </record>
 
     <record id="mapping_product_tariff" model="comex.tribute.product.mapping">
         <field name="sequence">30</field>
         <field name="product_id" ref="product_comex_tariff"/>
-        <field name="tribute_field">amount_duties</field>
+        <field name="tribute_field_id" ref="tribute_field_amount_duties"/>
         <field name="notes">Alternative mapping for Tariff (also goes to Import Duties field)</field>
     </record>
 
     <record id="mapping_product_guard" model="comex.tribute.product.mapping">
         <field name="sequence">40</field>
         <field name="product_id" ref="product_comex_guard_service"/>
-        <field name="tribute_field">amount_fees</field>
+        <field name="tribute_field_id" ref="tribute_field_amount_fees"/>
         <field name="notes">Mapping for warehouse/guard service fees</field>
     </record>
 
     <record id="mapping_product_vat" model="comex.tribute.product.mapping">
         <field name="sequence">50</field>
         <field name="product_id" ref="product_comex_vat"/>
-        <field name="tribute_field">amount_vat</field>
+        <field name="tribute_field_id" ref="tribute_field_amount_vat"/>
         <field name="notes">Mapping for Import VAT</field>
     </record>
 
     <record id="mapping_product_perc_iigg" model="comex.tribute.product.mapping">
         <field name="sequence">60</field>
         <field name="product_id" ref="product_comex_perc_iigg"/>
-        <field name="tribute_field">amount_income_tax</field>
+        <field name="tribute_field_id" ref="tribute_field_amount_income_tax"/>
         <field name="notes">Mapping for Income Tax Perception (Ganancias)</field>
     </record>
 
     <record id="mapping_product_perc_iibb" model="comex.tribute.product.mapping">
         <field name="sequence">70</field>
         <field name="product_id" ref="product_comex_perc_iibb"/>
-        <field name="tribute_field">amount_gross_income</field>
+        <field name="tribute_field_id" ref="tribute_field_amount_gross_income"/>
         <field name="notes">Mapping for Gross Income Perception (Ingresos Brutos)</field>
     </record>
 

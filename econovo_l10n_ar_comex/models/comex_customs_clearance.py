@@ -378,7 +378,7 @@ class ComexCustomsClearance(models.Model):
                 
                 for mapping in keyword_mappings:
                     if mapping.check_match(line_text):
-                        field_name = mapping.tribute_field
+                        field_name = mapping.tribute_field_id.technical_name
                         current_value = getattr(self, field_name, 0)
                         setattr(self, field_name, current_value + amount)
                         matched = True
