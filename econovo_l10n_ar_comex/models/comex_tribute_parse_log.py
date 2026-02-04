@@ -30,12 +30,14 @@ class ComexTributeParseLog(models.Model):
         'account.move',
         string="Invoice",
         required=True,
+        ondelete='cascade',
         index=True,
     )
     invoice_line_id = fields.Many2one(
         'account.move.line',
         string="Invoice Line",
         required=True,
+        ondelete='cascade',
     )
     
     # Match result
