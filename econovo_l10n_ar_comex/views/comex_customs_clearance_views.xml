@@ -91,35 +91,39 @@
                             <field name="landed_cost_id"/>
                         </group>
                     </group>
-                    <group string="Amounts">
-                        <group name="amount_left" string="Base Value">
-                            <field name="currency_id" invisible="1"/>
-                            <field name="amount_cif"/>
-                        </group>
-                        <group name="amount_right" string="VEP Payment">
-                            <field name="vep_amount"/>
-                        </group>
-                    </group>
-                    <group string="Customs Tributes (ARS)" name="tributes">
-                        <group name="tributes_left" string="Duties and Statistics">
-                            <field name="amount_duties"/>
-                            <field name="amount_statistics"/>
-                            <field name="amount_fees"/>
-                        </group>
-                        <group name="tributes_right" string="Taxes and Perceptions">
-                            <field name="amount_vat"/>
-                            <field name="amount_vat_additional"/>
-                            <field name="amount_income_tax"/>
-                            <field name="amount_gross_income"/>
-                            <field name="amount_taxes"/>
-                        </group>
-                    </group>
-                    <group name="total_group">
-                        <group/>
-                        <group>
-                            <field name="amount_total" class="oe_subtotal_footer_separator"/>
-                        </group>
-                    </group>
+                    <notebook>
+                        <page string="Amounts" name="amounts">
+                            <group>
+                                <group string="Base Value">
+                                    <field name="currency_id" invisible="1"/>
+                                    <field name="amount_cif"/>
+                                </group>
+                                <group string="VEP Payment">
+                                    <field name="vep_amount"/>
+                                </group>
+                            </group>
+                            <group string="Customs Tributes (ARS)">
+                                <group string="Duties and Statistics">
+                                    <field name="amount_duties"/>
+                                    <field name="amount_statistics"/>
+                                    <field name="amount_fees"/>
+                                </group>
+                                <group string="Taxes and Perceptions">
+                                    <field name="amount_vat"/>
+                                    <field name="amount_vat_additional"/>
+                                    <field name="amount_income_tax"/>
+                                    <field name="amount_gross_income"/>
+                                    <field name="amount_taxes"/>
+                                </group>
+                            </group>
+                            <group>
+                                <group/>
+                                <group>
+                                    <field name="amount_total" class="oe_subtotal_footer_separator"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
                 </sheet>
                 <chatter/>
             </form>
