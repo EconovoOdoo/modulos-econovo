@@ -131,25 +131,26 @@ class ComexCustomsClearance(models.Model):
         string="CIF Amount",
         currency_field='currency_id',
         tracking=True,
+        help="CIF (Cost, Insurance, Freight): FOB + Insurance + Freight. This is the customs value in foreign currency.",
     )
     # Tributes in ARS
     amount_duties = fields.Monetary(
         string="Import Duties (DIE)",
         currency_field='currency_ars_id',
         tracking=True,
-        help="Derecho de Importación Extrazona",
+        help="DIE (Derecho de Importación Extrazona): Import duties charged by customs on CIF value.",
     )
     amount_statistics = fields.Monetary(
         string="Statistics Fee",
         currency_field='currency_ars_id',
         tracking=True,
-        help="Tasa de Estadística (3%)",
+        help="Statistics Fee (Tasa de Estadística): Usually 3% of CIF value for statistical purposes.",
     )
     amount_vat = fields.Monetary(
         string="VAT",
         currency_field='currency_ars_id',
         tracking=True,
-        help="IVA de Importación (21%)",
+        help="Import VAT (IVA Importación): Usually 21% on (CIF + DIE + Statistics Fee).",
     )
     
     # Parse logs for audit
@@ -180,41 +181,44 @@ class ComexCustomsClearance(models.Model):
         string="Additional VAT",
         currency_field='currency_ars_id',
         tracking=True,
-        help="IVA Adicional",
+        help="Additional VAT: Extra VAT charges if applicable.",
     )
     amount_income_tax = fields.Monetary(
         string="Income Tax Perception",
         currency_field='currency_ars_id',
         tracking=True,
-        help="Percepción de Ganancias",
+        help="Income Tax Perception (Percepción IIGG): Withholding on account of income tax.",
     )
     amount_gross_income = fields.Monetary(
         string="Gross Income Perception",
         currency_field='currency_ars_id',
         tracking=True,
-        help="Percepción de IIBB",
+        help="Gross Income Perception (Percepción IIBB): Provincial tax withholding.",
     )
     amount_taxes = fields.Monetary(
         string="Other Taxes",
         currency_field='currency_ars_id',
         tracking=True,
+        help="Other Taxes: Any additional taxes not covered by specific fields.",
     )
     amount_fees = fields.Monetary(
         string="Other Fees",
         currency_field='currency_ars_id',
         tracking=True,
+        help="Other Fees: Warehouse service, customs broker fees, or other administrative charges.",
     )
     amount_total = fields.Monetary(
         string="Total Clearance Cost",
         compute='_compute_amount_total',
         store=True,
         currency_field='currency_ars_id',
+        help="Total = Duties + Statistics + VAT + Additional VAT + Income Tax + Gross Income + Other Taxes + Fees",
     )
     vep_amount = fields.Monetary(
         string="VEP Amount",
         currency_field='currency_ars_id',
         tracking=True,
-        help="VEP (Volante Electrónico de Pago) total amount paid to ARCA for this clearance. Details are in Document Type 66 (Despacho de Importación).",
+        help="Total amount paid via VEP (Volante Electrónico de Pago) to ARCA. Found in Document Type 66 (Despacho de Importación).",
     )
 
     # Documents
