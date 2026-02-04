@@ -103,14 +103,19 @@
                             </group>
                             <group string="Customs Tributes (ARS)">
                                 <group string="Base Amounts">
-                                    <field name="amount_duties"/>
-                                    <field name="amount_statistics"/>
-                                    <field name="amount_fees"/>
+                                    <field name="amount_duties" readonly="vendor_bill_id"/>
+                                    <field name="amount_statistics" readonly="vendor_bill_id"/>
+                                    <field name="amount_fees" readonly="vendor_bill_id"/>
                                 </group>
                                 <group>
                                     <div class="alert alert-info" role="alert">
                                         <strong>Note:</strong> Taxes (VAT, IIGG, IIBB) are calculated automatically
                                         on the invoice based on product tax groups.
+                                        <br/>
+                                        <span invisible="not vendor_bill_id">
+                                            <strong>Invoice Linked:</strong> Edit amounts directly in the linked invoice.
+                                            Changes sync automatically.
+                                        </span>
                                     </div>
                                 </group>
                             </group>
