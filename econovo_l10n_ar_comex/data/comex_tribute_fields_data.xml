@@ -15,33 +15,8 @@
         <field name="technical_name">amount_statistics</field>
     </record>
     
-    <record id="tribute_field_amount_vat" model="comex.tribute.field">
-        <field name="sequence">30</field>
-        <field name="technical_name">amount_vat</field>
-    </record>
-    
-    <record id="tribute_field_amount_vat_additional" model="comex.tribute.field">
-        <field name="sequence">40</field>
-        <field name="technical_name">amount_vat_additional</field>
-    </record>
-    
-    <record id="tribute_field_amount_income_tax" model="comex.tribute.field">
-        <field name="sequence">50</field>
-        <field name="technical_name">amount_income_tax</field>
-    </record>
-    
-    <record id="tribute_field_amount_gross_income" model="comex.tribute.field">
-        <field name="sequence">60</field>
-        <field name="technical_name">amount_gross_income</field>
-    </record>
-    
-    <record id="tribute_field_amount_taxes" model="comex.tribute.field">
-        <field name="sequence">70</field>
-        <field name="technical_name">amount_taxes</field>
-    </record>
-    
     <record id="tribute_field_amount_fees" model="comex.tribute.field">
-        <field name="sequence">80</field>
+        <field name="sequence">30</field>
         <field name="technical_name">amount_fees</field>
     </record>
     

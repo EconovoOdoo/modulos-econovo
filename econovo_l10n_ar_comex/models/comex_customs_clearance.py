@@ -146,12 +146,6 @@ class ComexCustomsClearance(models.Model):
         tracking=True,
         help="Statistics Fee (Tasa de Estadística): Usually 3% of CIF value for statistical purposes.",
     )
-    amount_vat = fields.Monetary(
-        string="VAT",
-        currency_field='currency_ars_id',
-        tracking=True,
-        help="Import VAT (IVA Importación): Usually 21% on (CIF + DIE + Statistics Fee).",
-    )
     
     # Parse logs for audit
     parse_log_ids = fields.One2many(
@@ -177,30 +171,6 @@ class ComexCustomsClearance(models.Model):
                 lambda l: l.matched_by == 'unmatched'
             ))
     
-    amount_vat_additional = fields.Monetary(
-        string="Additional VAT",
-        currency_field='currency_ars_id',
-        tracking=True,
-        help="Additional VAT: Extra VAT charges if applicable.",
-    )
-    amount_income_tax = fields.Monetary(
-        string="Income Tax Perception",
-        currency_field='currency_ars_id',
-        tracking=True,
-        help="Income Tax Perception (Percepción IIGG): Withholding on account of income tax.",
-    )
-    amount_gross_income = fields.Monetary(
-        string="Gross Income Perception",
-        currency_field='currency_ars_id',
-        tracking=True,
-        help="Gross Income Perception (Percepción IIBB): Provincial tax withholding.",
-    )
-    amount_taxes = fields.Monetary(
-        string="Other Taxes",
-        currency_field='currency_ars_id',
-        tracking=True,
-        help="Other Taxes: Any additional taxes not covered by specific fields.",
-    )
     amount_fees = fields.Monetary(
         string="Other Fees",
         currency_field='currency_ars_id',
@@ -212,7 +182,8 @@ class ComexCustomsClearance(models.Model):
         compute='_compute_amount_total',
         store=True,
         currency_field='currency_ars_id',
-        help="Total = Duties + Statistics + VAT + Additional VAT + Income Tax + Gross Income + Other Taxes + Fees",
+        help="Total = Duties + Statistics + VAT + Additional VAT + Income Tax + Gross Income + Other Taxes + Fees. "
+             "This is the declared total; actual invoice total may differ due to automatic tax calculation.",
     )
     vep_amount = fields.Monetary(
         string="VEP Amount",
@@ -239,18 +210,13 @@ class ComexCustomsClearance(models.Model):
     # -------------------------------------------------------------------------
     # COMPUTE METHODS
     # -------------------------------------------------------------------------
-    @api.depends('amount_duties', 'amount_statistics', 'amount_vat', 'amount_vat_additional',
-                 'amount_income_tax', 'amount_gross_income', 'amount_taxes', 'amount_fees')
+    @api.depends('amount_duties', 'amount_statistics', 'amount_fees')
     def _compute_amount_total(self):
+        """Calculate total clearance cost (base amounts only - taxes calculated on invoice)."""
         for record in self:
             record.amount_total = (
                 record.amount_duties +
                 record.amount_statistics +
-                record.amount_vat +
-                record.amount_vat_additional +
-                record.amount_income_tax +
-                record.amount_gross_income +
-                record.amount_taxes +
                 record.amount_fees
             )
 
@@ -328,8 +294,7 @@ class ComexCustomsClearance(models.Model):
         
         # Reset amounts before parsing
         tribute_fields = [
-            'amount_duties', 'amount_statistics', 'amount_vat', 'amount_vat_additional',
-            'amount_income_tax', 'amount_gross_income', 'amount_taxes', 'amount_fees'
+            'amount_duties', 'amount_statistics', 'amount_fees'
         ]
         for field in tribute_fields:
             setattr(self, field, 0)
@@ -474,8 +439,7 @@ class ComexCustomsClearance(models.Model):
                     ]).unlink()
                     # Reset tribute amounts
                     tribute_fields = [
-                        'amount_duties', 'amount_statistics', 'amount_vat', 'amount_vat_additional',
-                        'amount_income_tax', 'amount_gross_income', 'amount_taxes', 'amount_fees'
+                        'amount_duties', 'amount_statistics', 'amount_fees'
                     ]
                     record.write({field: 0 for field in tribute_fields})
         
@@ -518,57 +482,73 @@ class ComexCustomsClearance(models.Model):
         self.write({'state': 'draft'})
 
     def action_create_tribute_invoice(self):
-        """Open native invoice form with configurable pre-filled values.
+        """Create tribute invoice and link it to this customs clearance.
         
         Configuration via Settings > General Settings > COMEX:
-        - Auto pre-fill lines (on/off)
-        - Which tributes to include
         - Default vendor
         - Default document type
         """
         self.ensure_one()
         
+        # Check if invoice already exists
+        existing_invoice = self.env['account.move'].search([
+            ('ref', '=', self.dispatch_number or self.name),
+            ('move_type', '=', 'in_invoice'),
+            ('state', '!=', 'cancel')
+        ], limit=1)
+        
+        if existing_invoice:
+            return {
+                'name': _('Tribute Invoice'),
+                'type': 'ir.actions.act_window',
+                'res_model': 'account.move',
+                'res_id': existing_invoice.id,
+                'view_mode': 'form',
+                'view_id': self.env.ref('account.view_move_form').id,
+                'target': 'current',
+            }
+        
         ICP = self.env['ir.config_parameter'].sudo()
+        default_vendor_id = int(ICP.get_param('econovo_l10n_ar_comex.default_tribute_vendor_id', default='0'))
+        default_doc_type_id = int(ICP.get_param('econovo_l10n_ar_comex.default_tribute_doc_type_id', default='0'))
         
-        # Get configuration
-        auto_prefill = ICP.get_param('econovo_l10n_ar_comex.auto_prefill_invoice', default='False')
-        default_vendor_id = ICP.get_param('econovo_l10n_ar_comex.default_tribute_vendor_id', default='0')
-        default_doc_type_id = ICP.get_param('econovo_l10n_ar_comex.default_tribute_doc_type_id', default='0')
+        if not default_vendor_id:
+            raise UserError(_('Please configure the default tribute vendor in Settings > COMEX Configuration'))
         
-        # Convert string parameters to proper types
-        auto_prefill = auto_prefill == 'True'
-        default_vendor_id = int(default_vendor_id) if default_vendor_id and default_vendor_id != '0' else False
-        default_doc_type_id = int(default_doc_type_id) if default_doc_type_id and default_doc_type_id != '0' else False
+        # Prepare invoice lines
+        invoice_lines = self._prepare_tribute_invoice_lines()
+        if not invoice_lines:
+            raise UserError(_('No tribute amounts to invoice. Please enter duties, statistics, or fees.'))
         
-        # Build context with defaults
-        context = {
-            'default_move_type': 'in_invoice',
-            'default_invoice_date': fields.Date.context_today(self),
-            'default_ref': self.dispatch_number or f"Despacho {self.name}",
+        # Create invoice
+        invoice_vals = {
+            'move_type': 'in_invoice',
+            'partner_id': default_vendor_id,
+            'invoice_date': fields.Date.context_today(self),
+            'ref': self.dispatch_number or f"Despacho {self.name}",
+            'invoice_line_ids': invoice_lines,
         }
         
-        # Add vendor if configured
-        if default_vendor_id:
-            context['default_partner_id'] = default_vendor_id
-        
-        # Add document type if configured
         if default_doc_type_id:
-            context['default_l10n_latam_document_type_id'] = default_doc_type_id
+            invoice_vals['l10n_latam_document_type_id'] = default_doc_type_id
         
-        # Pre-fill invoice lines if enabled
-        if auto_prefill:
-            invoice_lines = self._prepare_tribute_invoice_lines()
-            if invoice_lines:
-                context['default_invoice_line_ids'] = invoice_lines
+        invoice = self.env['account.move'].create(invoice_vals)
+        
+        # Link invoice to clearance
+        self.message_post(
+            body=_("Tribute invoice created: %s", invoice.name),
+            message_type='notification',
+            subtype_xmlid='mail.mt_note'
+        )
         
         return {
-            'name': _('Create Tribute Invoice'),
+            'name': _('Tribute Invoice'),
             'type': 'ir.actions.act_window',
             'res_model': 'account.move',
+            'res_id': invoice.id,
             'view_mode': 'form',
             'view_id': self.env.ref('account.view_move_form').id,
             'target': 'current',
-            'context': context,
         }
 
     def _prepare_tribute_invoice_lines(self):

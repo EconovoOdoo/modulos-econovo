@@ -12,7 +12,7 @@
         <field name="sale_ok" eval="False"/>
         <field name="purchase_ok" eval="True"/>
         <field name="categ_id" ref="product.product_category_all"/>
-        <field name="supplier_taxes_id" eval="False"/>
+        <field name="supplier_taxes_id" eval="[(6, 0, [ref('tax_group_import_tributes')])]"/>
         <field name="description">Import duties charged by customs (Derecho de Importación Extrazona)</field>
     </record>
 
@@ -23,19 +23,8 @@
         <field name="sale_ok" eval="False"/>
         <field name="purchase_ok" eval="True"/>
         <field name="categ_id" ref="product.product_category_all"/>
-        <field name="supplier_taxes_id" eval="False"/>
+        <field name="supplier_taxes_id" eval="[(6, 0, [ref('tax_group_import_tributes')])]"/>
         <field name="description">Statistics fee (3% of CIF value)</field>
-    </record>
-
-    <record id="product_comex_tariff" model="product.product">
-        <field name="name">Arancel</field>
-        <field name="detailed_type">service</field>
-        <field name="default_code">AFIP_ARANCEL</field>
-        <field name="sale_ok" eval="False"/>
-        <field name="purchase_ok" eval="True"/>
-        <field name="categ_id" ref="product.product_category_all"/>
-        <field name="supplier_taxes_id" eval="False"/>
-        <field name="description">Customs tariff</field>
     </record>
 
     <record id="product_comex_guard_service" model="product.product">
@@ -47,39 +36,6 @@
         <field name="categ_id" ref="product.product_category_all"/>
         <field name="supplier_taxes_id" eval="False"/>
         <field name="description">Warehouse/guard service fees</field>
-    </record>
-
-    <record id="product_comex_vat" model="product.product">
-        <field name="name">IVA Importación</field>
-        <field name="detailed_type">service</field>
-        <field name="default_code">AFIP_IVA_IMP</field>
-        <field name="sale_ok" eval="False"/>
-        <field name="purchase_ok" eval="True"/>
-        <field name="categ_id" ref="product.product_category_all"/>
-        <field name="supplier_taxes_id" eval="False"/>
-        <field name="description">Import VAT (IVA de Importación)</field>
-    </record>
-
-    <record id="product_comex_perc_iigg" model="product.product">
-        <field name="name">Percepción IIGG</field>
-        <field name="detailed_type">service</field>
-        <field name="default_code">AFIP_PERC_IIGG</field>
-        <field name="sale_ok" eval="False"/>
-        <field name="purchase_ok" eval="True"/>
-        <field name="categ_id" ref="product.product_category_all"/>
-        <field name="supplier_taxes_id" eval="False"/>
-        <field name="description">Income Tax Perception (Percepción Impuesto a las Ganancias)</field>
-    </record>
-
-    <record id="product_comex_perc_iibb" model="product.product">
-        <field name="name">Percepción IIBB</field>
-        <field name="detailed_type">service</field>
-        <field name="default_code">AFIP_PERC_IIBB</field>
-        <field name="sale_ok" eval="False"/>
-        <field name="purchase_ok" eval="True"/>
-        <field name="categ_id" ref="product.product_category_all"/>
-        <field name="supplier_taxes_id" eval="False"/>
-        <field name="description">Gross Income Perception (Percepción Ingresos Brutos)</field>
     </record>
 
     <!-- ============================================================ -->
@@ -100,39 +56,13 @@
         <field name="notes">Default mapping for Statistics Fee (3% of CIF value)</field>
     </record>
 
-    <record id="mapping_product_tariff" model="comex.tribute.product.mapping">
-        <field name="sequence">30</field>
-        <field name="product_id" ref="product_comex_tariff"/>
-        <field name="tribute_field_id" ref="tribute_field_amount_duties"/>
-        <field name="notes">Alternative mapping for Tariff (also goes to Import Duties field)</field>
-    </record>
-
     <record id="mapping_product_guard" model="comex.tribute.product.mapping">
-        <field name="sequence">40</field>
+        <field name="sequence">30</field>
         <field name="product_id" ref="product_comex_guard_service"/>
         <field name="tribute_field_id" ref="tribute_field_amount_fees"/>
         <field name="notes">Mapping for warehouse/guard service fees</field>
     </record>
-
-    <record id="mapping_product_vat" model="comex.tribute.product.mapping">
-        <field name="sequence">50</field>
-        <field name="product_id" ref="product_comex_vat"/>
-        <field name="tribute_field_id" ref="tribute_field_amount_vat"/>
-        <field name="notes">Mapping for Import VAT</field>
-    </record>
-
-    <record id="mapping_product_perc_iigg" model="comex.tribute.product.mapping">
-        <field name="sequence">60</field>
-        <field name="product_id" ref="product_comex_perc_iigg"/>
-        <field name="tribute_field_id" ref="tribute_field_amount_income_tax"/>
-        <field name="notes">Mapping for Income Tax Perception (Ganancias)</field>
-    </record>
-
-    <record id="mapping_product_perc_iibb" model="comex.tribute.product.mapping">
-        <field name="sequence">70</field>
-        <field name="product_id" ref="product_comex_perc_iibb"/>
-        <field name="tribute_field_id" ref="tribute_field_amount_gross_income"/>
-        <field name="notes">Mapping for Gross Income Perception (Ingresos Brutos)</field>
-    </record>
+    
+    <!-- Mappings for VAT, IIGG, IIBB removed - these taxes are now calculated automatically -->
 
 </odoo>

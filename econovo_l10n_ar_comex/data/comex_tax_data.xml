@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- ============================================================ -->
+    <!-- Tax Groups for Import Tributes                               -->
+    <!-- ============================================================ -->
+    
+    <!-- Tax Group: Import VAT (IVA Importación) -->
+    <record id="tax_group_import_vat" model="account.tax.group">
+        <field name="name">IVA Importación</field>
+        <field name="sequence">100</field>
+        <field name="country_id" ref="base.ar"/>
+    </record>
+    
+    <!-- Tax Group: Import Percepciones -->
+    <record id="tax_group_import_percepciones" model="account.tax.group">
+        <field name="name">Percepciones Importación</field>
+        <field name="sequence">110</field>
+        <field name="country_id" ref="base.ar"/>
+    </record>
+    
+    <!-- ============================================================ -->
+    <!-- Import Taxes (Purchase)                                      -->
+    <!-- ============================================================ -->
+    
+    <!-- IVA Importación 21% -->
+    <record id="tax_import_vat_21" model="account.tax">
+        <field name="name">IVA Importación 21%</field>
+        <field name="description">IVA 21%</field>
+        <field name="amount_type">percent</field>
+        <field name="amount">21.0</field>
+        <field name="type_tax_use">purchase</field>
+        <field name="price_include">False</field>
+        <field name="tax_group_id" ref="tax_group_import_vat"/>
+        <field name="sequence">10</field>
+        <field name="country_id" ref="base.ar"/>
+    </record>
+    
+    <!-- Percepción IIGG (Ganancias) 6% -->
+    <record id="tax_import_perc_iigg_6" model="account.tax">
+        <field name="name">Percepción IIGG Importación 6%</field>
+        <field name="description">Perc IIGG 6%</field>
+        <field name="amount_type">percent</field>
+        <field name="amount">6.0</field>
+        <field name="type_tax_use">purchase</field>
+        <field name="price_include">False</field>
+        <field name="tax_group_id" ref="tax_group_import_percepciones"/>
+        <field name="sequence">20</field>
+        <field name="country_id" ref="base.ar"/>
+    </record>
+    
+    <!-- Percepción IIBB (Ingresos Brutos) 3% -->
+    <record id="tax_import_perc_iibb_3" model="account.tax">
+        <field name="name">Percepción IIBB Importación 3%</field>
+        <field name="description">Perc IIBB 3%</field>
+        <field name="amount_type">percent</field>
+        <field name="amount">3.0</field>
+        <field name="type_tax_use">purchase</field>
+        <field name="price_include">False</field>
+        <field name="tax_group_id" ref="tax_group_import_percepciones"/>
+        <field name="sequence">30</field>
+        <field name="country_id" ref="base.ar"/>
+    </record>
+    
+    <!-- ============================================================ -->
+    <!-- Tax Group: Complete Import Tributes                         -->
+    <!-- This groups all import taxes for easy assignment             -->
+    <!-- Note: Tax groups do NOT need repartition lines - only children -->
+    <!-- ============================================================ -->
+    
+    <record id="tax_group_import_tributes" model="account.tax">
+        <field name="name">Tributos Importación (Grupo)</field>
+        <field name="description">Tributos Import</field>
+        <field name="amount_type">group</field>
+        <field name="type_tax_use">purchase</field>
+        <field name="country_id" ref="base.ar"/>
+        <field name="children_tax_ids" eval="[
+            Command.set([
+                ref('tax_import_vat_21'),
+                ref('tax_import_perc_iigg_6'),
+                ref('tax_import_perc_iibb_3'),
+            ])
+        ]"/>
+    </record>
+    
+</odoo>

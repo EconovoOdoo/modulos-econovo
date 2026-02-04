@@ -16,7 +16,6 @@
                 <field name="customs_office"/>
                 <field name="amount_cif" optional="hide"/>
                 <field name="amount_duties"/>
-                <field name="amount_taxes"/>
                 <field name="amount_total" sum="Total"/>
                 <field name="vep_amount" optional="show" sum="Total VEP"/>
                 <field name="currency_id" column_invisible="1"/>
@@ -103,17 +102,16 @@
                                 </group>
                             </group>
                             <group string="Customs Tributes (ARS)">
-                                <group string="Duties and Statistics">
+                                <group string="Base Amounts">
                                     <field name="amount_duties"/>
                                     <field name="amount_statistics"/>
                                     <field name="amount_fees"/>
                                 </group>
-                                <group string="Taxes and Perceptions">
-                                    <field name="amount_vat"/>
-                                    <field name="amount_vat_additional"/>
-                                    <field name="amount_income_tax"/>
-                                    <field name="amount_gross_income"/>
-                                    <field name="amount_taxes"/>
+                                <group>
+                                    <div class="alert alert-info" role="alert">
+                                        <strong>Note:</strong> Taxes (VAT, IIGG, IIBB) are calculated automatically
+                                        on the invoice based on product tax groups.
+                                    </div>
                                 </group>
                             </group>
                             <group>
