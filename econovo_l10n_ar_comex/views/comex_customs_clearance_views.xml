@@ -92,12 +92,17 @@
                         </group>
                     </group>
                     <group string="Amounts">
-                        <group>
+                        <group name="amount_left">
                             <field name="currency_id" invisible="1"/>
                             <field name="amount_cif"/>
                             <field name="amount_duties"/>
+                            <field name="amount_statistics"/>
+                            <field name="amount_vat"/>
+                            <field name="amount_vat_additional"/>
                         </group>
-                        <group>
+                        <group name="amount_right">
+                            <field name="amount_income_tax"/>
+                            <field name="amount_gross_income"/>
                             <field name="amount_taxes"/>
                             <field name="amount_fees"/>
                             <field name="amount_total"/>
