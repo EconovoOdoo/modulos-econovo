@@ -16,7 +16,6 @@
                 <field name="customs_office"/>
                 <field name="amount_cif" optional="hide"/>
                 <field name="amount_duties"/>
-                <field name="amount_taxes"/>
                 <field name="amount_total" sum="Total"/>
                 <field name="vep_amount" optional="show" sum="Total VEP"/>
                 <field name="currency_id" column_invisible="1"/>
@@ -40,6 +39,9 @@
                             invisible="state != 'approved'"/>
                     <button name="action_release" string="Mark Released" type="object" class="btn-success"
                             invisible="state != 'paid'"/>
+                    <button name="action_create_tribute_invoice" string="Create Tribute Invoice" type="object" class="btn-secondary"
+                            invisible="state not in ('approved', 'paid', 'released')"
+                            help="Create a vendor bill for customs tributes based on clearance amounts"/>
                     <button name="action_cancel" string="Cancel" type="object"
                             invisible="state in ('released', 'cancelled')"/>
                     <button name="action_draft" string="Reset to Draft" type="object"
@@ -47,6 +49,18 @@
                     <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved,paid,released"/>
                 </header>
                 <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_parse_logs" type="object" class="oe_stat_button" icon="fa-search" invisible="parse_log_count == 0">
+                            <div class="o_stat_info">
+                                <field name="parse_log_count" widget="statinfo" string="Parsing"/>
+                                <span class="o_stat_text">Logs</span>
+                            </div>
+                            <field name="parse_log_unmatched_count" invisible="1"/>
+                            <div class="badge badge-danger" invisible="parse_log_unmatched_count == 0">
+                                <field name="parse_log_unmatched_count"/> Unmatched
+                            </div>
+                        </button>
+                    </div>
                     <div class="oe_title">
                         <label for="name"/>
                         <h1>
@@ -76,19 +90,25 @@
                             <field name="landed_cost_id"/>
                         </group>
                     </group>
-                    <group string="Amounts">
-                        <group>
-                            <field name="currency_id" invisible="1"/>
-                            <field name="amount_cif"/>
-                            <field name="amount_duties"/>
-                        </group>
-                        <group>
-                            <field name="amount_taxes"/>
-                            <field name="amount_fees"/>
-                            <field name="amount_total"/>
-                            <field name="vep_amount"/>
-                        </group>
-                    </group>
+                    <notebook>
+                        <page string="Amounts" name="amounts">
+                            <group>
+                                <group string="Base Value">
+                                    <field name="currency_id" invisible="1"/>
+                                    <field name="amount_cif"/>
+                                </group>
+                                <group string="VEP Payment">
+                                    <field name="vep_amount"/>
+                                </group>
+                                <group string="Base Amounts">
+                                    <field name="amount_duties" readonly="vendor_bill_id"/>
+                                    <field name="amount_statistics" readonly="vendor_bill_id"/>
+                                    <field name="amount_fees" readonly="vendor_bill_id"/>
+                                    <field name="amount_total" class="oe_subtotal_footer_separator"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
                 </sheet>
                 <chatter/>
             </form>

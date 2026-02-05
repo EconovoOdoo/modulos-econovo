@@ -7,7 +7,13 @@ from . import comex_container_type
 from . import comex_customs_office
 from . import comex_payment_instrument
 from . import comex_payment_timing
-from . import hs_code
+
+# Tribute mappings
+from . import comex_tribute_product_mapping
+from . import comex_tribute_keyword_mapping
+from . import comex_tribute_parse_log
+from . import comex_tribute_field
+from . import comex_tribute_invoice_line_config
 
 # Main models
 from . import comex_operation_stage
@@ -19,9 +25,11 @@ from . import comex_mulc
 
 # Extensions to native models
 from . import purchase_order
+from . import sale_order
 from . import stock_picking
 from . import stock_move
 from . import stock_quant_package
 from . import stock_package_type
 from . import stock_rule
 from . import res_partner
+from . import res_config_settings

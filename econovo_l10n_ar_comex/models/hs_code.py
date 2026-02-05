@@ -100,16 +100,9 @@ class HsCode(models.Model):
         default=True,
     )
     
-    product_ids = fields.One2many(
-        'product.template',
-        'hs_code_id',
-        string="Products",
-    )
-    product_count = fields.Integer(
-        string="Product Count",
-        compute='_compute_product_count',
-    )
-
+    # NOTE: product_ids field removed - use native l10n_ar_ncm_code field instead
+    # The hs.code model remains as a reference catalog only
+    
     _sql_constraints = [
         ('local_code_uniq', 'unique(local_code)', 'The NCM code must be unique!'),
     ]
@@ -129,11 +122,6 @@ class HsCode(models.Model):
             record.chapter = code[:2] if len(code) >= 2 else False
             record.heading = code[:4] if len(code) >= 4 else False
             record.subheading = code[:6] if len(code) >= 6 else False
-
-    @api.depends('product_ids')
-    def _compute_product_count(self):
-        for record in self:
-            record.product_count = len(record.product_ids)
 
     @api.constrains('local_code')
     def _check_local_code(self):
@@ -159,11 +147,11 @@ class HsCode(models.Model):
 class ProductTemplateHsCode(models.Model):
     _inherit = 'product.template'
 
-    hs_code_id = fields.Many2one(
-        'hs.code',
-        string="NCM Code",
-        help="Nomenclatura Común del Mercosur",
-    )
+    # NOTE: Using native l10n_ar_ncm_code field from l10n_ar_edi module
+    # instead of creating a duplicate field to avoid conflicts.
+    # The native field l10n_ar_ncm_code is a Char field for NCM code.
+    # Our hs.code model remains available as a reference catalog if needed.
+    
     origin_country_id = fields.Many2one(
         'res.country',
         string="Country of Origin",

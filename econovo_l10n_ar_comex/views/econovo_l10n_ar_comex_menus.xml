@@ -146,12 +146,6 @@
               action="comex_customs_office_action"
               sequence="40"/>
 
-    <menuitem id="menu_comex_hs_codes"
-              name="HS Codes (NCM)"
-              parent="menu_comex_configuration"
-              action="hs_code_action"
-              sequence="50"/>
-
     <menuitem id="menu_comex_payment_instruments"
               name="Payment Instruments"
               parent="menu_comex_configuration"
@@ -163,5 +157,30 @@
               parent="menu_comex_configuration"
               action="comex_payment_timing_action"
               sequence="70"/>
+
+    <!-- Tribute Mappings (Configuration) -->
+    <menuitem id="menu_comex_tribute_config"
+              name="Tribute Mappings"
+              parent="menu_comex_configuration"
+              sequence="80"/>
+
+    <menuitem id="menu_comex_tribute_product_mapping"
+              name="Product Mappings"
+              parent="menu_comex_tribute_config"
+              action="action_comex_tribute_product_mapping"
+              sequence="10"/>
+
+    <menuitem id="menu_comex_tribute_keyword_mapping"
+              name="Keyword Mappings"
+              parent="menu_comex_tribute_config"
+              action="action_comex_tribute_keyword_mapping"
+              sequence="20"/>
+
+    <menuitem id="menu_comex_tribute_parse_log"
+              name="Parsing Logs (Debug)"
+              parent="menu_comex_tribute_config"
+              action="action_comex_tribute_parse_log"
+              sequence="30"
+              groups="base.group_no_one"/>
 
 </odoo>

@@ -80,11 +80,12 @@
                 <field name="partner_id"/>
                 <field name="stage_id" widget="badge"/>
                 <field name="date_operation"/>
+                <field name="date_etd" optional="show"/>
                 <field name="date_eta"/>
                 <field name="date_arrival" optional="show"/>
                 <field name="transport_mode" optional="show"/>
                 <field name="origin_country_id" optional="show"/>
-                <field name="incoterm_id" optional="hide"/>
+                <field name="incoterm_ids" widget="many2many_tags" optional="hide"/>
                 <field name="amount_fob" optional="hide"/>
                 <field name="amount_cif" sum="Total CIF"/>
                 <field name="currency_id" column_invisible="1"/>
@@ -127,6 +128,22 @@
                        decoration-success="customs_payment_status == 'paid'"
                        decoration-warning="customs_payment_status == 'partial'"
                        decoration-danger="customs_payment_status == 'not_paid'"/>
+                <field name="purchase_order_payment_status" 
+                       string="PO Status"
+                       widget="badge" 
+                       optional="show"
+                       invisible="operation_type != 'import'"
+                       decoration-success="purchase_order_payment_status == 'paid'"
+                       decoration-warning="purchase_order_payment_status == 'partial'"
+                       decoration-danger="purchase_order_payment_status == 'not_paid'"/>
+                <field name="sale_order_payment_status" 
+                       string="SO Status"
+                       widget="badge" 
+                       optional="show"
+                       invisible="operation_type != 'export'"
+                       decoration-success="sale_order_payment_status == 'paid'"
+                       decoration-warning="sale_order_payment_status == 'partial'"
+                       decoration-danger="sale_order_payment_status == 'not_paid'"/>
                 <field name="invoice_ids" 
                        widget="many2many_tags" 
                        string="Invoices"
@@ -158,6 +175,10 @@
                         <button name="action_view_purchase_orders" type="object" class="oe_stat_button" icon="fa-shopping-cart"
                                 invisible="purchase_order_count == 0">
                             <field name="purchase_order_count" widget="statinfo" string="Purchase Orders"/>
+                        </button>
+                        <button name="action_view_sale_orders" type="object" class="oe_stat_button" icon="fa-money"
+                                invisible="sale_order_count == 0">
+                            <field name="sale_order_count" widget="statinfo" string="Sale Orders"/>
                         </button>
                         <button name="action_view_product_lines" type="object" class="oe_stat_button" icon="fa-cubes"
                                 invisible="product_line_count == 0">
@@ -209,7 +230,7 @@
                             <group>
                                 <group name="transport">
                                     <field name="transport_mode" widget="radio" options="{'horizontal': true}"/>
-                                    <field name="incoterm_id"/>
+                                    <field name="incoterm_ids" widget="many2many_tags"/>
                                     <field name="origin_country_id"/>
                                     <field name="destination_country_id"/>
                                 </group>
@@ -252,6 +273,24 @@
                                     <field name="commercial_total_amount"/>
                                     <field name="commercial_paid_amount"/>
                                     <field name="commercial_due_amount"/>
+                                </group>
+                                <group name="purchase_order_payment_status" invisible="operation_type != 'import'">
+                                    <label for="purchase_order_payment_status" string="Purchase Orders"/>
+                                    <div class="o_row">
+                                        <field name="purchase_order_payment_status" widget="badge"/>
+                                    </div>
+                                    <field name="purchase_order_total_amount"/>
+                                    <field name="purchase_order_paid_amount"/>
+                                    <field name="purchase_order_due_amount"/>
+                                </group>
+                                <group name="sale_order_payment_status" invisible="operation_type != 'export'">
+                                    <label for="sale_order_payment_status" string="Sales Orders"/>
+                                    <div class="o_row">
+                                        <field name="sale_order_payment_status" widget="badge"/>
+                                    </div>
+                                    <field name="sale_order_total_amount"/>
+                                    <field name="sale_order_paid_amount"/>
+                                    <field name="sale_order_due_amount"/>
                                 </group>
                                 <group name="customs_payment_status">
                                     <label for="customs_payment_status" string="Customs"/>

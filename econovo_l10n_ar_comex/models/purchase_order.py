@@ -53,6 +53,7 @@ class PurchaseOrder(models.Model):
         tracking=True,
         copy=False,
         index=True,
+        domain="[('operation_type', '=', 'import')]",
     )
     is_comex = fields.Boolean(
         string="Is COMEX",
@@ -164,6 +165,7 @@ class PurchaseOrder(models.Model):
             'operation_type': 'import',
             'partner_id': self.partner_id.id,
             'origin_country_id': self.partner_id.country_id.id if self.partner_id.country_id else False,
+            'destination_country_id': self.company_id.country_id.id if self.company_id.country_id else False,
             'date_eta': self.date_planned.date() if self.date_planned else False,
             'currency_id': self.currency_id.id,
             'amount_fob': self.amount_total,

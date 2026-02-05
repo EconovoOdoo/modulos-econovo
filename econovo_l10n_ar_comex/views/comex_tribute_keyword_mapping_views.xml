@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============================================================ -->
+    <!-- COMEX Tribute Keyword Mapping Views                         -->
+    <!-- ============================================================ -->
+
+    <!-- Tree View -->
+    <record id="comex_tribute_keyword_mapping_view_tree" model="ir.ui.view">
+        <field name="name">comex.tribute.keyword.mapping.view.tree</field>
+        <field name="model">comex.tribute.keyword.mapping</field>
+        <field name="arch" type="xml">
+            <tree string="Tribute Keyword Mappings" 
+                  decoration-muted="not active">
+                <field name="sequence" widget="handle"/>
+                <field name="active" widget="boolean_toggle"/>
+                <field name="priority"/>
+                <field name="name"/>
+                <field name="match_type"/>
+                <field name="tribute_field_id"/>
+                <field name="stop_on_match" widget="boolean_toggle"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="comex_tribute_keyword_mapping_view_form" model="ir.ui.view">
+        <field name="name">comex.tribute.keyword.mapping.view.form</field>
+        <field name="model">comex.tribute.keyword.mapping</field>
+        <field name="arch" type="xml">
+            <form string="Tribute Keyword Mapping">
+                <sheet>
+                    <group>
+                        <group name="pattern">
+                            <field name="sequence"/>
+                            <field name="priority"/>
+                            <field name="name" 
+                                   placeholder='e.g., "tasa estadística" or "perc.*iigg" for regex'/>
+                            <field name="match_type"/>
+                            <field name="tribute_field_id"/>
+                        </group>
+                        <group name="options">
+                            <field name="stop_on_match"/>
+                            <field name="company_id" 
+                                   groups="base.group_multi_company"
+                                   placeholder="All companies"
+                                   options="{'no_create': True}"/>
+                        </group>
+                    </group>
+                    
+                    <notebook>
+                        <page string="Help" name="help">
+                            <div class="alert alert-info" role="alert">
+                                <strong>Pattern Matching Tips:</strong>
+                                <ul>
+                                    <li><strong>Contains:</strong> Keyword appears anywhere (e.g., "estadística" matches "Tasa Estadística 3%")</li>
+                                    <li><strong>Exact:</strong> Must match exactly (case-insensitive)</li>
+                                    <li><strong>Starts With:</strong> Text must begin with keyword</li>
+                                    <li><strong>Ends With:</strong> Text must end with keyword</li>
+                                    <li><strong>Regex:</strong> Use Python regex (e.g., "perc(epción)?.*?(ganancias|iigg)" matches variants)</li>
+                                </ul>
+                                <strong>Priority:</strong> Higher priority patterns are checked first. Use for disambiguation.
+                            </div>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="notes" 
+                                   placeholder="Optional: Add examples or documentation..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="comex_tribute_keyword_mapping_view_search" model="ir.ui.view">
+        <field name="name">comex.tribute.keyword.mapping.view.search</field>
+        <field name="model">comex.tribute.keyword.mapping</field>
+        <field name="arch" type="xml">
+            <search string="Tribute Keyword Mappings">
+                <field name="name"/>
+                <field name="tribute_field_id"/>
+                <field name="match_type"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                
+                <filter string="Active" name="filter_active" 
+                        domain="[('active', '=', True)]"/>
+                <filter string="Archived" name="filter_inactive" 
+                        domain="[('active', '=', False)]"/>
+                
+                <separator/>
+                
+                <filter string="Contains Match" name="filter_contains" 
+                        domain="[('match_type', '=', 'contains')]"/>
+                <filter string="Regex Match" name="filter_regex" 
+                        domain="[('match_type', '=', 'regex')]"/>
+                <filter string="Stop on Match" name="filter_stop_on_match" 
+                        domain="[('stop_on_match', '=', True)]"/>
+                
+                <separator/>
+                
+                <group expand="0" string="Group By">
+                    <filter string="Match Type" name="group_match_type" 
+                            context="{'group_by': 'match_type'}"/>
+                    <filter string="Tribute Field" name="group_tribute_field" 
+                            context="{'group_by': 'tribute_field_id'}"/>
+                    <filter string="Company" name="group_company" 
+                            context="{'group_by': 'company_id'}" 
+                            groups="base.group_multi_company"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_comex_tribute_keyword_mapping" model="ir.actions.act_window">
+        <field name="name">Tribute Keyword Mappings</field>
+        <field name="res_model">comex.tribute.keyword.mapping</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{
+            'search_default_filter_active': 1,
+        }</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first keyword mapping for fallback parsing
+            </p>
+            <p>
+                Keyword mappings provide a fallback when invoice lines don't have
+                a product or the product is not mapped. The system will search for
+                these keywords in the line description.
+            </p>
+            <p>
+                <strong>Example:</strong><br/>
+                Keyword "tasa estadística" (contains) → Statistics Fee<br/>
+                Keyword "perc.*iigg" (regex) → Income Tax Perception
+            </p>
+        </field>
+    </record>
+
+
+</odoo>

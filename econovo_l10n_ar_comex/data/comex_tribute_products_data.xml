@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============================================================ -->
+    <!-- Products for Customs Tributes                               -->
+    <!-- ============================================================ -->
+
+    <record id="product_comex_die" model="product.product">
+        <field name="name">DIE - Derecho de Importación Extrazona</field>
+        <field name="detailed_type">service</field>
+        <field name="default_code">AFIP_DESPACHO</field>
+        <field name="sale_ok" eval="False"/>
+        <field name="purchase_ok" eval="True"/>
+        <field name="categ_id" ref="product.product_category_all"/>
+        <field name="supplier_taxes_id" eval="[(6, 0, [ref('tax_group_import_tributes')])]"/>
+        <field name="description">Import duties charged by customs (Derecho de Importación Extrazona)</field>
+    </record>
+
+    <record id="product_comex_statistics" model="product.product">
+        <field name="name">Tasa de Estadística</field>
+        <field name="detailed_type">service</field>
+        <field name="default_code">AFIP_TASA_EST</field>
+        <field name="sale_ok" eval="False"/>
+        <field name="purchase_ok" eval="True"/>
+        <field name="categ_id" ref="product.product_category_all"/>
+        <field name="supplier_taxes_id" eval="[(6, 0, [ref('tax_group_import_tributes')])]"/>
+        <field name="description">Statistics fee (3% of CIF value)</field>
+    </record>
+
+    <record id="product_comex_guard_service" model="product.product">
+        <field name="name">Servicio de Guarda</field>
+        <field name="detailed_type">service</field>
+        <field name="default_code">AFIP_SERV_GUARDA</field>
+        <field name="sale_ok" eval="False"/>
+        <field name="purchase_ok" eval="True"/>
+        <field name="categ_id" ref="product.product_category_all"/>
+        <field name="supplier_taxes_id" eval="False"/>
+        <field name="description">Warehouse/guard service fees</field>
+    </record>
+
+    <!-- ============================================================ -->
+    <!-- Product Mappings (Configurable defaults)                    -->
+    <!-- ============================================================ -->
+
+    <record id="mapping_product_die" model="comex.tribute.product.mapping">
+        <field name="sequence">10</field>
+        <field name="product_id" ref="product_comex_die"/>
+        <field name="tribute_field_id" ref="tribute_field_amount_duties"/>
+        <field name="notes">Default mapping for Import Duties (DIE - Derecho de Importación Extrazona)</field>
+    </record>
+
+    <record id="mapping_product_statistics" model="comex.tribute.product.mapping">
+        <field name="sequence">20</field>
+        <field name="product_id" ref="product_comex_statistics"/>
+        <field name="tribute_field_id" ref="tribute_field_amount_statistics"/>
+        <field name="notes">Default mapping for Statistics Fee (3% of CIF value)</field>
+    </record>
+
+    <record id="mapping_product_guard" model="comex.tribute.product.mapping">
+        <field name="sequence">30</field>
+        <field name="product_id" ref="product_comex_guard_service"/>
+        <field name="tribute_field_id" ref="tribute_field_amount_fees"/>
+        <field name="notes">Mapping for warehouse/guard service fees</field>
+    </record>
+    
+    <!-- Mappings for VAT, IIGG, IIBB removed - these taxes are now calculated automatically -->
+
+</odoo>

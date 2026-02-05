@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- ============================================ -->
+    <!-- Tribute Field Master Data                    -->
+    <!-- ============================================ -->
+    
+    <record id="tribute_field_amount_duties" model="comex.tribute.field">
+        <field name="sequence">10</field>
+        <field name="technical_name">amount_duties</field>
+    </record>
+    
+    <record id="tribute_field_amount_statistics" model="comex.tribute.field">
+        <field name="sequence">20</field>
+        <field name="technical_name">amount_statistics</field>
+    </record>
+    
+    <record id="tribute_field_amount_fees" model="comex.tribute.field">
+        <field name="sequence">30</field>
+        <field name="technical_name">amount_fees</field>
+    </record>
+    
+</odoo>

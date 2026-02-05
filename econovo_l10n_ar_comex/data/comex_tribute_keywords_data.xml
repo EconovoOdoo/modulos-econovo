@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============================================================ -->
+    <!-- Keyword Mappings (Fallback when no product match)          -->
+    <!-- Only for base tribute fields - taxes calculated automatically -->
+    <!-- ============================================================ -->
+
+    <!-- DIE / Import Duties -->
+    <record id="mapping_keyword_die_1" model="comex.tribute.keyword.mapping">
+        <field name="sequence">10</field>
+        <field name="priority">100</field>
+        <field name="name">die</field>
+        <field name="match_type">contains</field>
+        <field name="tribute_field_id" ref="tribute_field_amount_duties"/>
+        <field name="stop_on_match" eval="True"/>
+        <field name="notes">Matches: DIE, D.I.E., die, etc.</field>
+    </record>
+
+    <record id="mapping_keyword_die_2" model="comex.tribute.keyword.mapping">
+        <field name="sequence">11</field>
+        <field name="priority">95</field>
+        <field name="name">derecho de importación</field>
+        <field name="match_type">contains</field>
+        <field name="tribute_field_id" ref="tribute_field_amount_duties"/>
+        <field name="stop_on_match" eval="True"/>
+        <field name="notes">Full Spanish name for import duties</field>
+    </record>
+
+    <record id="mapping_keyword_arancel" model="comex.tribute.keyword.mapping">
+        <field name="sequence">12</field>
+        <field name="priority">90</field>
+        <field name="name">arancel</field>
+        <field name="match_type">contains</field>
+        <field name="tribute_field_id" ref="tribute_field_amount_duties"/>
+        <field name="stop_on_match" eval="True"/>
+        <field name="notes">Tariff also goes to duties field</field>
+    </record>
+
+    <!-- Statistics Fee -->
+    <record id="mapping_keyword_statistics_1" model="comex.tribute.keyword.mapping">
+        <field name="sequence">20</field>
+        <field name="priority">100</field>
+        <field name="name">tasa estadística</field>
+        <field name="match_type">contains</field>
+        <field name="tribute_field_id" ref="tribute_field_amount_statistics"/>
+        <field name="stop_on_match" eval="True"/>
+        <field name="notes">Statistics fee (3% of CIF)</field>
+    </record>
+
+    <record id="mapping_keyword_statistics_2" model="comex.tribute.keyword.mapping">
+        <field name="sequence">21</field>
+        <field name="priority">95</field>
+        <field name="name">estadística</field>
+        <field name="match_type">contains</field>
+        <field name="tribute_field_id" ref="tribute_field_amount_statistics"/>
+        <field name="stop_on_match" eval="True"/>
+        <field name="notes">Shortened version</field>
+    </record>
+
+    <!-- Guard Service / Fees -->
+    <record id="mapping_keyword_guard" model="comex.tribute.keyword.mapping">
+        <field name="sequence">60</field>
+        <field name="priority">100</field>
+        <field name="name">servicio de guarda</field>
+        <field name="match_type">contains</field>
+        <field name="tribute_field_id" ref="tribute_field_amount_fees"/>
+        <field name="stop_on_match" eval="True"/>
+        <field name="notes">Warehouse guard service fees</field>
+    </record>
+
+    <record id="mapping_keyword_storage" model="comex.tribute.keyword.mapping">
+        <field name="sequence">61</field>
+        <field name="priority">95</field>
+        <field name="name">almacenaje</field>
+        <field name="match_type">contains</field>
+        <field name="tribute_field_id" ref="tribute_field_amount_fees"/>
+        <field name="stop_on_match" eval="True"/>
+        <field name="notes">Storage fees</field>
+    </record>
+
+</odoo>

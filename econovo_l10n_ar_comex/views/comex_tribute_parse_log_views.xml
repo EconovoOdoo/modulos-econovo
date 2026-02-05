@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============================================================ -->
+    <!-- COMEX Tribute Parse Log Views                               -->
+    <!-- ============================================================ -->
+
+    <!-- Tree View -->
+    <record id="comex_tribute_parse_log_view_tree" model="ir.ui.view">
+        <field name="name">comex.tribute.parse.log.view.tree</field>
+        <field name="model">comex.tribute.parse.log</field>
+        <field name="arch" type="xml">
+            <tree string="Tribute Parse Logs" 
+                  create="false" 
+                  decoration-danger="matched_by == 'unmatched'"
+                  decoration-success="matched_by == 'product'"
+                  decoration-info="matched_by == 'keyword'">
+                <field name="create_date" string="Parse Date"/>
+                <field name="customs_clearance_id"/>
+                <field name="invoice_id"/>
+                <field name="line_description"/>
+                <field name="product_name"/>
+                <field name="matched_by"/>
+                <field name="tribute_field"/>
+                <field name="amount_parsed"/>
+                <field name="currency_id" column_invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="comex_tribute_parse_log_view_form" model="ir.ui.view">
+        <field name="name">comex.tribute.parse.log.view.form</field>
+        <field name="model">comex.tribute.parse.log</field>
+        <field name="arch" type="xml">
+            <form string="Parse Log Entry" create="false" edit="false">
+                <sheet>
+                    <group>
+                        <group name="references">
+                            <field name="create_date" string="Parse Date"/>
+                            <field name="customs_clearance_id"/>
+                            <field name="invoice_id"/>
+                            <field name="invoice_line_id"/>
+                        </group>
+                        <group name="result">
+                            <field name="matched_by"/>
+                            <field name="mapping_record"/>
+                            <field name="tribute_field"/>
+                            <field name="amount_parsed"/>
+                            <field name="currency_id"/>
+                        </group>
+                    </group>
+                    
+                    <group name="snapshots">
+                        <field name="line_description" nolabel="1"/>
+                        <field name="product_name"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="comex_tribute_parse_log_view_search" model="ir.ui.view">
+        <field name="name">comex.tribute.parse.log.view.search</field>
+        <field name="model">comex.tribute.parse.log</field>
+        <field name="arch" type="xml">
+            <search string="Parse Logs">
+                <field name="customs_clearance_id"/>
+                <field name="invoice_id"/>
+                <field name="line_description"/>
+                <field name="product_name"/>
+                
+                <filter string="Unmatched Lines" name="filter_unmatched" 
+                        domain="[('matched_by', '=', 'unmatched')]"/>
+                <filter string="By Product" name="filter_by_product" 
+                        domain="[('matched_by', '=', 'product')]"/>
+                <filter string="By Keyword" name="filter_by_keyword" 
+                        domain="[('matched_by', '=', 'keyword')]"/>
+                
+                <separator/>
+                
+                <filter string="Today" name="filter_today" 
+                        domain="[('create_date', '>=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter string="Last 7 Days" name="filter_week" 
+                        domain="[('create_date', '>=', (context_today() - datetime.timedelta(days=7)).strftime('%Y-%m-%d'))]"/>
+                
+                <separator/>
+                
+                <group expand="0" string="Group By">
+                    <filter string="Matched By" name="group_matched_by" 
+                            context="{'group_by': 'matched_by'}"/>
+                    <filter string="Customs Clearance" name="group_clearance" 
+                            context="{'group_by': 'customs_clearance_id'}"/>
+                    <filter string="Invoice" name="group_invoice" 
+                            context="{'group_by': 'invoice_id'}"/>
+                    <filter string="Tribute Field" name="group_tribute_field" 
+                            context="{'group_by': 'tribute_field'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_comex_tribute_parse_log" model="ir.actions.act_window">
+        <field name="name">Tribute Parse Logs</field>
+        <field name="res_model">comex.tribute.parse.log</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{
+            'search_default_filter_today': 1,
+        }</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_empty_folder">
+                No parsing logs yet
+            </p>
+            <p>
+                Parsing logs are automatically created when a Type 66 invoice
+                is linked to a customs clearance. Each invoice line is logged
+                with its matching result.
+            </p>
+            <p>
+                <strong>Color coding:</strong><br/>
+                <span style="color: #d32f2f;">⬤ Red</span> = Unmatched (needs configuration)<br/>
+                <span style="color: #388e3c;">⬤ Green</span> = Matched by product<br/>
+                <span style="color: #1976d2;">⬤ Blue</span> = Matched by keyword
+            </p>
+        </field>
+    </record>
+
+</odoo>

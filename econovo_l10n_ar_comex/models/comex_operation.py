@@ -148,6 +148,15 @@ class ComexOperation(models.Model):
         string="Purchase Order Count",
         compute='_compute_purchase_order_count',
     )
+    sale_order_ids = fields.One2many(
+        'sale.order',
+        'comex_operation_id',
+        string="Sale Orders",
+    )
+    sale_order_count = fields.Integer(
+        string="Sale Order Count",
+        compute='_compute_sale_order_count',
+    )
     shipment_ids = fields.One2many(
         'comex.shipment',
         'operation_id',
@@ -381,11 +390,83 @@ class ComexOperation(models.Model):
         help="Amount pending on customs tributes. Always in ARS.",
     )
 
-    # Incoterm
-    incoterm_id = fields.Many2one(
+    # === PAYMENT STATUS - PURCHASE ORDERS (IMPORTS) ===
+    purchase_order_payment_status = fields.Selection(
+        selection=[
+            ('not_paid', 'Not Paid'),
+            ('partial', 'Partially Paid'),
+            ('paid', 'Paid'),
+        ],
+        string="Purchase Order Payment Status",
+        compute='_compute_purchase_order_payment_status',
+        store=True,
+        help="Payment status of vendor invoices from purchase orders (imports only).",
+    )
+    purchase_order_total_amount = fields.Monetary(
+        string="Purchase Order Total",
+        compute='_compute_purchase_order_totals',
+        store=True,
+        currency_field='currency_id',
+        help="Total amount of vendor invoices from purchase orders.",
+    )
+    purchase_order_paid_amount = fields.Monetary(
+        string="Purchase Order Paid",
+        compute='_compute_purchase_order_totals',
+        store=True,
+        currency_field='currency_id',
+        help="Amount paid on vendor invoices.",
+    )
+    purchase_order_due_amount = fields.Monetary(
+        string="Purchase Order Due",
+        compute='_compute_purchase_order_totals',
+        store=True,
+        currency_field='currency_id',
+        help="Amount pending on vendor invoices.",
+    )
+
+    # === PAYMENT STATUS - SALE ORDERS (EXPORTS) ===
+    sale_order_payment_status = fields.Selection(
+        selection=[
+            ('not_paid', 'Not Collected'),
+            ('partial', 'Partially Collected'),
+            ('paid', 'Collected'),
+        ],
+        string="Sale Order Payment Status",
+        compute='_compute_sale_order_payment_status',
+        store=True,
+        help="Collection status of customer invoices from sales orders (exports only).",
+    )
+    sale_order_total_amount = fields.Monetary(
+        string="Sale Order Total",
+        compute='_compute_sale_order_totals',
+        store=True,
+        currency_field='currency_id',
+        help="Total amount of customer invoices from sales orders.",
+    )
+    sale_order_paid_amount = fields.Monetary(
+        string="Sale Order Paid",
+        compute='_compute_sale_order_totals',
+        store=True,
+        currency_field='currency_id',
+        help="Amount collected from customers.",
+    )
+    sale_order_due_amount = fields.Monetary(
+        string="Sale Order Due",
+        compute='_compute_sale_order_totals',
+        store=True,
+        currency_field='currency_id',
+        help="Amount pending collection from customers.",
+    )
+
+    # Incoterms (aggregated from PO/SO)
+    incoterm_ids = fields.Many2many(
         'account.incoterms',
-        string="Incoterm",
-        tracking=True,
+        string="Incoterms",
+        compute='_compute_incoterm_ids',
+        store=True,
+        readonly=True,
+        help="Unique incoterms from all linked purchase and sale orders. "
+             "To modify, update incoterms in the respective PO/SO.",
     )
 
     # Transport
@@ -577,6 +658,277 @@ class ComexOperation(models.Model):
                     # All invoiced with partial payment
                     record.commercial_payment_status = 'partial'
 
+    @api.depends('invoice_ids.amount_total', 'invoice_ids.amount_residual', 'invoice_ids.state')
+    def _compute_purchase_order_totals(self):
+        """Calculate purchase order payment totals (only invoices from purchase orders, excluding customs).
+        
+        Counts ONLY invoices from purchase orders (not refunds) for amount calculations.
+        Filters out Document Type 66 (customs clearances).
+        
+        Includes:
+        - Supplier invoices linked to purchase orders in this operation
+        
+        Excludes:
+        - Customer invoices (sales orders)
+        - Local cost invoices not linked to POs (customs brokers, freight forwarders, etc.)
+        - Document Type 66 (customs clearances)
+        - Refunds (handled via payment_state)
+        """
+        for record in self:
+            # Get all invoices from purchase orders in this operation
+            po_invoices = self.env['account.move']
+            for po in record.purchase_order_ids:
+                po_invoices |= po.invoice_ids.filtered(
+                    lambda inv: inv.state == 'posted' and
+                    inv.move_type in ('in_invoice', 'in_receipt') and
+                    (not hasattr(inv, 'l10n_latam_document_type_id') or
+                     not inv.l10n_latam_document_type_id or
+                     inv.l10n_latam_document_type_id.code != '66')
+                )
+            
+            # Calculate totals from purchase order invoices only
+            record.purchase_order_total_amount = sum(po_invoices.mapped('amount_total'))
+            record.purchase_order_paid_amount = sum(
+                inv.amount_total - inv.amount_residual
+                for inv in po_invoices
+            )
+            record.purchase_order_due_amount = sum(po_invoices.mapped('amount_residual'))
+
+    @api.depends('invoice_ids.payment_state', 'invoice_ids.state', 'invoice_ids.move_type',
+                 'invoice_ids.amount_total', 'invoice_ids.amount_residual',
+                 'purchase_order_ids.invoice_status')
+    def _compute_purchase_order_payment_status(self):
+        """Determine purchase order payment status from purchase orders considering:
+        1. Quantities pending to invoice in POs (invoice_status)
+        2. Invoices issued from POs and their payment status
+        
+        Logic:
+        - If pending to invoice → Can be "not_paid" or "partial" (never "paid")
+        - If all invoiced → Can be "not_paid", "partial", or "paid" based on payments
+        
+        Examples:
+        - PO 45, Invoiced 15 fully paid → "partial" (30 pending to invoice)
+        - PO 12, Invoiced 12 partially paid → "partial" (all invoiced, partial payment)
+        - PO 12, Invoiced 12 fully paid → "paid" (all invoiced and paid)
+        """
+        for record in self:
+            # Check if there are quantities pending to invoice in purchase orders
+            has_pending_to_invoice = any(
+                po.invoice_status == 'to invoice'
+                for po in record.purchase_order_ids
+            )
+            
+            # Get invoices from purchase orders (exclude type 66 customs clearances)
+            po_invoices = self.env['account.move']
+            for po in record.purchase_order_ids:
+                po_invoices |= po.invoice_ids.filtered(
+                    lambda inv: inv.state == 'posted' and
+                    inv.move_type in ('in_invoice', 'in_receipt') and
+                    (not hasattr(inv, 'l10n_latam_document_type_id') or
+                     not inv.l10n_latam_document_type_id or
+                     inv.l10n_latam_document_type_id.code != '66')
+                )
+            
+            # Get refunds from purchase orders
+            po_refunds = self.env['account.move']
+            for po in record.purchase_order_ids:
+                po_refunds |= po.invoice_ids.filtered(
+                    lambda inv: inv.state == 'posted' and
+                    inv.move_type == 'in_refund' and
+                    (not hasattr(inv, 'l10n_latam_document_type_id') or
+                     not inv.l10n_latam_document_type_id or
+                     inv.l10n_latam_document_type_id.code != '66')
+                )
+            
+            if not po_invoices and not po_refunds:
+                record.purchase_order_payment_status = 'not_paid'
+                continue
+            
+            # Calculate net amounts (invoices - refunds)
+            invoice_total = sum(po_invoices.mapped('amount_total'))
+            invoice_residual = sum(po_invoices.mapped('amount_residual'))
+            refund_total = sum(po_refunds.mapped('amount_total'))
+            
+            net_total = invoice_total - refund_total
+            net_residual = invoice_residual - refund_total
+            paid_amount = invoice_total - invoice_residual
+            
+            # Status based on pending to invoice + payment status
+            if net_total <= 0:
+                # No net amount to pay (refunds >= invoices)
+                record.purchase_order_payment_status = 'not_paid'
+            elif has_pending_to_invoice:
+                # There are quantities pending to invoice
+                # Can NEVER be "paid", only "not_paid" or "partial"
+                if paid_amount > 0:
+                    # Something is paid, but still pending to invoice
+                    record.purchase_order_payment_status = 'partial'
+                else:
+                    # Nothing paid yet
+                    record.purchase_order_payment_status = 'not_paid'
+            else:
+                # All quantities are invoiced, check payment status
+                if net_residual <= 0:
+                    # Net fully paid (all invoiced and all paid)
+                    record.purchase_order_payment_status = 'paid'
+                elif paid_amount == 0:
+                    # All invoiced but no payments registered yet
+                    record.purchase_order_payment_status = 'not_paid'
+                else:
+                    # All invoiced with partial payment
+                    record.purchase_order_payment_status = 'partial'
+
+    @api.depends('invoice_ids.amount_total', 'invoice_ids.amount_residual', 'invoice_ids.state')
+    def _compute_sale_order_totals(self):
+        """Calculate sale order payment totals (only invoices from sales orders, excluding customs).
+        
+        Counts ONLY invoices from sales orders (not refunds) for amount calculations.
+        Filters out Document Type 66 (customs clearances).
+        
+        Includes:
+        - Customer invoices linked to sales orders in this operation
+        
+        Excludes:
+        - Supplier invoices (purchase orders)
+        - Local cost invoices not linked to SOs
+        - Document Type 66 (customs clearances)
+        - Refunds (handled via payment_state)
+        """
+        for record in self:
+            # Get all invoices from sales orders in this operation
+            so_invoices = self.env['account.move']
+            for so in record.sale_order_ids:
+                so_invoices |= so.invoice_ids.filtered(
+                    lambda inv: inv.state == 'posted' and
+                    inv.move_type in ('out_invoice', 'out_receipt') and
+                    (not hasattr(inv, 'l10n_latam_document_type_id') or
+                     not inv.l10n_latam_document_type_id or
+                     inv.l10n_latam_document_type_id.code != '66')
+                )
+            
+            # Calculate totals from sales order invoices only
+            record.sale_order_total_amount = sum(so_invoices.mapped('amount_total'))
+            record.sale_order_paid_amount = sum(
+                inv.amount_total - inv.amount_residual
+                for inv in so_invoices
+            )
+            record.sale_order_due_amount = sum(so_invoices.mapped('amount_residual'))
+
+    @api.depends('invoice_ids.payment_state', 'invoice_ids.state', 'invoice_ids.move_type',
+                 'invoice_ids.amount_total', 'invoice_ids.amount_residual',
+                 'sale_order_ids.invoice_status')
+    def _compute_sale_order_payment_status(self):
+        """Determine sale order payment status from sales orders considering:
+        1. Quantities pending to invoice in SOs (invoice_status)
+        2. Invoices issued from SOs and their payment status
+        
+        Logic:
+        - If pending to invoice → Can be "not_paid" or "partial" (never "paid")
+        - If all invoiced → Can be "not_paid", "partial", or "paid" based on payments
+        
+        Examples:
+        - SO 45, Invoiced 15 fully collected → "partial" (30 pending to invoice)
+        - SO 12, Invoiced 12 partially collected → "partial" (all invoiced, partial payment)
+        - SO 12, Invoiced 12 fully collected → "paid" (all invoiced and collected)
+        """
+        for record in self:
+            # Check if there are quantities pending to invoice in sales orders
+            has_pending_to_invoice = any(
+                so.invoice_status == 'to invoice'
+                for so in record.sale_order_ids
+            )
+            
+            # Get invoices from sales orders (exclude type 66 customs clearances)
+            so_invoices = self.env['account.move']
+            for so in record.sale_order_ids:
+                so_invoices |= so.invoice_ids.filtered(
+                    lambda inv: inv.state == 'posted' and
+                    inv.move_type in ('out_invoice', 'out_receipt') and
+                    (not hasattr(inv, 'l10n_latam_document_type_id') or
+                     not inv.l10n_latam_document_type_id or
+                     inv.l10n_latam_document_type_id.code != '66')
+                )
+            
+            # Get refunds from sales orders
+            so_refunds = self.env['account.move']
+            for so in record.sale_order_ids:
+                so_refunds |= so.invoice_ids.filtered(
+                    lambda inv: inv.state == 'posted' and
+                    inv.move_type == 'out_refund' and
+                    (not hasattr(inv, 'l10n_latam_document_type_id') or
+                     not inv.l10n_latam_document_type_id or
+                     inv.l10n_latam_document_type_id.code != '66')
+                )
+            
+            if not so_invoices and not so_refunds:
+                record.sale_order_payment_status = 'not_paid'
+                continue
+            
+            # Calculate net amounts (invoices - refunds)
+            invoice_total = sum(so_invoices.mapped('amount_total'))
+            invoice_residual = sum(so_invoices.mapped('amount_residual'))
+            refund_total = sum(so_refunds.mapped('amount_total'))
+            
+            net_total = invoice_total - refund_total
+            net_residual = invoice_residual - refund_total
+            paid_amount = invoice_total - invoice_residual
+            
+            # Status based on pending to invoice + payment status
+            if net_total <= 0:
+                # No net amount to collect (refunds >= invoices)
+                record.sale_order_payment_status = 'not_paid'
+            elif has_pending_to_invoice:
+                # There are quantities pending to invoice
+                # Can NEVER be "paid", only "not_paid" or "partial"
+                if paid_amount > 0:
+                    # Something is collected, but still pending to invoice
+                    record.sale_order_payment_status = 'partial'
+                else:
+                    # Nothing collected yet
+                    record.sale_order_payment_status = 'not_paid'
+            else:
+                # All quantities are invoiced, check payment status
+                if net_residual <= 0:
+                    # Net fully collected (all invoiced and all paid)
+                    record.sale_order_payment_status = 'paid'
+                elif paid_amount == 0:
+                    # All invoiced but no payments registered yet
+                    record.sale_order_payment_status = 'not_paid'
+                else:
+                    # All invoiced with partial payment
+                    record.sale_order_payment_status = 'partial'
+
+    @api.depends('purchase_order_ids.incoterm_id', 'sale_order_ids.incoterm')
+    def _compute_incoterm_ids(self):
+        """Aggregate unique incoterms from all linked purchase and sale orders.
+        
+        This computed field automatically collects all unique incoterms from:
+        - Purchase Orders (for imports): uses incoterm_id
+        - Sale Orders (for exports): uses incoterm
+        
+        Example:
+            PO1: Incoterm FOB
+            PO2: Incoterm FOB (duplicate, ignored)
+            PO3: Incoterm CIF
+            Result: [FOB, CIF]
+        
+        The field is readonly to force users to set incoterms on PO/SO.
+        """
+        for record in self:
+            incoterms = self.env['account.incoterms']
+            
+            # Collect incoterms from purchase orders
+            for po in record.purchase_order_ids:
+                if po.incoterm_id:
+                    incoterms |= po.incoterm_id
+            
+            # Collect incoterms from sale orders (field name: 'incoterm', not 'incoterm_id')
+            for so in record.sale_order_ids:
+                if so.incoterm:
+                    incoterms |= so.incoterm
+            
+            record.incoterm_ids = incoterms
+
     @api.depends('invoice_ids.amount_total', 'invoice_ids.amount_residual', 
                  'invoice_ids.state', 'customs_clearance_ids.vep_amount')
     def _compute_customs_totals(self):
@@ -697,6 +1049,10 @@ class ComexOperation(models.Model):
     def _compute_purchase_order_count(self):
         for record in self:
             record.purchase_order_count = len(record.purchase_order_ids)
+
+    def _compute_sale_order_count(self):
+        for record in self:
+            record.sale_order_count = len(record.sale_order_ids)
 
     def _compute_shipment_count(self):
         for record in self:
@@ -1080,6 +1436,21 @@ class ComexOperation(models.Model):
             'res_model': 'purchase.order',
             'view_mode': 'tree,form',
             'domain': [('id', 'in', self.purchase_order_ids.ids)],
+            'context': {
+                'default_comex_operation_id': self.id,
+                'default_partner_id': self.partner_id.id if self.partner_id else False,
+            },
+        }
+
+    def action_view_sale_orders(self):
+        """Open related sale orders."""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Sale Orders'),
+            'res_model': 'sale.order',
+            'view_mode': 'tree,form',
+            'domain': [('id', 'in', self.sale_order_ids.ids)],
             'context': {
                 'default_comex_operation_id': self.id,
                 'default_partner_id': self.partner_id.id if self.partner_id else False,
