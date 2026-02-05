@@ -147,6 +147,7 @@ class ComexOperationProductLine(models.Model):
         'stock.quant.package',
         string="Container",
         compute='_compute_package_id',
+        search='_search_package_id',
         store=False,
         help="Container that contains this product (computed from stock quants)",
     )
@@ -179,6 +180,22 @@ class ComexOperationProductLine(models.Model):
             ], limit=1)
             
             line.package_id = quant.package_id if quant else False
+
+    def _search_package_id(self, operator, value):
+        """Search method for package_id computed field.
+        
+        This allows filtering by container/package in list views.
+        """
+        # Search for quants with the matching package
+        quants = self.env['stock.quant'].search([
+            ('package_id', operator, value),
+        ])
+        
+        # Get unique product IDs from those quants
+        product_ids = quants.mapped('product_id').ids
+        
+        # Return domain matching lines with those products in this operation
+        return [('product_id', 'in', product_ids)]
 
     # -------------------------------------------------------------------------
     # ONCHANGE METHODS

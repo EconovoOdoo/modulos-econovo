@@ -12,7 +12,6 @@
         <field name="sale_ok" eval="False"/>
         <field name="purchase_ok" eval="True"/>
         <field name="categ_id" ref="product.product_category_all"/>
-        <field name="supplier_taxes_id" eval="[(6, 0, [ref('tax_group_import_tributes')])]"/>
         <field name="description">Import duties charged by customs (Derecho de Importación Extrazona)</field>
     </record>
 
@@ -23,7 +22,6 @@
         <field name="sale_ok" eval="False"/>
         <field name="purchase_ok" eval="True"/>
         <field name="categ_id" ref="product.product_category_all"/>
-        <field name="supplier_taxes_id" eval="[(6, 0, [ref('tax_group_import_tributes')])]"/>
         <field name="description">Statistics fee (3% of CIF value)</field>
     </record>
 
