@@ -74,7 +74,6 @@ for Argentina with full regulatory compliance and automated tax calculation.
         'data/comex_container_type_data.xml',
         'data/comex_customs_office_data.xml',
         'data/stock_package_type_data.xml',
-        'data/comex_tax_data.xml',
         'data/comex_tribute_fields_data.xml',
         'data/comex_tribute_products_data.xml',
         'data/comex_tribute_keywords_data.xml',
