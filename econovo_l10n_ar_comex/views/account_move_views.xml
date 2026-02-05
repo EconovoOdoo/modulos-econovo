@@ -14,13 +14,15 @@
             <!-- Add COMEX page in notebook for vendor bills (type 66) -->
             <xpath expr="//notebook" position="inside">
                 <page string="COMEX" name="comex" 
-                      invisible="move_type not in ('in_invoice', 'in_refund')">
+                      invisible="move_type not in ('in_invoice', 'in_refund', 'out_invoice', 'out_refund')">
                     <group>
                         <group string="Linked COMEX Operations">
                             <field name="comex_operation_ids" widget="many2many_tags"
-                                   options="{'no_create': True}"/>
+                                   options="{'no_create': True}"
+                                   domain="[('operation_type', '=', 'import' if move_type in ('in_invoice', 'in_refund') else 'export')]"/>
                         </group>
-                        <group string="Customs Clearances (Despachos)">
+                        <group string="Customs Clearances (Despachos)"
+                               invisible="l10n_latam_document_type_id != %(l10n_ar.dc_a_f.1)d">
                             <label for="comex_clearance_ids"/>
                             <div class="o_row">
                                 <field name="comex_clearance_ids" widget="many2many_tags"
@@ -38,7 +40,11 @@
                     <separator string="COMEX Information"/>
                     <div class="alert alert-info" role="alert">
                         <p><strong>COMEX Operations:</strong> Link this invoice to COMEX import/export operations for tracking.</p>
-                        <p><strong>Customs Clearances:</strong> If this is a tribute invoice (Despacho Type 66), it will be automatically linked when created from a customs clearance.</p>
+                        <ul>
+                            <li><strong>Vendor Bills:</strong> Link to IMPORT operations</li>
+                            <li><strong>Customer Invoices:</strong> Link to EXPORT operations</li>
+                        </ul>
+                        <p><strong>Customs Clearances (Document Type 66 only):</strong> If this is a tribute invoice (Despacho Type 66), it will be automatically linked when created from a customs clearance.</p>
                     </div>
                 </page>
             </xpath>
