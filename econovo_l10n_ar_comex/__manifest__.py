@@ -89,6 +89,7 @@ for Argentina with full regulatory compliance and automated tax calculation.
         'views/comex_customs_office_views.xml',
         'views/comex_payment_instrument_views.xml',
         'views/comex_payment_timing_views.xml',
+        'views/account_move_views.xml',
         'views/purchase_order_views.xml',
         'views/sale_order_views.xml',
         'views/stock_picking_views.xml',
