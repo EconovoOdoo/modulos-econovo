@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============================================================ -->
+    <!-- Account Move Form: Add COMEX fields                         -->
+    <!-- ============================================================ -->
+
+    <record id="view_move_form_inherit_comex" model="ir.ui.view">
+        <field name="name">account.move.form.inherit.comex</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            
+            <!-- Add COMEX page in notebook for vendor bills (type 66) -->
+            <xpath expr="//notebook" position="inside">
+                <page string="COMEX" name="comex" 
+                      invisible="move_type not in ('in_invoice', 'in_refund')">
+                    <group>
+                        <group string="Linked COMEX Operations">
+                            <field name="comex_operation_ids" widget="many2many_tags"
+                                   options="{'no_create': True}"/>
+                        </group>
+                        <group string="Customs Clearances (Despachos)">
+                            <label for="comex_clearance_ids"/>
+                            <div class="o_row">
+                                <field name="comex_clearance_ids" widget="many2many_tags"
+                                       options="{'no_create': True}"/>
+                                <button name="action_view_comex_clearances"
+                                        type="object"
+                                        class="btn-link"
+                                        invisible="comex_clearance_count == 0">
+                                    <i class="fa fa-arrow-right"/> View Clearances
+                                </button>
+                            </div>
+                            <field name="comex_clearance_count" invisible="1"/>
+                        </group>
+                    </group>
+                    <separator string="COMEX Information"/>
+                    <div class="alert alert-info" role="alert">
+                        <p><strong>COMEX Operations:</strong> Link this invoice to COMEX import/export operations for tracking.</p>
+                        <p><strong>Customs Clearances:</strong> If this is a tribute invoice (Despacho Type 66), it will be automatically linked when created from a customs clearance.</p>
+                    </div>
+                </page>
+            </xpath>
+
+            <!-- Add smart button to header -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_comex_operations"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-ship"
+                        invisible="not comex_operation_ids">
+                    <field name="comex_operation_ids" widget="statinfo" 
+                           string="COMEX Ops"/>
+                </button>
+                <button name="action_view_comex_clearances"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-customs"
+                        invisible="comex_clearance_count == 0">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_value">
+                            <field name="comex_clearance_count"/>
+                        </span>
+                        <span class="o_stat_text">Clearances</span>
+                    </div>
+                </button>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>
