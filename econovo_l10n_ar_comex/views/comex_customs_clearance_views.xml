@@ -106,11 +106,6 @@
                                     <field name="amount_duties" readonly="vendor_bill_id"/>
                                     <field name="amount_statistics" readonly="vendor_bill_id"/>
                                     <field name="amount_fees" readonly="vendor_bill_id"/>
-                                </group>
-                            </group>
-                            <group>
-                                <group/>
-                                <group>
                                     <field name="amount_total" class="oe_subtotal_footer_separator"/>
                                 </group>
                             </group>
