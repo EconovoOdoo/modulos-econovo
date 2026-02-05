@@ -852,19 +852,11 @@ class ComexCustomsClearance(models.Model):
             '|', ('company_id', '=', False), ('company_id', '=', self.company_id.id)
         ])
         
-        import logging
-        _logger = logging.getLogger(__name__)
-        _logger.info("=== TRIBUTE INVOICE DEBUG ===")
-        _logger.info(f"Found {len(mappings)} active product mappings for company {self.company_id.name}")
-        
         field_to_product = {}
         for mapping in mappings:
             field_name = mapping.tribute_field_id.technical_name
-            _logger.info(f"Mapping: field={field_name}, product={mapping.product_id.name if mapping.product_id else 'NONE'}")
             if field_name not in field_to_product:
                 field_to_product[field_name] = mapping.product_id
-        
-        _logger.info(f"field_to_product dict keys: {list(field_to_product.keys())}")
         
         tribute_field_labels = {
             'amount_duties': _('Import Duties (DIE)'),

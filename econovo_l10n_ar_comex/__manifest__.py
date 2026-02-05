@@ -2,41 +2,47 @@
 # Part of Econovo. See LICENSE file for full copyright and licensing details.
 {
     'name': 'Argentina COMEX Operations',
-    'version': '17.0.1.0.0',
+    'version': '17.0.4.1.0',
     'category': 'Inventory/Purchase',
-    'summary': 'Manage import/export operations for Argentina with ARCA and MULC integration',
+    'summary': 'Manage import/export operations for Argentina with automatic tribute tax calculation',
     'description': """
 Argentina COMEX Operations Management
 =====================================
 
-This module provides comprehensive management of international trade operations
-(COMEX - Comercio Exterior) for Argentina, including:
+Comprehensive management of international trade operations (COMEX - Comercio Exterior) 
+for Argentina with full regulatory compliance and automated tax calculation.
 
-**Features:**
-* Dynamic stage management (Kanban-style like CRM/Project)
+**Core Features:**
+* Dynamic Kanban-style workflow for operation stages
+* Multi-shipment tracking with container management
+* Customs clearance (Despacho de Aduana) management
 * MULC (Mercado Único y Libre de Cambios) operations tracking
-* Integration with purchase orders and stock movements
-* Customs clearance tracking (Despacho de Aduana)
-* NCM code management (Nomenclatura Común del Mercosur)
-* Bidirectional date synchronization with purchase orders and pickings
-* Full traceability with lots and serial numbers
-* Support for custom stock locations and routes (user-configured)
+* Bidirectional synchronization with purchase orders and stock movements
+
+**Tribute & Tax Management:**
+* Automatic tax calculation via Tax Groups (IVA 21%, IIGG 6%, IIBB 3%)
+* Smart invoice creation from customs clearance data
+* Configurable product and keyword-based tribute field mapping
+* Bidirectional sync: edit amounts in invoice or clearance
+* Comprehensive audit trail with parsing logs
+
+**Stock Integration:**
+* COMEX-specific transit locations (En Viaje, Puerto, Zona Franca, Depósito Fiscal)
+* Automatic picking redirection to COMEX locations
+* Full product traceability through import lifecycle
+* Support for packages and container tracking
 
 **Regulatory Compliance:**
-* ARCA (ex-AFIP) requirements
-* BCRA MULC regulations
-* Argentine customs procedures
+* ARCA (ex-AFIP) requirements support
+* BCRA MULC regulations compliance
+* Argentine customs procedures workflow
+* Tax group system matching Argentine tax structure
 
-**Integration:**
-* purchase_stock: Integration with purchase order picking redirection
-* stock: Support for transit locations and internal transfers
-* account: MULC exchange rate tracking
-
-**Configuration Required:**
-* Stock locations for COMEX transit (En Viaje, Puerto, Zona Franca, Depósito Fiscal)
-* Stock routes for COMEX import/export operations
-* Picking types for COMEX workflow (COMEX/IN, COMEX/ARR, COMEX/FIS, COMEX/NAC)
-* Push rules for automated stock flow between COMEX locations
+**Technical Architecture:**
+* Smart computed fields with inverse methods for bidirectional sync
+* Configurable tribute field mappings (product and keyword-based)
+* Parse log system for audit and configuration refinement
+* Multi-company support with company-specific configurations
     """,
     'author': 'Jose D. Leonett',
     'website': 'https://github.com/josedleonett',
