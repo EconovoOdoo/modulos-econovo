@@ -60,7 +60,7 @@ class AccountMove(models.Model):
     def action_view_comex_operations(self):
         """Open COMEX operations linked to this invoice."""
         self.ensure_one()
-        action = self.env.ref('econovo_l10n_ar_comex.action_comex_operation').read()[0]
+        action = self.env.ref('econovo_l10n_ar_comex.comex_operation_action').read()[0]
         if len(self.comex_operation_ids) > 1:
             action['domain'] = [('id', 'in', self.comex_operation_ids.ids)]
         elif len(self.comex_operation_ids) == 1:
@@ -73,7 +73,7 @@ class AccountMove(models.Model):
     def action_view_comex_clearances(self):
         """Open customs clearances linked to this invoice."""
         self.ensure_one()
-        action = self.env.ref('econovo_l10n_ar_comex.action_comex_customs_clearance').read()[0]
+        action = self.env.ref('econovo_l10n_ar_comex.comex_customs_clearance_action').read()[0]
         if len(self.comex_clearance_ids) > 1:
             action['domain'] = [('id', 'in', self.comex_clearance_ids.ids)]
         elif len(self.comex_clearance_ids) == 1:
