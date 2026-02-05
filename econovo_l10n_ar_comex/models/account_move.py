@@ -64,7 +64,7 @@ class AccountMove(models.Model):
         if len(self.comex_operation_ids) > 1:
             action['domain'] = [('id', 'in', self.comex_operation_ids.ids)]
         elif len(self.comex_operation_ids) == 1:
-            action['views'] = [(self.env.ref('econovo_l10n_ar_comex.view_comex_operation_form').id, 'form')]
+            action['views'] = [(self.env.ref('econovo_l10n_ar_comex.comex_operation_view_form').id, 'form')]
             action['res_id'] = self.comex_operation_ids.id
         else:
             action = {'type': 'ir.actions.act_window_close'}
@@ -77,7 +77,7 @@ class AccountMove(models.Model):
         if len(self.comex_clearance_ids) > 1:
             action['domain'] = [('id', 'in', self.comex_clearance_ids.ids)]
         elif len(self.comex_clearance_ids) == 1:
-            action['views'] = [(self.env.ref('econovo_l10n_ar_comex.view_comex_customs_clearance_form').id, 'form')]
+            action['views'] = [(self.env.ref('econovo_l10n_ar_comex.comex_customs_clearance_view_form').id, 'form')]
             action['res_id'] = self.comex_clearance_ids.id
         else:
             action = {'type': 'ir.actions.act_window_close'}
