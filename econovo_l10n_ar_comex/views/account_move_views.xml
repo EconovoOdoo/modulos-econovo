@@ -22,7 +22,8 @@
                                    domain="[('operation_type', '=', 'import' if move_type in ('in_invoice', 'in_refund') else 'export')]"/>
                         </group>
                         <group string="Customs Clearances (Despachos)"
-                               invisible="l10n_latam_document_type_id != %(l10n_ar.dc_a_f.1)d">
+                               invisible="not is_comex_type_66">
+                            <field name="is_comex_type_66" invisible="1"/>
                             <label for="comex_clearance_ids"/>
                             <div class="o_row">
                                 <field name="comex_clearance_ids" widget="many2many_tags"

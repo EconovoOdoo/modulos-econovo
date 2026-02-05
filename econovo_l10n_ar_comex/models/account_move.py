@@ -30,6 +30,12 @@ class AccountMove(models.Model):
         compute='_compute_comex_clearance_count',
         store=False,
     )
+    is_comex_type_66 = fields.Boolean(
+        string="Is Type 66 (Despacho)",
+        compute='_compute_is_comex_type_66',
+        store=False,
+        help="True if this is a Document Type 66 (Despacho de Importación)",
+    )
 
     # -------------------------------------------------------------------------
     # COMPUTE METHODS
@@ -38,6 +44,15 @@ class AccountMove(models.Model):
         """Count linked customs clearances."""
         for move in self:
             move.comex_clearance_count = len(move.comex_clearance_ids)
+
+    def _compute_is_comex_type_66(self):
+        """Check if document type is 66 (Despacho de Importación)."""
+        for move in self:
+            # Document Type 66 has code '66'
+            move.is_comex_type_66 = (
+                move.l10n_latam_document_type_id and 
+                move.l10n_latam_document_type_id.code == '66'
+            )
 
     # -------------------------------------------------------------------------
     # ACTION METHODS
