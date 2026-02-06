@@ -27,7 +27,7 @@ class ComexShipment(models.Model):
         string="Internal Reference",
         readonly=True,
         copy=False,
-        default=lambda self: _('New'),
+        default='/',
         help="Internal tracking number (auto-generated for audit purposes).",
     )
     active = fields.Boolean(

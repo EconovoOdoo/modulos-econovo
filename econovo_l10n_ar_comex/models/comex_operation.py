@@ -29,7 +29,7 @@ class ComexOperation(models.Model):
         required=True,
         copy=False,
         readonly=True,
-        default=lambda self: _('New'),
+        default='/',
         tracking=True,
     )
     active = fields.Boolean(
