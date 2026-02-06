@@ -18,7 +18,8 @@
                 <field name="origin_port_id"/>
                 <field name="destination_port_id"/>
                 <field name="container_count"/>
-                <field name="stage_id" widget="badge" optional="show"/>
+                <field name="stage_domain_ids" column_invisible="1"/>
+                <field name="stage_id" widget="badge" optional="show" force_save="1" domain="[('id', 'in', stage_domain_ids)]"/>
             </tree>
         </field>
     </record>
