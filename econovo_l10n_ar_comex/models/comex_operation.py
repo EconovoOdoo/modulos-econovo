@@ -504,6 +504,21 @@ class ComexOperation(models.Model):
     )
 
     # -------------------------------------------------------------------------
+    # CRUD METHODS
+    # -------------------------------------------------------------------------
+    @api.model_create_multi
+    def create(self, vals_list):
+        """Override create to assign sequence when name is '/'."""
+        for vals in vals_list:
+            if 'company_id' in vals:
+                self = self.with_company(vals['company_id'])
+            if vals.get('name', '/') == '/':
+                operation_type = vals.get('operation_type', 'import')
+                seq_code = f'comex.operation.{operation_type}'
+                vals['name'] = self.env['ir.sequence'].next_by_code(seq_code) or '/'
+        return super().create(vals_list)
+
+    # -------------------------------------------------------------------------
     # COMPUTE METHODS
     # -------------------------------------------------------------------------
     @api.depends('payment_instrument_id.name', 'payment_timing_id.name')

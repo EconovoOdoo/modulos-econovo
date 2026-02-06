@@ -116,14 +116,20 @@ class ComexShipment(models.Model):
     # -------------------------------------------------------------------------
     @api.model_create_multi
     def create(self, vals_list):
-        """Override create to assign default stage and prevent infinite loops.
+        """Override create to assign sequence and default stage.
         
         Edge Case 1: Assign operation's stage as default on create
         Edge Case 8: Use context to prevent operation stage recalculation
         during shipment creation, avoiding circular dependencies.
         """
-        # Assign default stage from operation if not provided
         for vals in vals_list:
+            # Handle sequence generation for internal_reference
+            if 'company_id' in vals:
+                self = self.with_company(vals['company_id'])
+            if vals.get('internal_reference', '/') == '/':
+                vals['internal_reference'] = self.env['ir.sequence'].next_by_code('comex.shipment') or '/'
+            
+            # Assign default stage from operation if not provided
             if 'stage_id' not in vals and vals.get('operation_id'):
                 operation = self.env['comex.operation'].browse(vals['operation_id'])
                 if operation.stage_id:
