@@ -27,7 +27,7 @@ class ComexShipment(models.Model):
         string="Internal Reference",
         readonly=True,
         copy=False,
-        default=lambda self: _('New'),
+        default='/',
         help="Internal tracking number (auto-generated for audit purposes).",
     )
     active = fields.Boolean(
@@ -51,7 +51,15 @@ class ComexShipment(models.Model):
         'comex.operation.stage',
         string="Shipment Stage",
         tracking=True,
-        help="Individual stage for this shipment (may differ from operation stage).",
+        help="Individual stage for this shipment (may differ from operation stage). "
+             "Automatically inherits operation stage on creation. "
+             "Only shows stages compatible with the operation type.",
+    )
+    stage_domain_ids = fields.Many2many(
+        'comex.operation.stage',
+        compute='_compute_stage_domain',
+        string="Available Stages",
+        help="Technical field to compute domain for stage_id based on operation_type.",
     )
     current_location_id = fields.Many2one(
         'stock.location',
@@ -59,6 +67,86 @@ class ComexShipment(models.Model):
         domain="[('usage', '=', 'transit')]",
         tracking=True,
     )
+
+    # -------------------------------------------------------------------------
+    # COMPUTE METHODS
+    # -------------------------------------------------------------------------
+    @api.depends('operation_id.operation_type')
+    def _compute_stage_domain(self):
+        """Compute available stages based on operation type.
+        
+        Edge Case 6: Only stages with operation_type='all' or matching 
+        the operation's type should be available.
+        """
+        for record in self:
+            if record.operation_id:
+                record.stage_domain_ids = self.env['comex.operation.stage'].search([
+                    '|',
+                    ('operation_type', '=', 'all'),
+                    ('operation_type', '=', record.operation_id.operation_type),
+                ])
+            else:
+                record.stage_domain_ids = self.env['comex.operation.stage'].search([('operation_type', '=', 'all')])
+
+    @api.onchange('stage_id')
+    def _onchange_stage_id(self):
+        """Validate stage compatibility with operation type.
+        
+        Edge Case 6: Warn if user selects incompatible stage.
+        """
+        if self.stage_id and self.operation_id:
+            if self.stage_id.operation_type not in ('all', self.operation_id.operation_type):
+                return {
+                    'warning': {
+                        'title': _('Incompatible Stage'),
+                        'message': _(
+                            'The selected stage "%s" is for %s operations, '
+                            'but this shipment belongs to a %s operation. '
+                            'Please select a compatible stage.'
+                        ) % (
+                            self.stage_id.name,
+                            self.stage_id.operation_type,
+                            self.operation_id.operation_type
+                        )
+                    }
+                }
+
+    # -------------------------------------------------------------------------
+    # CRUD METHODS
+    # -------------------------------------------------------------------------
+    @api.model_create_multi
+    def create(self, vals_list):
+        """Override create to assign sequence and default stage.
+        
+        Edge Case 1: Assign operation's stage as default on create
+        Edge Case 8: Use context to prevent operation stage recalculation
+        during shipment creation, avoiding circular dependencies.
+        """
+        for vals in vals_list:
+            # Handle sequence generation for internal_reference
+            if 'company_id' in vals:
+                self = self.with_company(vals['company_id'])
+            if vals.get('internal_reference', '/') == '/':
+                vals['internal_reference'] = self.env['ir.sequence'].next_by_code('comex.shipment') or '/'
+            
+            # Assign default stage from operation if not provided
+            if 'stage_id' not in vals and vals.get('operation_id'):
+                operation = self.env['comex.operation'].browse(vals['operation_id'])
+                if operation.stage_id:
+                    vals['stage_id'] = operation.stage_id.id
+        
+        # Create shipments with context to skip operation stage sync
+        shipments = super(ComexShipment, self.with_context(skip_stage_sync=True)).create(vals_list)
+        return shipments
+
+    def write(self, vals):
+        """Override write to handle stage changes properly.
+        
+        When stage_id changes on a shipment, allow operation stage to recalculate
+        (don't use skip_stage_sync context).
+        """
+        # Normal write - will trigger operation stage recalculation via @api.depends
+        return super(ComexShipment, self).write(vals)
 
     # Transport details
     transport_mode = fields.Selection(

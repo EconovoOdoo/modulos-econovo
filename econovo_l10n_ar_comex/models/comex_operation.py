@@ -29,7 +29,7 @@ class ComexOperation(models.Model):
         required=True,
         copy=False,
         readonly=True,
-        default=lambda self: _('New'),
+        default='/',
         tracking=True,
     )
     active = fields.Boolean(
@@ -56,11 +56,17 @@ class ComexOperation(models.Model):
     stage_id = fields.Many2one(
         'comex.operation.stage',
         string="Stage",
+        compute='_compute_stage_from_shipments',
+        store=True,
+        readonly=False,
         default=_default_stage,
         tracking=True,
         group_expand='_read_group_stage_ids',
         domain="['|', ('operation_type', '=', 'all'), ('operation_type', '=', operation_type)]",
         copy=False,
+        help="Operation stage automatically computed from shipment stages. "
+             "Reflects the most advanced stage among all shipments. "
+             "To update, modify shipment stages instead.",
     )
     current_location_id = fields.Many2one(
         'stock.location',
@@ -395,12 +401,14 @@ class ComexOperation(models.Model):
         selection=[
             ('not_paid', 'Not Paid'),
             ('partial', 'Partially Paid'),
-            ('paid', 'Paid'),
+            ('in_payment', 'Paid (Pending Reconciliation)'),
+            ('paid', 'Fully Paid'),
         ],
         string="Purchase Order Payment Status",
         compute='_compute_purchase_order_payment_status',
         store=True,
-        help="Payment status of vendor invoices from purchase orders (imports only).",
+        help="Payment status of vendor invoices from purchase orders (imports only). "
+             "'Paid (Pending Reconciliation)' means payments are registered but not yet reconciled.",
     )
     purchase_order_total_amount = fields.Monetary(
         string="Purchase Order Total",
@@ -429,12 +437,14 @@ class ComexOperation(models.Model):
         selection=[
             ('not_paid', 'Not Collected'),
             ('partial', 'Partially Collected'),
-            ('paid', 'Collected'),
+            ('in_payment', 'Collected (Pending Reconciliation)'),
+            ('paid', 'Fully Collected'),
         ],
         string="Sale Order Payment Status",
         compute='_compute_sale_order_payment_status',
         store=True,
-        help="Collection status of customer invoices from sales orders (exports only).",
+        help="Collection status of customer invoices from sales orders (exports only). "
+             "'Collected (Pending Reconciliation)' means payments are registered but not yet reconciled.",
     )
     sale_order_total_amount = fields.Monetary(
         string="Sale Order Total",
@@ -492,6 +502,21 @@ class ComexOperation(models.Model):
         default=lambda self: self.env.ref('base.ar', raise_if_not_found=False),
         tracking=True,
     )
+
+    # -------------------------------------------------------------------------
+    # CRUD METHODS
+    # -------------------------------------------------------------------------
+    @api.model_create_multi
+    def create(self, vals_list):
+        """Override create to assign sequence when name is '/'."""
+        for vals in vals_list:
+            if 'company_id' in vals:
+                self = self.with_company(vals['company_id'])
+            if vals.get('name', '/') == '/':
+                operation_type = vals.get('operation_type', 'import')
+                seq_code = f'comex.operation.{operation_type}'
+                vals['name'] = self.env['ir.sequence'].next_by_code(seq_code) or '/'
+        return super().create(vals_list)
 
     # -------------------------------------------------------------------------
     # COMPUTE METHODS
@@ -769,8 +794,13 @@ class ComexOperation(models.Model):
             else:
                 # All quantities are invoiced, check payment status
                 if net_residual <= 0:
-                    # Net fully paid (all invoiced and all paid)
-                    record.purchase_order_payment_status = 'paid'
+                    # All paid, check if reconciled
+                    # If all invoices have payment_state='paid', they are fully reconciled
+                    # If any invoice has payment_state='in_payment', payments exist but not reconciled
+                    if all(inv.payment_state == 'paid' for inv in po_invoices):
+                        record.purchase_order_payment_status = 'paid'  # Fully paid & reconciled
+                    else:
+                        record.purchase_order_payment_status = 'in_payment'  # Paid but not reconciled
                 elif paid_amount == 0:
                     # All invoiced but no payments registered yet
                     record.purchase_order_payment_status = 'not_paid'
@@ -889,8 +919,13 @@ class ComexOperation(models.Model):
             else:
                 # All quantities are invoiced, check payment status
                 if net_residual <= 0:
-                    # Net fully collected (all invoiced and all paid)
-                    record.sale_order_payment_status = 'paid'
+                    # All collected, check if reconciled
+                    # If all invoices have payment_state='paid', they are fully reconciled
+                    # If any invoice has payment_state='in_payment', payments exist but not reconciled
+                    if all(inv.payment_state == 'paid' for inv in so_invoices):
+                        record.sale_order_payment_status = 'paid'  # Fully collected & reconciled
+                    else:
+                        record.sale_order_payment_status = 'in_payment'  # Collected but not reconciled
                 elif paid_amount == 0:
                     # All invoiced but no payments registered yet
                     record.sale_order_payment_status = 'not_paid'
@@ -1198,6 +1233,54 @@ class ComexOperation(models.Model):
                     'qty_received': po_line.qty_received,
                     'price_unit': po_line.price_unit,
                 })
+
+    # -------------------------------------------------------------------------
+    # STAGE SYNCHRONIZATION
+    # -------------------------------------------------------------------------
+    @api.depends('shipment_ids.stage_id')
+    def _compute_stage_from_shipments(self):
+        """Compute operation stage from shipment stages.
+        
+        Edge cases handled:
+        - Edge Case 1: Shipments without stage are filtered out
+        - Edge Case 2: If no shipments, maintain current stage (don't reset)
+        - Edge Case 3: Allow automatic regression (stage can go backwards)
+        - Edge Case 6: Filter by operation_type compatibility
+        - Edge Case 8: Use context to prevent infinite loops
+        
+        The stage is computed as the most advanced stage among all shipments.
+        Manual overrides are allowed (readonly=False) but will recalculate when shipments change.
+        """
+        for record in self:
+            # Prevent infinite loops (Edge Case 8)
+            if self.env.context.get('skip_stage_sync'):
+                continue
+                
+            # Filter shipments with stage (Edge Case 1)
+            shipments_with_stage = record.shipment_ids.filtered('stage_id')
+            
+            if not shipments_with_stage:
+                # Edge Case 2: No shipments or none have stage → maintain current stage
+                # Don't reset to default, keep what user has set
+                continue
+            
+            # Edge Case 6: Filter stages by operation_type compatibility
+            # Only consider stages compatible with this operation's type
+            compatible_stages = shipments_with_stage.mapped('stage_id').filtered(
+                lambda s: s.operation_type in ('all', record.operation_type)
+            )
+            
+            if not compatible_stages:
+                # No compatible stages found, maintain current
+                continue
+            
+            # Get most advanced stage (highest sequence)
+            # Edge Case 3: This allows automatic regression if a shipment goes back
+            most_advanced_stage = max(compatible_stages, key=lambda s: s.sequence)
+            
+            # Update only if different (avoid unnecessary writes)
+            if record.stage_id != most_advanced_stage:
+                record.stage_id = most_advanced_stage
 
     # -------------------------------------------------------------------------
     # KANBAN METHODS
