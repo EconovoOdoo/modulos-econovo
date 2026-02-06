@@ -50,7 +50,8 @@
                         <group name="main">
                             <field name="internal_reference" readonly="1"/>
                             <field name="operation_id"/>
-                            <field name="stage_id"/>
+                            <field name="stage_domain_ids" invisible="1"/>
+                            <field name="stage_id" options="{'no_create': True}" domain="[('id', 'in', stage_domain_ids)]"/>
                             <field name="current_location_id"/>
                             <field name="transport_mode" widget="radio" options="{'horizontal': true}"/>
                         </group>

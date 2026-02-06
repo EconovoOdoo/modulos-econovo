@@ -54,10 +54,15 @@ class ComexShipment(models.Model):
         store=True,
         readonly=False,
         tracking=True,
-        domain="['|', ('operation_type', '=', 'all'), ('operation_type', '=', operation_id.operation_type)]",
         help="Individual stage for this shipment (may differ from operation stage). "
              "Automatically inherits operation stage on creation. "
              "Only shows stages compatible with the operation type.",
+    )
+    stage_domain_ids = fields.Many2many(
+        'comex.operation.stage',
+        compute='_compute_stage_domain',
+        string="Available Stages",
+        help="Technical field to compute domain for stage_id based on operation_type.",
     )
     current_location_id = fields.Many2one(
         'stock.location',
@@ -69,6 +74,23 @@ class ComexShipment(models.Model):
     # -------------------------------------------------------------------------
     # COMPUTE METHODS
     # -------------------------------------------------------------------------
+    @api.depends('operation_id.operation_type')
+    def _compute_stage_domain(self):
+        """Compute available stages based on operation type.
+        
+        Edge Case 6: Only stages with operation_type='all' or matching 
+        the operation's type should be available.
+        """
+        for record in self:
+            if record.operation_id:
+                record.stage_domain_ids = self.env['comex.operation.stage'].search([
+                    '|',
+                    ('operation_type', '=', 'all'),
+                    ('operation_type', '=', record.operation_id.operation_type),
+                ])
+            else:
+                record.stage_domain_ids = self.env['comex.operation.stage'].search([('operation_type', '=', 'all')])
+
     @api.depends('operation_id.stage_id')
     def _compute_default_stage(self):
         """Set default stage from operation when shipment is created.
@@ -84,6 +106,29 @@ class ComexShipment(models.Model):
             # Only set if stage is not already set
             if not record.stage_id and record.operation_id and record.operation_id.stage_id:
                 record.stage_id = record.operation_id.stage_id
+
+    @api.onchange('stage_id')
+    def _onchange_stage_id(self):
+        """Validate stage compatibility with operation type.
+        
+        Edge Case 6: Warn if user selects incompatible stage.
+        """
+        if self.stage_id and self.operation_id:
+            if self.stage_id.operation_type not in ('all', self.operation_id.operation_type):
+                return {
+                    'warning': {
+                        'title': _('Incompatible Stage'),
+                        'message': _(
+                            'The selected stage "%s" is for %s operations, '
+                            'but this shipment belongs to a %s operation. '
+                            'Please select a compatible stage.'
+                        ) % (
+                            self.stage_id.name,
+                            self.stage_id.operation_type,
+                            self.operation_id.operation_type
+                        )
+                    }
+                }
 
     # -------------------------------------------------------------------------
     # CRUD METHODS
