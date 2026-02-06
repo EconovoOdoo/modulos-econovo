@@ -29,6 +29,10 @@
         <field name="model">comex.shipment</field>
         <field name="arch" type="xml">
             <form string="Shipment">
+                <header>
+                    <field name="stage_domain_ids" invisible="1"/>
+                    <field name="stage_id" widget="statusbar" options="{'clickable': '1', 'fold_field': 'fold'}" domain="[('id', 'in', stage_domain_ids)]"/>
+                </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
                         <button name="action_view_pickings" type="object" class="oe_stat_button" icon="fa-truck"
