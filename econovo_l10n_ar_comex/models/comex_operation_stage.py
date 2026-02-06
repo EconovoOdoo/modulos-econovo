@@ -60,7 +60,7 @@ class ComexOperationStage(models.Model):
             'Sequence must be unique per operation type! Each operation type (import/export/all) must have unique sequences.'
         ),
     ]
-    )
+
     is_starting_stage = fields.Boolean(
         string="Starting Stage",
         default=False,
