@@ -65,7 +65,8 @@ class ComexOperation(models.Model):
         domain="['|', ('operation_type', '=', 'all'), ('operation_type', '=', operation_type)]",
         copy=False,
         help="Operation stage automatically computed from shipment stages. "
-             "Can be manually overridden, but will recalculate when shipments are modified.",
+             "Reflects the most advanced stage among all shipments. "
+             "To update, modify shipment stages instead.",
     )
     current_location_id = fields.Many2one(
         'stock.location',

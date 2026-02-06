@@ -170,7 +170,7 @@
                             icon="fa-usd"/>
                     <button name="action_create_customs_clearance" string="Create Customs Clearance" type="object" 
                             icon="fa-gavel"/>
-                    <field name="stage_id" widget="statusbar" options="{'clickable': '1', 'fold_field': 'fold'}"/>
+                    <field name="stage_id" widget="statusbar" options="{'clickable': '0', 'fold_field': 'fold'}" readonly="1"/>
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
