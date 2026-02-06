@@ -134,6 +134,7 @@
                        optional="show"
                        invisible="operation_type != 'import'"
                        decoration-success="purchase_order_payment_status == 'paid'"
+                       decoration-info="purchase_order_payment_status == 'in_payment'"
                        decoration-warning="purchase_order_payment_status == 'partial'"
                        decoration-danger="purchase_order_payment_status == 'not_paid'"/>
                 <field name="sale_order_payment_status" 
@@ -142,6 +143,7 @@
                        optional="show"
                        invisible="operation_type != 'export'"
                        decoration-success="sale_order_payment_status == 'paid'"
+                       decoration-info="sale_order_payment_status == 'in_payment'"
                        decoration-warning="sale_order_payment_status == 'partial'"
                        decoration-danger="sale_order_payment_status == 'not_paid'"/>
                 <field name="invoice_ids" 

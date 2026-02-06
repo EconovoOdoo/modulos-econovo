@@ -395,12 +395,14 @@ class ComexOperation(models.Model):
         selection=[
             ('not_paid', 'Not Paid'),
             ('partial', 'Partially Paid'),
-            ('paid', 'Paid'),
+            ('in_payment', 'Paid (Pending Reconciliation)'),
+            ('paid', 'Fully Paid'),
         ],
         string="Purchase Order Payment Status",
         compute='_compute_purchase_order_payment_status',
         store=True,
-        help="Payment status of vendor invoices from purchase orders (imports only).",
+        help="Payment status of vendor invoices from purchase orders (imports only). "
+             "'Paid (Pending Reconciliation)' means payments are registered but not yet reconciled.",
     )
     purchase_order_total_amount = fields.Monetary(
         string="Purchase Order Total",
@@ -429,12 +431,14 @@ class ComexOperation(models.Model):
         selection=[
             ('not_paid', 'Not Collected'),
             ('partial', 'Partially Collected'),
-            ('paid', 'Collected'),
+            ('in_payment', 'Collected (Pending Reconciliation)'),
+            ('paid', 'Fully Collected'),
         ],
         string="Sale Order Payment Status",
         compute='_compute_sale_order_payment_status',
         store=True,
-        help="Collection status of customer invoices from sales orders (exports only).",
+        help="Collection status of customer invoices from sales orders (exports only). "
+             "'Collected (Pending Reconciliation)' means payments are registered but not yet reconciled.",
     )
     sale_order_total_amount = fields.Monetary(
         string="Sale Order Total",
@@ -769,8 +773,13 @@ class ComexOperation(models.Model):
             else:
                 # All quantities are invoiced, check payment status
                 if net_residual <= 0:
-                    # Net fully paid (all invoiced and all paid)
-                    record.purchase_order_payment_status = 'paid'
+                    # All paid, check if reconciled
+                    # If all invoices have payment_state='paid', they are fully reconciled
+                    # If any invoice has payment_state='in_payment', payments exist but not reconciled
+                    if all(inv.payment_state == 'paid' for inv in po_invoices):
+                        record.purchase_order_payment_status = 'paid'  # Fully paid & reconciled
+                    else:
+                        record.purchase_order_payment_status = 'in_payment'  # Paid but not reconciled
                 elif paid_amount == 0:
                     # All invoiced but no payments registered yet
                     record.purchase_order_payment_status = 'not_paid'
@@ -889,8 +898,13 @@ class ComexOperation(models.Model):
             else:
                 # All quantities are invoiced, check payment status
                 if net_residual <= 0:
-                    # Net fully collected (all invoiced and all paid)
-                    record.sale_order_payment_status = 'paid'
+                    # All collected, check if reconciled
+                    # If all invoices have payment_state='paid', they are fully reconciled
+                    # If any invoice has payment_state='in_payment', payments exist but not reconciled
+                    if all(inv.payment_state == 'paid' for inv in so_invoices):
+                        record.sale_order_payment_status = 'paid'  # Fully collected & reconciled
+                    else:
+                        record.sale_order_payment_status = 'in_payment'  # Collected but not reconciled
                 elif paid_amount == 0:
                     # All invoiced but no payments registered yet
                     record.sale_order_payment_status = 'not_paid'
