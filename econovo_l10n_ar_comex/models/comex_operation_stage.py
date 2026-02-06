@@ -49,6 +49,18 @@ class ComexOperationStage(models.Model):
         required=True,
         help="Type of operations this stage applies to.",
     )
+
+    # -------------------------------------------------------------------------
+    # CONSTRAINTS
+    # -------------------------------------------------------------------------
+    _sql_constraints = [
+        (
+            'sequence_operation_type_unique',
+            'UNIQUE(sequence, operation_type)',
+            'Sequence must be unique per operation type! Each operation type (import/export/all) must have unique sequences.'
+        ),
+    ]
+    )
     is_starting_stage = fields.Boolean(
         string="Starting Stage",
         default=False,

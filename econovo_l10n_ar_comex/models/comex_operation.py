@@ -56,11 +56,16 @@ class ComexOperation(models.Model):
     stage_id = fields.Many2one(
         'comex.operation.stage',
         string="Stage",
+        compute='_compute_stage_from_shipments',
+        store=True,
+        readonly=False,
         default=_default_stage,
         tracking=True,
         group_expand='_read_group_stage_ids',
         domain="['|', ('operation_type', '=', 'all'), ('operation_type', '=', operation_type)]",
         copy=False,
+        help="Operation stage automatically computed from shipment stages. "
+             "Can be manually overridden, but will recalculate when shipments are modified.",
     )
     current_location_id = fields.Many2one(
         'stock.location',
@@ -1212,6 +1217,54 @@ class ComexOperation(models.Model):
                     'qty_received': po_line.qty_received,
                     'price_unit': po_line.price_unit,
                 })
+
+    # -------------------------------------------------------------------------
+    # STAGE SYNCHRONIZATION
+    # -------------------------------------------------------------------------
+    @api.depends('shipment_ids.stage_id')
+    def _compute_stage_from_shipments(self):
+        """Compute operation stage from shipment stages.
+        
+        Edge cases handled:
+        - Edge Case 1: Shipments without stage are filtered out
+        - Edge Case 2: If no shipments, maintain current stage (don't reset)
+        - Edge Case 3: Allow automatic regression (stage can go backwards)
+        - Edge Case 6: Filter by operation_type compatibility
+        - Edge Case 8: Use context to prevent infinite loops
+        
+        The stage is computed as the most advanced stage among all shipments.
+        Manual overrides are allowed (readonly=False) but will recalculate when shipments change.
+        """
+        for record in self:
+            # Prevent infinite loops (Edge Case 8)
+            if self.env.context.get('skip_stage_sync'):
+                continue
+                
+            # Filter shipments with stage (Edge Case 1)
+            shipments_with_stage = record.shipment_ids.filtered('stage_id')
+            
+            if not shipments_with_stage:
+                # Edge Case 2: No shipments or none have stage → maintain current stage
+                # Don't reset to default, keep what user has set
+                continue
+            
+            # Edge Case 6: Filter stages by operation_type compatibility
+            # Only consider stages compatible with this operation's type
+            compatible_stages = shipments_with_stage.mapped('stage_id').filtered(
+                lambda s: s.operation_type in ('all', record.operation_type)
+            )
+            
+            if not compatible_stages:
+                # No compatible stages found, maintain current
+                continue
+            
+            # Get most advanced stage (highest sequence)
+            # Edge Case 3: This allows automatic regression if a shipment goes back
+            most_advanced_stage = max(compatible_stages, key=lambda s: s.sequence)
+            
+            # Update only if different (avoid unnecessary writes)
+            if record.stage_id != most_advanced_stage:
+                record.stage_id = most_advanced_stage
 
     # -------------------------------------------------------------------------
     # KANBAN METHODS

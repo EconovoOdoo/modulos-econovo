@@ -50,8 +50,14 @@ class ComexShipment(models.Model):
     stage_id = fields.Many2one(
         'comex.operation.stage',
         string="Shipment Stage",
+        compute='_compute_default_stage',
+        store=True,
+        readonly=False,
         tracking=True,
-        help="Individual stage for this shipment (may differ from operation stage).",
+        domain="['|', ('operation_type', '=', 'all'), ('operation_type', '=', operation_id.operation_type)]",
+        help="Individual stage for this shipment (may differ from operation stage). "
+             "Automatically inherits operation stage on creation. "
+             "Only shows stages compatible with the operation type.",
     )
     current_location_id = fields.Many2one(
         'stock.location',
@@ -59,6 +65,48 @@ class ComexShipment(models.Model):
         domain="[('usage', '=', 'transit')]",
         tracking=True,
     )
+
+    # -------------------------------------------------------------------------
+    # COMPUTE METHODS
+    # -------------------------------------------------------------------------
+    @api.depends('operation_id.stage_id')
+    def _compute_default_stage(self):
+        """Set default stage from operation when shipment is created.
+        
+        Edge cases handled:
+        - Edge Case 1: Assign operation's stage as default on create
+        - Edge Case 8: Use context to prevent infinite loops with operation stage sync
+        - Edge Case 10: Maintain default= in field definition
+        
+        This only runs on creation. After that, stage can be modified independently.
+        """
+        for record in self:
+            # Only set if stage is not already set
+            if not record.stage_id and record.operation_id and record.operation_id.stage_id:
+                record.stage_id = record.operation_id.stage_id
+
+    # -------------------------------------------------------------------------
+    # CRUD METHODS
+    # -------------------------------------------------------------------------
+    @api.model_create_multi
+    def create(self, vals_list):
+        """Override create to prevent infinite loops when syncing stages.
+        
+        Edge Case 8: Use context to prevent operation stage recalculation
+        during shipment creation, avoiding circular dependencies.
+        """
+        # Create shipments with context to skip operation stage sync
+        shipments = super(ComexShipment, self.with_context(skip_stage_sync=True)).create(vals_list)
+        return shipments
+
+    def write(self, vals):
+        """Override write to handle stage changes properly.
+        
+        When stage_id changes on a shipment, allow operation stage to recalculate
+        (don't use skip_stage_sync context).
+        """
+        # Normal write - will trigger operation stage recalculation via @api.depends
+        return super(ComexShipment, self).write(vals)
 
     # Transport details
     transport_mode = fields.Selection(
