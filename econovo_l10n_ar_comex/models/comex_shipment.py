@@ -50,9 +50,6 @@ class ComexShipment(models.Model):
     stage_id = fields.Many2one(
         'comex.operation.stage',
         string="Shipment Stage",
-        compute='_compute_default_stage',
-        store=True,
-        readonly=False,
         tracking=True,
         help="Individual stage for this shipment (may differ from operation stage). "
              "Automatically inherits operation stage on creation. "
@@ -91,22 +88,6 @@ class ComexShipment(models.Model):
             else:
                 record.stage_domain_ids = self.env['comex.operation.stage'].search([('operation_type', '=', 'all')])
 
-    @api.depends('operation_id.stage_id')
-    def _compute_default_stage(self):
-        """Set default stage from operation when shipment is created.
-        
-        Edge cases handled:
-        - Edge Case 1: Assign operation's stage as default on create
-        - Edge Case 8: Use context to prevent infinite loops with operation stage sync
-        - Edge Case 10: Maintain default= in field definition
-        
-        This only runs on creation. After that, stage can be modified independently.
-        """
-        for record in self:
-            # Only set if stage is not already set
-            if not record.stage_id and record.operation_id and record.operation_id.stage_id:
-                record.stage_id = record.operation_id.stage_id
-
     @api.onchange('stage_id')
     def _onchange_stage_id(self):
         """Validate stage compatibility with operation type.
@@ -135,11 +116,19 @@ class ComexShipment(models.Model):
     # -------------------------------------------------------------------------
     @api.model_create_multi
     def create(self, vals_list):
-        """Override create to prevent infinite loops when syncing stages.
+        """Override create to assign default stage and prevent infinite loops.
         
+        Edge Case 1: Assign operation's stage as default on create
         Edge Case 8: Use context to prevent operation stage recalculation
         during shipment creation, avoiding circular dependencies.
         """
+        # Assign default stage from operation if not provided
+        for vals in vals_list:
+            if 'stage_id' not in vals and vals.get('operation_id'):
+                operation = self.env['comex.operation'].browse(vals['operation_id'])
+                if operation.stage_id:
+                    vals['stage_id'] = operation.stage_id.id
+        
         # Create shipments with context to skip operation stage sync
         shipments = super(ComexShipment, self.with_context(skip_stage_sync=True)).create(vals_list)
         return shipments
