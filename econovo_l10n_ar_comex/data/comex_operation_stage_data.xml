@@ -8,7 +8,6 @@
             <field name="code">comex.operation.import</field>
             <field name="prefix">IMP/%(year)s/</field>
             <field name="padding">5</field>
-            <field name="company_id" eval="False"/>
         </record>
 
         <record id="sequence_comex_operation_export" model="ir.sequence">
@@ -16,7 +15,6 @@
             <field name="code">comex.operation.export</field>
             <field name="prefix">EXP/%(year)s/</field>
             <field name="padding">5</field>
-            <field name="company_id" eval="False"/>
         </record>
 
         <record id="sequence_comex_shipment" model="ir.sequence">
@@ -24,7 +22,6 @@
             <field name="code">comex.shipment</field>
             <field name="prefix">SHP/%(year)s/</field>
             <field name="padding">5</field>
-            <field name="company_id" eval="False"/>
         </record>
 
         <record id="sequence_comex_customs_clearance" model="ir.sequence">
@@ -32,7 +29,6 @@
             <field name="code">comex.customs.clearance</field>
             <field name="prefix">DSP/%(year)s/</field>
             <field name="padding">5</field>
-            <field name="company_id" eval="False"/>
         </record>
 
         <record id="sequence_comex_mulc" model="ir.sequence">
@@ -40,7 +36,6 @@
             <field name="code">comex.mulc</field>
             <field name="prefix">MULC/%(year)s/</field>
             <field name="padding">5</field>
-            <field name="company_id" eval="False"/>
         </record>
 
         <!-- Default Stages for Import Operations -->
