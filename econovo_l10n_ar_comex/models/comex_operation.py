@@ -332,13 +332,14 @@ class ComexOperation(models.Model):
         selection=[
             ('not_paid', 'Not Paid'),
             ('partial', 'Partially Paid'),
-            ('paid', 'Paid'),
-            ('overpaid', 'Overpaid'),
+            ('in_payment', 'Paid (Pending Reconciliation)'),
+            ('paid', 'Fully Paid'),
         ],
         string="Commercial Payment Status",
         compute='_compute_commercial_payment_status',
         store=True,
-        help="Payment status of commercial invoices (suppliers and customers, excluding customs tributes).",
+        help="Payment status of commercial invoices (suppliers and customers, excluding customs tributes). "
+             "'Paid (Pending Reconciliation)' means payments are registered but not yet reconciled.",
     )
     commercial_total_amount = fields.Monetary(
         string="Commercial Total",
@@ -367,12 +368,14 @@ class ComexOperation(models.Model):
         selection=[
             ('not_paid', 'Not Paid'),
             ('partial', 'Partially Paid'),
-            ('paid', 'Paid'),
+            ('in_payment', 'Paid (Pending Reconciliation)'),
+            ('paid', 'Fully Paid'),
         ],
         string="Customs Payment Status",
         compute='_compute_customs_payment_status',
         store=True,
-        help="Payment status of customs tributes (VEP - Volante Electrónico de Pago from ARCA).",
+        help="Payment status of customs tributes (VEP - Volante Electrónico de Pago from ARCA). "
+             "'Paid (Pending Reconciliation)' means payments are registered but not yet reconciled.",
     )
     customs_total_amount = fields.Monetary(
         string="Customs Total",
@@ -674,8 +677,13 @@ class ComexOperation(models.Model):
             else:
                 # All quantities are invoiced, check payment status
                 if net_residual <= 0:
-                    # Net fully paid (all invoiced and all paid)
-                    record.commercial_payment_status = 'paid'
+                    # All paid, check if reconciled
+                    # If all invoices have payment_state='paid', they are fully reconciled
+                    # If any invoice has payment_state='in_payment', payments exist but not reconciled
+                    if all(inv.payment_state == 'paid' for inv in commercial_invoices):
+                        record.commercial_payment_status = 'paid'  # Fully paid & reconciled
+                    else:
+                        record.commercial_payment_status = 'in_payment'  # Paid but not reconciled
                 elif paid_amount == 0:
                     # All invoiced but no payments registered yet
                     record.commercial_payment_status = 'not_paid'
@@ -1060,8 +1068,13 @@ class ComexOperation(models.Model):
                 # No net amount to pay (refunds >= invoices)
                 record.customs_payment_status = 'not_paid'
             elif net_residual <= 0:
-                # Net fully paid (invoices > refunds and all paid)
-                record.customs_payment_status = 'paid'
+                # All paid, check if reconciled
+                # If all invoices have payment_state='paid', they are fully reconciled
+                # If any invoice has payment_state='in_payment', payments exist but not reconciled
+                if all(inv.payment_state == 'paid' for inv in customs_invoices):
+                    record.customs_payment_status = 'paid'  # Fully paid & reconciled
+                else:
+                    record.customs_payment_status = 'in_payment'  # Paid but not reconciled
             elif paid_amount == 0:
                 # No payments registered yet
                 record.customs_payment_status = 'not_paid'

@@ -115,6 +115,7 @@
                        widget="badge" 
                        optional="show"
                        decoration-success="commercial_payment_status == 'paid'"
+                       decoration-info="commercial_payment_status == 'in_payment'"
                        decoration-warning="commercial_payment_status == 'partial'"
                        decoration-danger="commercial_payment_status == 'not_paid'"/>
                 <field name="currency_ars_id" column_invisible="1"/>
@@ -126,6 +127,7 @@
                        widget="badge" 
                        optional="show"
                        decoration-success="customs_payment_status == 'paid'"
+                       decoration-info="customs_payment_status == 'in_payment'"
                        decoration-warning="customs_payment_status == 'partial'"
                        decoration-danger="customs_payment_status == 'not_paid'"/>
                 <field name="purchase_order_payment_status" 
