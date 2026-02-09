@@ -11,13 +11,15 @@
             <div name="button_box" position="inside">
                 <button type="object" name="action_view_comex_operations"
                         class="oe_stat_button" icon="fa-globe"
-                        invisible="comex_operation_count == 0">
+                        invisible="comex_operation_count == 0"
+                        groups="econovo_l10n_ar_comex.group_comex_user,econovo_l10n_ar_comex.group_comex_manager">
                     <field name="comex_operation_count" widget="statinfo" string="COMEX Ops"/>
                 </button>
             </div>
             <!-- Add COMEX fields in Sales & Purchase tab -->
             <page name="sales_purchases" position="inside">
-                <group string="COMEX Information" name="comex_info">
+                <group string="COMEX Information" name="comex_info"
+                       groups="econovo_l10n_ar_comex.group_comex_user,econovo_l10n_ar_comex.group_comex_manager">
                     <group>
                         <field name="is_customs_broker"/>
                         <field name="is_freight_forwarder"/>
