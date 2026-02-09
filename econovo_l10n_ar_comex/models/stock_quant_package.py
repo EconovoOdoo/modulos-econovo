@@ -27,6 +27,7 @@ class StockQuantPackage(models.Model):
         ondelete='set null',
         index=True,
         help="COMEX shipment to which this container belongs",
+        groups='econovo_l10n_ar_comex.group_comex_user',
     )
     comex_operation_id = fields.Many2one(
         'comex.operation',
@@ -34,6 +35,7 @@ class StockQuantPackage(models.Model):
         related='comex_shipment_id.operation_id',
         store=True,
         help="COMEX operation (derived from shipment)",
+        groups='econovo_l10n_ar_comex.group_comex_user',
     )
 
     # Container Identification
@@ -43,11 +45,13 @@ class StockQuantPackage(models.Model):
         index=True,
         help="Official container number (e.g., MAEU1234567890). "
              "Standard format: 4 letters (owner) + 6 digits + 1 check digit",
+        groups='econovo_l10n_ar_comex.group_comex_user',
     )
     comex_seal_number = fields.Char(
         string="Seal Number",
         copy=False,
         help="Customs seal number",
+        groups='econovo_l10n_ar_comex.group_comex_user',
     )
     
     # Physical Characteristics
@@ -55,11 +59,13 @@ class StockQuantPackage(models.Model):
         string="Volume (m³)",
         digits=(10, 2),
         help="Container volume in cubic meters",
+        groups='econovo_l10n_ar_comex.group_comex_user',
     )
     comex_weight_net = fields.Float(
         string="Net Weight",
         digits='Stock Weight',
         help="Net weight (cargo only, excluding tare)",
+        groups='econovo_l10n_ar_comex.group_comex_user',
     )
     comex_weight_tare = fields.Float(
         string="Tare Weight",
@@ -67,6 +73,7 @@ class StockQuantPackage(models.Model):
         compute='_compute_comex_weight_tare',
         store=True,
         help="Container tare weight (from package type)",
+        groups='econovo_l10n_ar_comex.group_comex_user',
     )
     comex_weight_gross = fields.Float(
         string="Gross Weight",
@@ -75,6 +82,7 @@ class StockQuantPackage(models.Model):
         inverse='_inverse_comex_weight_gross',
         store=True,
         help="Gross weight including tare (net weight + tare weight)",
+        groups='econovo_l10n_ar_comex.group_comex_user',
     )
     
     # Technical
@@ -84,6 +92,7 @@ class StockQuantPackage(models.Model):
         store=True,
         search='_search_is_comex_container',
         help="Whether this package is a COMEX shipping container",
+        groups='econovo_l10n_ar_comex.group_comex_user',
     )
 
     # -------------------------------------------------------------------------
@@ -142,7 +151,7 @@ class StockQuantPackage(models.Model):
             
             # Set location from shipment's current location if available
             if vals.get('comex_shipment_id') and not vals.get('location_id'):
-                shipment = self.env['comex.shipment'].browse(vals['comex_shipment_id'])
+                shipment = self.env['comex.shipment'].sudo().browse(vals['comex_shipment_id'])
                 if shipment.current_location_id:
                     vals['location_id'] = shipment.current_location_id.id
         

@@ -8,14 +8,17 @@
         <field name="inherit_id" ref="stock.view_picking_form"/>
         <field name="arch" type="xml">
             <field name="origin" position="after">
-                <field name="comex_operation_id" options="{'no_create': True}"/>
+                <field name="comex_operation_id" options="{'no_create': True}"
+                       groups="econovo_l10n_ar_comex.group_comex_user"/>
                 <field name="comex_shipment_id" options="{'no_create': True}"
                        domain="[('operation_id', '=', comex_operation_id)]"
-                       invisible="not comex_operation_id"/>
+                       invisible="not comex_operation_id"
+                       groups="econovo_l10n_ar_comex.group_comex_user"/>
             </field>
             <!-- Add COMEX page/tab when shipment is set -->
             <page name="extra" position="before">
-                <page string="COMEX" name="comex" invisible="not comex_shipment_id">
+                <page string="COMEX" name="comex" invisible="not comex_shipment_id"
+                      groups="econovo_l10n_ar_comex.group_comex_user">
                     <group>
                         <group string="Shipment Info">
                             <field name="comex_shipment_id" string="Shipment" readonly="1"/>
@@ -50,8 +53,10 @@
         <field name="inherit_id" ref="stock.vpicktree"/>
         <field name="arch" type="xml">
             <field name="origin" position="after">
-                <field name="comex_operation_id" optional="hide"/>
-                <field name="comex_shipment_id" optional="hide"/>
+                <field name="comex_operation_id" optional="hide"
+                       groups="econovo_l10n_ar_comex.group_comex_user"/>
+                <field name="comex_shipment_id" optional="hide"
+                       groups="econovo_l10n_ar_comex.group_comex_user"/>
             </field>
         </field>
     </record>
@@ -64,12 +69,16 @@
         <field name="arch" type="xml">
             <filter name="starred" position="after">
                 <separator/>
-                <filter name="filter_comex" string="COMEX Transfers" domain="[('comex_operation_id', '!=', False)]"/>
-                <filter name="filter_comex_shipment" string="With Shipment" domain="[('comex_shipment_id', '!=', False)]"/>
+                <filter name="filter_comex" string="COMEX Transfers" domain="[('comex_operation_id', '!=', False)]"
+                        groups="econovo_l10n_ar_comex.group_comex_user"/>
+                <filter name="filter_comex_shipment" string="With Shipment" domain="[('comex_shipment_id', '!=', False)]"
+                        groups="econovo_l10n_ar_comex.group_comex_user"/>
             </filter>
             <field name="origin" position="after">
-                <field name="comex_operation_id"/>
-                <field name="comex_shipment_id"/>
+                <field name="comex_operation_id"
+                       groups="econovo_l10n_ar_comex.group_comex_user"/>
+                <field name="comex_shipment_id"
+                       groups="econovo_l10n_ar_comex.group_comex_user"/>
             </field>
         </field>
     </record>

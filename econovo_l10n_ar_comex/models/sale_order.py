@@ -15,12 +15,14 @@ class SaleOrder(models.Model):
         tracking=True,
         domain="[('operation_type', '=', 'export')]",
         help="COMEX export operation associated with this sales order.",
+        groups='econovo_l10n_ar_comex.group_comex_user',
     )
     is_comex = fields.Boolean(
         string="Is COMEX",
         compute='_compute_is_comex',
         store=True,
         help="Indicates if this sales order is linked to a COMEX operation.",
+        groups='econovo_l10n_ar_comex.group_comex_user',
     )
 
     @api.depends('comex_operation_id')
@@ -34,8 +36,9 @@ class SaleOrder(models.Model):
         
         Simply assigns comex_operation_id on all pickings (including done/canceled).
         Sync is done at the COMEX operation level when syncing dates or products.
+        Uses sudo() because COMEX fields have groups= restriction.
         """
-        for order in self:
+        for order in self.sudo():
             if order.comex_operation_id:
                 # Link all pickings to operation
                 order.picking_ids.write({
@@ -56,7 +59,7 @@ class SaleOrder(models.Model):
         orders._link_pickings_to_comex_operation()
         
         # Trigger COMEX sync for operations
-        operations = orders.filtered('comex_operation_id').comex_operation_id
+        operations = orders.sudo().filtered('comex_operation_id').comex_operation_id
         if operations:
             self.env['comex.operation.product.line'].sudo()._sync_operations(operations)
         
@@ -65,13 +68,13 @@ class SaleOrder(models.Model):
     def write(self, vals):
         """Sync date_planned, link/unlink pickings when comex_operation_id changes, and trigger sync on state changes."""
         # Store old operations before write
-        old_operations = self.mapped('comex_operation_id') if 'comex_operation_id' in vals else self.env['comex.operation']
+        old_operations = self.sudo().mapped('comex_operation_id') if 'comex_operation_id' in vals else self.env['comex.operation']
         
         result = super().write(vals)
         
         # Sync date_planned to operation date_eta if comex_operation_id is set
         if 'commitment_date' in vals:
-            for order in self.filtered('comex_operation_id'):
+            for order in self.sudo().filtered('comex_operation_id'):
                 if order.commitment_date:
                     order.comex_operation_id.with_context(skip_comex_sync=True).write({
                         'date_eta': order.commitment_date
@@ -88,7 +91,7 @@ class SaleOrder(models.Model):
                 self.env['comex.operation.product.line'].sudo()._sync_operations(old_operations)
             
             # Sync new operations
-            new_operations = self.filtered('comex_operation_id').comex_operation_id
+            new_operations = self.sudo().filtered('comex_operation_id').comex_operation_id
             if new_operations:
                 self.env['comex.operation.product.line'].sudo()._sync_operations(new_operations)
         

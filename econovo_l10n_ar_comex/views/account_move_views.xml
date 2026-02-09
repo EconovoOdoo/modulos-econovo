@@ -14,7 +14,8 @@
             <!-- Add COMEX page in notebook for vendor bills (type 66) -->
             <xpath expr="//notebook" position="inside">
                 <page string="COMEX" name="comex" 
-                      invisible="move_type not in ('in_invoice', 'in_refund', 'out_invoice', 'out_refund')">
+                      invisible="move_type not in ('in_invoice', 'in_refund', 'out_invoice', 'out_refund')"
+                      groups="econovo_l10n_ar_comex.group_comex_user">
                     <group>
                         <group string="Linked COMEX Operations">
                             <field name="comex_operation_ids" widget="many2many_tags"
@@ -56,7 +57,8 @@
                         type="object"
                         class="oe_stat_button"
                         icon="fa-ship"
-                        invisible="not comex_operation_ids">
+                        invisible="not comex_operation_ids"
+                        groups="econovo_l10n_ar_comex.group_comex_user">
                     <field name="comex_operation_ids" widget="statinfo" 
                            string="COMEX Ops"/>
                 </button>
@@ -64,7 +66,8 @@
                         type="object"
                         class="oe_stat_button"
                         icon="fa-customs"
-                        invisible="comex_clearance_count == 0">
+                        invisible="comex_clearance_count == 0"
+                        groups="econovo_l10n_ar_comex.group_comex_user">
                     <div class="o_field_widget o_stat_info">
                         <span class="o_stat_value">
                             <field name="comex_clearance_count"/>

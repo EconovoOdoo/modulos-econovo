@@ -11,14 +11,16 @@
             <div name="button_box" position="inside">
                 <button name="action_view_comex_operation" type="object" 
                         class="oe_stat_button" icon="fa-globe"
-                        invisible="not comex_operation_id">
+                        invisible="not comex_operation_id"
+                        groups="econovo_l10n_ar_comex.group_comex_user">
                     <div class="o_stat_info">
                         <span class="o_stat_text">COMEX</span>
                     </div>
                 </button>
                 <button name="action_create_comex_operation" type="object"
                         class="oe_stat_button" icon="fa-plus-circle"
-                        invisible="comex_operation_id or state == 'cancel'">
+                        invisible="comex_operation_id or state == 'cancel'"
+                        groups="econovo_l10n_ar_comex.group_comex_user">
                     <div class="o_stat_info">
                         <span class="o_stat_text">Create</span>
                         <span class="o_stat_text">COMEX</span>
@@ -29,7 +31,8 @@
             <field name="partner_ref" position="after">
                 <field name="comex_operation_id" 
                        options="{'no_create': True}"
-                       context="{'default_partner_id': partner_id, 'default_operation_type': 'import'}"/>
+                       context="{'default_partner_id': partner_id, 'default_operation_type': 'import'}"
+                       groups="econovo_l10n_ar_comex.group_comex_user"/>
             </field>
         </field>
     </record>
@@ -41,7 +44,8 @@
         <field name="inherit_id" ref="purchase.purchase_order_kpis_tree"/>
         <field name="arch" type="xml">
             <field name="partner_id" position="after">
-                <field name="comex_operation_id" optional="show"/>
+                <field name="comex_operation_id" optional="show"
+                       groups="econovo_l10n_ar_comex.group_comex_user"/>
             </field>
         </field>
     </record>
@@ -53,14 +57,17 @@
         <field name="inherit_id" ref="purchase.view_purchase_order_filter"/>
         <field name="arch" type="xml">
             <field name="origin" position="after">
-                <field name="comex_operation_id" string="COMEX Operation"/>
+                <field name="comex_operation_id" string="COMEX Operation"
+                       groups="econovo_l10n_ar_comex.group_comex_user"/>
             </field>
             <filter name="starred" position="before">
-                <filter name="filter_comex" string="COMEX Operations" domain="[('comex_operation_id', '!=', False)]"/>
+                <filter name="filter_comex" string="COMEX Operations" domain="[('comex_operation_id', '!=', False)]"
+                        groups="econovo_l10n_ar_comex.group_comex_user"/>
                 <separator/>
             </filter>
             <filter name="vendor" position="after">
-                <filter name="group_comex" string="COMEX Operation" context="{'group_by': 'comex_operation_id'}"/>
+                <filter name="group_comex" string="COMEX Operation" context="{'group_by': 'comex_operation_id'}"
+                        groups="econovo_l10n_ar_comex.group_comex_user"/>
             </filter>
         </field>
     </record>

@@ -18,6 +18,7 @@ class StockMove(models.Model):
         copy=True,
         index=True,
         help="COMEX shipment this move belongs to. Propagated through push rules.",
+        groups='econovo_l10n_ar_comex.group_comex_user',
     )
     comex_operation_id = fields.Many2one(
         'comex.operation',
@@ -25,6 +26,7 @@ class StockMove(models.Model):
         copy=True,
         index=True,
         help="COMEX operation this move belongs to. Propagated through push rules.",
+        groups='econovo_l10n_ar_comex.group_comex_user',
     )
 
     # -------------------------------------------------------------------------
@@ -33,8 +35,10 @@ class StockMove(models.Model):
     def _assign_picking(self):
         """Override to propagate COMEX fields to the picking."""
         result = super()._assign_picking()
-        # After picking is assigned, update COMEX fields on picking
-        for move in self:
+        # After picking is assigned, update COMEX fields on picking.
+        # Use sudo() because COMEX fields have groups= restriction, but
+        # this method can be called by any warehouse user processing moves.
+        for move in self.sudo():
             if move.picking_id and (move.comex_shipment_id or move.comex_operation_id):
                 vals = {}
                 if move.comex_shipment_id and not move.picking_id.comex_shipment_id:

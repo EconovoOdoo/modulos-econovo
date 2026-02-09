@@ -14,7 +14,7 @@ class PurchaseOrderLine(models.Model):
         """Trigger product line sync when creating PO lines."""
         lines = super().create(vals_list)
         # Sync product lines for related COMEX operations
-        operations = lines.order_id.comex_operation_id
+        operations = lines.order_id.sudo().comex_operation_id
         if operations:
             self.env['comex.operation.product.line'].sudo()._sync_operations(operations)
         return lines
@@ -25,14 +25,14 @@ class PurchaseOrderLine(models.Model):
         # Only sync if relevant fields changed
         sync_fields = {'product_id', 'product_qty', 'qty_received', 'price_unit', 'name'}
         if sync_fields & set(vals.keys()):
-            operations = self.order_id.comex_operation_id
+            operations = self.order_id.sudo().comex_operation_id
             if operations:
                 self.env['comex.operation.product.line'].sudo()._sync_operations(operations)
         return res
 
     def unlink(self):
         """Trigger product line sync when deleting PO lines."""
-        operations = self.order_id.comex_operation_id
+        operations = self.order_id.sudo().comex_operation_id
         res = super().unlink()
         if operations:
             self.env['comex.operation.product.line'].sudo()._sync_operations(operations)
@@ -54,11 +54,13 @@ class PurchaseOrder(models.Model):
         copy=False,
         index=True,
         domain="[('operation_type', '=', 'import')]",
+        groups='econovo_l10n_ar_comex.group_comex_user',
     )
     is_comex = fields.Boolean(
         string="Is COMEX",
         compute='_compute_is_comex',
         store=True,
+        groups='econovo_l10n_ar_comex.group_comex_user',
     )
 
     # -------------------------------------------------------------------------
@@ -77,8 +79,9 @@ class PurchaseOrder(models.Model):
         
         Simply assigns comex_operation_id on all pickings (including done/canceled).
         Does NOT modify locations - that's handled manually by stage advancement.
+        Uses sudo() because COMEX fields have groups= restriction.
         """
-        for order in self:
+        for order in self.sudo():
             if order.comex_operation_id:
                 # Link all pickings to the operation (including done/canceled)
                 order.picking_ids.write({
@@ -101,7 +104,7 @@ class PurchaseOrder(models.Model):
         self._link_pickings_to_comex_operation()
         
         # Sync product lines after confirmation
-        operations = self.filtered('comex_operation_id').comex_operation_id
+        operations = self.sudo().filtered('comex_operation_id').comex_operation_id
         if operations:
             self.env['comex.operation.product.line'].sudo()._sync_operations(operations)
         
@@ -110,12 +113,12 @@ class PurchaseOrder(models.Model):
     def write(self, vals):
         """Sync date_planned, link/unlink pickings when comex_operation_id changes, and trigger sync on state changes."""
         # Store old operations BEFORE write (for product line sync)
-        old_operations = self.mapped('comex_operation_id') if 'comex_operation_id' in vals else self.env['comex.operation']
+        old_operations = self.sudo().mapped('comex_operation_id') if 'comex_operation_id' in vals else self.env['comex.operation']
         
         res = super().write(vals)
         
         if 'date_planned' in vals and not self.env.context.get('skip_comex_sync'):
-            for order in self.filtered('comex_operation_id'):
+            for order in self.sudo().filtered('comex_operation_id'):
                 if order.date_planned:
                     order.comex_operation_id.with_context(skip_comex_sync=True).write({
                         'date_eta': order.date_planned.date()
@@ -125,14 +128,14 @@ class PurchaseOrder(models.Model):
         if 'comex_operation_id' in vals:
             self._link_pickings_to_comex_operation()
             # Sync product lines for both old and new operations
-            new_operations = self.mapped('comex_operation_id')
+            new_operations = self.sudo().mapped('comex_operation_id')
             all_operations = old_operations | new_operations
             if all_operations:
                 self.env['comex.operation.product.line'].sudo()._sync_operations(all_operations)
         
         # Sync product lines when PO state changes
         if 'state' in vals:
-            operations = self.filtered('comex_operation_id').comex_operation_id
+            operations = self.sudo().filtered('comex_operation_id').comex_operation_id
             if operations:
                 self.env['comex.operation.product.line'].sudo()._sync_operations(operations)
         

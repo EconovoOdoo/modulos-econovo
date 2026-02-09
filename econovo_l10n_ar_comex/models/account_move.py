@@ -17,6 +17,7 @@ class AccountMove(models.Model):
         string="COMEX Operations",
         help="COMEX operations linked to this invoice/bill",
         copy=False,
+        groups='econovo_l10n_ar_comex.group_comex_user',
     )
     comex_clearance_ids = fields.One2many(
         'comex.customs.clearance',
@@ -24,17 +25,20 @@ class AccountMove(models.Model):
         string="Customs Clearances",
         help="Customs clearances that use this vendor bill for tributes",
         copy=False,
+        groups='econovo_l10n_ar_comex.group_comex_user',
     )
     comex_clearance_count = fields.Integer(
         string="Clearances Count",
         compute='_compute_comex_clearance_count',
         store=False,
+        groups='econovo_l10n_ar_comex.group_comex_user',
     )
     is_comex_type_66 = fields.Boolean(
         string="Is Type 66 (Despacho)",
         compute='_compute_is_comex_type_66',
         store=False,
         help="True if this is a Document Type 66 (Despacho de Importación)",
+        groups='econovo_l10n_ar_comex.group_comex_user',
     )
 
     # -------------------------------------------------------------------------
@@ -43,7 +47,7 @@ class AccountMove(models.Model):
     def _compute_comex_clearance_count(self):
         """Count linked customs clearances."""
         for move in self:
-            move.comex_clearance_count = len(move.comex_clearance_ids)
+            move.comex_clearance_count = len(move.sudo().comex_clearance_ids)
 
     def _compute_is_comex_type_66(self):
         """Check if document type is 66 (Despacho de Importación)."""

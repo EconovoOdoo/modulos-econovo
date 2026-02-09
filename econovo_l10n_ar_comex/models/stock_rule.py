@@ -13,9 +13,11 @@ class StockRule(models.Model):
         """Override to propagate COMEX fields to chained moves/pickings."""
         values = super()._push_prepare_move_copy_values(move_to_copy, new_date)
         
-        # Propagate COMEX shipment and operation from source picking
+        # Propagate COMEX shipment and operation from source picking.
+        # Use sudo() because COMEX fields have groups= restriction, but
+        # push rules can be triggered by any warehouse user.
         if move_to_copy.picking_id:
-            source_picking = move_to_copy.picking_id
+            source_picking = move_to_copy.picking_id.sudo()
             if source_picking.comex_shipment_id:
                 values['comex_shipment_id'] = source_picking.comex_shipment_id.id
             if source_picking.comex_operation_id:

@@ -139,7 +139,8 @@
         <field name="inherit_id" ref="product.product_template_only_form_view"/>
         <field name="arch" type="xml">
             <xpath expr="//page[@name='general_information']" position="after">
-                <page string="Foreign Trade" name="comex">
+                <page string="Foreign Trade" name="comex"
+                      groups="econovo_l10n_ar_comex.group_comex_user">
                     <group>
                         <group>
                             <field name="origin_country_id"/>

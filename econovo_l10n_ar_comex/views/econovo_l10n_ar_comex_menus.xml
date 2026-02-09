@@ -5,7 +5,8 @@
     <menuitem id="menu_comex_root"
               name="COMEX"
               web_icon="econovo_l10n_ar_comex,static/description/icon.png"
-              sequence="45"/>
+              sequence="45"
+              groups="econovo_l10n_ar_comex.group_comex_user"/>
 
     <!-- Operations Menu -->
     <menuitem id="menu_comex_operations"
