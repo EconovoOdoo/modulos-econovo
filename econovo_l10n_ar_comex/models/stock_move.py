@@ -18,7 +18,6 @@ class StockMove(models.Model):
         copy=True,
         index=True,
         help="COMEX shipment this move belongs to. Propagated through push rules.",
-        groups='econovo_l10n_ar_comex.group_comex_user',
     )
     comex_operation_id = fields.Many2one(
         'comex.operation',
@@ -26,7 +25,6 @@ class StockMove(models.Model):
         copy=True,
         index=True,
         help="COMEX operation this move belongs to. Propagated through push rules.",
-        groups='econovo_l10n_ar_comex.group_comex_user',
     )
 
     # -------------------------------------------------------------------------

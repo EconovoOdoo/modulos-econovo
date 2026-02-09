@@ -15,14 +15,12 @@ class SaleOrder(models.Model):
         tracking=True,
         domain="[('operation_type', '=', 'export')]",
         help="COMEX export operation associated with this sales order.",
-        groups='econovo_l10n_ar_comex.group_comex_user',
     )
     is_comex = fields.Boolean(
         string="Is COMEX",
         compute='_compute_is_comex',
         store=True,
         help="Indicates if this sales order is linked to a COMEX operation.",
-        groups='econovo_l10n_ar_comex.group_comex_user',
     )
 
     @api.depends('comex_operation_id')

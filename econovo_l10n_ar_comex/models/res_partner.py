@@ -37,12 +37,10 @@ class ResPartner(models.Model):
         'comex.operation',
         'partner_id',
         string="COMEX Operations",
-        groups='econovo_l10n_ar_comex.group_comex_user',
     )
     comex_operation_count = fields.Integer(
         string="COMEX Operation Count",
         compute='_compute_comex_operation_count',
-        groups='econovo_l10n_ar_comex.group_comex_user',
     )
 
     # -------------------------------------------------------------------------
@@ -50,7 +48,7 @@ class ResPartner(models.Model):
     # -------------------------------------------------------------------------
     def _compute_comex_operation_count(self):
         for partner in self:
-            partner.comex_operation_count = len(partner.sudo().comex_operation_ids)
+            partner.comex_operation_count = len(partner.comex_operation_ids)
 
     # -------------------------------------------------------------------------
     # ACTION METHODS

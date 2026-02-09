@@ -54,13 +54,11 @@ class PurchaseOrder(models.Model):
         copy=False,
         index=True,
         domain="[('operation_type', '=', 'import')]",
-        groups='econovo_l10n_ar_comex.group_comex_user',
     )
     is_comex = fields.Boolean(
         string="Is COMEX",
         compute='_compute_is_comex',
         store=True,
-        groups='econovo_l10n_ar_comex.group_comex_user',
     )
 
     # -------------------------------------------------------------------------
