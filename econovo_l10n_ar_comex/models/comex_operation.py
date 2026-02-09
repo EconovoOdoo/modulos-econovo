@@ -1360,20 +1360,6 @@ class ComexOperation(models.Model):
                 }
             }
 
-    # -------------------------------------------------------------------------
-    # CRUD METHODS
-    # -------------------------------------------------------------------------
-    @api.model_create_multi
-    def create(self, vals_list):
-        for vals in vals_list:
-            if vals.get('name', _('New')) == _('New'):
-                operation_type = vals.get('operation_type', 'import')
-                if operation_type == 'import':
-                    vals['name'] = self.env['ir.sequence'].next_by_code('comex.operation.import') or _('New')
-                else:
-                    vals['name'] = self.env['ir.sequence'].next_by_code('comex.operation.export') or _('New')
-        return super().create(vals_list)
-
     def write(self, vals):
         # Prevent stage change if pending pickings exist
         if 'stage_id' in vals:

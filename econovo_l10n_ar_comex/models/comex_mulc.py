@@ -304,12 +304,12 @@ class ComexMulc(models.Model):
                     res['concept_code'] = operation.payment_instrument_id.bcra_concept_code
         
         return res
-        
-        return res
 
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
+            if 'company_id' in vals:
+                self = self.with_company(vals['company_id'])
             if vals.get('name', _('New')) == _('New'):
                 vals['name'] = self.env['ir.sequence'].next_by_code('comex.mulc') or _('New')
         return super().create(vals_list)
