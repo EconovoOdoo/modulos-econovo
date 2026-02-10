@@ -17,6 +17,7 @@ from . import comex_tribute_invoice_line_config
 
 # Main models
 from . import comex_operation_stage
+from . import comex_operation_tag
 from . import comex_operation
 from . import comex_operation_product_line
 from . import comex_shipment

@@ -91,6 +91,10 @@ class ComexOperation(models.Model):
         default='0',
         tracking=True,
     )
+    tag_ids = fields.Many2many(
+        'comex.operation.tag',
+        string="Tags",
+    )
     description = fields.Html(
         string="Description",
     )

@@ -129,6 +129,12 @@
               action="comex_operation_stage_action"
               sequence="10"/>
 
+    <menuitem id="menu_comex_tags"
+              name="Tags"
+              parent="menu_comex_configuration"
+              action="comex_operation_tag_action"
+              sequence="15"/>
+
     <menuitem id="menu_comex_ports"
               name="Ports"
               parent="menu_comex_configuration"

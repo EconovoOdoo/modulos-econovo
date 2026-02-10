@@ -1,6 +1,8 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_comex_operation_stage_user,comex.operation.stage.user,model_comex_operation_stage,group_comex_user,1,0,0,0
 access_comex_operation_stage_manager,comex.operation.stage.manager,model_comex_operation_stage,group_comex_manager,1,1,1,1
+access_comex_operation_tag_user,comex.operation.tag.user,model_comex_operation_tag,group_comex_user,1,0,0,0
+access_comex_operation_tag_manager,comex.operation.tag.manager,model_comex_operation_tag,group_comex_manager,1,1,1,1
 access_comex_operation_user,comex.operation.user,model_comex_operation,group_comex_user,1,1,1,0
 access_comex_operation_manager,comex.operation.manager,model_comex_operation,group_comex_manager,1,1,1,1
 access_comex_shipment_user,comex.shipment.user,model_comex_shipment,group_comex_user,1,1,1,0
