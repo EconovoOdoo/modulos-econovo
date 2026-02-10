@@ -611,29 +611,21 @@ class ComexOperation(models.Model):
             record.commercial_due_amount = sum(commercial_invoices.mapped('amount_residual'))
 
     @api.depends('invoice_ids.payment_state', 'invoice_ids.state', 'invoice_ids.move_type',
-                 'invoice_ids.amount_total', 'invoice_ids.amount_residual',
-                 'purchase_order_ids.invoice_status')
+                 'invoice_ids.amount_total', 'invoice_ids.amount_residual')
     def _compute_commercial_payment_status(self):
-        """Determine commercial payment status considering:
-        1. Quantities pending to invoice in PO/SO (invoice_status)
-        2. Invoices issued and their payment status
-        
+        """Determine commercial payment status based on actual invoice payments.
+
+        Reflects the payment reality of existing posted commercial invoices,
+        independent of PO/SO invoicing progress (invoice_status).
+
         Logic:
-        - If pending to invoice → Can be "not_paid" or "partial" (never "paid")
-        - If all invoiced → Can be "not_paid", "partial", or "paid" based on payments
-        
-        Examples:
-        - Order 45, Invoiced 15 fully paid → "partial" (30 pending to invoice)
-        - Order 12, Invoiced 12 partially paid → "partial" (all invoiced, partial payment)
-        - Order 12, Invoiced 12 fully paid → "paid" (all invoiced and paid)
+        - No posted invoices → 'not_paid'
+        - All invoices fully paid & reconciled → 'paid'
+        - All invoices fully paid, pending reconciliation → 'in_payment'
+        - Some amount paid but residual remains → 'partial'
+        - Invoices exist but nothing paid → 'not_paid'
         """
         for record in self:
-            # Check if there are quantities pending to invoice in orders
-            has_pending_to_invoice = any(
-                po.invoice_status == 'to invoice'
-                for po in record.purchase_order_ids
-            )
-            
             # Get commercial invoices (exclude type 66)
             commercial_invoices = record.invoice_ids.filtered(
                 lambda inv: inv.state == 'posted' and
@@ -642,7 +634,7 @@ class ComexOperation(models.Model):
                  not inv.l10n_latam_document_type_id or
                  inv.l10n_latam_document_type_id.code != '66')
             )
-            
+
             # Get commercial refunds (credit notes)
             commercial_refunds = record.invoice_ids.filtered(
                 lambda inv: inv.state == 'posted' and
@@ -651,49 +643,32 @@ class ComexOperation(models.Model):
                  not inv.l10n_latam_document_type_id or
                  inv.l10n_latam_document_type_id.code != '66')
             )
-            
+
             if not commercial_invoices and not commercial_refunds:
                 record.commercial_payment_status = 'not_paid'
                 continue
-            
+
             # Calculate net amounts (invoices - refunds)
             invoice_total = sum(commercial_invoices.mapped('amount_total'))
             invoice_residual = sum(commercial_invoices.mapped('amount_residual'))
             refund_total = sum(commercial_refunds.mapped('amount_total'))
-            
+
             net_total = invoice_total - refund_total
-            net_residual = invoice_residual - refund_total
             paid_amount = invoice_total - invoice_residual
-            
-            # Status based on pending to invoice + payment status
+            net_residual = invoice_residual - refund_total
+
             if net_total <= 0:
-                # No net amount to pay (refunds >= invoices)
                 record.commercial_payment_status = 'not_paid'
-            elif has_pending_to_invoice:
-                # There are quantities pending to invoice
-                # Can NEVER be "paid", only "not_paid" or "partial"
-                if paid_amount > 0:
-                    # Something is paid, but still pending to invoice
-                    record.commercial_payment_status = 'partial'
+            elif net_residual <= 0:
+                # Fully paid, check reconciliation
+                if all(inv.payment_state == 'paid' for inv in commercial_invoices):
+                    record.commercial_payment_status = 'paid'
                 else:
-                    # Nothing paid yet
-                    record.commercial_payment_status = 'not_paid'
+                    record.commercial_payment_status = 'in_payment'
+            elif paid_amount > 0:
+                record.commercial_payment_status = 'partial'
             else:
-                # All quantities are invoiced, check payment status
-                if net_residual <= 0:
-                    # All paid, check if reconciled
-                    # If all invoices have payment_state='paid', they are fully reconciled
-                    # If any invoice has payment_state='in_payment', payments exist but not reconciled
-                    if all(inv.payment_state == 'paid' for inv in commercial_invoices):
-                        record.commercial_payment_status = 'paid'  # Fully paid & reconciled
-                    else:
-                        record.commercial_payment_status = 'in_payment'  # Paid but not reconciled
-                elif paid_amount == 0:
-                    # All invoiced but no payments registered yet
-                    record.commercial_payment_status = 'not_paid'
-                else:
-                    # All invoiced with partial payment
-                    record.commercial_payment_status = 'partial'
+                record.commercial_payment_status = 'not_paid'
 
     @api.depends('invoice_ids.amount_total', 'invoice_ids.amount_residual', 'invoice_ids.state')
     def _compute_purchase_order_totals(self):
@@ -732,29 +707,21 @@ class ComexOperation(models.Model):
             record.purchase_order_due_amount = sum(po_invoices.mapped('amount_residual'))
 
     @api.depends('invoice_ids.payment_state', 'invoice_ids.state', 'invoice_ids.move_type',
-                 'invoice_ids.amount_total', 'invoice_ids.amount_residual',
-                 'purchase_order_ids.invoice_status')
+                 'invoice_ids.amount_total', 'invoice_ids.amount_residual')
     def _compute_purchase_order_payment_status(self):
-        """Determine purchase order payment status from purchase orders considering:
-        1. Quantities pending to invoice in POs (invoice_status)
-        2. Invoices issued from POs and their payment status
-        
+        """Determine purchase order payment status based on actual invoice payments.
+
+        Reflects the payment reality of existing posted invoices from purchase
+        orders, independent of PO invoicing progress (invoice_status).
+
         Logic:
-        - If pending to invoice → Can be "not_paid" or "partial" (never "paid")
-        - If all invoiced → Can be "not_paid", "partial", or "paid" based on payments
-        
-        Examples:
-        - PO 45, Invoiced 15 fully paid → "partial" (30 pending to invoice)
-        - PO 12, Invoiced 12 partially paid → "partial" (all invoiced, partial payment)
-        - PO 12, Invoiced 12 fully paid → "paid" (all invoiced and paid)
+        - No posted invoices → 'not_paid'
+        - All invoices fully paid & reconciled → 'paid'
+        - All invoices fully paid, pending reconciliation → 'in_payment'
+        - Some amount paid but residual remains → 'partial'
+        - Invoices exist but nothing paid → 'not_paid'
         """
         for record in self:
-            # Check if there are quantities pending to invoice in purchase orders
-            has_pending_to_invoice = any(
-                po.invoice_status == 'to invoice'
-                for po in record.purchase_order_ids
-            )
-            
             # Get invoices from purchase orders (exclude type 66 customs clearances)
             po_invoices = self.env['account.move']
             for po in record.purchase_order_ids:
@@ -765,7 +732,7 @@ class ComexOperation(models.Model):
                      not inv.l10n_latam_document_type_id or
                      inv.l10n_latam_document_type_id.code != '66')
                 )
-            
+
             # Get refunds from purchase orders
             po_refunds = self.env['account.move']
             for po in record.purchase_order_ids:
@@ -776,49 +743,32 @@ class ComexOperation(models.Model):
                      not inv.l10n_latam_document_type_id or
                      inv.l10n_latam_document_type_id.code != '66')
                 )
-            
+
             if not po_invoices and not po_refunds:
                 record.purchase_order_payment_status = 'not_paid'
                 continue
-            
+
             # Calculate net amounts (invoices - refunds)
             invoice_total = sum(po_invoices.mapped('amount_total'))
             invoice_residual = sum(po_invoices.mapped('amount_residual'))
             refund_total = sum(po_refunds.mapped('amount_total'))
-            
+
             net_total = invoice_total - refund_total
-            net_residual = invoice_residual - refund_total
             paid_amount = invoice_total - invoice_residual
-            
-            # Status based on pending to invoice + payment status
+            net_residual = invoice_residual - refund_total
+
             if net_total <= 0:
-                # No net amount to pay (refunds >= invoices)
                 record.purchase_order_payment_status = 'not_paid'
-            elif has_pending_to_invoice:
-                # There are quantities pending to invoice
-                # Can NEVER be "paid", only "not_paid" or "partial"
-                if paid_amount > 0:
-                    # Something is paid, but still pending to invoice
-                    record.purchase_order_payment_status = 'partial'
+            elif net_residual <= 0:
+                # Fully paid, check reconciliation
+                if all(inv.payment_state == 'paid' for inv in po_invoices):
+                    record.purchase_order_payment_status = 'paid'
                 else:
-                    # Nothing paid yet
-                    record.purchase_order_payment_status = 'not_paid'
+                    record.purchase_order_payment_status = 'in_payment'
+            elif paid_amount > 0:
+                record.purchase_order_payment_status = 'partial'
             else:
-                # All quantities are invoiced, check payment status
-                if net_residual <= 0:
-                    # All paid, check if reconciled
-                    # If all invoices have payment_state='paid', they are fully reconciled
-                    # If any invoice has payment_state='in_payment', payments exist but not reconciled
-                    if all(inv.payment_state == 'paid' for inv in po_invoices):
-                        record.purchase_order_payment_status = 'paid'  # Fully paid & reconciled
-                    else:
-                        record.purchase_order_payment_status = 'in_payment'  # Paid but not reconciled
-                elif paid_amount == 0:
-                    # All invoiced but no payments registered yet
-                    record.purchase_order_payment_status = 'not_paid'
-                else:
-                    # All invoiced with partial payment
-                    record.purchase_order_payment_status = 'partial'
+                record.purchase_order_payment_status = 'not_paid'
 
     @api.depends('invoice_ids.amount_total', 'invoice_ids.amount_residual', 'invoice_ids.state')
     def _compute_sale_order_totals(self):
@@ -857,29 +807,21 @@ class ComexOperation(models.Model):
             record.sale_order_due_amount = sum(so_invoices.mapped('amount_residual'))
 
     @api.depends('invoice_ids.payment_state', 'invoice_ids.state', 'invoice_ids.move_type',
-                 'invoice_ids.amount_total', 'invoice_ids.amount_residual',
-                 'sale_order_ids.invoice_status')
+                 'invoice_ids.amount_total', 'invoice_ids.amount_residual')
     def _compute_sale_order_payment_status(self):
-        """Determine sale order payment status from sales orders considering:
-        1. Quantities pending to invoice in SOs (invoice_status)
-        2. Invoices issued from SOs and their payment status
-        
+        """Determine sale order payment status based on actual invoice payments.
+
+        Reflects the payment reality of existing posted invoices from sales
+        orders, independent of SO invoicing progress (invoice_status).
+
         Logic:
-        - If pending to invoice → Can be "not_paid" or "partial" (never "paid")
-        - If all invoiced → Can be "not_paid", "partial", or "paid" based on payments
-        
-        Examples:
-        - SO 45, Invoiced 15 fully collected → "partial" (30 pending to invoice)
-        - SO 12, Invoiced 12 partially collected → "partial" (all invoiced, partial payment)
-        - SO 12, Invoiced 12 fully collected → "paid" (all invoiced and collected)
+        - No posted invoices → 'not_paid'
+        - All invoices fully paid & reconciled → 'paid'
+        - All invoices fully paid, pending reconciliation → 'in_payment'
+        - Some amount paid but residual remains → 'partial'
+        - Invoices exist but nothing paid → 'not_paid'
         """
         for record in self:
-            # Check if there are quantities pending to invoice in sales orders
-            has_pending_to_invoice = any(
-                so.invoice_status == 'to invoice'
-                for so in record.sale_order_ids
-            )
-            
             # Get invoices from sales orders (exclude type 66 customs clearances)
             so_invoices = self.env['account.move']
             for so in record.sale_order_ids:
@@ -890,7 +832,7 @@ class ComexOperation(models.Model):
                      not inv.l10n_latam_document_type_id or
                      inv.l10n_latam_document_type_id.code != '66')
                 )
-            
+
             # Get refunds from sales orders
             so_refunds = self.env['account.move']
             for so in record.sale_order_ids:
@@ -901,49 +843,32 @@ class ComexOperation(models.Model):
                      not inv.l10n_latam_document_type_id or
                      inv.l10n_latam_document_type_id.code != '66')
                 )
-            
+
             if not so_invoices and not so_refunds:
                 record.sale_order_payment_status = 'not_paid'
                 continue
-            
+
             # Calculate net amounts (invoices - refunds)
             invoice_total = sum(so_invoices.mapped('amount_total'))
             invoice_residual = sum(so_invoices.mapped('amount_residual'))
             refund_total = sum(so_refunds.mapped('amount_total'))
-            
+
             net_total = invoice_total - refund_total
-            net_residual = invoice_residual - refund_total
             paid_amount = invoice_total - invoice_residual
-            
-            # Status based on pending to invoice + payment status
+            net_residual = invoice_residual - refund_total
+
             if net_total <= 0:
-                # No net amount to collect (refunds >= invoices)
                 record.sale_order_payment_status = 'not_paid'
-            elif has_pending_to_invoice:
-                # There are quantities pending to invoice
-                # Can NEVER be "paid", only "not_paid" or "partial"
-                if paid_amount > 0:
-                    # Something is collected, but still pending to invoice
-                    record.sale_order_payment_status = 'partial'
+            elif net_residual <= 0:
+                # Fully paid, check reconciliation
+                if all(inv.payment_state == 'paid' for inv in so_invoices):
+                    record.sale_order_payment_status = 'paid'
                 else:
-                    # Nothing collected yet
-                    record.sale_order_payment_status = 'not_paid'
+                    record.sale_order_payment_status = 'in_payment'
+            elif paid_amount > 0:
+                record.sale_order_payment_status = 'partial'
             else:
-                # All quantities are invoiced, check payment status
-                if net_residual <= 0:
-                    # All collected, check if reconciled
-                    # If all invoices have payment_state='paid', they are fully reconciled
-                    # If any invoice has payment_state='in_payment', payments exist but not reconciled
-                    if all(inv.payment_state == 'paid' for inv in so_invoices):
-                        record.sale_order_payment_status = 'paid'  # Fully collected & reconciled
-                    else:
-                        record.sale_order_payment_status = 'in_payment'  # Collected but not reconciled
-                elif paid_amount == 0:
-                    # All invoiced but no payments registered yet
-                    record.sale_order_payment_status = 'not_paid'
-                else:
-                    # All invoiced with partial payment
-                    record.sale_order_payment_status = 'partial'
+                record.sale_order_payment_status = 'not_paid'
 
     @api.depends('purchase_order_ids.incoterm_id', 'sale_order_ids.incoterm')
     def _compute_incoterm_ids(self):
