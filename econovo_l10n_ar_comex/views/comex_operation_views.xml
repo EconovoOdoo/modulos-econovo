@@ -79,22 +79,24 @@
         <field name="model">comex.operation</field>
         <field name="arch" type="xml">
             <tree string="COMEX Operations" multi_edit="1">
+                <field name="priority" widget="priority" optional="hide"/>
                 <field name="name" decoration-bf="1"/>
                 <field name="operation_type" optional="hide"/>
                 <field name="partner_id"/>
                 <field name="stage_id" widget="badge"/>
-                <field name="date_operation"/>
+                <field name="date_operation" optional="show"/>                
+                <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}" optional="show"/>
                 <field name="date_etd" optional="show"/>
-                <field name="date_eta"/>
+                <field name="date_eta" optional="show"/>
                 <field name="date_arrival" optional="show"/>
                 <field name="transport_mode" optional="show"/>
                 <field name="origin_country_id" optional="show"/>
                 <field name="incoterm_ids" widget="many2many_tags" optional="hide"/>
                 <field name="amount_fob" optional="hide"/>
-                <field name="amount_cif" sum="Total CIF"/>
+                <field name="amount_cif" sum="Total CIF" optional="hide"/>
                 <field name="currency_id" column_invisible="1"/>
-                <field name="purchase_order_count" string="POs"/>
-                <field name="shipment_count" string="Shipments" optional="show"/>
+                <field name="purchase_order_count" string="POs" optional="hide"/>
+                <field name="shipment_count" string="Shipments" optional="hide"/>
                 <field name="container_total_count" string="Containers" optional="show"/>
                 <button name="action_view_containers" 
                         type="object" 
@@ -158,8 +160,6 @@
                        options="{'color_field': 'state', 'no_create': True, 'limit': 5}"
                        optional="show"/>
                 <field name="company_id" groups="base.group_multi_company" optional="show"/>
-                <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}" optional="show"/>
-                <field name="priority" widget="priority" optional="hide"/>
             </tree>
         </field>
     </record>
@@ -369,6 +369,8 @@
                 <field name="partner_id"/>
                 <field name="stage_id"/>
                 <field name="tag_ids"/>
+                <field name="shipment_ids" string="BL/AWB"/>
+                <field name="customs_clearance_ids" string="Customs Clearance"/>
                 <separator/>
                 <filter name="filter_import" string="Imports" domain="[('operation_type', '=', 'import')]"/>
                 <filter name="filter_export" string="Exports" domain="[('operation_type', '=', 'export')]"/>
@@ -376,6 +378,29 @@
                 <filter name="filter_my_operations" string="My Operations" domain="[('create_uid', '=', uid)]"/>
                 <separator/>
                 <filter name="filter_archived" string="Archived" domain="[('active', '=', False)]"/>
+                <separator/>
+                <!-- Date Filters -->
+                <filter name="filter_date_operation" string="Operation Date" date="date_operation"/>
+                <filter name="filter_date_eta" string="ETA" date="date_eta"/>
+                <filter name="filter_date_etd" string="ETD" date="date_etd"/>
+                <separator/>
+                <!-- Customs Payment Status Filters -->
+                <filter name="filter_customs_not_paid" string="Customs: Not Paid" domain="[('customs_payment_status', '=', 'not_paid')]"/>
+                <filter name="filter_customs_partial" string="Customs: Partially Paid" domain="[('customs_payment_status', '=', 'partial')]"/>
+                <filter name="filter_customs_in_payment" string="Customs: Pending Reconciliation" domain="[('customs_payment_status', '=', 'in_payment')]"/>
+                <filter name="filter_customs_paid" string="Customs: Fully Paid" domain="[('customs_payment_status', '=', 'paid')]"/>
+                <separator/>
+                <!-- PO Payment Status Filters -->
+                <filter name="filter_po_not_paid" string="PO: Not Paid" domain="[('purchase_order_payment_status', '=', 'not_paid')]"/>
+                <filter name="filter_po_partial" string="PO: Partially Paid" domain="[('purchase_order_payment_status', '=', 'partial')]"/>
+                <filter name="filter_po_in_payment" string="PO: Pending Reconciliation" domain="[('purchase_order_payment_status', '=', 'in_payment')]"/>
+                <filter name="filter_po_paid" string="PO: Fully Paid" domain="[('purchase_order_payment_status', '=', 'paid')]"/>
+                <separator/>
+                <!-- SO Commercial Payment Status Filters -->
+                <filter name="filter_so_not_paid" string="SO: Not Collected" domain="[('sale_order_payment_status', '=', 'not_paid')]"/>
+                <filter name="filter_so_partial" string="SO: Partially Collected" domain="[('sale_order_payment_status', '=', 'partial')]"/>
+                <filter name="filter_so_in_payment" string="SO: Pending Reconciliation" domain="[('sale_order_payment_status', '=', 'in_payment')]"/>
+                <filter name="filter_so_paid" string="SO: Fully Collected" domain="[('sale_order_payment_status', '=', 'paid')]"/>
                 <group expand="0" string="Group By">
                     <filter name="groupby_stage" string="Stage" context="{'group_by': 'stage_id'}"/>
                     <filter name="groupby_tag" string="Tag" context="{'group_by': 'tag_ids'}"/>
@@ -383,6 +408,10 @@
                     <filter name="groupby_transport" string="Transport Mode" context="{'group_by': 'transport_mode'}"/>
                     <filter name="groupby_date" string="Operation Date" context="{'group_by': 'date_operation:month'}"/>
                     <filter name="groupby_eta" string="ETA" context="{'group_by': 'date_eta:month'}"/>
+                    <separator/>
+                    <filter name="groupby_customs_payment" string="Customs Payment Status" context="{'group_by': 'customs_payment_status'}"/>
+                    <filter name="groupby_po_payment" string="PO Payment Status" context="{'group_by': 'purchase_order_payment_status'}"/>
+                    <filter name="groupby_so_payment" string="SO Payment Status" context="{'group_by': 'sale_order_payment_status'}"/>
                 </group>
             </search>
         </field>
