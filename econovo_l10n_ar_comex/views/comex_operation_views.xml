@@ -335,7 +335,7 @@
                                     <field name="payment_state" widget="badge"
                                            decoration-success="payment_state == 'paid'"
                                            decoration-warning="payment_state in ('partial', 'in_payment')"
-                                           decoration-info="payment_state == 'not_paid'"/>
+                                           decoration-danger="payment_state == 'not_paid'"/>
                                     <field name="state" widget="badge"
                                            decoration-success="state == 'posted'"
                                            decoration-info="state == 'draft'"/>

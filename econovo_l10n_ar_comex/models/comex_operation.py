@@ -1053,24 +1053,35 @@ class ComexOperation(models.Model):
         'customs_clearance_ids.landed_cost_id.vendor_bill_id',
     )
     def _compute_invoice_ids(self):
-        """Auto-add all related invoices: POs + Despachos + Landed Costs."""
+        """Auto-add all related invoices: POs + Despachos + Landed Costs.
+
+        Merges auto-computed invoices with any manually-added invoices
+        already stored in the M2M relation, so manual additions are
+        never lost when this compute re-triggers.
+        """
         for record in self:
-            invoices = self.env['account.move']
-            
+            computed = self.env['account.move']
+
             # 1. Invoices from purchase orders
-            invoices |= record.purchase_order_ids.mapped('invoice_ids')
-            
+            computed |= record.purchase_order_ids.mapped('invoice_ids')
+
             # 2. Vendor bills from customs clearances (Despacho DI)
-            invoices |= record.customs_clearance_ids.mapped('vendor_bill_id')
-            
+            computed |= record.customs_clearance_ids.mapped('vendor_bill_id')
+
             # 3. Vendor bills from landed costs
-            invoices |= record.customs_clearance_ids.mapped('landed_cost_id.vendor_bill_id')
-            
-            # Filter valid invoices (exclude cancelled)
-            invoices = invoices.filtered(lambda inv: inv.state != 'cancel')
-            
-            # Update field (replace all)
-            record.invoice_ids = [(6, 0, invoices.ids)]
+            computed |= record.customs_clearance_ids.mapped(
+                'landed_cost_id.vendor_bill_id'
+            )
+
+            # Preserve manually-added invoices (stored value from M2M)
+            existing = record.invoice_ids
+
+            # Merge computed + existing, then filter out cancelled
+            all_invoices = (existing | computed).filtered(
+                lambda inv: inv.state != 'cancel'
+            )
+
+            record.invoice_ids = [(6, 0, all_invoices.ids)]
     
     def _inverse_invoice_ids(self):
         """Allow manual editing of invoice_ids field."""
