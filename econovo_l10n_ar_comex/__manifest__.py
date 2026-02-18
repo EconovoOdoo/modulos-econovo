@@ -96,6 +96,7 @@ for Argentina with full regulatory compliance and automated tax calculation.
         'views/purchase_order_views.xml',
         'views/sale_order_views.xml',
         'views/stock_picking_views.xml',
+        'views/stock_picking_type_views.xml',
         'views/stock_quant_package_views.xml',
         'views/res_partner_views.xml',
         'views/comex_tribute_product_mapping_views.xml',

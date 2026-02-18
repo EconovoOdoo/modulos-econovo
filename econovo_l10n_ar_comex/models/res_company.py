@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # Part of Econovo. See LICENSE file for full copyright and licensing details.
 
-from odoo import _, api, models
+from odoo import _, api, fields, models
 
 
 COMEX_SEQUENCE_DEFINITIONS = [
@@ -40,6 +40,18 @@ COMEX_SEQUENCE_DEFINITIONS = [
 
 class ResCompany(models.Model):
     _inherit = 'res.company'
+
+    # -------------------------------------------------------------------------
+    # FIELDS
+    # -------------------------------------------------------------------------
+    comex_default_import_picking_type_id = fields.Many2one(
+        'stock.picking.type',
+        string="Default COMEX Import Picking Type",
+        domain="[('is_comex_import', '=', True), ('company_id', '=', id)]",
+        check_company=True,
+        help="Default operation type for Purchase Orders created from COMEX "
+             "import operations. If not set, the COMEX/IN type is used.",
+    )
 
     # -------------------------------------------------------------------------
     # PRIVATE METHODS
@@ -273,6 +285,8 @@ class ResCompany(models.Model):
                 'sequence': sequence,
             }
             vals.update(location_map.get(suffix, {}))
+            # All current COMEX picking types are part of the import chain
+            vals['is_comex_import'] = True
             pt = PickingType.create(vals)
             self._ensure_xmlid(module, 'comex_picking_type_%s_%d' % (suffix, company.id),
                                'stock.picking.type', pt.id)
@@ -358,6 +372,22 @@ class ResCompany(models.Model):
         self.ensure_one()
         xml_id = 'econovo_l10n_ar_comex.comex_picking_type_%s_%d' % (step, self.id)
         return self.env.ref(xml_id, raise_if_not_found=False) or self.env['stock.picking.type']
+
+    def _get_comex_default_import_picking_type(self):
+        """Get the configured default COMEX import picking type.
+
+        Reads the per-company setting first. Falls back to the standard
+        COMEX/IN picking type (via XML ID) when no explicit default is set
+        or when the configured record is archived/deleted.
+
+        Returns:
+            stock.picking.type record or empty recordset
+        """
+        self.ensure_one()
+        pt = self.comex_default_import_picking_type_id
+        if pt and pt.exists() and pt.active:
+            return pt
+        return self._get_comex_picking_type('in')
 
     @api.model
     def create_missing_comex_stock_infrastructure(self):

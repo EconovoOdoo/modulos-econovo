@@ -9,6 +9,15 @@ class ResConfigSettings(models.TransientModel):
     
     _inherit = 'res.config.settings'
     
+    # Stock / Picking Type Settings
+    comex_default_import_picking_type_id = fields.Many2one(
+        'stock.picking.type',
+        string="Default COMEX Import Picking Type",
+        related='company_id.comex_default_import_picking_type_id',
+        readonly=False,
+        domain="[('is_comex_import', '=', True)]",
+    )
+
     # Tribute Invoice Settings
     comex_auto_prefill_invoice = fields.Boolean(
         string="Auto-fill Tribute Invoice Lines",

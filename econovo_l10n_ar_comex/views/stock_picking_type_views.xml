@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============================================ -->
+    <!-- Stock Picking Type: COMEX flags              -->
+    <!-- ============================================ -->
+
+    <record id="stock_picking_type_view_form_comex" model="ir.ui.view">
+        <field name="name">stock.picking.type.view.form.inherit.comex</field>
+        <field name="model">stock.picking.type</field>
+        <field name="inherit_id" ref="stock.view_picking_type_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='general']//group[@name='first']/group[1]/field[@name='code']" position="after">
+                <field name="is_comex_import"
+                       groups="econovo_l10n_ar_comex.group_comex_user"/>
+                <field name="is_comex_export"
+                       groups="econovo_l10n_ar_comex.group_comex_user"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

@@ -75,11 +75,10 @@ class PurchaseOrder(models.Model):
     # -------------------------------------------------------------------------
     @api.onchange('comex_operation_id')
     def _onchange_comex_operation_id(self):
-        """Set COMEX/IN picking type when linking a draft PO to an import operation.
+        """Set COMEX picking type when linking a draft PO to an import operation.
 
-        Edge case #1: If a PO is linked to a COMEX operation while still in
-        draft state, automatically redirect its receipts to the COMEX transit
-        location via the COMEX/IN picking type.
+        Uses the per-company default COMEX import picking type configured in
+        Settings > COMEX. Falls back to COMEX/IN if no default is set.
         """
         if not self.comex_operation_id:
             return
@@ -88,9 +87,9 @@ class PurchaseOrder(models.Model):
         if self.state != 'draft':
             return
 
-        comex_in_pt = self.company_id._get_comex_picking_type('in')
-        if comex_in_pt:
-            self.picking_type_id = comex_in_pt
+        comex_pt = self.company_id._get_comex_default_import_picking_type()
+        if comex_pt:
+            self.picking_type_id = comex_pt
 
     # -------------------------------------------------------------------------
     # HELPER METHODS

@@ -1644,9 +1644,9 @@ class ComexOperation(models.Model):
         }
         # Set COMEX receipt picking type for imports
         if self.operation_type == 'import':
-            comex_in_pt = self.company_id._get_comex_picking_type('in')
-            if comex_in_pt:
-                context['default_picking_type_id'] = comex_in_pt.id
+            comex_pt = self.company_id._get_comex_default_import_picking_type()
+            if comex_pt:
+                context['default_picking_type_id'] = comex_pt.id
 
         return {
             'type': 'ir.actions.act_window',

@@ -12,6 +12,17 @@
         <field name="arch" type="xml">
             <form position="inside">
                 <app string="COMEX" name="econovo_l10n_ar_comex">
+                    <block title="Stock Settings" name="econovo_comex_stock_settings">
+                        <setting id="econovo_comex_default_import_picking_type"
+                                 string="Default Import Picking Type"
+                                 company_dependent="1"
+                                 help="Operation type used when creating Purchase Orders from COMEX import operations. If empty, COMEX/IN is used.">
+                            <field name="comex_default_import_picking_type_id"
+                                   placeholder="COMEX/IN (auto)"
+                                   options="{'no_create': True}"/>
+                        </setting>
+                    </block>
+
                     <block title="Tribute Invoice Settings" name="econovo_comex_tribute_invoice_settings">
                         <setting id="econovo_comex_auto_prefill_invoice" 
                                  string="Auto-fill Tribute Invoice Lines"
