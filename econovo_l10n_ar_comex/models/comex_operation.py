@@ -71,10 +71,10 @@ class ComexOperation(models.Model):
     current_location_id = fields.Many2one(
         'stock.location',
         string="Current COMEX Location",
-        domain="[('usage', '=', 'transit')]",
+        domain="[('usage', 'in', ('transit', 'internal'))]",
         tracking=True,
-        help="Specific transit location where goods are currently located. "
-             "Should be a child of the stage's parent location.",
+        help="Current location where goods are located in the COMEX transit chain. "
+             "Can be a transit or internal location.",
     )
     color = fields.Integer(
         string="Color Index",
@@ -1301,17 +1301,19 @@ class ComexOperation(models.Model):
             }
 
     def write(self, vals):
-        # Prevent stage change if pending pickings exist
+        # Prevent stage change if actionable pickings exist (draft or assigned).
+        # Pickings in 'waiting' or 'confirmed' are normal in the push chain
+        # and should NOT block stage advancement.
         if 'stage_id' in vals:
             for record in self:
-                pending_pickings = record.picking_ids.filtered(
-                    lambda p: p.state not in ('done', 'cancel')
+                blocking_pickings = record.picking_ids.filtered(
+                    lambda p: p.state in ('draft', 'assigned')
                 )
-                if pending_pickings:
+                if blocking_pickings:
                     raise UserError(_(
-                        "Cannot change stage while there are pending transfers:\n%(pickings)s\n\n"
+                        "Cannot change stage while there are actionable transfers:\n%(pickings)s\n\n"
                         "Please validate or cancel these transfers first.",
-                        pickings='\n'.join(pending_pickings.mapped('name'))
+                        pickings='\n'.join(blocking_pickings.mapped('name'))
                     ))
         
         res = super().write(vals)
@@ -1627,6 +1629,32 @@ class ComexOperation(models.Model):
                 'default_etd': self.date_etd,
                 'default_eta': self.date_eta,
             },
+        }
+
+    def action_create_purchase_order(self):
+        """Create a new purchase order pre-linked to this COMEX operation.
+
+        Sets the COMEX/IN picking type so the PO's receipts go directly
+        to the COMEX transit location (En Viaje).
+        """
+        self.ensure_one()
+        context = {
+            'default_comex_operation_id': self.id,
+            'default_partner_id': self.partner_id.id if self.partner_id else False,
+        }
+        # Set COMEX receipt picking type for imports
+        if self.operation_type == 'import':
+            comex_in_pt = self.company_id._get_comex_picking_type('in')
+            if comex_in_pt:
+                context['default_picking_type_id'] = comex_in_pt.id
+
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Create Purchase Order'),
+            'res_model': 'purchase.order',
+            'view_mode': 'form',
+            'target': 'current',
+            'context': context,
         }
 
     def action_create_mulc(self):

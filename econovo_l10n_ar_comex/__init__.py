@@ -5,5 +5,6 @@ from . import models
 
 
 def _create_comex_sequences(env):
-    """Post-init hook: create COMEX sequences for all existing companies."""
+    """Post-init hook: create COMEX sequences and stock infrastructure."""
     env['res.company'].create_missing_comex_sequences()
+    env['res.company'].create_missing_comex_stock_infrastructure()

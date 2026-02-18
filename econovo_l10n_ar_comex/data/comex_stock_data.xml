@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- ================================================================
+             COMEX STOCK LOCATIONS (Company 1: Main Company)
+             ================================================================
+             Static locations for the COMEX transit chain.
+             Picking types, routes, and push rules are created dynamically
+             via res.company._create_comex_stock_infrastructure() for all
+             companies (called from post_init_hook).
+        -->
+
+        <!-- Root location (view) - parent for all COMEX transit locations -->
+        <record id="comex_location_root" model="stock.location">
+            <field name="name">COMEX Transit</field>
+            <field name="usage">view</field>
+            <field name="location_id" ref="stock.stock_location_locations"/>
+            <field name="company_id" ref="base.main_company"/>
+        </record>
+
+        <!-- En Viaje: goods shipped from supplier, in transit -->
+        <record id="comex_location_in_transit" model="stock.location">
+            <field name="name">En Viaje</field>
+            <field name="usage">internal</field>
+            <field name="location_id" ref="comex_location_root"/>
+            <field name="company_id" ref="base.main_company"/>
+        </record>
+
+        <!-- En Puerto: goods arrived at port of entry -->
+        <record id="comex_location_at_port" model="stock.location">
+            <field name="name">En Puerto</field>
+            <field name="usage">internal</field>
+            <field name="location_id" ref="comex_location_root"/>
+            <field name="company_id" ref="base.main_company"/>
+        </record>
+
+        <!-- Depósito Fiscal: goods in customs bonded warehouse -->
+        <record id="comex_location_fiscal_depot" model="stock.location">
+            <field name="name">Depósito Fiscal</field>
+            <field name="usage">internal</field>
+            <field name="location_id" ref="comex_location_root"/>
+            <field name="company_id" ref="base.main_company"/>
+        </record>
+
+    </data>
+</odoo>

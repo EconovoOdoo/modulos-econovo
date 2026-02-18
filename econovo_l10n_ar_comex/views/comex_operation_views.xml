@@ -171,6 +171,9 @@
         <field name="arch" type="xml">
             <form string="COMEX Operation">
                 <header>
+                    <button name="action_create_purchase_order" string="Create Purchase Order" type="object"
+                            class="btn-secondary" icon="fa-shopping-cart"
+                            invisible="operation_type != 'import'"/>
                     <button name="action_create_shipment" string="Create Shipment" type="object" 
                             class="btn-primary" icon="fa-ship"/>
                     <button name="action_create_mulc" string="Create MULC" type="object" 

@@ -2,6 +2,7 @@
 # Part of Econovo. See LICENSE file for full copyright and licensing details.
 
 from odoo import _, api, fields, models
+from odoo.exceptions import UserError
 
 
 class PurchaseOrderLine(models.Model):
@@ -70,6 +71,28 @@ class PurchaseOrder(models.Model):
             order.is_comex = bool(order.comex_operation_id)
 
     # -------------------------------------------------------------------------
+    # ONCHANGE METHODS
+    # -------------------------------------------------------------------------
+    @api.onchange('comex_operation_id')
+    def _onchange_comex_operation_id(self):
+        """Set COMEX/IN picking type when linking a draft PO to an import operation.
+
+        Edge case #1: If a PO is linked to a COMEX operation while still in
+        draft state, automatically redirect its receipts to the COMEX transit
+        location via the COMEX/IN picking type.
+        """
+        if not self.comex_operation_id:
+            return
+        if self.comex_operation_id.operation_type != 'import':
+            return
+        if self.state != 'draft':
+            return
+
+        comex_in_pt = self.company_id._get_comex_picking_type('in')
+        if comex_in_pt:
+            self.picking_type_id = comex_in_pt
+
+    # -------------------------------------------------------------------------
     # HELPER METHODS
     # -------------------------------------------------------------------------
     def _link_pickings_to_comex_operation(self):
@@ -112,6 +135,22 @@ class PurchaseOrder(models.Model):
         """Sync date_planned, link/unlink pickings when comex_operation_id changes, and trigger sync on state changes."""
         # Store old operations BEFORE write (for product line sync)
         old_operations = self.sudo().mapped('comex_operation_id') if 'comex_operation_id' in vals else self.env['comex.operation']
+        
+        # Prevent reassigning comex_operation_id if pickings are already done
+        if 'comex_operation_id' in vals:
+            for order in self.sudo():
+                if order.comex_operation_id and order.comex_operation_id.id != vals['comex_operation_id']:
+                    done_pickings = order.picking_ids.filtered(
+                        lambda p: p.state == 'done' and p.comex_operation_id
+                    )
+                    if done_pickings:
+                        raise UserError(_(
+                            "Cannot change COMEX operation for '%(order)s' because "
+                            "it has validated transfers linked to the current operation:\n"
+                            "%(pickings)s",
+                            order=order.name,
+                            pickings='\n'.join(done_pickings.mapped('name')),
+                        ))
         
         res = super().write(vals)
         
