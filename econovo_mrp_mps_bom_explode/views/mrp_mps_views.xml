@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="mrp_mps_production_schedule_form_view_inherit" model="ir.ui.view">
+        <field name="name">mrp.production.schedule.form.inherit.econovo.bom.explode</field>
+        <field name="model">mrp.production.schedule</field>
+        <field name="inherit_id" ref="mrp_mps.mrp_mps_production_schedule_form_view"/>
+        <field name="arch" type="xml">
+            <field name="bom_id" position="after">
+                <field name="cascade_bom_explode"
+                       invisible="not bom_id or id"
+                       readonly="id"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>
