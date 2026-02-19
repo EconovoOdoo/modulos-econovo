@@ -14,6 +14,9 @@ class AccountMove(models.Model):
     # -------------------------------------------------------------------------
     comex_operation_ids = fields.Many2many(
         'comex.operation',
+        'comex_operation_invoice_rel',
+        'invoice_id',
+        'operation_id',
         string="COMEX Operations",
         help="COMEX operations linked to this invoice/bill",
         copy=False,
