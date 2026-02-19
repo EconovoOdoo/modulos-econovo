@@ -390,6 +390,16 @@ class ResCompany(models.Model):
         return self._get_comex_picking_type('in')
 
     @api.model
+    def _register_hook(self):
+        """Ensure COMEX stock infrastructure exists after module load.
+
+        Runs on both install and update, safe due to XML ID idempotent
+        guards in _create_comex_stock_infrastructure().
+        """
+        super()._register_hook()
+        self.create_missing_comex_stock_infrastructure()
+
+    @api.model
     def create_missing_comex_stock_infrastructure(self):
         """Create COMEX stock infrastructure for all companies."""
         companies = self.env['res.company'].sudo().search([])
