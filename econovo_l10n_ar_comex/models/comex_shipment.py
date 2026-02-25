@@ -140,13 +140,29 @@ class ComexShipment(models.Model):
         return shipments
 
     def write(self, vals):
-        """Override write to handle stage changes properly.
-        
+        """Override write to handle stage changes and shipment propagation.
+
         When stage_id changes on a shipment, allow operation stage to recalculate
         (don't use skip_stage_sync context).
+
+        When picking_ids are modified via O2M commands, Odoo writes
+        comex_shipment_id on the inverse field (stock.picking), which triggers
+        stock.picking.write() → _propagate_comex_shipment() automatically.
+
+        Additionally, propagate shipment to downstream pickings for any
+        newly added pickings that may already have move chains.
         """
-        # Normal write - will trigger operation stage recalculation via @api.depends
-        return super(ComexShipment, self).write(vals)
+        res = super(ComexShipment, self).write(vals)
+
+        # If picking_ids changed via O2M commands, ensure propagation
+        # to downstream chains of newly added pickings.
+        if 'picking_ids' in vals:
+            for shipment in self:
+                shipment.picking_ids.with_context(
+                    skip_shipment_propagation=True,
+                )._propagate_comex_shipment(shipment.id)
+
+        return res
 
     # Transport details
     transport_mode = fields.Selection(
