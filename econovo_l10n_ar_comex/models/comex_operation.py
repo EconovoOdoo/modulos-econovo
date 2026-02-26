@@ -1049,11 +1049,12 @@ class ComexOperation(models.Model):
 
     @api.depends(
         'purchase_order_ids.invoice_ids',
+        'sale_order_ids.invoice_ids',
         'customs_clearance_ids.vendor_bill_id',
         'customs_clearance_ids.landed_cost_id.vendor_bill_id',
     )
     def _compute_invoice_ids(self):
-        """Auto-add all related invoices: POs + Despachos + Landed Costs.
+        """Auto-add all related invoices: POs + SOs + Despachos + Landed Costs.
 
         Merges auto-computed invoices with any manually-added invoices
         already stored in the M2M relation, so manual additions are
@@ -1065,10 +1066,13 @@ class ComexOperation(models.Model):
             # 1. Invoices from purchase orders
             computed |= record.purchase_order_ids.mapped('invoice_ids')
 
-            # 2. Vendor bills from customs clearances (Despacho DI)
+            # 2. Invoices from sale orders
+            computed |= record.sale_order_ids.mapped('invoice_ids')
+
+            # 3. Vendor bills from customs clearances (Despacho DI)
             computed |= record.customs_clearance_ids.mapped('vendor_bill_id')
 
-            # 3. Vendor bills from landed costs
+            # 4. Vendor bills from landed costs
             computed |= record.customs_clearance_ids.mapped(
                 'landed_cost_id.vendor_bill_id'
             )
