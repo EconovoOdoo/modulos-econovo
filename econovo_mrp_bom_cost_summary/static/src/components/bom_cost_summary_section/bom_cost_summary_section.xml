@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+<div t-name="econovo_mrp_bom_cost_summary.BomCostSummarySection"
+     class="o_econovo_cost_summary mt-4">
+
+    <h5 class="o_econovo_cost_summary__title mb-3">
+        <i class="fa fa-bar-chart me-2"/>Cost Summary
+    </h5>
+
+    <!-- ===== COMPONENTS BY CATEGORY ===== -->
+    <t t-if="data.categories.length > 0">
+        <table class="table table-sm o_econovo_cost_summary__table mb-3">
+            <thead>
+                <tr class="o_econovo_cost_summary__section-header">
+                    <th class="o_econovo_cost_summary__fold-col"/>
+                    <th>Components by Category</th>
+                    <th class="text-end">%</th>
+                    <th class="text-end">BoM Cost</th>
+                    <th t-if="hasSecondary" class="text-end">
+                        <t t-esc="secondaryCurrency.name"/>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <t t-foreach="data.categories" t-as="categ" t-key="categ.id">
+                    <!-- Level 1: Category group header -->
+                    <tr class="o_econovo_cost_summary__group-row"
+                        t-on-click="() => this.toggleCategory(categ.id)">
+                        <td class="o_econovo_cost_summary__fold-col">
+                            <button class="btn btn-light btn-sm py-0 px-1"
+                                    t-att-title="isCategoryFolded(categ.id) ? 'Unfold' : 'Fold'">
+                                <i t-att-class="'fa fa-fw ' + (isCategoryFolded(categ.id) ? 'fa-caret-right' : 'fa-caret-down')"
+                                   role="img"/>
+                            </button>
+                        </td>
+                        <td>
+                            <strong t-esc="categ.name"/>
+                        </td>
+                        <td class="text-end text-muted">
+                            <t t-esc="fmtPct(categ.percentage)"/>
+                        </td>
+                        <td class="text-end">
+                            <strong t-esc="fmtMoney(categ.total)"/>
+                        </td>
+                        <td t-if="hasSecondary" class="text-end text-muted">
+                            <t t-esc="fmtUsd(categ.total_usd)"/>
+                        </td>
+                    </tr>
+
+                    <!-- Level 2: Expanded component products -->
+                    <t t-if="!isCategoryFolded(categ.id)">
+                        <t t-foreach="categ.products" t-as="prod" t-key="prod.product_id">
+                            <!-- Product row (clickable to expand usages) -->
+                            <tr class="o_econovo_cost_summary__product-row"
+                                t-on-click="() => this.toggleProduct(categ.id, prod.product_id)">
+                                <td/>
+                                <td class="ps-3">
+                                    <button class="btn btn-light btn-sm py-0 px-1 me-1"
+                                            t-att-title="isProductFolded(categ.id, prod.product_id) ? 'Show usages' : 'Hide usages'">
+                                        <i t-att-class="'fa fa-fw ' + (isProductFolded(categ.id, prod.product_id) ? 'fa-caret-right' : 'fa-caret-down')"
+                                           role="img"/>
+                                    </button>
+                                    <t t-esc="prod.name"/>
+                                </td>
+                                <td/>
+                                <td class="text-end">
+                                    <t t-esc="fmtMoney(prod.total)"/>
+                                </td>
+                                <td t-if="hasSecondary" class="text-end text-muted">
+                                    <t t-esc="fmtUsd(prod.total_usd)"/>
+                                </td>
+                            </tr>
+
+                            <!-- Level 3: Expanded parent product usages -->
+                            <t t-if="!isProductFolded(categ.id, prod.product_id)">
+                                <tr t-foreach="prod.usages" t-as="usage" t-key="usage.parent_product_id"
+                                    class="o_econovo_cost_summary__usage-row">
+                                    <td/>
+                                    <td class="ps-5 text-muted">
+                                        <small>
+                                            <i class="fa fa-long-arrow-right me-1"/>
+                                            <t t-esc="usage.parent_name"/>
+                                            <span class="ms-2 text-nowrap">
+                                                ×<t t-esc="formatFloat(usage.quantity, {digits: [false, props.precision]})"/>
+                                                <t t-if="showUom">
+                                                    <span class="ms-1" t-esc="usage.uom_name"/>
+                                                </t>
+                                            </span>
+                                        </small>
+                                    </td>
+                                    <td/>
+                                    <td class="text-end">
+                                        <small t-esc="fmtMoney(usage.total)"/>
+                                    </td>
+                                    <td t-if="hasSecondary" class="text-end text-muted">
+                                        <small t-esc="fmtUsd(usage.total_usd)"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </t>
+                    </t>
+                </t>
+            </tbody>
+            <tfoot>
+                <tr class="o_econovo_cost_summary__subtotal-row">
+                    <td/>
+                    <td><strong>Subtotal Components</strong></td>
+                    <td/>
+                    <td class="text-end">
+                        <strong t-esc="fmtMoney(data.totals.components)"/>
+                    </td>
+                    <td t-if="hasSecondary" class="text-end text-muted">
+                        <strong t-esc="fmtUsd(data.totals.components_usd)"/>
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+    </t>
+
+    <!-- ===== OPERATIONS BY WORK CENTER ===== -->
+    <t t-if="data.workcenters.length > 0">
+        <table class="table table-sm o_econovo_cost_summary__table mb-3">
+            <thead>
+                <tr class="o_econovo_cost_summary__section-header">
+                    <th class="o_econovo_cost_summary__fold-col"/>
+                    <th>Operations by Work Center</th>
+                    <th class="text-end">%</th>
+                    <th class="text-end">BoM Cost</th>
+                    <th t-if="hasSecondary" class="text-end">
+                        <t t-esc="secondaryCurrency.name"/>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <t t-foreach="data.workcenters" t-as="wc" t-key="wc.id">
+                    <!-- Workcenter group header -->
+                    <tr class="o_econovo_cost_summary__group-row"
+                        t-on-click="() => this.toggleWorkcenter(wc.id)">
+                        <td class="o_econovo_cost_summary__fold-col">
+                            <button class="btn btn-light btn-sm py-0 px-1"
+                                    t-att-title="isWorkcenterFolded(wc.id) ? 'Unfold' : 'Fold'">
+                                <i t-att-class="'fa fa-fw ' + (isWorkcenterFolded(wc.id) ? 'fa-caret-right' : 'fa-caret-down')"
+                                   role="img"/>
+                            </button>
+                        </td>
+                        <td>
+                            <strong t-esc="wc.name"/>
+                        </td>
+                        <td class="text-end text-muted">
+                            <t t-esc="fmtPct(wc.percentage)"/>
+                        </td>
+                        <td class="text-end">
+                            <strong t-esc="fmtMoney(wc.total)"/>
+                        </td>
+                        <td t-if="hasSecondary" class="text-end text-muted">
+                            <t t-esc="fmtUsd(wc.total_usd)"/>
+                        </td>
+                    </tr>
+
+                    <!-- Expanded: operations with inline parent product -->
+                    <t t-if="!isWorkcenterFolded(wc.id)">
+                        <tr t-foreach="wc.items" t-as="op" t-key="op_index"
+                            class="o_econovo_cost_summary__detail-row">
+                            <td/>
+                            <td class="ps-4">
+                                <small>
+                                    <t t-esc="op.name"/>
+                                    <span class="ms-2 text-nowrap text-muted">
+                                        <i class="fa fa-clock-o me-1"/>
+                                        <t t-esc="fmtDuration(op.duration)"/>
+                                    </span>
+                                </small>
+                                <br/>
+                                <small class="text-muted ps-2">
+                                    <i class="fa fa-long-arrow-right me-1"/>
+                                    <t t-esc="op.parent_name"/>
+                                </small>
+                            </td>
+                            <td/>
+                            <td class="text-end">
+                                <small t-esc="fmtMoney(op.total)"/>
+                            </td>
+                            <td t-if="hasSecondary" class="text-end text-muted">
+                                <small t-esc="fmtUsd(op.total_usd)"/>
+                            </td>
+                        </tr>
+                    </t>
+                </t>
+            </tbody>
+            <tfoot>
+                <tr class="o_econovo_cost_summary__subtotal-row">
+                    <td/>
+                    <td><strong>Subtotal Operations</strong></td>
+                    <td/>
+                    <td class="text-end">
+                        <strong t-esc="fmtMoney(data.totals.operations)"/>
+                    </td>
+                    <td t-if="hasSecondary" class="text-end text-muted">
+                        <strong t-esc="fmtUsd(data.totals.operations_usd)"/>
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+    </t>
+
+    <!-- ===== GRAND TOTAL ===== -->
+    <table class="table table-sm o_econovo_cost_summary__table mb-0">
+        <tbody>
+            <tr class="o_econovo_cost_summary__grand-total-row">
+                <td class="o_econovo_cost_summary__fold-col"/>
+                <td><strong>TOTAL BOM COST</strong></td>
+                <td/>
+                <td class="text-end">
+                    <strong t-esc="fmtMoney(data.totals.total)"/>
+                </td>
+                <td t-if="hasSecondary" class="text-end">
+                    <strong t-esc="fmtUsd(data.totals.total_usd)"/>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+</div>
+
+</templates>

@@ -1,0 +1,73 @@
+.o_econovo_cost_summary {
+    // Scoped variables
+    $-border-color: var(--bs-border-color);
+    $-bg-subtle: var(--bs-light-bg-subtle, #f8f9fa);
+    $-row-hover: rgba(0, 0, 0, 0.03);
+
+    border-top: 2px solid $-border-color;
+    padding-top: 1rem;
+
+    .o_econovo_cost_summary__title {
+        color: var(--bs-secondary);
+        font-weight: 600;
+    }
+
+    .o_econovo_cost_summary__table {
+        margin-bottom: 0;
+
+        thead {
+            .o_econovo_cost_summary__section-header th {
+                background-color: $-bg-subtle;
+                font-weight: 600;
+                font-size: 0.85em;
+                text-transform: uppercase;
+                letter-spacing: 0.03em;
+                border-bottom: 2px solid $-border-color;
+            }
+        }
+
+        .o_econovo_cost_summary__group-row {
+            cursor: pointer;
+            user-select: none;
+
+            &:hover {
+                background-color: $-row-hover;
+            }
+        }
+
+        .o_econovo_cost_summary__fold-col {
+            width: 2rem;
+            padding-right: 0;
+        }
+
+        .o_econovo_cost_summary__product-row {
+            cursor: pointer;
+
+            &:hover {
+                background-color: $-row-hover;
+            }
+        }
+
+        .o_econovo_cost_summary__detail-row,
+        .o_econovo_cost_summary__usage-row {
+            td {
+                border-top: none;
+                padding-top: 0.15rem;
+                padding-bottom: 0.15rem;
+            }
+        }
+
+        .o_econovo_cost_summary__subtotal-row {
+            td {
+                border-top: 1px solid $-border-color;
+            }
+        }
+    }
+
+    .o_econovo_cost_summary__grand-total-row {
+        td {
+            border-top: 2px solid var(--bs-dark);
+            font-size: 1.05em;
+        }
+    }
+}

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- Inject BomCostSummarySection after the main BOM table -->
+    <t t-name="econovo_mrp_bom_cost_summary.BomOverviewTable"
+       t-inherit="mrp.BomOverviewTable"
+       t-inherit-mode="extension">
+
+        <xpath expr="//table[hasclass('o_mrp_bom_expandable')]" position="after">
+            <BomCostSummarySection
+                t-if="showCosts and props.costSummary"
+                data="props.costSummary"
+                showOptions="props.showOptions"
+                precision="props.precision"
+                secondaryCurrency="props.secondaryCurrency"/>
+        </xpath>
+
+    </t>
+
+    <!-- Pass costSummary and secondaryCurrency from BomOverviewComponent to BomOverviewTable -->
+    <t t-name="econovo_mrp_bom_cost_summary.BomOverviewComponent"
+       t-inherit="mrp.BomOverviewComponent"
+       t-inherit-mode="extension">
+
+        <xpath expr="//BomOverviewTable" position="attributes">
+            <attribute name="costSummary">state.costSummary</attribute>
+            <attribute name="secondaryCurrency">state.secondaryCurrency</attribute>
+        </xpath>
+
+    </t>
+
+</templates>
