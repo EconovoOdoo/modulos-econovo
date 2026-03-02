@@ -1088,9 +1088,93 @@ class ComexOperation(models.Model):
             record.invoice_ids = [(6, 0, all_invoices.ids)]
     
     def _inverse_invoice_ids(self):
-        """Allow manual editing of invoice_ids field."""
-        # No action needed - field is stored and editable
-        pass
+        """Allow manual editing of invoice_ids field.
+
+        Automatically creates customs clearances for newly added
+        type 66 invoices (Despacho de Importación) in import operations.
+        This covers EC-1 through EC-12 from the adjusted plan.
+        """
+        # EC-11: Prevent reentrancy when clearance creation triggers recompute
+        if self.env.context.get('skip_clearance_autocreation'):
+            return
+
+        Clearance = self.env['comex.customs.clearance']
+        clearances_to_create = []
+
+        for operation in self:
+            # EC-1: Only import operations get autocreation
+            if operation.operation_type != 'import':
+                continue
+
+            # Find type 66 invoices in current invoice_ids
+            type_66_invoices = operation.invoice_ids.filtered(
+                lambda inv: (
+                    inv.l10n_latam_document_type_id
+                    and inv.l10n_latam_document_type_id.code == '66'
+                    and inv.move_type in ('in_invoice', 'in_receipt')  # EC-2
+                    and inv.state != 'cancel'  # EC-3
+                )
+            )
+
+            for inv in type_66_invoices:
+                # EC-4: Idempotency — skip if clearance already exists
+                existing = Clearance.search([
+                    ('operation_id', '=', operation.id),
+                    ('vendor_bill_id', '=', inv.id),
+                ], limit=1)
+                if existing:
+                    continue
+
+                # EC-5: Cross-operation duplicate — warn and skip
+                cross_op = Clearance.search([
+                    ('vendor_bill_id', '=', inv.id),
+                    ('operation_id', '!=', operation.id),
+                ], limit=1)
+                if cross_op:
+                    operation.message_post(
+                        body=_(
+                            "Invoice %(invoice)s is already linked to "
+                            "clearance %(clearance)s in operation "
+                            "%(operation)s. No clearance created.",
+                            invoice=inv.name,
+                            clearance=cross_op.name,
+                            operation=cross_op.operation_id.name,
+                        )
+                    )
+                    continue
+
+                # EC-10 + EC-12: Prepare vals with auto-fill from invoice
+                vals = {
+                    'operation_id': operation.id,
+                    'vendor_bill_id': inv.id,
+                }
+                if inv.l10n_latam_document_number:
+                    vals['dispatch_number'] = inv.l10n_latam_document_number
+                if inv.amount_total:
+                    vals['vep_amount'] = inv.amount_total
+
+                clearances_to_create.append((operation, inv, vals))
+
+        # EC-7: Batch create all clearances at once
+        if clearances_to_create:
+            vals_list = [item[2] for item in clearances_to_create]
+            new_clearances = Clearance.with_context(
+                skip_clearance_autocreation=True,
+            ).create(vals_list)
+
+            # Post chatter messages for traceability
+            for (operation, inv, _vals), clearance in zip(
+                clearances_to_create, new_clearances
+            ):
+                operation.message_post(
+                    body=_(
+                        "Customs clearance %(clearance)s automatically "
+                        "created from invoice %(invoice)s "
+                        "(Document Type 66).",
+                        clearance=clearance.name,
+                        invoice=inv.name,
+                    )
+                )
 
     def _compute_invoice_count(self):
         """Count total invoices."""
