@@ -19,6 +19,7 @@
                     <group>
                         <group string="Linked COMEX Operations">
                             <field name="comex_operation_ids" widget="many2many_tags"
+                                   domain="[('operation_type', 'in', ['import'] if is_comex_type_66 else ['import', 'export'])]"
                                    options="{'no_create': True}"/>
                         </group>
                         <group string="Customs Clearances (Despachos)"
