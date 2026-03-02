@@ -106,12 +106,23 @@ patch(BomOverviewComponent.prototype, {
      * @param {Object} node - Current BOM tree node
      * @param {Object} categoryMap - Accumulator for category groupings
      * @param {Object} workcenterMap - Accumulator for workcenter groupings
+     * @param {number} [ancestorCostShare=1.0] - Accumulated cost_share
+     *   factor from ancestor BOM nodes (for byproduct cost adjustments)
      */
-    _collectCosts(node, categoryMap, workcenterMap) {
+    _collectCosts(node, categoryMap, workcenterMap, ancestorCostShare = 1.0) {
         // The current node IS the product being manufactured.
         // Its components and operations belong to this parent.
         const parentName = node.name;
         const parentProductId = node.product_id;
+
+        // When a BOM has byproducts, Odoo multiplies the node total by
+        // cost_share (< 1.0).  We must apply the same factor to every
+        // leaf cost we collect so the summary matches the BOM total.
+        const nodeCostShare =
+            node.cost_share !== undefined && node.cost_share !== null
+                ? node.cost_share
+                : 1.0;
+        const effectiveCostShare = ancestorCostShare * nodeCostShare;
 
         // Collect operations at this BOM level (with parent context inline)
         if (node.operations) {
@@ -126,11 +137,12 @@ patch(BomOverviewComponent.prototype, {
                         items: [],
                     };
                 }
-                workcenterMap[wcId].total += op.bom_cost || 0;
+                const adjustedCost = (op.bom_cost || 0) * effectiveCostShare;
+                workcenterMap[wcId].total += adjustedCost;
                 workcenterMap[wcId].items.push({
                     name: op.operation_name || op.name,
                     duration: op.quantity,
-                    total: op.bom_cost || 0,
+                    total: adjustedCost,
                     parent_name: parentName,
                     parent_product_id: parentProductId,
                 });
@@ -141,8 +153,11 @@ patch(BomOverviewComponent.prototype, {
         if (node.components) {
             for (const comp of node.components) {
                 if (comp.type === "bom" && comp.components) {
-                    // Sub-BOM: recurse into its children
-                    this._collectCosts(comp, categoryMap, workcenterMap);
+                    // Sub-BOM: recurse — the child's own cost_share will
+                    // be applied on the next level of recursion.
+                    this._collectCosts(
+                        comp, categoryMap, workcenterMap, effectiveCostShare
+                    );
                 } else {
                     // Leaf component: add to category -> product -> usages
                     const catId = comp.categ_id || 0;
@@ -155,8 +170,10 @@ patch(BomOverviewComponent.prototype, {
                             products: {},
                         };
                     }
+                    const adjustedCost =
+                        (comp.bom_cost || 0) * effectiveCostShare;
                     const cat = categoryMap[catId];
-                    cat.total += comp.bom_cost || 0;
+                    cat.total += adjustedCost;
 
                     // Group by product within category
                     const prodId = comp.product_id;
@@ -169,7 +186,7 @@ patch(BomOverviewComponent.prototype, {
                         };
                     }
                     const product = cat.products[prodId];
-                    product.total += comp.bom_cost || 0;
+                    product.total += adjustedCost;
 
                     // Aggregate usages by parent product
                     // (same component may appear multiple times in same parent)
@@ -178,14 +195,14 @@ patch(BomOverviewComponent.prototype, {
                     );
                     if (existingUsage) {
                         existingUsage.quantity += comp.quantity || 0;
-                        existingUsage.total += comp.bom_cost || 0;
+                        existingUsage.total += adjustedCost;
                     } else {
                         product.usages.push({
                             parent_product_id: parentProductId,
                             parent_name: parentName,
                             quantity: comp.quantity || 0,
                             uom_name: comp.uom_name,
-                            total: comp.bom_cost || 0,
+                            total: adjustedCost,
                         });
                     }
                 }
