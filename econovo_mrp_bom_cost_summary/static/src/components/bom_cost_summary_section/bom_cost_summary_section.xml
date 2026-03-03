@@ -16,12 +16,12 @@
             <col/><!-- Name: auto width (takes remaining space) -->
             <col style="width: 7%;"/><!-- Quantity / Duration -->
             <col style="width: 4%;"/><!-- % -->
-            <col style="width: 7%;"/><!-- Lead Time -->
+            <col style="width: 4%;"/><!-- Lead Time -->
             <col style="width: 10%;"/><!-- Route -->
-            <col style="width: 11%;"/><!-- BoM Cost -->
-            <col style="width: 11%;"/><!-- Product Cost -->
-            <col t-if="hasSecondary" style="width: 12%;"/><!-- BoM Cost USD -->
-            <col t-if="hasSecondary" style="width: 12%;"/><!-- Product Cost USD -->
+            <col style="width: 10%;"/><!-- BoM Cost -->
+            <col style="width: 10%;"/><!-- Product Cost -->
+            <col t-if="hasSecondary" style="width: 10%;"/><!-- BoM Cost USD -->
+            <col t-if="hasSecondary" style="width: 10%;"/><!-- Product Cost USD -->
         </colgroup>
 
         <!-- ===== COMPONENTS BY PRODUCT CATEGORY ===== -->
@@ -50,7 +50,7 @@
                 <!-- Subtotal Components -->
                 <tr class="o_econovo_cost_summary__subtotal-row">
                     <td/>
-                    <td><strong>Subtotal Components</strong></td>
+                    <td class="text-end"><strong>Subtotal Components</strong></td>
                     <td/>
                     <td/>
                     <td/>
@@ -94,14 +94,15 @@
                     <!-- Level 1: Workcenter -->
                     <tr class="o_econovo_cost_summary__group-row"
                         t-on-click="() => this.toggleWorkcenter(wc.id)">
-                        <td class="o_econovo_cost_summary__fold-col">
-                            <button class="btn btn-light btn-sm py-0 px-1"
+                        <td class="o_econovo_cost_summary__fold-col"/>
+                        <td>
+                            <button class="btn btn-light btn-sm py-0 px-1 me-1"
                                     t-att-title="isWorkcenterFolded(wc.id) ? 'Unfold' : 'Fold'">
                                 <i t-att-class="'fa fa-fw ' + (isWorkcenterFolded(wc.id) ? 'fa-caret-right' : 'fa-caret-down')"
                                    role="img"/>
                             </button>
+                            <strong t-esc="wc.name"/>
                         </td>
-                        <td><strong t-esc="wc.name"/></td>
                         <td class="text-end text-muted">
                             <strong t-esc="fmtDuration(wc.total_duration)"/>
                         </td>
@@ -125,7 +126,7 @@
                             <!-- Operation + parent product in a single row -->
                             <tr class="o_econovo_cost_summary__product-row">
                                 <td/>
-                                <td class="ps-4">
+                                <td style="padding-left: 44px;">
                                     <a href="#" class="o_econovo_cost_summary__link"
                                        t-on-click.stop.prevent="() => this.openFormDialog(op.link_id, 'mrp.routing.workcenter')">
                                         <t t-esc="op.name"/></a><t t-if="op.parent_name">: 
@@ -168,9 +169,9 @@
                 <!-- Subtotal Operations -->
                 <tr class="o_econovo_cost_summary__subtotal-row">
                     <td/>
-                    <td><strong>Subtotal Operations</strong></td>
-                    <td class="text-end text-muted">
-                        <t t-esc="fmtDuration(data.totals.operations_duration)"/>
+                    <td class="text-end"><strong>Subtotal Operations</strong></td>
+                    <td class="text-end">
+                        <strong t-esc="fmtDuration(data.totals.operations_duration)"/>
                     </td>
                     <td/>
                     <td/>
@@ -179,7 +180,7 @@
                         <strong t-esc="fmtMoney(data.totals.operations)"/>
                     </td>
                     <td/>
-                    <td t-if="hasSecondary" class="text-end text-muted">
+                    <td t-if="hasSecondary" class="text-end">
                         <strong t-esc="fmtUsd(data.totals.operations_usd)"/>
                     </td>
                     <td t-if="hasSecondary"/>
@@ -191,7 +192,7 @@
         <tfoot>
             <tr class="o_econovo_cost_summary__grand-total-row">
                 <td class="o_econovo_cost_summary__fold-col"/>
-                <td><strong>TOTAL BOM COST</strong></td>
+                <td class="text-end"><strong>TOTAL BOM COST</strong></td>
                 <td/>
                 <td/>
                 <td/>
@@ -207,7 +208,7 @@
             </tr>
             <tr class="o_econovo_cost_summary__grand-total-row">
                 <td class="o_econovo_cost_summary__fold-col"/>
-                <td><strong>TOTAL PRODUCT COST</strong></td>
+                <td class="text-end"><strong>TOTAL PRODUCT COST</strong></td>
                 <td/>
                 <td/>
                 <td/>
@@ -332,7 +333,7 @@
                 <tr t-foreach="prod.usages" t-as="usage" t-key="usage.parent_product_id"
                     class="o_econovo_cost_summary__usage-row">
                     <td/>
-                    <td t-attf-style="padding-left: {{ (node.depth + 1) * 20 + 24 }}px">
+                    <td t-attf-style="padding-left: {{ (node.depth + 1) * 20 + 44 }}px">
                         <a href="#" class="o_econovo_cost_summary__link"
                            t-on-click.stop.prevent="() => this.openFormDialog(usage.parent_product_id, 'product.product')">
                             <t t-esc="usage.parent_name"/>
