@@ -40,14 +40,8 @@ patch(BomOverviewComponent.prototype, {
 
         const rate = secondaryCurrency ? secondaryCurrency.rate : 0;
 
-        // Convert categoryMap products from nested maps to sorted arrays
-        const categories = Object.values(categoryMap)
-            .map((cat) => {
-                const products = Object.values(cat.products)
-                    .sort((a, b) => b.total - a.total);
-                return { ...cat, products };
-            })
-            .sort((a, b) => b.total - a.total);
+        // Build hierarchical category tree from flat leaf categories
+        const categories = this._buildCategoryTree(categoryMap);
         const workcenters = Object.values(workcenterMap).sort(
             (a, b) => b.total - a.total
         );
@@ -56,45 +50,25 @@ patch(BomOverviewComponent.prototype, {
             return false;
         }
 
-        const totalComponents = categories.reduce((s, c) => s + c.total, 0);
+        // Root totals already include all descendants
+        const totalComponents = categories.reduce(
+            (s, c) => s + c.total, 0
+        );
         const totalProdCost = categories.reduce(
             (s, c) => s + c.prod_cost_total, 0
         );
-        const totalOperations = workcenters.reduce((s, w) => s + w.total, 0);
+        const totalOperations = workcenters.reduce(
+            (s, w) => s + w.total, 0
+        );
         const totalDuration = workcenters.reduce(
             (s, w) => s + w.total_duration, 0
         );
         const totalBom = totalComponents + totalOperations;
         const totalProd = totalProdCost + totalOperations;
 
-        // Compute percentages and USD for categories -> products -> usages
-        for (const cat of categories) {
-            cat.percentage = totalComponents
-                ? (cat.total / totalComponents) * 100
-                : 0;
-            cat.total_usd = rate ? cat.total * rate : false;
-            cat.prod_cost_total_usd = rate
-                ? cat.prod_cost_total * rate
-                : false;
-            for (const prod of cat.products) {
-                prod.percentage = totalComponents
-                    ? (prod.total / totalComponents) * 100
-                    : 0;
-                prod.total_usd = rate ? prod.total * rate : false;
-                prod.prod_cost_total_usd = rate
-                    ? prod.prod_cost_total * rate
-                    : false;
-                for (const usage of prod.usages) {
-                    usage.percentage = totalComponents
-                        ? (usage.total / totalComponents) * 100
-                        : 0;
-                    usage.total_usd = rate ? usage.total * rate : false;
-                    usage.prod_cost_usd = rate
-                        ? usage.prod_cost * rate
-                        : false;
-                }
-            }
-        }
+        // Recursively enrich tree with percentages and USD
+        this._enrichCategoryTree(categories, rate, totalComponents);
+
         // Compute percentages and USD for workcenters -> items
         for (const wc of workcenters) {
             wc.percentage = totalOperations
@@ -127,6 +101,113 @@ patch(BomOverviewComponent.prototype, {
             },
             currency_id: data.currency_id,
         };
+    },
+
+    /**
+     * Builds a hierarchical category tree from the flat leaf-category map.
+     *
+     * Each leaf category carries an ``ancestors`` array (root → leaf)
+     * computed by the Python layer from ``parent_path``.  This method
+     * creates intermediate nodes as needed and bubbles costs upward.
+     *
+     * @param {Object} categoryMap - Flat map keyed by leaf categ_id
+     * @returns {Array} Root-level tree nodes sorted by total descending
+     */
+    _buildCategoryTree(categoryMap) {
+        const nodeMap = {};
+        const roots = [];
+
+        for (const leaf of Object.values(categoryMap)) {
+            const ancestors = leaf.ancestors;
+            let parentChildren = roots;
+
+            for (let i = 0; i < ancestors.length; i++) {
+                const anc = ancestors[i];
+
+                if (!nodeMap[anc.id]) {
+                    const node = {
+                        id: anc.id,
+                        name: anc.name,
+                        depth: i,
+                        total: 0,
+                        prod_cost_total: 0,
+                        children: [],
+                        products: [],
+                    };
+                    nodeMap[anc.id] = node;
+                    parentChildren.push(node);
+                }
+
+                const node = nodeMap[anc.id];
+
+                // Leaf: assign direct products and costs
+                if (i === ancestors.length - 1) {
+                    node.products = Object.values(leaf.products)
+                        .sort((a, b) => b.total - a.total);
+                    node.total += leaf.total;
+                    node.prod_cost_total += leaf.prod_cost_total;
+                }
+
+                parentChildren = node.children;
+            }
+        }
+
+        // Bubble costs from leaves up to root nodes
+        const bubbleUp = (node) => {
+            for (const child of node.children) {
+                bubbleUp(child);
+                node.total += child.total;
+                node.prod_cost_total += child.prod_cost_total;
+            }
+        };
+        for (const root of roots) {
+            bubbleUp(root);
+        }
+
+        // Sort recursively by total descending
+        const sortTree = (nodes) => {
+            nodes.sort((a, b) => b.total - a.total);
+            for (const n of nodes) {
+                sortTree(n.children);
+            }
+        };
+        sortTree(roots);
+
+        return roots;
+    },
+
+    /**
+     * Recursively enrich category tree nodes with percentage and USD.
+     *
+     * @param {Array} nodes - Array of tree nodes at current level
+     * @param {number} rate - USD conversion rate (0 if no secondary)
+     * @param {number} totalComponents - Grand total of all component costs
+     */
+    _enrichCategoryTree(nodes, rate, totalComponents) {
+        for (const node of nodes) {
+            node.percentage = totalComponents
+                ? (node.total / totalComponents) * 100 : 0;
+            node.total_usd = rate ? node.total * rate : false;
+            node.prod_cost_total_usd = rate
+                ? node.prod_cost_total * rate : false;
+
+            for (const prod of node.products) {
+                prod.percentage = totalComponents
+                    ? (prod.total / totalComponents) * 100 : 0;
+                prod.total_usd = rate ? prod.total * rate : false;
+                prod.prod_cost_total_usd = rate
+                    ? prod.prod_cost_total * rate : false;
+                for (const usage of prod.usages) {
+                    usage.percentage = totalComponents
+                        ? (usage.total / totalComponents) * 100 : 0;
+                    usage.total_usd = rate ? usage.total * rate : false;
+                    usage.prod_cost_usd = rate
+                        ? usage.prod_cost * rate : false;
+                }
+            }
+
+            this._enrichCategoryTree(node.children, rate, totalComponents);
+        }
     },
 
     /**
@@ -217,6 +298,9 @@ patch(BomOverviewComponent.prototype, {
                             total: 0,
                             prod_cost_total: 0,
                             products: {},
+                            ancestors: comp.categ_ancestors || [
+                                { id: catId, name: catName },
+                            ],
                         };
                     }
                     const adjustedCost =

@@ -15,14 +15,18 @@ export class BomCostSummarySection extends Component {
         this.formatFloat = formatFloat;
         this.formatFloatTime = formatFloatTime;
 
-        // Initialize fold state: categories (level 1), products (level 2), workcenters
+        // Initialize fold state recursively for category tree nodes
         const foldState = {};
-        for (const cat of this.props.data.categories) {
-            foldState[`cat_${cat.id}`] = true;
-            for (const prod of cat.products) {
-                foldState[`prod_${cat.id}_${prod.product_id}`] = true;
+        const initCategoryFold = (nodes) => {
+            for (const node of nodes) {
+                foldState[`cat_${node.id}`] = true;
+                for (const prod of node.products) {
+                    foldState[`prod_${node.id}_${prod.product_id}`] = true;
+                }
+                initCategoryFold(node.children);
             }
-        }
+        };
+        initCategoryFold(this.props.data.categories);
         for (const wc of this.props.data.workcenters) {
             foldState[`wc_${wc.id}`] = true;
         }

@@ -6,11 +6,21 @@ class ReportBomStructure(models.AbstractModel):
 
     Adds:
     - secondary_currency (USD) conversion rate to ``_get_report_data``
-    - product category id/name to component and BOM node data
+    - product category id/name and ancestor chain to component and BOM data
     - workcenter id/name to each operation line
     """
 
     _inherit = 'report.mrp.report_bom_structure'
+
+    @api.model
+    def _get_categ_ancestors(self, categ):
+        """Return list of ancestor dicts [{id, name}] from root to leaf."""
+        path_ids = [
+            int(x) for x in categ.parent_path.strip('/').split('/')
+            if x
+        ]
+        ancestors = self.env['product.category'].browse(path_ids)
+        return [{'id': c.id, 'name': c.name} for c in ancestors]
 
     @api.model
     def _get_report_data(self, bom_id, searchQty=0, searchVariant=False):
@@ -59,6 +69,9 @@ class ReportBomStructure(models.AbstractModel):
         if prod:
             res['categ_id'] = prod.categ_id.id
             res['categ_name'] = prod.categ_id.name or _("Uncategorized")
+            res['categ_ancestors'] = self._get_categ_ancestors(
+                prod.categ_id,
+            )
         return res
 
     @api.model
@@ -75,6 +88,9 @@ class ReportBomStructure(models.AbstractModel):
         res['categ_id'] = bom_line.product_id.categ_id.id
         res['categ_name'] = (
             bom_line.product_id.categ_id.name or _("Uncategorized")
+        )
+        res['categ_ancestors'] = self._get_categ_ancestors(
+            bom_line.product_id.categ_id,
         )
         return res
 
