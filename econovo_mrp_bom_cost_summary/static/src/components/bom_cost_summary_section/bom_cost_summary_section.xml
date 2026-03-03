@@ -19,8 +19,8 @@
             <col style="width: 4%;"/><!-- Lead Time -->
             <col style="width: 10%;"/><!-- Route -->
             <col style="width: 10%;"/><!-- BoM Cost -->
-            <col style="width: 10%;"/><!-- Product Cost -->
             <col t-if="hasSecondary" style="width: 10%;"/><!-- BoM Cost USD -->
+            <col style="width: 10%;"/><!-- Product Cost -->
             <col t-if="hasSecondary" style="width: 10%;"/><!-- Product Cost USD -->
         </colgroup>
 
@@ -35,8 +35,8 @@
                     <th class="text-end">Lead Time</th>
                     <th>Route</th>
                     <th class="text-end">BoM Cost</th>
-                    <th class="text-end">Product Cost</th>
                     <th t-if="hasSecondary" class="text-end">BoM Cost <t t-esc="secondaryCurrency.name"/></th>
+                    <th class="text-end">Product Cost</th>
                     <th t-if="hasSecondary" class="text-end">Product Cost <t t-esc="secondaryCurrency.name"/></th>
                 </tr>
             </thead>
@@ -58,11 +58,11 @@
                     <td class="text-end">
                         <strong t-esc="fmtMoney(data.totals.components)"/>
                     </td>
-                    <td class="text-end">
-                        <strong t-esc="fmtMoney(data.totals.prod_cost)"/>
-                    </td>
                     <td t-if="hasSecondary" class="text-end text-muted">
                         <strong t-esc="fmtUsd(data.totals.components_usd)"/>
+                    </td>
+                    <td class="text-end">
+                        <strong t-esc="fmtMoney(data.totals.prod_cost)"/>
                     </td>
                     <td t-if="hasSecondary" class="text-end text-muted">
                         <strong t-esc="fmtUsd(data.totals.prod_cost_usd)"/>
@@ -84,8 +84,8 @@
                     <th class="text-end">Lead Time</th>
                     <th>Route</th>
                     <th class="text-end">BoM Cost</th>
-                    <th/>
                     <th t-if="hasSecondary" class="text-end">BoM Cost <t t-esc="secondaryCurrency.name"/></th>
+                    <th/>
                     <th t-if="hasSecondary"/>
                 </tr>
             </thead>
@@ -114,10 +114,10 @@
                         <td class="text-end">
                             <strong t-esc="fmtMoney(wc.total)"/>
                         </td>
-                        <td/>
                         <td t-if="hasSecondary" class="text-end text-muted">
                             <strong t-esc="fmtUsd(wc.total_usd)"/>
                         </td>
+                        <td/>
                         <td t-if="hasSecondary"/>
                     </tr>
 
@@ -126,7 +126,7 @@
                             <!-- Operation + parent product in a single row -->
                             <tr class="o_econovo_cost_summary__product-row">
                                 <td/>
-                                <td style="padding-left: 44px;">
+                                <td style="padding-left: 58px;">
                                     <a href="#" class="o_econovo_cost_summary__link"
                                        t-on-click.stop.prevent="() => this.openFormDialog(op.link_id, 'mrp.routing.workcenter')">
                                         <t t-esc="op.name"/></a><t t-if="op.parent_name">: 
@@ -156,10 +156,10 @@
                                 <td class="text-end">
                                     <t t-esc="fmtMoney(op.total)"/>
                                 </td>
-                                <td/>
                                 <td t-if="hasSecondary" class="text-end text-muted">
                                     <t t-esc="fmtUsd(op.total_usd)"/>
                                 </td>
+                                <td/>
                                 <td t-if="hasSecondary"/>
                             </tr>
                         </t>
@@ -179,10 +179,10 @@
                     <td class="text-end">
                         <strong t-esc="fmtMoney(data.totals.operations)"/>
                     </td>
-                    <td/>
                     <td t-if="hasSecondary" class="text-end">
                         <strong t-esc="fmtUsd(data.totals.operations_usd)"/>
                     </td>
+                    <td/>
                     <td t-if="hasSecondary"/>
                 </tr>
             </tbody>
@@ -200,10 +200,10 @@
                 <td class="text-end">
                     <strong t-esc="fmtMoney(data.totals.total)"/>
                 </td>
-                <td/>
                 <td t-if="hasSecondary" class="text-end">
                     <strong t-esc="fmtUsd(data.totals.total_usd)"/>
                 </td>
+                <td/>
                 <td t-if="hasSecondary"/>
             </tr>
             <tr class="o_econovo_cost_summary__grand-total-row">
@@ -214,10 +214,10 @@
                 <td/>
                 <td/>
                 <td/>
+                <td t-if="hasSecondary"/>
                 <td class="text-end">
                     <strong t-esc="fmtMoney(data.totals.total_prod)"/>
                 </td>
-                <td t-if="hasSecondary"/>
                 <td t-if="hasSecondary" class="text-end">
                     <strong t-esc="fmtUsd(data.totals.total_prod_usd)"/>
                 </td>
@@ -251,11 +251,11 @@
         <td class="text-end">
             <strong t-esc="fmtMoney(node.total)"/>
         </td>
-        <td class="text-end">
-            <strong t-esc="fmtMoney(node.prod_cost_total)"/>
-        </td>
         <td t-if="hasSecondary" class="text-end text-muted">
             <strong t-esc="fmtUsd(node.total_usd)"/>
+        </td>
+        <td class="text-end">
+            <strong t-esc="fmtMoney(node.prod_cost_total)"/>
         </td>
         <td t-if="hasSecondary" class="text-end text-muted">
             <strong t-esc="fmtUsd(node.prod_cost_total_usd)"/>
@@ -317,11 +317,11 @@
                 <td class="text-end">
                     <t t-esc="fmtMoney(prod.total)"/>
                 </td>
-                <td class="text-end">
-                    <t t-esc="fmtMoney(prod.prod_cost_total)"/>
-                </td>
                 <td t-if="hasSecondary" class="text-end text-muted">
                     <t t-esc="fmtUsd(prod.total_usd)"/>
+                </td>
+                <td class="text-end">
+                    <t t-esc="fmtMoney(prod.prod_cost_total)"/>
                 </td>
                 <td t-if="hasSecondary" class="text-end text-muted">
                     <t t-esc="fmtUsd(prod.prod_cost_total_usd)"/>
@@ -362,11 +362,11 @@
                     <td class="text-end">
                         <t t-esc="fmtMoney(usage.total)"/>
                     </td>
-                    <td class="text-end">
-                        <t t-esc="fmtMoney(usage.prod_cost)"/>
-                    </td>
                     <td t-if="hasSecondary" class="text-end text-muted">
                         <t t-esc="fmtUsd(usage.total_usd)"/>
+                    </td>
+                    <td class="text-end">
+                        <t t-esc="fmtMoney(usage.prod_cost)"/>
                     </td>
                     <td t-if="hasSecondary" class="text-end text-muted">
                         <t t-esc="fmtUsd(usage.prod_cost_usd)"/>
