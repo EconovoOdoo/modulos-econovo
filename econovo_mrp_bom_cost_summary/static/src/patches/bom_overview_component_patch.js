@@ -188,6 +188,11 @@ patch(BomOverviewComponent.prototype, {
                     total: adjustedCost,
                     parent_name: parentName,
                     parent_product_id: parentProductId,
+                    lead_time: node.lead_time || false,
+                    route_name: node.route_name || "",
+                    route_detail: node.route_detail || "",
+                    route_type: node.route_type || "",
+                    bom_id: node.bom_id || false,
                 });
             }
         }

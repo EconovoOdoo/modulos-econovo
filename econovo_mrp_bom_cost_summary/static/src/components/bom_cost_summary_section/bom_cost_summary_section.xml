@@ -215,8 +215,8 @@
                     <th>Operations by Work Center</th>
                     <th class="text-end">Duration</th>
                     <th class="text-end">%</th>
-                    <th/><!-- Lead Time (n/a) -->
-                    <th/><!-- Route (n/a) -->
+                    <th class="text-end">Lead Time</th>
+                    <th>Route</th>
                     <th class="text-end">BoM Cost</th>
                     <th/>
                     <th t-if="hasSecondary" class="text-end">BoM Cost <t t-esc="secondaryCurrency.name"/></th>
@@ -256,14 +256,17 @@
 
                     <t t-if="!isWorkcenterFolded(wc.id)">
                         <t t-foreach="wc.items" t-as="op" t-key="op_index">
-                            <!-- Level 2: Operation -->
+                            <!-- Operation + parent product in a single row -->
                             <tr class="o_econovo_cost_summary__product-row">
                                 <td/>
                                 <td class="ps-4">
                                     <a href="#" class="o_econovo_cost_summary__link"
                                        t-on-click.stop.prevent="() => this.openFormDialog(op.link_id, 'mrp.routing.workcenter')">
-                                        <t t-esc="op.name"/>
-                                    </a>
+                                        <t t-esc="op.name"/></a><t t-if="op.parent_name">: 
+                                    <a href="#" class="o_econovo_cost_summary__link"
+                                       t-on-click.stop.prevent="() => this.openFormDialog(op.parent_product_id, 'product.product')">
+                                        <t t-esc="op.parent_name"/>
+                                    </a></t>
                                 </td>
                                 <td class="text-end text-muted">
                                     <i class="fa fa-clock-o me-1"/>
@@ -272,8 +275,17 @@
                                 <td class="text-end text-muted">
                                     <t t-esc="fmtPct(op.percentage)"/>
                                 </td>
-                                <td/>
-                                <td/>
+                                <td class="text-end text-muted">
+                                    <span t-if="op.lead_time !== false" t-esc="fmtLeadTime(op.lead_time)"/>
+                                </td>
+                                <td class="text-muted">
+                                    <div t-if="op.route_name">
+                                        <span t-esc="op.route_name"/>: 
+                                        <a href="#" class="o_econovo_cost_summary__link"
+                                           t-on-click.stop.prevent="() => this.goToRoute(op.route_type, op.bom_id)"
+                                           t-esc="op.route_detail"/>
+                                    </div>
+                                </td>
                                 <td class="text-end">
                                     <t t-esc="fmtMoney(op.total)"/>
                                 </td>
@@ -281,24 +293,6 @@
                                 <td t-if="hasSecondary" class="text-end text-muted">
                                     <t t-esc="fmtUsd(op.total_usd)"/>
                                 </td>
-                                <td t-if="hasSecondary"/>
-                            </tr>
-                            <!-- Level 3: Parent product context -->
-                            <tr class="o_econovo_cost_summary__usage-row">
-                                <td/>
-                                <td class="o_econovo_cost_summary__indent-l3">
-                                    <a href="#" class="o_econovo_cost_summary__link"
-                                       t-on-click.stop.prevent="() => this.openFormDialog(op.parent_product_id, 'product.product')">
-                                        <t t-esc="op.parent_name"/>
-                                    </a>
-                                </td>
-                                <td/>
-                                <td/>
-                                <td/>
-                                <td/>
-                                <td/>
-                                <td/>
-                                <td t-if="hasSecondary"/>
                                 <td t-if="hasSecondary"/>
                             </tr>
                         </t>
