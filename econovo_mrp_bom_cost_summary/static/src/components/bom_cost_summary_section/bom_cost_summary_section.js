@@ -1,11 +1,19 @@
 /** @odoo-module **/
 
-import { formatFloat, formatMonetary } from "@web/views/fields/formatters";
+import { _t } from "@web/core/l10n/translation";
+import { useService } from "@web/core/utils/hooks";
+import {
+    formatFloat,
+    formatFloatTime,
+    formatMonetary,
+} from "@web/views/fields/formatters";
 import { Component, useState } from "@odoo/owl";
 
 export class BomCostSummarySection extends Component {
     setup() {
+        this.actionService = useService("action");
         this.formatFloat = formatFloat;
+        this.formatFloatTime = formatFloatTime;
 
         // Initialize fold state: categories (level 1), products (level 2), workcenters
         const foldState = {};
@@ -38,6 +46,25 @@ export class BomCostSummarySection extends Component {
         this.state[key] = !this.state[key];
     }
 
+    /**
+     * Opens a native Odoo form dialog for the given record.
+     *
+     * @param {number|false} resId - Record ID
+     * @param {string} resModel - Model name
+     */
+    openFormDialog(resId, resModel) {
+        if (!resId) {
+            return;
+        }
+        this.actionService.doAction({
+            type: "ir.actions.act_window",
+            res_model: resModel,
+            res_id: resId,
+            views: [[false, "form"]],
+            target: "new",
+        });
+    }
+
     // ---- Getters ----
 
     get data() {
@@ -56,6 +83,10 @@ export class BomCostSummarySection extends Component {
         return !!this.secondaryCurrency;
     }
 
+    get showCosts() {
+        return this.props.showOptions.costs;
+    }
+
     get showUom() {
         return this.props.showOptions.uom;
     }
@@ -70,6 +101,92 @@ export class BomCostSummarySection extends Component {
 
     isWorkcenterFolded(wcId) {
         return this.state[`wc_${wcId}`];
+    }
+
+    /**
+     * Returns the aggregated lead time for a product. If all usages
+     * share the same lead_time value, returns that value; otherwise
+     * returns false (mixed lead times cannot be summarised).
+     *
+     * @param {Object} prod - Product summary object
+     * @returns {number|false}
+     */
+    productLeadTime(prod) {
+        const usagesWithLt = prod.usages.filter(
+            (u) => u.lead_time !== false && u.lead_time !== undefined
+        );
+        if (!usagesWithLt.length) {
+            return false;
+        }
+        const first = usagesWithLt[0].lead_time;
+        if (usagesWithLt.every((u) => u.lead_time === first)) {
+            return first;
+        }
+        return false;
+    }
+
+    /**
+     * Returns the route label for a product if all usages share the
+     * same route_name.  Returns false when routes differ.
+     *
+     * @param {Object} prod - Product summary object
+     * @returns {{route_name: string, route_detail: string}|false}
+     */
+    productRoute(prod) {
+        const usagesWithRoute = prod.usages.filter((u) => u.route_name);
+        if (!usagesWithRoute.length) {
+            return false;
+        }
+        const firstName = usagesWithRoute[0].route_name;
+        const allSame = usagesWithRoute.every((u) => u.route_name === firstName);
+        if (!allSame) {
+            return false;
+        }
+        return {
+            route_name: firstName,
+            route_detail: usagesWithRoute[0].route_detail || "",
+            route_type: usagesWithRoute[0].route_type || "",
+            bom_id: usagesWithRoute[0].bom_id || false,
+        };
+    }
+
+    /**
+     * Navigate to the source of a route (e.g. open the child BoM for
+     * "manufacture" routes).  Mirrors native BomOverviewLine.goToRoute.
+     *
+     * @param {string} routeType - "manufacture" or "buy"
+     * @param {number|false} bomId - Child BoM ID for manufacture routes
+     */
+    goToRoute(routeType, bomId) {
+        if (routeType === "manufacture" && bomId) {
+            this.actionService.doAction({
+                type: "ir.actions.act_window",
+                res_model: "mrp.bom",
+                res_id: bomId,
+                views: [[false, "form"]],
+                target: "current",
+            });
+        }
+    }
+
+    /**
+     * Returns the aggregated quantity for a product, but only when all
+     * usages share the same UoM.  Mixed UoMs cannot be summed.
+     *
+     * @param {Object} prod - Product summary object
+     * @returns {{quantity: number, uom_name: string}|false}
+     */
+    productQuantity(prod) {
+        if (!prod.usages.length) {
+            return false;
+        }
+        const firstUom = prod.usages[0].uom_name;
+        const allSame = prod.usages.every((u) => u.uom_name === firstUom);
+        if (!allSame) {
+            return false;
+        }
+        const total = prod.usages.reduce((s, u) => s + (u.quantity || 0), 0);
+        return { quantity: total, uom_name: firstUom };
     }
 
     // ---- Formatters ----
@@ -93,6 +210,13 @@ export class BomCostSummarySection extends Component {
         const h = Math.floor(minutes / 60);
         const m = Math.round(minutes % 60);
         return h > 0 ? `${h}h ${m}min` : `${m}min`;
+    }
+
+    fmtLeadTime(days) {
+        if (days === false || days === undefined) {
+            return "";
+        }
+        return `${days} ${_t("Days")}`;
     }
 }
 
