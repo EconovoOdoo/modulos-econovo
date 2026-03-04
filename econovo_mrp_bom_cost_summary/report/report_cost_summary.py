@@ -5,7 +5,7 @@ from odoo import api, models, _
 
 
 class ReportEconovoBomCostSummary(models.AbstractModel):
-    _name = "report.econovo.bom.cost.summary"
+    _name = "report.econovo_mrp_bom_cost_summary.report_cost_summary"
     _description = "BOM Cost Summary PDF Report"
 
     # ------------------------------------------------------------------
@@ -70,6 +70,7 @@ class ReportEconovoBomCostSummary(models.AbstractModel):
                         "bom": bom,
                         "bom_lines": bom_lines,
                         "cost_summary": cost_summary,
+                        "currency": bom.company_id.currency_id,
                         "secondary_currency": secondary,
                         "quantity": quantity,
                         "show_costs": show_costs,

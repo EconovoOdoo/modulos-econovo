@@ -106,6 +106,14 @@ export function collectCosts(node, categoryMap, workcenterMap, ancestorCostShare
                         total: 0,
                         prod_cost_total: 0,
                         usages: [],
+                        // Availability: stock levels for this component product.
+                        // All usages share the same stock data, so capture it once.
+                        quantity_available: comp.quantity_available !== undefined
+                            ? comp.quantity_available : false,
+                        quantity_on_hand: comp.quantity_on_hand !== undefined
+                            ? comp.quantity_on_hand : false,
+                        availability_state: comp.availability_state || false,
+                        availability_display: comp.availability_display || "",
                     };
                 }
                 const product = cat.products[prodId];

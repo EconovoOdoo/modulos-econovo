@@ -27,6 +27,9 @@
                 precision="state.precision"/>
 
 
+            <!-- Scrollable area: only this div scrolls; the control panel above stays fixed -->
+            <div class="o_econovo_cost_summary__scroll-area">
+
             <!--
                 Product header banner (sub-option A2).
                 EC-16: guard with t-if="state.bomData.name" — the banner is
@@ -88,9 +91,11 @@
                     a work center assigned.
                 </div>
 
-            </div>
+            </div><!-- /o_econovo_cost_summary__content -->
 
-        </div>
+            </div><!-- /o_econovo_cost_summary__scroll-area -->
+
+        </div><!-- /o_action -->
     </t>
 
 </templates>

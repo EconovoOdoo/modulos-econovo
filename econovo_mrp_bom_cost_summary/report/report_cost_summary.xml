@@ -49,7 +49,7 @@
 
                         <t t-if="doc['cost_summary']">
                             <t t-set="cs" t-value="doc['cost_summary']"/>
-                            <t t-set="cur" t-value="doc['bom'].currency_id"/>
+                            <t t-set="cur" t-value="doc['currency']"/>
                             <t t-set="usd" t-value="doc['secondary_currency']"/>
 
                             <!-- ── Components by category ── -->

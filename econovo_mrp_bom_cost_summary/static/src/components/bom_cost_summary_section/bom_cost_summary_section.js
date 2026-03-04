@@ -172,8 +172,27 @@ export class BomCostSummarySection extends Component {
         return this.props.showOptions.leadTimes;
     }
 
+    get showAvailabilities() {
+        return this.props.showOptions.availabilities;
+    }
+
     get showOperations() {
         return this.props.showOptions.operations;
+    }
+
+    /**
+     * Returns the Bootstrap text-color class for a given availability_state.
+     *
+     * @param {string} state
+     * @returns {string}
+     */
+    availabilityClass(state) {
+        switch (state) {
+            case "available":   return "text-success";
+            case "expected":    return "text-warning";
+            case "unavailable": return "text-danger";
+            default:            return "";
+        }
     }
 
     get showUom() {

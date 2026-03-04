@@ -26,6 +26,7 @@ grouped by work center, with 3-level drill-down and dual currency (ARS + USD).
             'econovo_mrp_bom_cost_summary/static/src/patches/**/*.xml',
             'econovo_mrp_bom_cost_summary/static/src/views/**/*.js',
             'econovo_mrp_bom_cost_summary/static/src/views/**/*.xml',
+            'econovo_mrp_bom_cost_summary/static/src/views/**/*.scss',
         ],
     },
     'installable': True,
