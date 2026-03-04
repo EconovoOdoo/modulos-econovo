@@ -233,6 +233,7 @@
                                    role="img"/>
                             </button>
                             <strong t-esc="wc.name"/>
+                            <span class="text-muted ms-1 fw-normal">(<t t-esc="wc.items.length"/>)</span>
                         </td>
                         <td class="text-end text-muted">
                             <strong t-esc="fmtDuration(wc.total_duration)"/>
