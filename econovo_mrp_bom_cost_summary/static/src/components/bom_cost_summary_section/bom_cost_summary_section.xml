@@ -54,6 +54,7 @@
                                    role="img"/>
                             </button>
                             <strong t-esc="row.node.name"/>
+                            <span class="text-muted ms-1 fw-normal">(<t t-esc="categoryCount(row.node)"/>)</span>
                         </td>
                         <td/>
                         <td class="text-end text-muted">
