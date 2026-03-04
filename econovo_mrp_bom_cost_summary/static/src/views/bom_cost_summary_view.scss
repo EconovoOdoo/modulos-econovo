@@ -1,0 +1,18 @@
+// Standalone Cost Summary view — the control panel must stay fixed;
+// only the product header + cost table below it should be scrollable.
+.o_econovo_cost_summary_view {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+
+    // The BomOverviewControlPanel (.o_control_panel) is the first child;
+    // it is NOT given flex-grow so it keeps its natural height (stays fixed).
+
+    // This wrapper is added in the XML around the product header and content.
+    .o_econovo_cost_summary__scroll-area {
+        flex: 1;
+        overflow-y: auto;
+        min-height: 0; // required in a flex child to enable shrinking
+    }
+}

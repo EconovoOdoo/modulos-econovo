@@ -12,16 +12,27 @@ grouped by work center, with 3-level drill-down and dual currency (ARS + USD).
     'author': 'Jose D. Leonett',
     'website': 'https://github.com/josedleonett',
     'license': 'AGPL-3',
+    'data': [
+        'report/report_cost_summary.xml',
+        'views/mrp_bom_views.xml',
+    ],
     'assets': {
         'web.assets_backend': [
+            'econovo_mrp_bom_cost_summary/static/src/utils/**/*.js',
             'econovo_mrp_bom_cost_summary/static/src/components/**/*.js',
             'econovo_mrp_bom_cost_summary/static/src/components/**/*.xml',
             'econovo_mrp_bom_cost_summary/static/src/components/**/*.scss',
             'econovo_mrp_bom_cost_summary/static/src/patches/**/*.js',
             'econovo_mrp_bom_cost_summary/static/src/patches/**/*.xml',
+            'econovo_mrp_bom_cost_summary/static/src/views/**/*.js',
+            'econovo_mrp_bom_cost_summary/static/src/views/**/*.xml',
+            'econovo_mrp_bom_cost_summary/static/src/views/**/*.scss',
         ],
     },
     'installable': True,
     'application': False,
     'auto_install': False,
+    'external_dependencies': {
+        'python': ['openpyxl'],
+    },
 }

@@ -17,7 +17,7 @@
 
         thead {
             .o_econovo_cost_summary__section-header th {
-                background-color: $-bg-subtle;
+                background-color: $-bg-subtle !important;
                 font-weight: 600;
                 font-size: 0.85em;
                 text-transform: uppercase;

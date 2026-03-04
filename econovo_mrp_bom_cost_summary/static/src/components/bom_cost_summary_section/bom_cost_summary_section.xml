@@ -16,12 +16,14 @@
             <col/><!-- Name: auto width (takes remaining space) -->
             <col style="width: 7%;"/><!-- Quantity / Duration -->
             <col style="width: 4%;"/><!-- % -->
-            <col style="width: 4%;"/><!-- Lead Time -->
-            <col style="width: 10%;"/><!-- Route -->
-            <col style="width: 10%;"/><!-- BoM Cost -->
-            <col t-if="hasSecondary" style="width: 10%;"/><!-- BoM Cost USD -->
-            <col style="width: 10%;"/><!-- Product Cost -->
-            <col t-if="hasSecondary" style="width: 10%;"/><!-- Product Cost USD -->
+            <col t-if="showAvailabilities" style="width: 7%;"/><!-- Free to Use / On Hand -->
+            <col t-if="showAvailabilities" style="width: 6%;"/><!-- Availability -->
+            <col t-if="showLeadTimes" style="width: 4%;"/><!-- Lead Time -->
+            <col t-if="showLeadTimes" style="width: 10%;"/><!-- Route -->
+            <col t-if="showCosts" style="width: 10%;"/><!-- BoM Cost -->
+            <col t-if="showCostsUsd" style="width: 10%;"/><!-- BoM Cost USD -->
+            <col t-if="showCosts" style="width: 10%;"/><!-- Product Cost -->
+            <col t-if="showCostsUsd" style="width: 10%;"/><!-- Product Cost USD -->
         </colgroup>
 
         <!-- ===== COMPONENTS BY PRODUCT CATEGORY ===== -->
@@ -32,12 +34,14 @@
                     <th>Components by Product Category</th>
                     <th class="text-end">Quantity</th>
                     <th class="text-end">%</th>
-                    <th class="text-end">Lead Time</th>
-                    <th>Route</th>
-                    <th class="text-end">BoM Cost</th>
-                    <th t-if="hasSecondary" class="text-end">BoM Cost <t t-esc="secondaryCurrency.name"/></th>
-                    <th class="text-end">Product Cost</th>
-                    <th t-if="hasSecondary" class="text-end">Product Cost <t t-esc="secondaryCurrency.name"/></th>
+                    <th t-if="showAvailabilities" class="text-end">Free to Use / On Hand</th>
+                    <th t-if="showAvailabilities" class="text-center">Availability</th>
+                    <th t-if="showLeadTimes" class="text-end">Lead Time</th>
+                    <th t-if="showLeadTimes">Route</th>
+                    <th t-if="showCosts" class="text-end">BoM Cost</th>
+                    <th t-if="showCostsUsd" class="text-end">BoM Cost <t t-esc="secondaryCurrency.name"/></th>
+                    <th t-if="showCosts" class="text-end">Product Cost</th>
+                    <th t-if="showCostsUsd" class="text-end">Product Cost <t t-esc="secondaryCurrency.name"/></th>
                 </tr>
             </thead>
             <tbody>
@@ -60,18 +64,20 @@
                         <td class="text-end text-muted">
                             <strong t-esc="fmtPct(row.node.percentage)"/>
                         </td>
-                        <td/>
-                        <td/>
-                        <td class="text-end">
+                        <td t-if="showAvailabilities"/>
+                        <td t-if="showAvailabilities"/>
+                        <td t-if="showLeadTimes"/>
+                        <td t-if="showLeadTimes"/>
+                        <td t-if="showCosts" class="text-end">
                             <strong t-esc="fmtMoney(row.node.total)"/>
                         </td>
-                        <td t-if="hasSecondary" class="text-end text-muted">
+                        <td t-if="showCostsUsd" class="text-end text-muted">
                             <strong t-esc="fmtUsd(row.node.total_usd)"/>
                         </td>
-                        <td class="text-end">
+                        <td t-if="showCosts" class="text-end">
                             <strong t-esc="fmtMoney(row.node.prod_cost_total)"/>
                         </td>
-                        <td t-if="hasSecondary" class="text-end text-muted">
+                        <td t-if="showCostsUsd" class="text-end text-muted">
                             <strong t-esc="fmtUsd(row.node.prod_cost_total_usd)"/>
                         </td>
                     </tr>
@@ -107,11 +113,24 @@
                         <td class="text-end text-muted">
                             <t t-esc="fmtPct(row.prod.percentage)"/>
                         </td>
-                        <td class="text-end text-muted">
+                        <td t-if="showAvailabilities" class="text-end text-muted">
+                            <t t-if="row.prod.quantity_available !== false">
+                                <t t-esc="formatFloat(row.prod.quantity_available, {digits: [false, props.precision]})"/>
+                                /
+                                <t t-esc="formatFloat(row.prod.quantity_on_hand, {digits: [false, props.precision]})"/>
+                            </t>
+                        </td>
+                        <td t-if="showAvailabilities" class="text-center">
+                            <t t-if="row.prod.availability_state">
+                                <span t-attf-class="{{ availabilityClass(row.prod.availability_state) }}"
+                                      t-esc="row.prod.availability_display"/>
+                            </t>
+                        </td>
+                        <td t-if="showLeadTimes" class="text-end text-muted">
                             <t t-set="prodLt" t-value="productLeadTime(row.prod)"/>
                             <span t-if="prodLt !== false" t-esc="fmtLeadTime(prodLt)"/>
                         </td>
-                        <td class="text-muted">
+                        <td t-if="showLeadTimes" class="text-muted">
                             <t t-set="prodRoute" t-value="productRoute(row.prod)"/>
                             <div t-if="prodRoute">
                                 <span t-esc="prodRoute.route_name"/>: 
@@ -120,16 +139,16 @@
                                    t-esc="prodRoute.route_detail"/>
                             </div>
                         </td>
-                        <td class="text-end">
+                        <td t-if="showCosts" class="text-end">
                             <t t-esc="fmtMoney(row.prod.total)"/>
                         </td>
-                        <td t-if="hasSecondary" class="text-end text-muted">
+                        <td t-if="showCostsUsd" class="text-end text-muted">
                             <t t-esc="fmtUsd(row.prod.total_usd)"/>
                         </td>
-                        <td class="text-end">
+                        <td t-if="showCosts" class="text-end">
                             <t t-esc="fmtMoney(row.prod.prod_cost_total)"/>
                         </td>
-                        <td t-if="hasSecondary" class="text-end text-muted">
+                        <td t-if="showCostsUsd" class="text-end text-muted">
                             <t t-esc="fmtUsd(row.prod.prod_cost_total_usd)"/>
                         </td>
                     </tr>
@@ -152,10 +171,12 @@
                         <td class="text-end text-muted">
                             <t t-esc="fmtPct(row.usage.percentage)"/>
                         </td>
-                        <td class="text-end text-muted">
+                        <td t-if="showAvailabilities"/>
+                        <td t-if="showAvailabilities"/>
+                        <td t-if="showLeadTimes" class="text-end text-muted">
                             <span t-if="row.usage.lead_time !== false" t-esc="fmtLeadTime(row.usage.lead_time)"/>
                         </td>
-                        <td class="text-muted">
+                        <td t-if="showLeadTimes" class="text-muted">
                             <div t-if="row.usage.parent_route_name">
                                 <span t-esc="row.usage.parent_route_name"/>: 
                                 <a href="#" class="o_econovo_cost_summary__link"
@@ -163,16 +184,16 @@
                                    t-esc="row.usage.parent_route_detail"/>
                             </div>
                         </td>
-                        <td class="text-end">
+                        <td t-if="showCosts" class="text-end">
                             <t t-esc="fmtMoney(row.usage.total)"/>
                         </td>
-                        <td t-if="hasSecondary" class="text-end text-muted">
+                        <td t-if="showCostsUsd" class="text-end text-muted">
                             <t t-esc="fmtUsd(row.usage.total_usd)"/>
                         </td>
-                        <td class="text-end">
+                        <td t-if="showCosts" class="text-end">
                             <t t-esc="fmtMoney(row.usage.prod_cost)"/>
                         </td>
-                        <td t-if="hasSecondary" class="text-end text-muted">
+                        <td t-if="showCostsUsd" class="text-end text-muted">
                             <t t-esc="fmtUsd(row.usage.prod_cost_usd)"/>
                         </td>
                     </tr>
@@ -184,18 +205,20 @@
                     <td class="text-end"><strong>Subtotal Components</strong></td>
                     <td/>
                     <td/>
-                    <td/>
-                    <td/>
-                    <td class="text-end">
+                    <td t-if="showAvailabilities"/>
+                    <td t-if="showAvailabilities"/>
+                    <td t-if="showLeadTimes"/>
+                    <td t-if="showLeadTimes"/>
+                    <td t-if="showCosts" class="text-end">
                         <strong t-esc="fmtMoney(data.totals.components)"/>
                     </td>
-                    <td t-if="hasSecondary" class="text-end text-muted">
+                    <td t-if="showCostsUsd" class="text-end text-muted">
                         <strong t-esc="fmtUsd(data.totals.components_usd)"/>
                     </td>
-                    <td class="text-end">
+                    <td t-if="showCosts" class="text-end">
                         <strong t-esc="fmtMoney(data.totals.prod_cost)"/>
                     </td>
-                    <td t-if="hasSecondary" class="text-end text-muted">
+                    <td t-if="showCostsUsd" class="text-end text-muted">
                         <strong t-esc="fmtUsd(data.totals.prod_cost_usd)"/>
                     </td>
                 </tr>
@@ -205,19 +228,21 @@
         <br class="my-3"/>
 
         <!-- ===== OPERATIONS BY WORK CENTER ===== -->
-        <t t-if="data.workcenters.length > 0">
+        <t t-if="showOperations &amp;&amp; data.workcenters.length > 0">
             <thead>
                 <tr class="o_econovo_cost_summary__section-header">
                     <th class="o_econovo_cost_summary__fold-col"/>
                     <th>Operations by Work Center</th>
                     <th class="text-end">Duration</th>
                     <th class="text-end">%</th>
-                    <th class="text-end">Lead Time</th>
-                    <th>Route</th>
-                    <th class="text-end">BoM Cost</th>
-                    <th t-if="hasSecondary" class="text-end">BoM Cost <t t-esc="secondaryCurrency.name"/></th>
+                    <th t-if="showAvailabilities"/>
+                    <th t-if="showAvailabilities"/>
+                    <th t-if="showLeadTimes" class="text-end">Lead Time</th>
+                    <th t-if="showLeadTimes">Route</th>
+                    <th t-if="showCosts" class="text-end">BoM Cost</th>
+                    <th t-if="showCostsUsd" class="text-end">BoM Cost <t t-esc="secondaryCurrency.name"/></th>
                     <th/>
-                    <th t-if="hasSecondary"/>
+                    <th t-if="showCosts"/>
                 </tr>
             </thead>
             <tbody>
@@ -241,16 +266,18 @@
                         <td class="text-end text-muted">
                             <strong t-esc="fmtPct(wc.percentage)"/>
                         </td>
-                        <td/>
-                        <td/>
-                        <td class="text-end">
+                        <td t-if="showAvailabilities"/>
+                        <td t-if="showAvailabilities"/>
+                        <td t-if="showLeadTimes"/>
+                        <td t-if="showLeadTimes"/>
+                        <td t-if="showCosts" class="text-end">
                             <strong t-esc="fmtMoney(wc.total)"/>
                         </td>
-                        <td t-if="hasSecondary" class="text-end text-muted">
+                        <td t-if="showCostsUsd" class="text-end text-muted">
                             <strong t-esc="fmtUsd(wc.total_usd)"/>
                         </td>
                         <td/>
-                        <td t-if="hasSecondary"/>
+                        <td t-if="showCosts"/>
                     </tr>
 
                     <t t-if="!isWorkcenterFolded(wc.id)">
@@ -273,10 +300,12 @@
                                 <td class="text-end text-muted">
                                     <t t-esc="fmtPct(op.percentage)"/>
                                 </td>
-                                <td class="text-end text-muted">
+                                <td t-if="showAvailabilities"/>
+                                <td t-if="showAvailabilities"/>
+                                <td t-if="showLeadTimes" class="text-end text-muted">
                                     <span t-if="op.lead_time !== false" t-esc="fmtLeadTime(op.lead_time)"/>
                                 </td>
-                                <td class="text-muted">
+                                <td t-if="showLeadTimes" class="text-muted">
                                     <div t-if="op.route_name">
                                         <span t-esc="op.route_name"/>: 
                                         <a href="#" class="o_econovo_cost_summary__link"
@@ -284,14 +313,14 @@
                                            t-esc="op.route_detail"/>
                                     </div>
                                 </td>
-                                <td class="text-end">
+                                <td t-if="showCosts" class="text-end">
                                     <t t-esc="fmtMoney(op.total)"/>
                                 </td>
-                                <td t-if="hasSecondary" class="text-end text-muted">
+                                <td t-if="showCostsUsd" class="text-end text-muted">
                                     <t t-esc="fmtUsd(op.total_usd)"/>
                                 </td>
                                 <td/>
-                                <td t-if="hasSecondary"/>
+                                <td t-if="showCosts"/>
                             </tr>
                         </t>
                     </t>
@@ -305,16 +334,18 @@
                         <strong t-esc="fmtDuration(data.totals.operations_duration)"/>
                     </td>
                     <td/>
-                    <td/>
-                    <td/>
-                    <td class="text-end">
+                    <td t-if="showAvailabilities"/>
+                    <td t-if="showAvailabilities"/>
+                    <td t-if="showLeadTimes"/>
+                    <td t-if="showLeadTimes"/>
+                    <td t-if="showCosts" class="text-end">
                         <strong t-esc="fmtMoney(data.totals.operations)"/>
                     </td>
-                    <td t-if="hasSecondary" class="text-end">
+                    <td t-if="showCostsUsd" class="text-end">
                         <strong t-esc="fmtUsd(data.totals.operations_usd)"/>
                     </td>
                     <td/>
-                    <td t-if="hasSecondary"/>
+                    <td t-if="showCosts"/>
                 </tr>
             </tbody>
         </t>
@@ -326,30 +357,34 @@
                 <td class="text-end"><strong>TOTAL BOM COST</strong></td>
                 <td/>
                 <td/>
-                <td/>
-                <td/>
-                <td class="text-end">
+                <td t-if="showAvailabilities"/>
+                <td t-if="showAvailabilities"/>
+                <td t-if="showLeadTimes"/>
+                <td t-if="showLeadTimes"/>
+                <td t-if="showCosts" class="text-end">
                     <strong t-esc="fmtMoney(data.totals.total)"/>
                 </td>
-                <td t-if="hasSecondary" class="text-end">
+                <td t-if="showCostsUsd" class="text-end">
                     <strong t-esc="fmtUsd(data.totals.total_usd)"/>
                 </td>
-                <td/>
-                <td t-if="hasSecondary"/>
+                <td t-if="showCosts"/>
+                <td t-if="showCostsUsd"/>
             </tr>
             <tr class="o_econovo_cost_summary__grand-total-row">
                 <td class="o_econovo_cost_summary__fold-col"/>
                 <td class="text-end"><strong>TOTAL PRODUCT COST</strong></td>
                 <td/>
                 <td/>
-                <td/>
-                <td/>
-                <td/>
-                <td t-if="hasSecondary"/>
-                <td class="text-end">
+                <td t-if="showAvailabilities"/>
+                <td t-if="showAvailabilities"/>
+                <td t-if="showLeadTimes"/>
+                <td t-if="showLeadTimes"/>
+                <td t-if="showCosts"/>
+                <td t-if="showCostsUsd"/>
+                <td t-if="showCosts" class="text-end">
                     <strong t-esc="fmtMoney(data.totals.total_prod)"/>
                 </td>
-                <td t-if="hasSecondary" class="text-end">
+                <td t-if="showCostsUsd" class="text-end">
                     <strong t-esc="fmtUsd(data.totals.total_prod_usd)"/>
                 </td>
             </tr>

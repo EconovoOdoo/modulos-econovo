@@ -7,7 +7,7 @@ import {
     formatFloatTime,
     formatMonetary,
 } from "@web/views/fields/formatters";
-import { Component, useState } from "@odoo/owl";
+import { Component, useState, useEffect, onWillUpdateProps } from "@odoo/owl";
 
 export class BomCostSummarySection extends Component {
     setup() {
@@ -31,6 +31,59 @@ export class BomCostSummarySection extends Component {
             foldState[`wc_${wc.id}`] = true;
         }
         this.state = useState(foldState);
+
+        // When the data tree is replaced (e.g. qty / warehouse / variant change),
+        // preserve all existing fold/unfold choices and only add NEW keys
+        // (defaulting to unfolded) so the user's current view state is kept.
+        onWillUpdateProps((nextProps) => {
+            if (nextProps.data !== this.props.data) {
+                const newKeys = new Set();
+                const collectKeys = (nodes) => {
+                    for (const node of nodes) {
+                        newKeys.add(`cat_${node.id}`);
+                        for (const prod of node.products) {
+                            newKeys.add(`prod_${node.id}_${prod.product_id}`);
+                        }
+                        collectKeys(node.children);
+                    }
+                };
+                collectKeys(nextProps.data.categories);
+                for (const wc of nextProps.data.workcenters) {
+                    newKeys.add(`wc_${wc.id}`);
+                }
+                // Remove stale keys (items no longer in the tree)
+                for (const key of Object.keys(this.state)) {
+                    if (!newKeys.has(key)) {
+                        delete this.state[key];
+                    }
+                }
+                // Add new keys as unfolded (false) — preserves existing choices
+                for (const key of newKeys) {
+                    if (!(key in this.state)) {
+                        this.state[key] = false;
+                    }
+                }
+            }
+        });
+
+        // Listen to overviewBus events for expand-all / fold-all.
+        // The bus is provided by BomCostSummaryView (and BomOverviewComponent)
+        // via useSubEnv; it may be absent when the component is rendered
+        // in isolation (e.g. tests), so we guard with optional chaining.
+        useEffect(() => {
+            const bus = this.env.overviewBus;
+            if (!bus) {
+                return;
+            }
+            const onUnfoldAll = () => this.expandAll();
+            const onFoldAll   = () => this.foldAll();
+            bus.addEventListener("unfold-all", onUnfoldAll);
+            bus.addEventListener("fold-all",   onFoldAll);
+            return () => {
+                bus.removeEventListener("unfold-all", onUnfoldAll);
+                bus.removeEventListener("fold-all",   onFoldAll);
+            };
+        }, () => []);
     }
 
     // ---- Handlers ----
@@ -48,6 +101,26 @@ export class BomCostSummarySection extends Component {
     toggleWorkcenter(wcId) {
         const key = `wc_${wcId}`;
         this.state[key] = !this.state[key];
+    }
+
+    /**
+     * Collapses all category, product, and workcenter rows.
+     * Called via overviewBus "fold-all" event or directly.
+     */
+    foldAll() {
+        for (const key of Object.keys(this.state)) {
+            this.state[key] = true;
+        }
+    }
+
+    /**
+     * Expands all category, product, and workcenter rows.
+     * Called via overviewBus "unfold-all" event or directly.
+     */
+    expandAll() {
+        for (const key of Object.keys(this.state)) {
+            this.state[key] = false;
+        }
     }
 
     /**
@@ -89,6 +162,37 @@ export class BomCostSummarySection extends Component {
 
     get showCosts() {
         return this.props.showOptions.costs;
+    }
+
+    get showCostsUsd() {
+        return this.hasSecondary && this.showCosts;
+    }
+
+    get showLeadTimes() {
+        return this.props.showOptions.leadTimes;
+    }
+
+    get showAvailabilities() {
+        return this.props.showOptions.availabilities;
+    }
+
+    get showOperations() {
+        return this.props.showOptions.operations;
+    }
+
+    /**
+     * Returns the Bootstrap text-color class for a given availability_state.
+     *
+     * @param {string} state
+     * @returns {string}
+     */
+    availabilityClass(state) {
+        switch (state) {
+            case "available":   return "text-success";
+            case "expected":    return "text-warning";
+            case "unavailable": return "text-danger";
+            default:            return "";
+        }
     }
 
     get showUom() {
