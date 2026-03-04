@@ -136,7 +136,6 @@
                                     </a></t>
                                 </td>
                                 <td class="text-end text-muted">
-                                    <i class="fa fa-clock-o me-1"/>
                                     <t t-esc="fmtDuration(op.duration)"/>
                                 </td>
                                 <td class="text-end text-muted">
