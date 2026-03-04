@@ -89,6 +89,7 @@
                                t-on-click.stop.prevent="() => this.openFormDialog(row.prod.link_id, row.prod.link_model)">
                                 <t t-esc="row.prod.name"/>
                             </a>
+                            <span class="text-muted ms-1">(<t t-esc="row.prod.usages.length"/>)</span>
                         </td>
                         <td class="text-end text-muted">
                             <t t-set="prodQty" t-value="productQuantity(row.prod)"/>
