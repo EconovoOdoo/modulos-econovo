@@ -133,7 +133,7 @@
                                                     <t t-esc="'%.1f' % wc['total_duration']"/>
                                                 </td>
                                                 <td class="text-end">
-                                                    <t t-esc="'%.1f%%' % wc['percentage']"/>
+                                                    <t t-esc="'%.1f' % wc['percentage'] + '%'"/>
                                                 </td>
                                                 <td class="text-end">
                                                     <t t-esc="'%.2f' % wc['total']"/>
@@ -159,7 +159,7 @@
                                                         <t t-esc="'%.1f' % item['duration']"/>
                                                     </td>
                                                     <td class="text-end">
-                                                        <t t-esc="'%.1f%%' % item['percentage']"/>
+                                                        <t t-esc="'%.1f' % item['percentage'] + '%'"/>
                                                     </td>
                                                     <td class="text-end">
                                                         <t t-esc="'%.2f' % item['total']"/>
@@ -245,7 +245,7 @@
                     </span>
                 </td>
                 <td class="text-end">
-                    <t t-esc="'%.1f%%' % node['percentage']"/>
+                    <t t-esc="'%.1f' % node['percentage'] + '%'"/>
                 </td>
                 <td class="text-end fw-bold">
                     <t t-esc="'%.2f' % node['total']"/>
@@ -267,7 +267,7 @@
                         </span>
                     </td>
                     <td class="text-end text-muted">
-                        <t t-esc="'%.1f%%' % prod['percentage']"/>
+                        <t t-esc="'%.1f' % prod['percentage'] + '%'"/>
                     </td>
                     <td class="text-end text-muted">
                         <t t-esc="'%.2f' % prod['total']"/>
