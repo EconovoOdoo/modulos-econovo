@@ -32,4 +32,7 @@ grouped by work center, with 3-level drill-down and dual currency (ARS + USD).
     'installable': True,
     'application': False,
     'auto_install': False,
+    'external_dependencies': {
+        'python': ['openpyxl'],
+    },
 }
