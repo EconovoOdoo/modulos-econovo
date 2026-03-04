@@ -100,18 +100,14 @@ export class BomCostSummarySection extends Component {
     }
 
     /**
-     * Returns the total number of distinct products nested under a
-     * category node (recursively including all descendant categories).
+     * Returns the number of direct children (sub-categories + products)
+     * nested immediately inside the given category node.
      *
      * @param {Object} node - Category tree node
      * @returns {number}
      */
     categoryCount(node) {
-        let count = node.products.length;
-        for (const child of node.children) {
-            count += this.categoryCount(child);
-        }
-        return count;
+        return node.children.length + node.products.length;
     }
 
     /**
