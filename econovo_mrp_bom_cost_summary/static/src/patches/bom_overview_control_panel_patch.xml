@@ -11,6 +11,12 @@
                     class="btn btn-secondary">
                 <i class="fa fa-compress me-1"/>Plegar
             </button>
+            <button t-if="env.overviewXlsxExport"
+                    t-on-click="() => env.overviewXlsxExport()"
+                    type="button"
+                    class="btn btn-secondary">
+                <i class="fa fa-file-excel-o me-1"/>Excel
+            </button>
         </xpath>
     </t>
 </templates>

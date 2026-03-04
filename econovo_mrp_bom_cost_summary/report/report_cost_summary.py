@@ -389,6 +389,17 @@ class ReportEconovoBomCostSummary(models.AbstractModel):
                 prod["prod_cost_total_usd"] = (
                     prod["prod_cost_total"] * rate if rate else False
                 )
+                # Aggregate quantity for PDF display (single UoM only).
+                prod_usages = prod.get("usages", [])
+                uoms = {
+                    u.get("uom_name", "") for u in prod_usages
+                    if u.get("uom_name")
+                }
+                if len(uoms) == 1:
+                    total_qty = sum(u.get("quantity", 0) for u in prod_usages)
+                    prod["quantity_display"] = "%.4g %s" % (total_qty, list(uoms)[0])
+                else:
+                    prod["quantity_display"] = _("—") if len(uoms) > 1 else ""
                 for usage in prod["usages"]:
                     usage["percentage"] = (
                         usage["total"] / total_components * 100

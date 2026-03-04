@@ -41,7 +41,11 @@ export class BomCostSummaryView extends Component {
         //       can call env.overviewBus.trigger("unfold-all") without crashing.
         // overviewHasFoldButton: flag read by bom_overview_control_panel_patch.xml
         //       to inject a "Plegar" button next to the native "Desplegar" button.
-        useSubEnv({ overviewBus: new EventBus(), overviewHasFoldButton: true });
+        useSubEnv({
+            overviewBus: new EventBus(),
+            overviewHasFoldButton: true,
+            overviewXlsxExport: () => this.onExportXlsx(),
+        });
 
         // EC-2: currentWarehouse starts as a placeholder (not null) so the
         //       prop validator of BomOverviewControlPanel never receives undefined.
@@ -206,6 +210,31 @@ export class BomCostSummaryView extends Component {
      */
     onClickFoldAll() {
         this.env.overviewBus.trigger("fold-all");
+    }
+
+    /**
+     * Triggers a file download of the Cost Summary as an .xlsx workbook.
+     * The same display options active in the view are forwarded to the server
+     * so the exported file matches what the user sees on screen.
+     */
+    onExportXlsx() {
+        const params = new URLSearchParams({
+            bom_id:     this.activeId,
+            quantity:   this.state.bomQuantity || 1,
+            costs:      this.state.showOptions.costs,
+            operations: this.state.showOptions.operations,
+            lead_times: this.state.showOptions.leadTimes,
+        });
+        if (this.state.currentWarehouse && this.state.currentWarehouse.id) {
+            params.set("warehouse_id", this.state.currentWarehouse.id);
+        }
+        if (this.showVariants && this.state.currentVariantId) {
+            params.set("variant", this.state.currentVariantId);
+        }
+        window.open(
+            "/econovo/bom_cost_summary/export_xlsx?" + params.toString(),
+            "_blank",
+        );
     }
 }
 
