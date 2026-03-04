@@ -99,6 +99,44 @@ export class BomCostSummarySection extends Component {
         return this.state[`cat_${categId}`];
     }
 
+    /**
+     * Returns a flat ordered list of rows for the category/product/usage
+     * section, computed from the category tree and current fold state.
+     *
+     * This avoids recursive t-call in the template, which causes OWL's
+     * virtual DOM patcher to misplace rows after fold/unfold cycles.
+     *
+     * Each row has: { type, rowKey, node, depth } and optionally
+     * prod and usage fields for the respective row types.
+     *
+     * @returns {Array}
+     */
+    get flatCategoryRows() {
+        const rows = [];
+        const flatten = (nodes) => {
+            for (const node of nodes) {
+                rows.push({ type: 'category', node, depth: node.depth,
+                    rowKey: `cat_${node.id}` });
+                if (!this.isCategoryFolded(node.id)) {
+                    flatten(node.children);
+                    for (const prod of node.products) {
+                        rows.push({ type: 'product', node, prod, depth: node.depth + 1,
+                            rowKey: `prod_${node.id}_${prod.product_id}` });
+                        if (!this.isProductFolded(node.id, prod.product_id)) {
+                            for (const usage of prod.usages) {
+                                rows.push({ type: 'usage', node, prod, usage,
+                                    depth: node.depth + 1,
+                                    rowKey: `usage_${node.id}_${prod.product_id}_${usage.parent_product_id}` });
+                            }
+                        }
+                    }
+                }
+            }
+        };
+        flatten(this.data.categories);
+        return rows;
+    }
+
     isProductFolded(categId, productId) {
         return this.state[`prod_${categId}_${productId}`];
     }
