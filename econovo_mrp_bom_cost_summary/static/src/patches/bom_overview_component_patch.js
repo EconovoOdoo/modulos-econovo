@@ -136,6 +136,20 @@ patch(BomOverviewComponent.prototype, {
                     };
                     nodeMap[anc.id] = node;
                     parentChildren.push(node);
+                } else {
+                    // Node already exists.  If it is not yet in the current
+                    // parentChildren array, move it there (it may have been
+                    // created prematurely as a root from a shorter ancestor
+                    // chain processed earlier).
+                    const node = nodeMap[anc.id];
+                    if (!parentChildren.includes(node)) {
+                        parentChildren.push(node);
+                        // Remove from roots if it is being adopted as a child
+                        const rootIdx = roots.indexOf(node);
+                        if (rootIdx !== -1 && parentChildren !== roots) {
+                            roots.splice(rootIdx, 1);
+                        }
+                    }
                 }
 
                 const node = nodeMap[anc.id];
@@ -151,6 +165,17 @@ patch(BomOverviewComponent.prototype, {
                 parentChildren = node.children;
             }
         }
+
+        // Normalise depth values top-down so every node reflects its true
+        // position in the final tree (a node moved from roots into a child
+        // array would otherwise keep its original depth=0).
+        const normaliseDepth = (nodes, depth) => {
+            for (const n of nodes) {
+                n.depth = depth;
+                normaliseDepth(n.children, depth + 1);
+            }
+        };
+        normaliseDepth(roots, 0);
 
         // Bubble costs from leaves up to root nodes
         const bubbleUp = (node) => {
