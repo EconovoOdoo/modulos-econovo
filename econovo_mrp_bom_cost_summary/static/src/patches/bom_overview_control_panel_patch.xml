@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Inject a "Plegar" (fold-all) button right after the native "Desplegar"
+     (unfold) button in BomOverviewControlPanel.
+     Only rendered when BomCostSummaryView sets env.overviewHasFoldButton. -->
+<templates xml:space="preserve">
+    <t t-inherit="mrp.BomOverviewControlPanel" t-inherit-mode="extension">
+        <xpath expr="//button[@t-on-click='clickUnfold']" position="after">
+            <button t-if="env.overviewHasFoldButton"
+                    t-on-click="() => env.overviewBus.trigger('fold-all')"
+                    type="button"
+                    class="btn btn-secondary">
+                <i class="fa fa-compress me-1"/>Plegar
+            </button>
+        </xpath>
+    </t>
+</templates>

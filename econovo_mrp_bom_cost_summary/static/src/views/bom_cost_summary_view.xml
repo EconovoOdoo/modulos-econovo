@@ -26,26 +26,12 @@
                 changeDisplay.bind="onChangeDisplay"
                 precision="state.precision"/>
 
-            <!-- Extra toolbar: Plegar (fold-all) button.
-                 Rendered outside ControlPanel to avoid patching Odoo internals.
-                 Uses overviewBus "fold-all" event consumed by BomCostSummarySection. -->
-            <div class="o_econovo_cost_summary__extra-toolbar
-                        px-3 py-1 border-bottom d-flex gap-2 bg-white">
-                <button class="btn btn-secondary btn-sm"
-                        t-on-click="onClickFoldAll">
-                    <i class="fa fa-compress me-1"/>Plegar
-                </button>
-            </div>
 
             <!--
                 Product header banner (sub-option A2).
-                Mirrors the header section of BomOverviewTable but without
-                the interactive "go to product" link (can be added later).
-
                 EC-16: guard with t-if="state.bomData.name" — the banner is
                        only rendered once onWillStart has completed.
-                EC-6:  earliest_capacity / leftover_capacity are only present
-                       when Python computes them; guard with !== undefined.
+                EC-6:  earliest_capacity / leftover_capacity are optional.
             -->
             <div t-if="state.bomData.name"
                  class="o_econovo_cost_summary__product-header
@@ -58,14 +44,12 @@
                            t-esc="state.bomData.bom_code"/>
                 </div>
                 <div class="d-flex gap-5 text-end">
-                    <!-- Always present: free-to-use quantity -->
                     <div>
                         <div class="fs-5 fw-bold"
                              t-esc="formatFloat(state.bomData.quantity_available,
                                                {digits: [false, state.precision]})"/>
                         <div class="text-muted small">Disponible para uso</div>
                     </div>
-                    <!-- Conditional: earliest producible quantity + date -->
                     <div t-if="state.bomData.earliest_capacity !== undefined">
                         <div class="fs-5 fw-bold"
                              t-esc="formatFloat(state.bomData.earliest_capacity,
@@ -73,7 +57,6 @@
                         <div class="text-muted small"
                              t-esc="state.bomData.earliest_date"/>
                     </div>
-                    <!-- Conditional: leftover capacity -->
                     <div t-if="state.bomData.leftover_capacity !== undefined">
                         <div class="fs-5 fw-bold"
                              t-esc="formatFloat(state.bomData.leftover_capacity,
@@ -85,7 +68,7 @@
             </div>
 
             <!-- Cost summary tables -->
-            <div class="o_econovo_cost_summary__content px-3 pt-3">
+            <div class="o_econovo_cost_summary__content px-3 pt-3 bg-white">
 
                 <BomCostSummarySection
                     t-if="state.costSummary"

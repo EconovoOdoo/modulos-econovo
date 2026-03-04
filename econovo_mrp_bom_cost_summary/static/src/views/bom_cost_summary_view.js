@@ -39,7 +39,9 @@ export class BomCostSummaryView extends Component {
 
         // EC-1: create overviewBus so BomOverviewControlPanel.clickUnfold
         //       can call env.overviewBus.trigger("unfold-all") without crashing.
-        useSubEnv({ overviewBus: new EventBus() });
+        // overviewHasFoldButton: flag read by bom_overview_control_panel_patch.xml
+        //       to inject a "Plegar" button next to the native "Desplegar" button.
+        useSubEnv({ overviewBus: new EventBus(), overviewHasFoldButton: true });
 
         // EC-2: currentWarehouse starts as a placeholder (not null) so the
         //       prop validator of BomOverviewControlPanel never receives undefined.

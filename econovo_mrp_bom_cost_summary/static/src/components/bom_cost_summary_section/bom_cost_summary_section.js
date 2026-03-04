@@ -32,28 +32,37 @@ export class BomCostSummarySection extends Component {
         }
         this.state = useState(foldState);
 
-        // Re-initialise fold state whenever the data tree is replaced
-        // (e.g. user changes quantity, warehouse, or variant).
+        // When the data tree is replaced (e.g. qty / warehouse / variant change),
+        // preserve all existing fold/unfold choices and only add NEW keys
+        // (defaulting to unfolded) so the user's current view state is kept.
         onWillUpdateProps((nextProps) => {
             if (nextProps.data !== this.props.data) {
-                for (const key of Object.keys(this.state)) {
-                    delete this.state[key];
-                }
-                const nextFoldState = {};
-                const initNext = (nodes) => {
+                const newKeys = new Set();
+                const collectKeys = (nodes) => {
                     for (const node of nodes) {
-                        nextFoldState[`cat_${node.id}`] = true;
+                        newKeys.add(`cat_${node.id}`);
                         for (const prod of node.products) {
-                            nextFoldState[`prod_${node.id}_${prod.product_id}`] = true;
+                            newKeys.add(`prod_${node.id}_${prod.product_id}`);
                         }
-                        initNext(node.children);
+                        collectKeys(node.children);
                     }
                 };
-                initNext(nextProps.data.categories);
+                collectKeys(nextProps.data.categories);
                 for (const wc of nextProps.data.workcenters) {
-                    nextFoldState[`wc_${wc.id}`] = true;
+                    newKeys.add(`wc_${wc.id}`);
                 }
-                Object.assign(this.state, nextFoldState);
+                // Remove stale keys (items no longer in the tree)
+                for (const key of Object.keys(this.state)) {
+                    if (!newKeys.has(key)) {
+                        delete this.state[key];
+                    }
+                }
+                // Add new keys as unfolded (false) — preserves existing choices
+                for (const key of newKeys) {
+                    if (!(key in this.state)) {
+                        this.state[key] = false;
+                    }
+                }
             }
         });
 
@@ -153,6 +162,18 @@ export class BomCostSummarySection extends Component {
 
     get showCosts() {
         return this.props.showOptions.costs;
+    }
+
+    get showCostsUsd() {
+        return this.hasSecondary && this.showCosts;
+    }
+
+    get showLeadTimes() {
+        return this.props.showOptions.leadTimes;
+    }
+
+    get showOperations() {
+        return this.props.showOptions.operations;
     }
 
     get showUom() {
