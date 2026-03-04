@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="econovo_mrp_bom_cost_summary.BomCostSummaryView">
+        <div class="o_action o_econovo_cost_summary_view">
+
+            <!--
+                Odoo BomOverviewControlPanel
+                Provides: Print, Unfold (via overviewBus "unfold-all"),
+                          Quantity input, Warehouse dropdown, Variant selector,
+                          Display filter (show/hide columns).
+            -->
+            <BomOverviewControlPanel
+                bomQuantity="state.bomQuantity"
+                uomName="uomName"
+                variants="variants"
+                data="state.bomData"
+                showOptions="state.showOptions"
+                showVariants="showVariants"
+                currentWarehouse="state.currentWarehouse"
+                warehouses="warehouses"
+                print.bind="onClickPrint"
+                changeWarehouse.bind="onChangeWarehouse"
+                changeVariant.bind="onChangeVariant"
+                changeBomQuantity.bind="onChangeBomQuantity"
+                changeDisplay.bind="onChangeDisplay"
+                precision="state.precision"/>
+
+            <!-- Extra toolbar: Plegar (fold-all) button.
+                 Rendered outside ControlPanel to avoid patching Odoo internals.
+                 Uses overviewBus "fold-all" event consumed by BomCostSummarySection. -->
+            <div class="o_econovo_cost_summary__extra-toolbar
+                        px-3 py-1 border-bottom d-flex gap-2 bg-white">
+                <button class="btn btn-secondary btn-sm"
+                        t-on-click="onClickFoldAll">
+                    <i class="fa fa-compress me-1"/>Plegar
+                </button>
+            </div>
+
+            <!--
+                Product header banner (sub-option A2).
+                Mirrors the header section of BomOverviewTable but without
+                the interactive "go to product" link (can be added later).
+
+                EC-16: guard with t-if="state.bomData.name" — the banner is
+                       only rendered once onWillStart has completed.
+                EC-6:  earliest_capacity / leftover_capacity are only present
+                       when Python computes them; guard with !== undefined.
+            -->
+            <div t-if="state.bomData.name"
+                 class="o_econovo_cost_summary__product-header
+                        d-flex justify-content-between align-items-start
+                        px-4 py-3 bg-white border-bottom">
+                <div>
+                    <h4 class="mb-0" t-esc="state.bomData.name"/>
+                    <small t-if="state.bomData.bom_code"
+                           class="text-muted"
+                           t-esc="state.bomData.bom_code"/>
+                </div>
+                <div class="d-flex gap-5 text-end">
+                    <!-- Always present: free-to-use quantity -->
+                    <div>
+                        <div class="fs-5 fw-bold"
+                             t-esc="formatFloat(state.bomData.quantity_available,
+                                               {digits: [false, state.precision]})"/>
+                        <div class="text-muted small">Disponible para uso</div>
+                    </div>
+                    <!-- Conditional: earliest producible quantity + date -->
+                    <div t-if="state.bomData.earliest_capacity !== undefined">
+                        <div class="fs-5 fw-bold"
+                             t-esc="formatFloat(state.bomData.earliest_capacity,
+                                               {digits: [false, state.precision]})"/>
+                        <div class="text-muted small"
+                             t-esc="state.bomData.earliest_date"/>
+                    </div>
+                    <!-- Conditional: leftover capacity -->
+                    <div t-if="state.bomData.leftover_capacity !== undefined">
+                        <div class="fs-5 fw-bold"
+                             t-esc="formatFloat(state.bomData.leftover_capacity,
+                                               {digits: [false, state.precision]})"/>
+                        <div class="text-muted small"
+                             t-esc="state.bomData.leftover_date"/>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cost summary tables -->
+            <div class="o_econovo_cost_summary__content px-3 pt-3">
+
+                <BomCostSummarySection
+                    t-if="state.costSummary"
+                    data="state.costSummary"
+                    showOptions="state.showOptions"
+                    precision="state.precision"
+                    secondaryCurrency="state.secondaryCurrency"/>
+
+                <!--
+                    EC-11 / EC-12: empty state when the BOM has no costed
+                    components or operations (costSummary will be false).
+                -->
+                <div t-if="!state.costSummary and state.bomData.name"
+                     class="alert alert-info mt-3">
+                    No cost data available for this bill of materials.
+                    Make sure components have a cost and operations have
+                    a work center assigned.
+                </div>
+
+            </div>
+
+        </div>
+    </t>
+
+</templates>

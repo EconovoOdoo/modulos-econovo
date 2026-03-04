@@ -7,7 +7,7 @@ import {
     formatFloatTime,
     formatMonetary,
 } from "@web/views/fields/formatters";
-import { Component, useState } from "@odoo/owl";
+import { Component, useState, useEffect, onWillUpdateProps } from "@odoo/owl";
 
 export class BomCostSummarySection extends Component {
     setup() {
@@ -31,6 +31,50 @@ export class BomCostSummarySection extends Component {
             foldState[`wc_${wc.id}`] = true;
         }
         this.state = useState(foldState);
+
+        // Re-initialise fold state whenever the data tree is replaced
+        // (e.g. user changes quantity, warehouse, or variant).
+        onWillUpdateProps((nextProps) => {
+            if (nextProps.data !== this.props.data) {
+                for (const key of Object.keys(this.state)) {
+                    delete this.state[key];
+                }
+                const nextFoldState = {};
+                const initNext = (nodes) => {
+                    for (const node of nodes) {
+                        nextFoldState[`cat_${node.id}`] = true;
+                        for (const prod of node.products) {
+                            nextFoldState[`prod_${node.id}_${prod.product_id}`] = true;
+                        }
+                        initNext(node.children);
+                    }
+                };
+                initNext(nextProps.data.categories);
+                for (const wc of nextProps.data.workcenters) {
+                    nextFoldState[`wc_${wc.id}`] = true;
+                }
+                Object.assign(this.state, nextFoldState);
+            }
+        });
+
+        // Listen to overviewBus events for expand-all / fold-all.
+        // The bus is provided by BomCostSummaryView (and BomOverviewComponent)
+        // via useSubEnv; it may be absent when the component is rendered
+        // in isolation (e.g. tests), so we guard with optional chaining.
+        useEffect(() => {
+            const bus = this.env.overviewBus;
+            if (!bus) {
+                return;
+            }
+            const onUnfoldAll = () => this.expandAll();
+            const onFoldAll   = () => this.foldAll();
+            bus.addEventListener("unfold-all", onUnfoldAll);
+            bus.addEventListener("fold-all",   onFoldAll);
+            return () => {
+                bus.removeEventListener("unfold-all", onUnfoldAll);
+                bus.removeEventListener("fold-all",   onFoldAll);
+            };
+        }, () => []);
     }
 
     // ---- Handlers ----
@@ -48,6 +92,26 @@ export class BomCostSummarySection extends Component {
     toggleWorkcenter(wcId) {
         const key = `wc_${wcId}`;
         this.state[key] = !this.state[key];
+    }
+
+    /**
+     * Collapses all category, product, and workcenter rows.
+     * Called via overviewBus "fold-all" event or directly.
+     */
+    foldAll() {
+        for (const key of Object.keys(this.state)) {
+            this.state[key] = true;
+        }
+    }
+
+    /**
+     * Expands all category, product, and workcenter rows.
+     * Called via overviewBus "unfold-all" event or directly.
+     */
+    expandAll() {
+        for (const key of Object.keys(this.state)) {
+            this.state[key] = false;
+        }
     }
 
     /**
