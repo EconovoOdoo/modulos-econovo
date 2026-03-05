@@ -139,6 +139,15 @@ def _write_section_header(ws, row_idx, title, col_count):
     ws.row_dimensions[row_idx].height = 16
 
 
+def _cell_comment(ws, row, col, text, author="Econovo"):
+    """Attach a sticky-note comment to a worksheet cell (visible on hover)."""
+    from openpyxl.comments import Comment  # noqa: PLC0415
+    note = Comment(text, author)
+    note.width = 380
+    note.height = 160
+    ws.cell(row=row, column=col).comment = note
+
+
 def _write_subtotal(ws, row_idx, label, col_count, ci,
                     bom_cost, bom_cost_usd, prod_cost, prod_cost_usd,
                     show_costs, has_usd, cur, usd):
@@ -352,6 +361,111 @@ def _build_summary_sheet(ws, cs, cur, usd,
         c.fill = _fill(_C["header_bg"])
         c.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
     ws.row_dimensions[row].height = 26
+
+    # ── Column header comments (hover tooltips explaining each formula) ──────
+    _hdr_comments = {
+        "Level": (
+            "Hierarchy depth level.\n"
+            "  0 = top-level category or work center\n"
+            "  1 = sub-category or product\n"
+            "  2+ = deeper nesting (usage / operation)\n"
+            "Used only to support grouping/indentation logic."
+        ),
+        "Type": (
+            "Row type identifier:\n"
+            "  Category   — product category grouping\n"
+            "  Product    — component, aggregated across all its usages\n"
+            "  Usage      — single occurrence inside one specific parent product\n"
+            "  Workcenter — work center header (Operations section)\n"
+            "  Operation  — individual manufacturing operation\n"
+            "  Subtotal   — section total\n"
+            "  TOTAL      — grand total (Components + Operations)"
+        ),
+        "Name": (
+            "Name of the category, component, work center, or operation.\n"
+            "Indented with 4 spaces per hierarchy level."
+        ),
+        "Qty / Duration": (
+            "Components section:\n"
+            "  Usage row   — quantity consumed per unit of finished product.\n"
+            "  Product row — sum of quantities across all usages\n"
+            "               (blank /— when UoMs differ).\n\n"
+            "Operations section:\n"
+            "  Operation row  — duration in minutes.\n"
+            "  Workcenter row — sum of durations of all its operations."
+        ),
+        "UoM": (
+            "Unit of measure for the quantity.\n"
+            "'—' = mixed UoMs across usages; aggregation not possible."
+        ),
+        "%": (
+            "Percentage share of this row's BOM Cost within its section:\n\n"
+            "Components (Category / Product / Usage):\n"
+            "  % = row BOM Cost ÷ Subtotal Components × 100\n\n"
+            "Operations (Workcenter / Operation):\n"
+            "  % = row BOM Cost ÷ Subtotal Operations × 100\n\n"
+            "Subtotal rows:\n"
+            "  % = Subtotal ÷ Grand Total × 100"
+        ),
+        "BOM Cost (%s)" % cur: (
+            "Total contribution of this row to the BOM cost.\n\n"
+            "  Usage:       qty × product unit cost × BOM scale factor\n"
+            "  Product:     Σ BOM Costs of all usages of this component\n"
+            "  Category:    Σ BOM Costs of products + child categories\n"
+            "  Operation:   (duration ÷ 60) × work center cost/hour\n"
+            "  Workcenter:  Σ BOM Costs of all its operations\n"
+            "  Subtotal:    Σ BOM Costs of direct rows in this section\n"
+            "  Grand Total: Subtotal Components + Subtotal Operations"
+        ),
+        "Product Cost (%s)" % cur: (
+            "Catalogue unit cost × quantity. Does NOT include operations\n"
+            "or manufacturing overhead.\n\n"
+            "  Usage:    qty × product.standard_price\n"
+            "  Product:  Σ Product Costs of all usages\n"
+            "  Category: Σ Product Costs of products + child categories\n"
+            "  Subtotal: Σ Product Costs of the Components section"
+        ),
+        "Lead Time (days)": (
+            "Supplier or manufacturing lead time in calendar days.\n"
+            "Derived from the replenishment route assigned to this\n"
+            "component (purchase order lead time, manufacture lead\n"
+            "time, resupply lead time, etc.)."
+        ),
+        "Route": (
+            "Replenishment route for this component\n"
+            "(e.g. Buy, Manufacture, Resupply from warehouse).\n"
+            "May include sub-route detail such as vendor name."
+        ),
+        "Free to Use": (
+            "Available-to-promise quantity.\n"
+            "Formula: On Hand − Reserved (outgoing)\n"
+            "Source: stock.quant → virtual_available field."
+        ),
+        "On Hand": (
+            "Total physical quantity in stock across all locations.\n"
+            "Source: stock.quant → quantity field."
+        ),
+        "Availability": (
+            "Stock availability status vs. required quantity:\n"
+            "  Available     — Free to Use ≥ required quantity\n"
+            "  Partial       — some stock, but insufficient\n"
+            "  Not Available — no usable stock"
+        ),
+    }
+    if has_usd:
+        _hdr_comments["BOM Cost (%s)" % usd] = (
+            "BOM Cost converted to %s using the company's\n"
+            "exchange rate at the time of export.\n"
+            "Formula: BOM Cost (%s) × rate(%s→%s)" % (usd, cur, cur, usd)
+        )
+        _hdr_comments["Product Cost (%s)" % usd] = (
+            "Product Cost converted to %s.\n"
+            "Formula: Product Cost (%s) × rate(%s→%s)" % (usd, cur, cur, usd)
+        )
+    for _ci, _col_name in enumerate(cols, start=1):
+        if _col_name in _hdr_comments:
+            _cell_comment(ws, header_row, _ci, _hdr_comments[_col_name])
+
     ws.freeze_panes = ws.cell(row=row + 1, column=1)
     row += 1
 
@@ -367,6 +481,7 @@ def _build_summary_sheet(ws, cs, cur, usd,
                 outline_base=0,
             )
 
+        _sub_comp_row = row
         row = _write_subtotal(
             ws, row, "Subtotal Components", col_count, ci,
             bom_cost=cs["totals"]["components"],
@@ -375,6 +490,23 @@ def _build_summary_sheet(ws, cs, cur, usd,
             prod_cost_usd=cs["totals"].get("prod_cost_usd"),
             show_costs=show_costs, has_usd=has_usd, cur=cur, usd=usd,
         )
+        if show_costs and "BOM Cost (%s)" % cur in ci:
+            _cell_comment(
+                ws, _sub_comp_row, ci["BOM Cost (%s)" % cur],
+                "TOTAL BOM COST — Components\n\n"
+                "= Σ (qty_i × product.standard_price × BOM_scale_factor)\n"
+                "  for all components at the requested production quantity.\n\n"
+                "Includes nested sub-assembly costs recursively.",
+            )
+        if show_costs and "Product Cost (%s)" % cur in ci:
+            _cell_comment(
+                ws, _sub_comp_row, ci["Product Cost (%s)" % cur],
+                "TOTAL PRODUCT COST — Components\n\n"
+                "= Σ (qty_i × product.standard_price)\n"
+                "  for all components at the requested production quantity.\n\n"
+                "Uses the catalogue standard_price; does NOT include\n"
+                "manufacturing operations or overhead.",
+            )
         row += 1  # blank separator
 
     # ── Operations section ────────────────────────────────────────────────────
@@ -418,6 +550,7 @@ def _build_summary_sheet(ws, cs, cur, usd,
                 _write_row(ws, row, vals, _C["op"], outline_level=1)
                 row += 1
 
+        _sub_ops_row = row
         row = _write_subtotal(
             ws, row, "Subtotal Operations", col_count, ci,
             bom_cost=cs["totals"]["operations"],
@@ -426,6 +559,15 @@ def _build_summary_sheet(ws, cs, cur, usd,
             prod_cost_usd=None,
             show_costs=show_costs, has_usd=has_usd, cur=cur, usd=usd,
         )
+        if show_costs and "BOM Cost (%s)" % cur in ci:
+            _cell_comment(
+                ws, _sub_ops_row, ci["BOM Cost (%s)" % cur],
+                "TOTAL BOM COST — Operations\n\n"
+                "= Σ ((duration_j ÷ 60) × work_center_cost_per_hour)\n"
+                "  for all manufacturing operations in this BOM.\n\n"
+                "Duration is in minutes; cost rate is the work center's\n"
+                "time efficiency + capacity × cost/hour setting.",
+            )
         row += 1  # blank separator
 
     # ── Grand Total ───────────────────────────────────────────────────────────
@@ -438,6 +580,17 @@ def _build_summary_sheet(ws, cs, cur, usd,
             vals[ci["BOM Cost (%s)" % usd] - 1] = _flt(cs["totals"].get("total_usd"))
     _write_row(ws, row, vals, _C["total"], bold=True)
     ws.row_dimensions[row].height = 15
+    if show_costs and "BOM Cost (%s)" % cur in ci:
+        _cell_comment(
+            ws, row, ci["BOM Cost (%s)" % cur],
+            "GRAND TOTAL BOM COST\n\n"
+            "= Subtotal Components + Subtotal Operations\n\n"
+            "Components: Σ (qty_i × std_cost_i × production_qty_factor)\n"
+            "Operations: Σ ((duration_j ÷ 60) × wc_cost_per_hour)\n\n"
+            "Scaled to the production quantity shown in the BOM header.\n"
+            "(Product Cost is excluded from this total — see\n"
+            " 'Subtotal Components > Product Cost' for that figure.)",
+        )
     total_row = row
     row += 1
 
@@ -546,6 +699,77 @@ def _build_detail_sheet(ws, cs, cur, usd, show_lead_times):
         c.fill = _fill(_C["header_bg"])
         c.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
     ws.row_dimensions[header_row].height = 26
+
+    # ── Column header comments (hover tooltips) ───────────────────────────────
+    _det_comments = {
+        "Category": (
+            "Full category path for this component, from root to leaf.\n"
+            "Format: Root > Sub-category > ... > Leaf category"
+        ),
+        "Product": "Component product name.",
+        "Used In (Parent)": (
+            "Parent product or sub-assembly that directly uses\n"
+            "this component in its bill of materials."
+        ),
+        "Quantity": (
+            "Quantity of this component consumed per unit of\n"
+            "the finished product (or parent sub-assembly).\n"
+            "Scaled to the production quantity of the BOM export."
+        ),
+        "UoM": "Unit of measure for the quantity.",
+        "% of Components": (
+            "Percentage share of this usage's BOM Cost\n"
+            "relative to the total Components cost.\n\n"
+            "Formula: usage BOM Cost ÷ Subtotal Components × 100"
+        ),
+        "BOM Cost (%s)" % cur: (
+            "Cost contribution of this usage to the BOM.\n\n"
+            "Formula: qty × product unit cost × BOM scale factor"
+        ),
+        "Product Cost (%s)" % cur: (
+            "Catalogue unit cost × quantity.\n\n"
+            "Formula: qty × product.standard_price\n"
+            "Does NOT include operations or overhead."
+        ),
+        "Lead Time (days)": (
+            "Supplier or manufacturing lead time in calendar days,\n"
+            "from the replenishment route of this component."
+        ),
+        "Route": (
+            "Replenishment route (e.g. Buy, Manufacture, MTO).\n"
+            "May include sub-route detail such as vendor name."
+        ),
+        "Route Detail": "Additional route detail (e.g. vendor name or sub-route).",
+        "Route Type": "Route type code (buy / manufacture / resupply / push / pull).",
+        "Free to Use": (
+            "Available-to-promise quantity.\n"
+            "Formula: On Hand − Reserved\n"
+            "Source: stock.quant → virtual_available."
+        ),
+        "On Hand": (
+            "Total physical quantity in stock.\n"
+            "Source: stock.quant → quantity."
+        ),
+        "Availability": (
+            "Stock availability vs. required quantity:\n"
+            "  Available     — Free to Use ≥ required quantity\n"
+            "  Partial       — some stock, but insufficient\n"
+            "  Not Available — no usable stock"
+        ),
+    }
+    if has_usd:
+        _det_comments["BOM Cost (%s)" % usd] = (
+            "BOM Cost converted to %s.\n"
+            "Formula: BOM Cost (%s) × rate(%s→%s)" % (usd, cur, cur, usd)
+        )
+        _det_comments["Product Cost (%s)" % usd] = (
+            "Product Cost converted to %s.\n"
+            "Formula: Product Cost (%s) × rate(%s→%s)" % (usd, cur, cur, usd)
+        )
+    for _ci2, _col_name2 in enumerate(cols, start=1):
+        if _col_name2 in _det_comments:
+            _cell_comment(ws, header_row, _ci2, _det_comments[_col_name2])
+
     ws.freeze_panes = ws.cell(row=header_row + 1, column=1)
 
     # ── Data rows ─────────────────────────────────────────────────────────────
