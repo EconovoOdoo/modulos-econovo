@@ -375,6 +375,176 @@ export class BomCostSummarySection extends Component {
         }
         return `${days} ${_t("Days")}`;
     }
+
+    /**
+     * Returns a JSON string for data-tooltip-info for a named column.
+     * All user-facing strings pass through _t() so they are translated.
+     *
+     * @param {string} key - Logical key for the column/cell
+     * @param {string} [curName] - Local currency name (when needed)
+     * @param {string} [usdName] - Secondary currency name (when needed)
+     * @returns {string} JSON string
+     */
+    colTooltip(key, curName, usdName) {
+        const T = _t;
+        const tips = {
+            "qty": {
+                title: T("Quantity / UoM"),
+                lines: [
+                    T("Usage: qty consumed per unit of the finished product"),
+                    T("Product: sum across all usages (\u2014 when UoMs differ)"),
+                ],
+            },
+            "pct_components": {
+                title: T("% of Components total"),
+                lines: [
+                    T("= row BOM Cost \u00f7 Subtotal Components \u00d7 100"),
+                    T("Applies to Categories, Products and Usages"),
+                    T("Subtotal: Subtotal Components \u00f7 Grand Total \u00d7 100"),
+                ],
+            },
+            "pct_operations": {
+                title: T("% of Operations total"),
+                lines: [
+                    T("= row BOM Cost \u00f7 Subtotal Operations \u00d7 100"),
+                    T("Applies to Work Centers and Operations"),
+                    T("Subtotal: Subtotal Operations \u00f7 Grand Total \u00d7 100"),
+                ],
+            },
+            "free_on_hand": {
+                title: T("Stock availability"),
+                lines: [
+                    T("Free to Use = On Hand \u2212 Reserved (virtual_available)"),
+                    T("On Hand = total physical quantity in storage"),
+                    T("Source: stock.quant"),
+                ],
+            },
+            "availability": {
+                title: T("Availability status vs. required qty"),
+                lines: [
+                    T("Available: Free to Use \u2265 required quantity"),
+                    T("Partial: some stock, but insufficient"),
+                    T("Not Available: no usable stock"),
+                ],
+            },
+            "lead_time": {
+                title: T("Lead time (days)"),
+                lines: [
+                    T("Supplier or manufacturing lead time in calendar days"),
+                    T("Derived from the replenishment route of each component"),
+                ],
+            },
+            "lead_time_ops": {
+                title: T("Manufacturing lead time (days)"),
+                lines: [
+                    T("Lead time linked to this work center or routing step"),
+                ],
+            },
+            "route": {
+                title: T("Replenishment route"),
+                lines: [
+                    T("e.g. Buy, Manufacture, MTO, Resupply"),
+                    T("May include vendor name or sub-route detail"),
+                ],
+            },
+            "route_ops": {
+                title: T("Manufacturing route"),
+                lines: [
+                    T("Replenishment or manufacturing route for this operation"),
+                ],
+            },
+            "bom_cost": {
+                title: T("BOM Cost contribution"),
+                lines: [
+                    T("Usage: qty \u00d7 unit cost \u00d7 production factor"),
+                    T("Product: \u03a3 BOM Costs of all usages"),
+                    T("Category: \u03a3 BOM Costs of products + child categories"),
+                    T("Includes nested sub-assembly costs recursively"),
+                ],
+            },
+            "bom_cost_ops": {
+                title: T("BOM Cost contribution (Operations)"),
+                lines: [
+                    T("Operation: (duration \u00f7 60) \u00d7 work center cost/hour"),
+                    T("Work Center: \u03a3 BOM Costs of all its operations"),
+                ],
+            },
+            "bom_cost_usd": {
+                title: T("BOM Cost (secondary currency)"),
+                lines: [
+                    T("BOM Cost converted using the company exchange rate"),
+                    T("= BOM Cost (local) \u00d7 rate(local \u2192 secondary)"),
+                ],
+            },
+            "prod_cost": {
+                title: T("Product catalogue cost"),
+                lines: [
+                    T("Usage: qty \u00d7 product.standard_price"),
+                    T("Product: \u03a3 Product Costs of all usages"),
+                    T("Category: \u03a3 down the category tree"),
+                    T("Does NOT include operations or overhead"),
+                ],
+            },
+            "prod_cost_usd": {
+                title: T("Product Cost (secondary currency)"),
+                lines: [
+                    T("Product Cost converted using the company exchange rate"),
+                    T("= Product Cost (local) \u00d7 rate(local \u2192 secondary)"),
+                ],
+            },
+            "subtotal_bom_cost": {
+                title: T("TOTAL BOM COST \u2014 Components"),
+                lines: [
+                    T("= \u03a3 (qty \u00d7 unit_cost \u00d7 production_factor)"),
+                    T("for all components at the requested quantity"),
+                    T("Includes nested sub-assembly costs recursively"),
+                ],
+            },
+            "subtotal_prod_cost": {
+                title: T("TOTAL PRODUCT COST \u2014 Components"),
+                lines: [
+                    T("= \u03a3 (qty \u00d7 product.standard_price)"),
+                    T("Catalogue standard cost; no operations or overhead"),
+                ],
+            },
+            "subtotal_ops_cost": {
+                title: T("TOTAL BOM COST \u2014 Operations"),
+                lines: [
+                    T("= \u03a3 ((duration \u00f7 60) \u00d7 wc_cost_per_hour)"),
+                    T("Duration in minutes; rate from work center settings"),
+                ],
+            },
+            "grand_total": {
+                title: T("Grand Total BOM Cost"),
+                lines: [
+                    T("= Subtotal Components + Subtotal Operations"),
+                    T("Components: \u03a3 (qty \u00d7 unit_cost \u00d7 production_factor)"),
+                    T("Operations: \u03a3 ((duration \u00f7 60) \u00d7 wc_cost/hour)"),
+                    T("Scaled to the BOM production quantity"),
+                ],
+            },
+            "grand_total_prod": {
+                title: T("Grand Total Product Cost"),
+                lines: [
+                    T("= \u03a3 (qty \u00d7 product.standard_price)"),
+                    T("Catalogue standard cost of all components"),
+                    T("Does NOT include operations or overhead"),
+                ],
+            },
+            "duration": {
+                title: T("Duration (minutes)"),
+                lines: [
+                    T("Operation: manufacturing operation duration in minutes"),
+                    T("Work Center: sum of all its operation durations"),
+                ],
+            },
+        };
+        const tip = tips[key];
+        if (!tip) {
+            return "";
+        }
+        return JSON.stringify(tip);
+    }
 }
 
 BomCostSummarySection.template =
