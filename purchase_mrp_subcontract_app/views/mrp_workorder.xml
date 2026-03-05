@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+		<record id="mrp_production_form_view_inherit" model="ir.ui.view">
+            <field name="name">mrp.production.form.inherit</field>
+            <field name="model">mrp.production</field>
+			<field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+			<field name="arch" type="xml">
+				<xpath expr="//button[@name='%(mrp.action_mrp_production_moves)d']" position="after">
+                    <button name="%(mrp.action_mrp_workorder_production_specific)d" type="action" required="workorder_count == 0" class="oe_stat_button" icon="fa-play-circle-o">
+                        <div class="o_field_widget o_stat_info">
+                            <span class="o_stat_value"><field name="workorder_done_count" widget="statinfo" nolabel="1"/> / <field name="workorder_count" widget="statinfo" nolabel="1"/></span>
+                            <span class="o_stat_text">Work Orders</span>
+                        </div>
+                    </button>
+				</xpath>
+			</field>
+		</record>
+
+		<!-- add purchase and picking details in workorder form -->
+		<record id="production_workorder_form_inherit" model="ir.ui.view">
+			<field name="name">mrp.workorder.form</field>
+			<field name="model">mrp.workorder</field>
+			<field name="inherit_id" ref="mrp.mrp_production_workorder_form_view_inherit"/>
+			<field name="arch" type="xml">
+				<xpath expr="//field[@name='state']" position="before">
+	            	<button name="generate_subcontracting_order" type="object" string="Subcontracting Order"  class="btn-info" groups="purchase_mrp_subcontract_app.group_subcontracting"/>
+	        	</xpath>
+				<xpath expr="//page[@name='time_tracking']" position="inside">
+	                <group string="Purchase &amp; Picking Details" groups="purchase_mrp_subcontract_app.group_subcontracting">
+	                    <field name="purchase_id" readonly="1"/>
+	                    <field name="picking_delivery_id" readonly="1"/>
+	                    <field name="picking_return_id" readonly="1"/>
+	                    <field name="is_subcontract" invisible="1"/>
+	                </group>
+				</xpath>
+			</field>
+		</record>
+
+		<record id="mrp_production_workorder_tree_editable_view_inherit" model="ir.ui.view">
+			<field name="name">mrp.production.work.order.tree.editable.inherit</field>
+			<field name="model">mrp.workorder</field>
+			<field name="inherit_id" ref="mrp.mrp_production_workorder_tree_editable_view"/>
+			<field name="arch" type="xml">
+				<xpath expr="//button[@name='action_open_wizard']" position="before">
+					<button name="generate_subcontracting_order" type="object" string="Subcontracting Order"  class="btn-info" groups="purchase_mrp_subcontract_app.group_subcontracting"/>
+				</xpath>
+				<xpath expr="//field[@name='state']" position="before">
+					<field name="is_subcontract" invisible="1"/>
+				</xpath>
+			</field>
+		</record>
+
+	</data>
+</odoo>

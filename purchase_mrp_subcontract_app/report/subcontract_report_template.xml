@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <template id="report_picking_inherit" inherit_id="mrp.report_mrporder">
+            <xpath expr="//div" position="after">
+                <t t-if="o.is_subcontract == true">
+                <table class="table table-sm">
+                    <h3>Subcontracting</h3>
+                    <th><strong>Purchase Order</strong></th>
+                    <th><strong>Picking Reference</strong></th>
+                    <th><strong>Return Picking Reference</strong></th>
+                    <tr t-foreach="o.workorder_ids" t-as="wo">
+                        <t t-if="wo.is_subcontract == true">
+                            <td><span t-field="wo.purchase_id"/></td>
+                            <td><span t-field="wo.picking_delivery_id"/></td>
+                            <td><span t-field="wo.picking_return_id"/></td>
+                        </t>
+                    </tr>
+                </table>
+                </t>
+            </xpath>
+        </template>
+    </data>
+</odoo>

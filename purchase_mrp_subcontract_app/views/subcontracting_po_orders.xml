@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+            <!-- purchase order from MRP workorder -->
+            <record id="action_contracting_orders" model="ir.actions.act_window">
+                <field name="name">Subcontracting Orders</field>
+                <field name="type">ir.actions.act_window</field>
+                <field name="res_model">purchase.order</field>
+                <field name="domain">[('is_mo_order','=',True)]</field>
+                <field name="view_mode">tree,form</field>
+            </record>
+
+            <menuitem id="menu_subcontracting_orders" name="Subcontracting Orders" parent="mrp.menu_mrp_manufacturing" action="action_contracting_orders" groups="purchase_mrp_subcontract_app.group_subcontracting"/>
+
+    </data>
+</odoo>
