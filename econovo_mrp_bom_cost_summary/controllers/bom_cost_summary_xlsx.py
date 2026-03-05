@@ -173,7 +173,7 @@ def _write_category_rows(ws, row, node, ci, cur, usd,
     depth = node.get("depth", 0)
     cat_colors = [_C["cat_0"], _C["cat_1"], _C["cat_deep"]]
     cat_color = cat_colors[min(depth, len(cat_colors) - 1)]
-    indent = "  " * depth
+    indent = "    " * depth
 
     # Category row
     vals = [""] * col_count
@@ -216,7 +216,7 @@ def _write_category_rows(ws, row, node, ci, cur, usd,
             total_qty = ""
             uom_display = ""
 
-        prod_indent = "  " * (depth + 1)
+        prod_indent = "    " * (depth + 1)
         vals = [""] * col_count
         vals[ci["Level"] - 1] = depth + 1
         vals[ci["Type"] - 1] = "Product"
@@ -246,7 +246,7 @@ def _write_category_rows(ws, row, node, ci, cur, usd,
 
         # Usage rows
         for usage in usages:
-            usage_indent = "  " * (depth + 2)
+            usage_indent = "    " * (depth + 2)
             parent_name = _str(usage.get("parent_name")) or "—"
             vals = [""] * col_count
             vals[ci["Level"] - 1] = depth + 2
@@ -404,7 +404,7 @@ def _build_summary_sheet(ws, cs, cur, usd,
                 vals = [""] * col_count
                 vals[ci["Level"] - 1] = 1
                 vals[ci["Type"] - 1] = "Operation"
-                vals[ci["Name"] - 1] = "    " + op_name
+                vals[ci["Name"] - 1] = "        " + op_name
                 vals[ci["Qty / Duration"] - 1] = _flt(op.get("duration"))
                 vals[ci["%"] - 1] = _pct(op.get("percentage"))
                 if show_costs:
