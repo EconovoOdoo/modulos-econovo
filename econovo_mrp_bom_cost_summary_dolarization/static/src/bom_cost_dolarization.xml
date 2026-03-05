@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+<!--
+    Bridge extension for BomCostSummarySection.
+
+    Inserts two "direct USD" columns (BoM Cost USD / Product Cost USD based on
+    ``product.standard_price_usd``) BEFORE the existing exchange-rate USD
+    columns in the Components section.
+
+    The exchange-rate USD columns are now hidden unless developer mode is
+    active (controlled via the ``showCostsUsd`` getter override in JS).
+
+    Operations section: only gains empty placeholder cells so that column
+    alignment is maintained across the shared table.
+
+    Grand Total rows: each gains one direct-USD value cell and one empty
+    placeholder cell to keep both cost groups aligned.
+-->
+<t t-inherit="econovo_mrp_bom_cost_summary.BomCostSummarySection"
+   t-inherit-mode="extension">
+
+    <!-- ============================================================ -->
+    <!-- 1. COLGROUP – two new col elements for the direct-USD columns -->
+    <!-- ============================================================ -->
+
+    <xpath expr="//colgroup/col[@t-if='showCostsUsd'][1]" position="before">
+        <!-- BoM Cost USD direct column -->
+        <col t-if="showCostsUsdDirect" style="width: 10%;"/>
+    </xpath>
+    <xpath expr="//colgroup/col[@t-if='showCostsUsd'][2]" position="before">
+        <!-- Product Cost USD direct column -->
+        <col t-if="showCostsUsdDirect" style="width: 10%;"/>
+    </xpath>
+
+    <!-- ============================================================ -->
+    <!-- 2. COMPONENTS THEAD – direct-USD column headers              -->
+    <!-- ============================================================ -->
+
+    <!-- BoM Cost USD direct header (before exchange-rate BoM Cost USD) -->
+    <xpath expr="//thead[1]/tr/th[@t-if='showCostsUsd'][1]" position="before">
+        <th t-if="showCostsUsdDirect" class="text-end">BoM Cost <t t-esc="secondaryCurrency.name"/>
+            <i class="fa fa-info-circle text-muted ms-1"
+               data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+               t-att-data-tooltip-info="colTooltip('bom_cost_usd_direct')"/>&#8203;
+        </th>
+    </xpath>
+
+    <!-- Product Cost USD direct header (before exchange-rate Product Cost USD) -->
+    <xpath expr="//thead[1]/tr/th[@t-if='showCostsUsd'][2]" position="before">
+        <th t-if="showCostsUsdDirect" class="text-end">Product Cost <t t-esc="secondaryCurrency.name"/>
+            <i class="fa fa-info-circle text-muted ms-1"
+               data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+               t-att-data-tooltip-info="colTooltip('prod_cost_usd_direct')"/>&#8203;
+        </th>
+    </xpath>
+
+    <!-- ============================================================ -->
+    <!-- 3. COMPONENTS TBODY – category rows                          -->
+    <!-- ============================================================ -->
+
+    <xpath expr="//td[strong[@t-esc='fmtUsd(row.node.total_usd)']]" position="before">
+        <td t-if="showCostsUsdDirect" class="text-end text-muted">
+            <strong t-esc="fmtUsdDirect(row.node.total_usd_direct)"/>
+        </td>
+    </xpath>
+    <xpath expr="//td[strong[@t-esc='fmtUsd(row.node.prod_cost_total_usd)']]" position="before">
+        <td t-if="showCostsUsdDirect" class="text-end text-muted">
+            <strong t-esc="fmtUsdDirect(row.node.prod_cost_total_usd_direct)"/>
+        </td>
+    </xpath>
+
+    <!-- ============================================================ -->
+    <!-- 4. COMPONENTS TBODY – product rows                           -->
+    <!-- ============================================================ -->
+
+    <xpath expr="//td[t[@t-esc='fmtUsd(row.prod.total_usd)']]" position="before">
+        <td t-if="showCostsUsdDirect" class="text-end text-muted">
+            <t t-esc="fmtUsdDirect(row.prod.total_usd_direct)"/>
+        </td>
+    </xpath>
+    <xpath expr="//td[t[@t-esc='fmtUsd(row.prod.prod_cost_total_usd)']]" position="before">
+        <td t-if="showCostsUsdDirect" class="text-end text-muted">
+            <t t-esc="fmtUsdDirect(row.prod.prod_cost_total_usd_direct)"/>
+        </td>
+    </xpath>
+
+    <!-- ============================================================ -->
+    <!-- 5. COMPONENTS TBODY – usage rows                             -->
+    <!-- ============================================================ -->
+
+    <xpath expr="//td[t[@t-esc='fmtUsd(row.usage.total_usd)']]" position="before">
+        <td t-if="showCostsUsdDirect" class="text-end text-muted">
+            <t t-esc="fmtUsdDirect(row.usage.total_usd_direct)"/>
+        </td>
+    </xpath>
+    <xpath expr="//td[t[@t-esc='fmtUsd(row.usage.prod_cost_usd)']]" position="before">
+        <td t-if="showCostsUsdDirect" class="text-end text-muted">
+            <t t-esc="fmtUsdDirect(row.usage.prod_cost_usd_direct)"/>
+        </td>
+    </xpath>
+
+    <!-- ============================================================ -->
+    <!-- 6. COMPONENTS TBODY – Subtotal Components row                -->
+    <!-- ============================================================ -->
+
+    <xpath expr="//td[strong[@t-esc='fmtUsd(data.totals.components_usd)']]" position="before">
+        <td t-if="showCostsUsdDirect" class="text-end text-muted">
+            <strong t-esc="fmtUsdDirect(data.totals.components_usd_direct)"/>
+        </td>
+    </xpath>
+    <xpath expr="//td[strong[@t-esc='fmtUsd(data.totals.prod_cost_usd)']]" position="before">
+        <td t-if="showCostsUsdDirect" class="text-end text-muted">
+            <strong t-esc="fmtUsdDirect(data.totals.prod_cost_usd_direct)"/>
+        </td>
+    </xpath>
+
+    <!-- ============================================================ -->
+    <!-- 7. OPERATIONS THEAD – empty placeholder headers              -->
+    <!--    (operations have no direct-USD values; cols must be        -->
+    <!--     present to keep consistent column alignment)             -->
+    <!-- ============================================================ -->
+
+    <!-- Empty BoM Cost USD direct placeholder header in ops section -->
+    <xpath expr="//thead[2]/tr/th[@t-if='showCostsUsd']" position="before">
+        <th t-if="showCostsUsdDirect"/>
+    </xpath>
+    <!-- Empty Product Cost USD direct placeholder header (before the
+         bare <th/> that holds the placeholder for the Product Cost area) -->
+    <xpath expr="//thead[2]/tr/th[@t-if='showCostsUsd']/following-sibling::th[1]" position="before">
+        <th t-if="showCostsUsdDirect"/>
+    </xpath>
+
+    <!-- ============================================================ -->
+    <!-- 8. OPERATIONS TBODY – Work Center rows (placeholder cells)   -->
+    <!-- ============================================================ -->
+
+    <xpath expr="//td[strong[@t-esc='fmtUsd(wc.total_usd)']]" position="before">
+        <td t-if="showCostsUsdDirect"/>
+    </xpath>
+    <xpath expr="//td[strong[@t-esc='fmtUsd(wc.total_usd)']]/following-sibling::td[1]" position="before">
+        <td t-if="showCostsUsdDirect"/>
+    </xpath>
+
+    <!-- ============================================================ -->
+    <!-- 9. OPERATIONS TBODY – Operation rows (placeholder cells)     -->
+    <!-- ============================================================ -->
+
+    <xpath expr="//td[t[@t-esc='fmtUsd(op.total_usd)']]" position="before">
+        <td t-if="showCostsUsdDirect"/>
+    </xpath>
+    <xpath expr="//td[t[@t-esc='fmtUsd(op.total_usd)']]/following-sibling::td[1]" position="before">
+        <td t-if="showCostsUsdDirect"/>
+    </xpath>
+
+    <!-- ============================================================ -->
+    <!-- 10. OPERATIONS TBODY – Subtotal Operations (placeholder)     -->
+    <!-- ============================================================ -->
+
+    <xpath expr="//td[strong[@t-esc='fmtUsd(data.totals.operations_usd)']]" position="before">
+        <td t-if="showCostsUsdDirect"/>
+    </xpath>
+    <xpath expr="//td[strong[@t-esc='fmtUsd(data.totals.operations_usd)']]/following-sibling::td[1]" position="before">
+        <td t-if="showCostsUsdDirect"/>
+    </xpath>
+
+    <!-- ============================================================ -->
+    <!-- 11. GRAND TOTAL – TOTAL BOM COST row                        -->
+    <!--     col layout: …BoM Cost ARS | [direct] | TC | [empty ARS] | [empty direct] | [empty TC] -->
+    <!-- ============================================================ -->
+
+    <!-- Direct USD BoM Cost total (before exchange-rate total_usd) -->
+    <xpath expr="//td[strong[@t-esc='fmtUsd(data.totals.total_usd)']]" position="before">
+        <td t-if="showCostsUsdDirect" class="text-end">
+            <strong t-esc="fmtUsdDirect(data.totals.total_usd_direct)"/>
+        </td>
+    </xpath>
+    <!-- Empty direct-USD placeholder for the Product Cost column area
+         (before the trailing empty <td t-if="showCostsUsd"/> in tfoot row 1) -->
+    <xpath expr="//td[strong[@t-esc='fmtUsd(data.totals.total_usd)']]/following-sibling::td[@t-if='showCostsUsd']" position="before">
+        <td t-if="showCostsUsdDirect"/>
+    </xpath>
+
+    <!-- ============================================================ -->
+    <!-- 12. GRAND TOTAL – TOTAL PRODUCT COST row                    -->
+    <!--     col layout: …[empty ARS] | [empty direct] | [empty TC] | Product Cost ARS | [direct] | TC -->
+    <!-- ============================================================ -->
+
+    <!-- Empty direct-USD placeholder for the BoM Cost column area
+         (before the first empty <td t-if="showCostsUsd"/> in tfoot row 2) -->
+    <xpath expr="//td[strong[@t-esc='fmtUsd(data.totals.total_prod_usd)']]/preceding-sibling::td[@t-if='showCostsUsd']" position="before">
+        <td t-if="showCostsUsdDirect"/>
+    </xpath>
+    <!-- Direct USD Product Cost total (before exchange-rate total_prod_usd) -->
+    <xpath expr="//td[strong[@t-esc='fmtUsd(data.totals.total_prod_usd)']]" position="before">
+        <td t-if="showCostsUsdDirect" class="text-end">
+            <strong t-esc="fmtUsdDirect(data.totals.total_prod_usd_direct)"/>
+        </td>
+    </xpath>
+
+</t>
+
+</templates>
