@@ -119,15 +119,18 @@
     <!-- 7. OPERATIONS THEAD – empty placeholder headers              -->
     <!--    (operations have no direct-USD values; cols must be        -->
     <!--     present to keep consistent column alignment)             -->
+    <!--    NOTE: //thead[2] does NOT work because each thead is       -->
+    <!--    wrapped in its own <t t-if> and they are not siblings.    -->
+    <!--    We identify the operations thead by its unique header text -->
     <!-- ============================================================ -->
 
     <!-- Empty BoM Cost USD direct placeholder header in ops section -->
-    <xpath expr="//thead[2]/tr/th[@t-if='showCostsUsd']" position="before">
+    <xpath expr="//thead[tr/th[contains(normalize-space(.), 'Operations by Work Center')]]/tr/th[@t-if='showCostsUsd']" position="before">
         <th t-if="showCostsUsdDirect"/>
     </xpath>
     <!-- Empty Product Cost USD direct placeholder header (before the
          bare <th/> that holds the placeholder for the Product Cost area) -->
-    <xpath expr="//thead[2]/tr/th[@t-if='showCostsUsd']/following-sibling::th[1]" position="before">
+    <xpath expr="//thead[tr/th[contains(normalize-space(.), 'Operations by Work Center')]]/tr/th[@t-if='showCostsUsd']/following-sibling::th[1]" position="before">
         <th t-if="showCostsUsdDirect"/>
     </xpath>
 
