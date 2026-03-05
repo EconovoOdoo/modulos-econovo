@@ -32,16 +32,56 @@
                 <tr class="o_econovo_cost_summary__section-header">
                     <th class="o_econovo_cost_summary__fold-col"/>
                     <th>Components by Product Category</th>
-                    <th class="text-end">Quantity</th>
-                    <th class="text-end">%</th>
-                    <th t-if="showAvailabilities" class="text-end">Free to Use / On Hand</th>
-                    <th t-if="showAvailabilities" class="text-center">Availability</th>
-                    <th t-if="showLeadTimes" class="text-end">Lead Time</th>
-                    <th t-if="showLeadTimes">Route</th>
-                    <th t-if="showCosts" class="text-end">BoM Cost</th>
-                    <th t-if="showCostsUsd" class="text-end">BoM Cost <t t-esc="secondaryCurrency.name"/></th>
-                    <th t-if="showCosts" class="text-end">Product Cost</th>
-                    <th t-if="showCostsUsd" class="text-end">Product Cost <t t-esc="secondaryCurrency.name"/></th>
+                    <th class="text-end">Quantity
+                        <i class="fa fa-info-circle text-muted ms-1"
+                           data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                           data-tooltip-info='{"title":"Quantity / UoM","lines":["Usage: qty consumed per unit of the finished product","Product: sum across all usages (\u2014 when UoMs differ)"]}'/>&#8203;
+                    </th>
+                    <th class="text-end">%
+                        <i class="fa fa-info-circle text-muted ms-1"
+                           data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                           data-tooltip-info='{"title":"% of Components total","lines":["= row BOM Cost \u00f7 Subtotal Components \u00d7 100","Applies to Categories, Products and Usages","Subtotal: Subtotal Components \u00f7 Grand Total \u00d7 100"]}'/>&#8203;
+                    </th>
+                    <th t-if="showAvailabilities" class="text-end">Free to Use / On Hand
+                        <i class="fa fa-info-circle text-muted ms-1"
+                           data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                           data-tooltip-info='{"title":"Stock availability","lines":["Free to Use = On Hand \u2212 Reserved (virtual_available)","On Hand = total physical quantity in storage","Source: stock.quant"]}'/>&#8203;
+                    </th>
+                    <th t-if="showAvailabilities" class="text-center">Availability
+                        <i class="fa fa-info-circle text-muted ms-1"
+                           data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                           data-tooltip-info='{"title":"Availability status vs. required qty","lines":["Available: Free to Use \u2265 required quantity","Partial: some stock, but insufficient","Not Available: no usable stock"]}'/>&#8203;
+                    </th>
+                    <th t-if="showLeadTimes" class="text-end">Lead Time
+                        <i class="fa fa-info-circle text-muted ms-1"
+                           data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                           data-tooltip-info='{"title":"Lead time (days)","lines":["Supplier or manufacturing lead time in calendar days","Derived from the replenishment route of each component"]}'/>&#8203;
+                    </th>
+                    <th t-if="showLeadTimes">Route
+                        <i class="fa fa-info-circle text-muted ms-1"
+                           data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                           data-tooltip-info='{"title":"Replenishment route","lines":["e.g. Buy, Manufacture, MTO, Resupply","May include vendor name or sub-route detail"]}'/>&#8203;
+                    </th>
+                    <th t-if="showCosts" class="text-end">BoM Cost
+                        <i class="fa fa-info-circle text-muted ms-1"
+                           data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                           data-tooltip-info='{"title":"BOM Cost contribution","lines":["Usage: qty \u00d7 unit cost \u00d7 production factor","Product: \u03a3 BOM Costs of all usages","Category: \u03a3 BOM Costs of products + child categories","Includes nested sub-assembly costs recursively"]}'/>&#8203;
+                    </th>
+                    <th t-if="showCostsUsd" class="text-end">BoM Cost <t t-esc="secondaryCurrency.name"/>
+                        <i class="fa fa-info-circle text-muted ms-1"
+                           data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                           data-tooltip-info='{"title":"BOM Cost (secondary currency)","lines":["BOM Cost converted using the company exchange rate","= BOM Cost (local) \u00d7 rate(local \u2192 secondary)"]}'/>&#8203;
+                    </th>
+                    <th t-if="showCosts" class="text-end">Product Cost
+                        <i class="fa fa-info-circle text-muted ms-1"
+                           data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                           data-tooltip-info='{"title":"Product catalogue cost","lines":["Usage: qty \u00d7 product.standard_price","Product: \u03a3 Product Costs of all usages","Category: \u03a3 down the category tree","Does NOT include operations or overhead"]}'/>&#8203;
+                    </th>
+                    <th t-if="showCostsUsd" class="text-end">Product Cost <t t-esc="secondaryCurrency.name"/>
+                        <i class="fa fa-info-circle text-muted ms-1"
+                           data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                           data-tooltip-info='{"title":"Product Cost (secondary currency)","lines":["Product Cost converted using the company exchange rate","= Product Cost (local) \u00d7 rate(local \u2192 secondary)"]}'/>&#8203;
+                    </th>
                 </tr>
             </thead>
             <tbody>
@@ -211,12 +251,18 @@
                     <td t-if="showLeadTimes"/>
                     <td t-if="showCosts" class="text-end">
                         <strong t-esc="fmtMoney(data.totals.components)"/>
+                        <i class="fa fa-info-circle text-muted ms-1"
+                           data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                           data-tooltip-info='{"title":"TOTAL BOM COST \u2014 Components","lines":["= \u03a3 (qty \u00d7 unit_cost \u00d7 production_factor)","for all components at the requested quantity","Includes nested sub-assembly costs recursively"]}'/>&#8203;
                     </td>
                     <td t-if="showCostsUsd" class="text-end text-muted">
                         <strong t-esc="fmtUsd(data.totals.components_usd)"/>
                     </td>
                     <td t-if="showCosts" class="text-end">
                         <strong t-esc="fmtMoney(data.totals.prod_cost)"/>
+                        <i class="fa fa-info-circle text-muted ms-1"
+                           data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                           data-tooltip-info='{"title":"TOTAL PRODUCT COST \u2014 Components","lines":["= \u03a3 (qty \u00d7 product.standard_price)","Catalogue standard cost; no operations or overhead"]}'/>&#8203;
                     </td>
                     <td t-if="showCostsUsd" class="text-end text-muted">
                         <strong t-esc="fmtUsd(data.totals.prod_cost_usd)"/>
@@ -233,14 +279,38 @@
                 <tr class="o_econovo_cost_summary__section-header">
                     <th class="o_econovo_cost_summary__fold-col"/>
                     <th>Operations by Work Center</th>
-                    <th class="text-end">Duration</th>
-                    <th class="text-end">%</th>
+                    <th class="text-end">Duration
+                        <i class="fa fa-info-circle text-muted ms-1"
+                           data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                           data-tooltip-info='{"title":"Duration (minutes)","lines":["Operation: manufacturing operation duration in minutes","Work Center: sum of all its operation durations"]}'/>&#8203;
+                    </th>
+                    <th class="text-end">%
+                        <i class="fa fa-info-circle text-muted ms-1"
+                           data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                           data-tooltip-info='{"title":"% of Operations total","lines":["= row BOM Cost \u00f7 Subtotal Operations \u00d7 100","Applies to Work Centers and Operations","Subtotal: Subtotal Operations \u00f7 Grand Total \u00d7 100"]}'/>&#8203;
+                    </th>
                     <th t-if="showAvailabilities"/>
                     <th t-if="showAvailabilities"/>
-                    <th t-if="showLeadTimes" class="text-end">Lead Time</th>
-                    <th t-if="showLeadTimes">Route</th>
-                    <th t-if="showCosts" class="text-end">BoM Cost</th>
-                    <th t-if="showCostsUsd" class="text-end">BoM Cost <t t-esc="secondaryCurrency.name"/></th>
+                    <th t-if="showLeadTimes" class="text-end">Lead Time
+                        <i class="fa fa-info-circle text-muted ms-1"
+                           data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                           data-tooltip-info='{"title":"Manufacturing lead time (days)","lines":["Lead time linked to this work center or routing step"]}'/>&#8203;
+                    </th>
+                    <th t-if="showLeadTimes">Route
+                        <i class="fa fa-info-circle text-muted ms-1"
+                           data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                           data-tooltip-info='{"title":"Manufacturing route","lines":["Replenishment or manufacturing route for this operation"]}'/>&#8203;
+                    </th>
+                    <th t-if="showCosts" class="text-end">BoM Cost
+                        <i class="fa fa-info-circle text-muted ms-1"
+                           data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                           data-tooltip-info='{"title":"BOM Cost contribution (Operations)","lines":["Operation: (duration \u00f7 60) \u00d7 work center cost/hour","Work Center: \u03a3 BOM Costs of all its operations"]}'/>&#8203;
+                    </th>
+                    <th t-if="showCostsUsd" class="text-end">BoM Cost <t t-esc="secondaryCurrency.name"/>
+                        <i class="fa fa-info-circle text-muted ms-1"
+                           data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                           data-tooltip-info='{"title":"BOM Cost (secondary currency)","lines":["BOM Cost converted using the company exchange rate"]}'/>&#8203;
+                    </th>
                     <th/>
                     <th t-if="showCosts"/>
                 </tr>
@@ -340,6 +410,9 @@
                     <td t-if="showLeadTimes"/>
                     <td t-if="showCosts" class="text-end">
                         <strong t-esc="fmtMoney(data.totals.operations)"/>
+                        <i class="fa fa-info-circle text-muted ms-1"
+                           data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                           data-tooltip-info='{"title":"TOTAL BOM COST \u2014 Operations","lines":["= \u03a3 ((duration \u00f7 60) \u00d7 wc_cost_per_hour)","Duration in minutes; rate from work center settings"]}'/>&#8203;
                     </td>
                     <td t-if="showCostsUsd" class="text-end">
                         <strong t-esc="fmtUsd(data.totals.operations_usd)"/>
@@ -354,7 +427,12 @@
         <tfoot>
             <tr class="o_econovo_cost_summary__grand-total-row">
                 <td class="o_econovo_cost_summary__fold-col"/>
-                <td class="text-end"><strong>TOTAL BOM COST</strong></td>
+                <td class="text-end">
+                    <strong>TOTAL BOM COST</strong>
+                    <i class="fa fa-info-circle text-muted ms-1"
+                       data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                       data-tooltip-info='{"title":"Grand Total BOM Cost","lines":["= Subtotal Components + Subtotal Operations","Components: \u03a3 (qty \u00d7 unit_cost \u00d7 production_factor)","Operations: \u03a3 ((duration \u00f7 60) \u00d7 wc_cost/hour)","Scaled to the BOM production quantity"]}'/>&#8203;
+                </td>
                 <td/>
                 <td/>
                 <td t-if="showAvailabilities"/>
@@ -372,7 +450,12 @@
             </tr>
             <tr class="o_econovo_cost_summary__grand-total-row">
                 <td class="o_econovo_cost_summary__fold-col"/>
-                <td class="text-end"><strong>TOTAL PRODUCT COST</strong></td>
+                <td class="text-end">
+                    <strong>TOTAL PRODUCT COST</strong>
+                    <i class="fa fa-info-circle text-muted ms-1"
+                       data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                       data-tooltip-info='{"title":"Grand Total Product Cost","lines":["= \u03a3 (qty \u00d7 product.standard_price)","Catalogue standard cost of all components","Does NOT include operations or overhead"]}'/>
+                </td>
                 <td/>
                 <td/>
                 <td t-if="showAvailabilities"/>
@@ -393,5 +476,31 @@
     </table>
 
 </div>
+
+    <!--
+        Shared column-header tooltip template.
+        Invoked via:
+          data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+          data-tooltip-info='{"title":"...","lines":["line1","line2"]}'
+    -->
+    <!--
+        NOTE: Odoo 17 renders custom tooltip templates via:
+          t-call-context="{ env, ...props.info }"
+        so data-tooltip-info fields are spread directly into the template
+        context. Access them as plain variables: `title`, `lines`.
+    -->
+    <t t-name="econovo_mrp_bom_cost_summary.ColTooltip">
+        <div style="min-width: 200px; max-width: 360px;">
+            <div class="fw-bold mb-1 border-bottom pb-1"
+                 t-if="title"
+                 t-esc="title"/>
+            <ul class="mb-0 ps-3" t-if="lines">
+                <li t-foreach="lines"
+                    t-as="line"
+                    t-key="line_index"
+                    t-esc="line"/>
+            </ul>
+        </div>
+    </t>
 
 </templates>
