@@ -1,0 +1,56 @@
+# -*- coding: utf-8 -*-
+from odoo import api, models
+
+
+class ReportBomStructure(models.AbstractModel):
+    """Extend BOM structure report to include direct USD costs.
+
+    When both ``econovo_mrp_bom_cost_summary`` and ``gg_cost_dolarization``
+    are installed, each component in the BOM tree gets two additional keys:
+
+    - ``bom_cost_usd_direct``:  BOM Cost scaled to ``standard_price_usd``
+      using the local-price ratio (``bom_cost × usd_price / ars_price``).
+      For components without a local price, falls back to
+      ``line_quantity × standard_price_usd``.
+
+    - ``prod_cost_usd_direct``:  ``line_quantity × standard_price_usd``
+      (direct catalogue cost in USD, independent of the exchange rate).
+
+    These values are then picked up by the JS side
+    (``bom_cost_dolarization.js``) to populate the new columns.
+    """
+
+    _inherit = 'report.mrp.report_bom_structure'
+
+    @api.model
+    def _get_component_data(
+        self, parent_bom, parent_product, warehouse, bom_line,
+        line_quantity, level, index, product_info, ignore_stock=False,
+    ):
+        res = super()._get_component_data(
+            parent_bom, parent_product, warehouse, bom_line,
+            line_quantity, level, index, product_info,
+            ignore_stock=ignore_stock,
+        )
+
+        product = bom_line.product_id
+        std_usd = getattr(product, 'standard_price_usd', 0.0) or 0.0
+        std_ars = product.standard_price or 0.0
+
+        # Product Cost USD direct: same formula as prod_cost but using
+        # standard_price_usd instead of standard_price.
+        prod_cost_usd_direct = line_quantity * std_usd
+
+        # BOM Cost USD direct: scale the existing bom_cost by the
+        # usd/ars price ratio so that nested sub-assembly costs are
+        # also approximated in USD.  Falls back to the product cost
+        # direct when no local price is set.
+        bom_cost = res.get('bom_cost') or 0.0
+        if std_ars > 0:
+            bom_cost_usd_direct = bom_cost * (std_usd / std_ars)
+        else:
+            bom_cost_usd_direct = prod_cost_usd_direct
+
+        res['prod_cost_usd_direct'] = prod_cost_usd_direct
+        res['bom_cost_usd_direct'] = bom_cost_usd_direct
+        return res
