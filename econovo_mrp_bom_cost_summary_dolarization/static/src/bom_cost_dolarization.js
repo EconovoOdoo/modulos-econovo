@@ -250,16 +250,13 @@ patch(BomCostSummarySection.prototype, {
     },
 
     /**
-     * Extended tooltip helper.  Delegates unknown keys to the original
-     * implementation; handles the four new/renamed column keys.
+     * Tooltip helper for the new direct-USD column headers.
+     * The base class has no colTooltip method — this is a new addition.
      *
      * @param {string} key
      * @returns {string}  JSON-serialised tooltip object or empty string.
      */
     colTooltip(key) {
-        const original = super.colTooltip(...arguments);
-        if (original !== "") return original;
-
         const tips = {
             bom_cost_usd_direct: {
                 title: _t("BoM Cost USD (direct price)"),
