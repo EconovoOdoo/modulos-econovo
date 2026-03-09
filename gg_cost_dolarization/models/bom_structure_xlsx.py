@@ -100,8 +100,11 @@ class ReportBomStructure(models.AbstractModel):
     @api.model
     def _get_byproducts_lines(self, product, bom, bom_quantity, level, total, index):
         byproducts, byproduct_cost_portion = super()._get_byproducts_lines(product, bom, bom_quantity, level, total, index)
-        for i in range(len(byproducts)):
-            byproducts[i]['standard_price_usd'] = byproducts[i]['product_id'].standard_price_usd
+        # The Odoo 17 byproduct dict does not carry a 'product_id' recordset;
+        # look up the product via the byproduct line ID stored in 'id'.
+        BomByproduct = self.env['mrp.bom.byproduct']
+        for bp in byproducts:
+            bp['standard_price_usd'] = BomByproduct.browse(bp['id']).product_id.standard_price_usd
         return byproducts, byproduct_cost_portion
 
     @api.model
