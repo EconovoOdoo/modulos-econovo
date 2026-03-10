@@ -12,13 +12,20 @@ import { _t } from "@web/core/l10n/translation";
  * Recursively walks the BOM tree collecting leaf component,
  * operation, and byproduct costs, tracking parent product for traceability.
  *
+ * Raw values from the server are used WITHOUT any cost_share scaling.
+ * Rationale: the Python backend already bakes each sub-BOM's cost_share
+ * into the bom_cost values it returns (via `bom_cost *= cost_share` at
+ * the end of `_get_bom_data`).  Applying cost_share again here would
+ * double-count the byproduct deduction, because `computeCostSummary`
+ * also subtracts totalByproducts explicitly — matching Odoo native
+ * behaviour: total_bom = components_raw + operations_raw − byproducts.
+ *
  * @param {Object} node - Current BOM tree node
  * @param {Object} categoryMap - Accumulator for component category groupings
  * @param {Object} workcenterMap - Accumulator for workcenter groupings
  * @param {Object} byproductCategoryMap - Accumulator for byproduct category groupings
- * @param {number} [ancestorCostShare=1.0] - Accumulated cost_share factor
  */
-export function collectCosts(node, categoryMap, workcenterMap, byproductCategoryMap, ancestorCostShare = 1.0) {
+export function collectCosts(node, categoryMap, workcenterMap, byproductCategoryMap) {
     const parentName = node.name;
     const parentProductId = node.product_id;
 
@@ -29,13 +36,7 @@ export function collectCosts(node, categoryMap, workcenterMap, byproductCategory
         bom_id: node.bom_id || false,
     };
 
-    const nodeCostShare =
-        node.cost_share !== undefined && node.cost_share !== null
-            ? node.cost_share
-            : 1.0;
-    const effectiveCostShare = ancestorCostShare * nodeCostShare;
-
-    // Collect operations at this BOM level
+    // Collect operations at this BOM level — use raw bom_cost from server
     if (node.operations) {
         for (const op of node.operations) {
             const wcId = op.workcenter_id || 0;
@@ -49,7 +50,7 @@ export function collectCosts(node, categoryMap, workcenterMap, byproductCategory
                     items: [],
                 };
             }
-            const adjustedCost = (op.bom_cost || 0) * effectiveCostShare;
+            const adjustedCost = op.bom_cost || 0;
             const opDuration = op.quantity || 0;
             workcenterMap[wcId].total += adjustedCost;
             workcenterMap[wcId].total_duration += opDuration;
@@ -70,9 +71,8 @@ export function collectCosts(node, categoryMap, workcenterMap, byproductCategory
     }
 
     // Collect byproducts at this BOM level.
-    // bp.bom_cost is already expressed in this node's cost units; scale only
-    // by ancestorCostShare (not effectiveCostShare) since the byproduct's own
-    // cost_share is already embedded inside bp.bom_cost.
+    // bp.bom_cost is the cost-share-allocated portion already computed
+    // server-side.  Use it as-is without any additional scaling.
     if (node.byproducts) {
         for (const bp of node.byproducts) {
             const catId = bp.categ_id || 0;
@@ -89,8 +89,8 @@ export function collectCosts(node, categoryMap, workcenterMap, byproductCategory
                     ],
                 };
             }
-            const adjustedCost = (bp.bom_cost || 0) * ancestorCostShare;
-            const adjustedProdCost = (bp.prod_cost || 0) * ancestorCostShare;
+            const adjustedCost = bp.bom_cost || 0;
+            const adjustedProdCost = bp.prod_cost || 0;
             const cat = byproductCategoryMap[catId];
             cat.total += adjustedCost;
             cat.prod_cost_total += adjustedProdCost;
@@ -132,12 +132,14 @@ export function collectCosts(node, categoryMap, workcenterMap, byproductCategory
         }
     }
 
-    // Process components
+    // Process components — use raw bom_cost/prod_cost from server as-is.
+    // Sub-BOM nodes already have their own byproduct cost_share applied
+    // server-side, so no additional scaling is needed here.
     if (node.components) {
         for (const comp of node.components) {
             if (comp.type === "bom" && comp.components) {
-                // Sub-BOM: recurse
-                collectCosts(comp, categoryMap, workcenterMap, byproductCategoryMap, effectiveCostShare);
+                // Sub-BOM: recurse without any cost_share factor
+                collectCosts(comp, categoryMap, workcenterMap, byproductCategoryMap);
             } else {
                 // Leaf component: add to category -> product -> usages
                 const catId = comp.categ_id || 0;
@@ -154,8 +156,8 @@ export function collectCosts(node, categoryMap, workcenterMap, byproductCategory
                         ],
                     };
                 }
-                const adjustedCost = (comp.bom_cost || 0) * effectiveCostShare;
-                const adjustedProdCost = (comp.prod_cost || 0) * effectiveCostShare;
+                const adjustedCost = comp.bom_cost || 0;
+                const adjustedProdCost = comp.prod_cost || 0;
                 const cat = categoryMap[catId];
                 cat.total += adjustedCost;
                 cat.prod_cost_total += adjustedProdCost;
@@ -388,10 +390,16 @@ export function computeCostSummary(data, secondaryCurrency) {
     const totalDuration = workcenters.reduce((s, w) => s + w.total_duration, 0);
     const totalByproducts = byproductCategories.reduce((s, c) => s + c.total, 0);
     const totalByproductsProdCost = byproductCategories.reduce((s, c) => s + c.prod_cost_total, 0);
-    // Byproducts reduce the net BOM cost (their bom_cost is allocated away
-    // from the main product via cost_share).
-    const totalBom = totalComponents + totalOperations - totalByproducts;
-    const totalProd = totalProdCost + totalOperations;
+    // Gross: components + operations before byproduct cost_share deduction.
+    const grossBom = totalComponents + totalOperations;
+    // Net: gross minus the cost_share portion allocated to byproducts.
+    // Mirrors native Odoo data.bom_cost (= grossBom × main product cost_share).
+    const netBom = grossBom - totalByproducts;
+    // Native Odoo Product Cost column = product.standard_price × quantity of the
+    // FINISHED product being manufactured (data.prod_cost from server).
+    // This intentionally differs from the body section subtotals, which show
+    // the bottom-up sum of component prod_costs for per-category analysis.
+    const rootProdCost = data.prod_cost || 0;
 
     enrichCategoryTree(categories, rate, totalComponents);
     // bom_cost-based % for byproducts (native: 0 when cost_share=0)
@@ -426,15 +434,22 @@ export function computeCostSummary(data, secondaryCurrency) {
             byproducts_usd: rate ? totalByproducts * rate : false,
             byproducts_prod_cost: totalByproductsProdCost,
             byproducts_prod_cost_usd: rate ? totalByproductsProdCost * rate : false,
-            total: totalBom,
-            total_usd: rate ? totalBom * rate : false,
-            total_prod: totalProd,
-            total_prod_usd: rate ? totalProd * rate : false,
-            // Net product cost = total catalogue cost of inputs minus recoverable
-            // value of all byproducts at their standard_price.  Can be negative
-            // when byproducts are worth more than the components (valid scenario).
-            net_prod: totalProd - totalByproductsProdCost,
-            net_prod_usd: rate ? (totalProd - totalByproductsProdCost) * rate : false,
+            // Row 1 — gross totals (before byproduct recovery)
+            total: grossBom,
+            total_usd: rate ? grossBom * rate : false,
+            // Product Cost = standard_price of the finished product (native Odoo semantics).
+            // NOTE: this does NOT equal the sum of the body section subtotals, which
+            // show the bottom-up component prod_costs — same intentional asymmetry as native.
+            total_prod: rootProdCost,
+            total_prod_usd: rate ? rootProdCost * rate : false,
+            // Row 3 — net totals (after byproduct recovery)
+            // net_bom mirrors native Odoo data.bom_cost exactly.
+            net_bom: netBom,
+            net_bom_usd: rate ? netBom * rate : false,
+            // net_prod: standard_price of finished product minus byproduct standard prices.
+            // Can be negative when byproducts are worth more than the finished product price.
+            net_prod: rootProdCost - totalByproductsProdCost,
+            net_prod_usd: rate ? (rootProdCost - totalByproductsProdCost) * rate : false,
         },
         currency_id: data.currency_id,
     };

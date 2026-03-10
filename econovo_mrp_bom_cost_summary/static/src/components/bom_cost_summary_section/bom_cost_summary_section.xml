@@ -675,8 +675,12 @@
                     <td t-if="showAvailabilities"/>
                     <td t-if="showLeadTimes"/>
                     <td t-if="showLeadTimes"/>
-                    <td t-if="showCosts" class="text-end text-muted">&#8212;</td>
-                    <td t-if="showCostsUsd" class="text-end text-muted">&#8212;</td>
+                    <td t-if="showCosts" class="text-end">
+                        <strong class="text-success" t-esc="fmtMoney(data.totals.byproducts)"/>
+                    </td>
+                    <td t-if="showCostsUsd" class="text-end">
+                        <strong class="text-success" t-esc="fmtUsd(data.totals.byproducts_usd)"/>
+                    </td>
                     <td t-if="showCosts" class="text-end">
                         <strong class="text-success" t-esc="fmtMoney(data.totals.byproducts_prod_cost)"/>
                     </td>
@@ -699,8 +703,12 @@
                     <td t-if="showAvailabilities"/>
                     <td t-if="showLeadTimes"/>
                     <td t-if="showLeadTimes"/>
-                    <td t-if="showCosts" class="text-end text-muted">&#8212;</td>
-                    <td t-if="showCostsUsd" class="text-end text-muted">&#8212;</td>
+                    <td t-if="showCosts" class="text-end">
+                        <strong t-esc="fmtMoney(data.totals.net_bom)"/>
+                    </td>
+                    <td t-if="showCostsUsd" class="text-end">
+                        <strong t-esc="fmtUsd(data.totals.net_bom_usd)"/>
+                    </td>
                     <td t-if="showCosts" class="text-end">
                         <strong t-esc="fmtMoney(data.totals.net_prod)"/>
                     </td>

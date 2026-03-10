@@ -35,26 +35,21 @@ import { BomCostSummaryView } from "@econovo_mrp_bom_cost_summary/views/bom_cost
  *
  *   directMap[catId][prodId][parentProdId] = { bom: <total>, prod: <total> }
  *
- * ``effectiveCostShare`` propagates the parent cost_share downward when
- * descending into sub-BOM nodes.
+ * Raw server values are used without cost_share scaling – same rationale
+ * as the base ``collectCosts``: the server already applies cost_share at
+ * sub-BOM level; we rely on the explicit byproducts subtraction in
+ * ``augmentWithDirectUsd`` for the top-level adjustment.
  *
- * @param {Object} node              Raw BOM node (root or sub-BOM component).
- * @param {Object} directMap         Accumulator dict (mutated in place).
- * @param {number} [effectiveCostShare=1.0]  Cumulative cost-share factor.
+ * @param {Object} node       Raw BOM node (root or sub-BOM component).
+ * @param {Object} directMap  Accumulator dict (mutated in place).
  */
-function collectDirectUsd(node, directMap, effectiveCostShare = 1.0) {
+function collectDirectUsd(node, directMap) {
     if (!node.components) return;
-
-    const nodeCostShare =
-        node.cost_share !== undefined && node.cost_share !== null
-            ? node.cost_share
-            : 1.0;
-    const eff = effectiveCostShare * nodeCostShare;
 
     for (const comp of node.components) {
         if (comp.type === "bom" && comp.components) {
-            // Sub-BOM: descend further, passing the accumulated cost-share.
-            collectDirectUsd(comp, directMap, eff);
+            // Sub-BOM: descend without any cost-share scaling.
+            collectDirectUsd(comp, directMap);
         } else {
             // Leaf component: record its direct USD contribution.
             const catId = comp.categ_id || 0;
@@ -67,9 +62,9 @@ function collectDirectUsd(node, directMap, effectiveCostShare = 1.0) {
                 directMap[catId][prodId][parentProdId] = { bom: 0, prod: 0 };
             }
             directMap[catId][prodId][parentProdId].bom +=
-                (comp.bom_cost_usd_direct || 0) * eff;
+                comp.bom_cost_usd_direct || 0;
             directMap[catId][prodId][parentProdId].prod +=
-                (comp.prod_cost_usd_direct || 0) * eff;
+                comp.prod_cost_usd_direct || 0;
         }
     }
 }
@@ -134,14 +129,13 @@ function injectAndBubbleDirectUsd(nodes, directMap) {
  *
  *   byproductDirectMap[catId][prodId][parentProdId] = { bom, prod }
  *
- * The ``effectiveCostShare`` factor is propagated when descending into
- * sub-BOM components (same mechanics as ``collectDirectUsd``).
+ * Raw server values are used without cost_share scaling – same rationale
+ * as the base ``collectCosts``.
  *
  * @param {Object} node                Raw BOM node.
  * @param {Object} byproductDirectMap  Accumulator dict (mutated in place).
- * @param {number} [effectiveCostShare=1.0]
  */
-function collectDirectUsdByproducts(node, byproductDirectMap, effectiveCostShare = 1.0) {
+function collectDirectUsdByproducts(node, byproductDirectMap) {
     if (node.byproducts) {
         for (const bp of node.byproducts) {
             const catId = bp.categ_id || 0;
@@ -157,21 +151,16 @@ function collectDirectUsdByproducts(node, byproductDirectMap, effectiveCostShare
                 byproductDirectMap[catId][prodId][parentProdId] = { bom: 0, prod: 0 };
             }
             byproductDirectMap[catId][prodId][parentProdId].bom +=
-                (bp.bom_cost_usd_direct || 0) * effectiveCostShare;
+                bp.bom_cost_usd_direct || 0;
             byproductDirectMap[catId][prodId][parentProdId].prod +=
-                (bp.prod_cost_usd_direct || 0) * effectiveCostShare;
+                bp.prod_cost_usd_direct || 0;
         }
     }
     // Recurse into sub-BOM components to collect THEIR byproducts too.
     if (!node.components) return;
-    const nodeCostShare =
-        node.cost_share !== undefined && node.cost_share !== null
-            ? node.cost_share
-            : 1.0;
-    const eff = effectiveCostShare * nodeCostShare;
     for (const comp of node.components) {
         if (comp.type === 'bom' && comp.components) {
-            collectDirectUsdByproducts(comp, byproductDirectMap, eff);
+            collectDirectUsdByproducts(comp, byproductDirectMap);
         }
     }
 }
