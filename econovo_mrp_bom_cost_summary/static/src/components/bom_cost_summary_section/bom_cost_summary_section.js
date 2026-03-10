@@ -27,6 +27,16 @@ export class BomCostSummarySection extends Component {
             }
         };
         initCategoryFold(this.props.data.categories);
+        const initByproductCategoryFold = (nodes) => {
+            for (const node of nodes) {
+                foldState[`bpcat_${node.id}`] = true;
+                for (const prod of node.products) {
+                    foldState[`bpprod_${node.id}_${prod.product_id}`] = true;
+                }
+                initByproductCategoryFold(node.children);
+            }
+        };
+        initByproductCategoryFold(this.props.data.byproductCategories || []);
         for (const wc of this.props.data.workcenters) {
             foldState[`wc_${wc.id}`] = true;
         }
@@ -48,6 +58,16 @@ export class BomCostSummarySection extends Component {
                     }
                 };
                 collectKeys(nextProps.data.categories);
+                const collectByproductKeys = (nodes) => {
+                    for (const node of nodes) {
+                        newKeys.add(`bpcat_${node.id}`);
+                        for (const prod of node.products) {
+                            newKeys.add(`bpprod_${node.id}_${prod.product_id}`);
+                        }
+                        collectByproductKeys(node.children);
+                    }
+                };
+                collectByproductKeys(nextProps.data.byproductCategories || []);
                 for (const wc of nextProps.data.workcenters) {
                     newKeys.add(`wc_${wc.id}`);
                 }
@@ -100,6 +120,16 @@ export class BomCostSummarySection extends Component {
 
     toggleWorkcenter(wcId) {
         const key = `wc_${wcId}`;
+        this.state[key] = !this.state[key];
+    }
+
+    toggleByproductCategory(categId) {
+        const key = `bpcat_${categId}`;
+        this.state[key] = !this.state[key];
+    }
+
+    toggleByproductProduct(categId, productId) {
+        const key = `bpprod_${categId}_${productId}`;
         this.state[key] = !this.state[key];
     }
 
@@ -252,12 +282,63 @@ export class BomCostSummarySection extends Component {
         return rows;
     }
 
+    /**
+     * Returns a flat ordered list of rows for the byproduct category/product/
+     * usage section, mirroring flatCategoryRows but for byproductCategories.
+     *
+     * @returns {Array}
+     */
+    get flatByproductCategoryRows() {
+        const rows = [];
+        const flatten = (nodes) => {
+            for (const node of nodes) {
+                rows.push({ type: 'category', node, depth: node.depth,
+                    rowKey: `bpcat_${node.id}` });
+                if (!this.isByproductCategoryFolded(node.id)) {
+                    flatten(node.children);
+                    for (const prod of node.products) {
+                        rows.push({ type: 'product', node, prod, depth: node.depth + 1,
+                            rowKey: `bpprod_${node.id}_${prod.product_id}` });
+                        if (!this.isByproductProductFolded(node.id, prod.product_id)) {
+                            for (const usage of prod.usages) {
+                                rows.push({ type: 'usage', node, prod, usage,
+                                    depth: node.depth + 1,
+                                    rowKey: `bpusage_${node.id}_${prod.product_id}_${usage.parent_product_id}` });
+                            }
+                        }
+                    }
+                }
+            }
+        };
+        flatten(this.data.byproductCategories || []);
+        return rows;
+    }
+
     isProductFolded(categId, productId) {
         return this.state[`prod_${categId}_${productId}`];
     }
 
     isWorkcenterFolded(wcId) {
         return this.state[`wc_${wcId}`];
+    }
+
+    isByproductCategoryFolded(categId) {
+        return this.state[`bpcat_${categId}`];
+    }
+
+    isByproductProductFolded(categId, productId) {
+        return this.state[`bpprod_${categId}_${productId}`];
+    }
+
+    /**
+     * Returns the number of direct children nested inside a byproduct
+     * category node (sub-categories + products).
+     *
+     * @param {Object} node - Byproduct category tree node
+     * @returns {number}
+     */
+    byproductCategoryCount(node) {
+        return node.children.length + node.products.length;
     }
 
     /**
@@ -514,21 +595,71 @@ export class BomCostSummarySection extends Component {
                     T("Duration in minutes; rate from work center settings"),
                 ],
             },
+            "pct_byproducts": {
+                title: T("% LdM / % Val. (subproductos)"),
+                lines: [
+                    T("% LdM: BOM Cost de fila \u00f7 Subtotal BOM Cost de subproductos \u00d7 100"),
+                    T("  0% cuando cost_share = 0% en la l\u00ednea de subproducto de la LdM"),
+                    T("% Val.: Costo Producto de fila \u00f7 Subtotal Costo Producto de subproductos \u00d7 100"),
+                    T("  Distribuci\u00f3n del valor recuperable de cat\u00e1logo; siempre significativo"),
+                ],
+            },
+            "bom_cost_byproducts": {
+                title: T("Byproduct BOM Cost (cost_share allocation)"),
+                lines: [
+                    T("= BOM Total \u00d7 byproduct cost_share%"),
+                    T("This amount is subtracted from the Grand Total BOM Cost"),
+                    T("Zero when cost_share = 0% on the BOM byproduct line"),
+                ],
+            },
+            "prod_cost_byproducts": {
+                title: T("Byproduct recoverable value"),
+                lines: [
+                    T("= qty \u00d7 product.standard_price of the byproduct"),
+                    T("The catalogue value recovered by selling or reusing it"),
+                    T("Independent of cost_share \u2014 always reflects market value"),
+                ],
+            },
+            "subtotal_byproducts_cost": {
+                title: T("TOTAL Byproducts BOM Cost (cost_share allocation)"),
+                lines: [
+                    T("= \u03a3 (BOM Total \u00d7 byproduct cost_share%) across all BOM levels"),
+                    T("Subtracted from Grand Total BOM Cost"),
+                    T("Zero when all byproducts have cost_share = 0%"),
+                ],
+            },
+            "subtotal_byproducts_prod_cost": {
+                title: T("TOTAL Byproducts recoverable value"),
+                lines: [
+                    T("= \u03a3 (qty \u00d7 standard_price) for all byproducts"),
+                    T("Used to compute the Net Product Cost row below"),
+                ],
+            },
+            "net_prod": {
+                title: T("Net Product Cost after byproduct recovery"),
+                lines: [
+                    T("= Total Product Cost \u2212 Total Byproducts recoverable value"),
+                    T("What the finished product actually costs after recovering"),
+                    T("the catalogue value of all byproducts produced"),
+                    T("Can be negative when byproducts are worth more than inputs"),
+                ],
+            },
             "grand_total": {
                 title: T("Grand Total BOM Cost"),
                 lines: [
-                    T("= Subtotal Components + Subtotal Operations"),
+                    T("= Subtotal Components + Subtotal Operations \u2212 Subtotal Byproducts"),
                     T("Components: \u03a3 (qty \u00d7 unit_cost \u00d7 production_factor)"),
                     T("Operations: \u03a3 ((duration \u00f7 60) \u00d7 wc_cost/hour)"),
+                    T("Byproducts: cost recovered via cost_share allocation"),
                     T("Scaled to the BOM production quantity"),
                 ],
             },
             "grand_total_prod": {
                 title: T("Grand Total Product Cost"),
                 lines: [
-                    T("= \u03a3 (qty \u00d7 product.standard_price)"),
-                    T("Catalogue standard cost of all components"),
-                    T("Does NOT include operations or overhead"),
+                    T("= \u03a3 (qty \u00d7 product.standard_price) + Subtotal Operations"),
+                    T("Catalogue standard cost of all components plus operation costs"),
+                    T("See \u2018Net Product Cost\u2019 row for the value after byproduct recovery"),
                 ],
             },
             "duration": {

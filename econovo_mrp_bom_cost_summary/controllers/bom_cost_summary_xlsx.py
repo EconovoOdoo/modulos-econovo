@@ -31,6 +31,12 @@ _C = {
     "op":        "F4F9F5",  # operation rows
     "subtotal":  "FFF2CC",  # subtotal rows
     "total":     "FFE082",  # grand total row
+    # Byproduct section colours (green tones — value recovered from the process)
+    "bp_cat_0":    "C6E0B4",  # byproduct category depth 0
+    "bp_cat_1":    "D9EAD3",  # byproduct category depth 1
+    "bp_cat_deep": "EAF4E7",  # byproduct category depth 2+
+    "bp_product":  "F3FAF1",  # byproduct product rows
+    "bp_subtotal": "A9D18E",  # byproduct section subtotal row
 }
 
 
@@ -282,6 +288,120 @@ def _write_category_rows(ws, row, node, ci, cur, usd,
                 elif detail:
                     route = detail
                 vals[ci["Route"] - 1] = route
+            _write_row(ws, row, vals, _C["usage"], outline_level=outline_base + 2)
+            row += 1
+
+    return row
+
+
+# ── Recursive byproduct category writer (Sheet 1) ─────────────────────────────
+
+def _write_byproduct_category_rows(ws, row, node, ci, cur, usd,
+                                   has_usd, show_costs, outline_base):
+    """
+    Recursively write byproduct category → product → usage rows.
+
+    Byproducts show two percentages stacked in the ``%`` column:
+      * BOM-cost-based % (percentage) — may be 0 when cost_share = 0%
+      * Prod-cost-based % (prod_cost_percentage) — always meaningful
+
+    BOM Cost column  = amount allocated away from main product (bom_cost).
+    Product Cost col = recoverable standard catalogue value (prod_cost).
+    """
+    col_count = len(ci)
+    depth = node.get("depth", 0)
+    cat_colors = [_C["bp_cat_0"], _C["bp_cat_1"], _C["bp_cat_deep"]]
+    cat_color = cat_colors[min(depth, len(cat_colors) - 1)]
+    indent = "    " * depth
+
+    # Category row
+    pct_bom = node.get("percentage", 0)
+    pct_val = node.get("prod_cost_percentage", 0)
+    pct_display = "%.1f%% / %.1f%%" % (pct_bom, pct_val)
+    vals = [""] * col_count
+    vals[ci["Level"] - 1] = depth
+    vals[ci["Type"] - 1] = "BP Category"
+    vals[ci["Name"] - 1] = indent + node["name"]
+    vals[ci["%"] - 1] = pct_display
+    if show_costs:
+        vals[ci["BOM Cost (%s)" % cur] - 1] = _flt(node.get("total"))
+        if has_usd and "BOM Cost (%s)" % usd in ci:
+            vals[ci["BOM Cost (%s)" % usd] - 1] = _flt(node.get("total_usd"))
+        if "Product Cost (%s)" % cur in ci:
+            vals[ci["Product Cost (%s)" % cur] - 1] = _flt(node.get("prod_cost_total"))
+        if has_usd and "Product Cost (%s)" % usd in ci:
+            vals[ci["Product Cost (%s)" % usd] - 1] = _flt(node.get("prod_cost_total_usd"))
+    _write_row(ws, row, vals, cat_color, bold=True, outline_level=outline_base)
+    row += 1
+
+    # Recurse into child categories
+    for child in node.get("children", []):
+        row = _write_byproduct_category_rows(
+            ws, row, child, ci, cur, usd,
+            has_usd, show_costs,
+            outline_base=outline_base + 1,
+        )
+
+    # Byproduct products under this category
+    for prod in node.get("products", []):
+        usages = prod.get("usages", [])
+
+        uoms = {u.get("uom_name", "") for u in usages if u.get("uom_name")}
+        if len(uoms) == 1:
+            total_qty = _flt(sum(u.get("quantity", 0) for u in usages))
+            uom_display = list(uoms)[0]
+        elif len(uoms) > 1:
+            total_qty = ""
+            uom_display = "—"
+        else:
+            total_qty = ""
+            uom_display = ""
+
+        prod_pct_bom = prod.get("percentage", 0)
+        prod_pct_val = prod.get("prod_cost_percentage", 0)
+        prod_pct_display = "%.1f%% / %.1f%%" % (prod_pct_bom, prod_pct_val)
+        prod_indent = "    " * (depth + 1)
+        vals = [""] * col_count
+        vals[ci["Level"] - 1] = depth + 1
+        vals[ci["Type"] - 1] = "BP Product"
+        vals[ci["Name"] - 1] = prod_indent + prod["name"]
+        vals[ci["Qty / Duration"] - 1] = total_qty
+        vals[ci["UoM"] - 1] = uom_display
+        vals[ci["%"] - 1] = prod_pct_display
+        if show_costs:
+            vals[ci["BOM Cost (%s)" % cur] - 1] = _flt(prod.get("total"))
+            if has_usd and "BOM Cost (%s)" % usd in ci:
+                vals[ci["BOM Cost (%s)" % usd] - 1] = _flt(prod.get("total_usd"))
+            if "Product Cost (%s)" % cur in ci:
+                vals[ci["Product Cost (%s)" % cur] - 1] = _flt(prod.get("prod_cost_total"))
+            if has_usd and "Product Cost (%s)" % usd in ci:
+                vals[ci["Product Cost (%s)" % usd] - 1] = _flt(prod.get("prod_cost_total_usd"))
+        _write_row(ws, row, vals, _C["bp_product"], bold=False,
+                   outline_level=outline_base + 1)
+        row += 1
+
+        # Usage rows
+        for usage in usages:
+            usage_pct_bom = usage.get("percentage", 0)
+            usage_pct_val = usage.get("prod_cost_percentage", 0)
+            usage_pct_display = "%.1f%% / %.1f%%" % (usage_pct_bom, usage_pct_val)
+            usage_indent = "    " * (depth + 2)
+            parent_name = _str(usage.get("parent_name")) or "—"
+            vals = [""] * col_count
+            vals[ci["Level"] - 1] = depth + 2
+            vals[ci["Type"] - 1] = "BP Usage"
+            vals[ci["Name"] - 1] = usage_indent + parent_name
+            vals[ci["Qty / Duration"] - 1] = _flt(usage.get("quantity"))
+            vals[ci["UoM"] - 1] = _str(usage.get("uom_name"))
+            vals[ci["%"] - 1] = usage_pct_display
+            if show_costs:
+                vals[ci["BOM Cost (%s)" % cur] - 1] = _flt(usage.get("total"))
+                if has_usd and "BOM Cost (%s)" % usd in ci:
+                    vals[ci["BOM Cost (%s)" % usd] - 1] = _flt(usage.get("total_usd"))
+                if "Product Cost (%s)" % cur in ci:
+                    vals[ci["Product Cost (%s)" % cur] - 1] = _flt(usage.get("prod_cost"))
+                if has_usd and "Product Cost (%s)" % usd in ci:
+                    vals[ci["Product Cost (%s)" % usd] - 1] = _flt(usage.get("prod_cost_usd"))
             _write_row(ws, row, vals, _C["usage"], outline_level=outline_base + 2)
             row += 1
 
@@ -570,10 +690,65 @@ def _build_summary_sheet(ws, cs, cur, usd,
             )
         row += 1  # blank separator
 
+    # ── Byproducts by Category section ──────────────────────────────────────
+    bp_categories = cs.get("byproduct_categories", [])
+    if bp_categories:
+        _write_section_header(ws, row, "▶  Byproducts by Category", col_count)
+        row += 1
+
+        for bp_node in bp_categories:
+            row = _write_byproduct_category_rows(
+                ws, row, bp_node, ci, cur, usd,
+                has_usd, show_costs,
+                outline_base=0,
+            )
+
+        # Subtotal Byproducts — written directly to use the green colour.
+        _sub_bp_row = row
+        sub_vals = [""] * col_count
+        sub_vals[ci["Type"] - 1] = "Subtotal"
+        sub_vals[ci["Name"] - 1] = "Subtotal Byproducts"
+        if show_costs:
+            sub_vals[ci["BOM Cost (%s)" % cur] - 1] = _flt(
+                cs["totals"]["byproducts"]
+            )
+            if has_usd and "BOM Cost (%s)" % usd in ci:
+                sub_vals[ci["BOM Cost (%s)" % usd] - 1] = _flt(
+                    cs["totals"].get("byproducts_usd")
+                )
+            if "Product Cost (%s)" % cur in ci:
+                sub_vals[ci["Product Cost (%s)" % cur] - 1] = _flt(
+                    cs["totals"].get("byproducts_prod_cost")
+                )
+            if has_usd and "Product Cost (%s)" % usd in ci:
+                sub_vals[ci["Product Cost (%s)" % usd] - 1] = _flt(
+                    cs["totals"].get("byproducts_prod_cost_usd")
+                )
+        _write_row(ws, _sub_bp_row, sub_vals, _C["bp_subtotal"], bold=True)
+        if show_costs and "BOM Cost (%s)" % cur in ci:
+            _cell_comment(
+                ws, _sub_bp_row, ci["BOM Cost (%s)" % cur],
+                "SUBTOTAL BYPRODUCTS — BOM Cost (Allocated Away)\n\n"
+                "= Σ (qty_k × std_cost_k × cost_share_factor)\n"
+                "  for all byproducts.\n\n"
+                "Represents the portion of BOM cost allocated to byproducts\n"
+                "via cost_share. May be 0 when cost_share = 0%.",
+            )
+        if show_costs and "Product Cost (%s)" % cur in ci:
+            _cell_comment(
+                ws, _sub_bp_row, ci["Product Cost (%s)" % cur],
+                "SUBTOTAL BYPRODUCTS — Recoverable Value\n\n"
+                "= Σ (qty_k × product.standard_price)  for all byproducts.\n\n"
+                "Catalogue value of co-products / recovered materials.\n"
+                "Always meaningful, independent of cost_share.",
+            )
+        row += 1  # blank separator
+
     # ── Grand Total ───────────────────────────────────────────────────────────
+    # Row 1: TOTAL BOM COST (Components + Operations − Byproducts)
     vals = [""] * col_count
     vals[ci["Type"] - 1] = "TOTAL"
-    vals[ci["Name"] - 1] = "Grand Total  (Components + Operations)"
+    vals[ci["Name"] - 1] = "Total BOM Cost  (Components + Operations \u2212 Byproducts)"
     if show_costs:
         vals[ci["BOM Cost (%s)" % cur] - 1] = _flt(cs["totals"]["total"])
         if has_usd and "BOM Cost (%s)" % usd in ci:
@@ -583,20 +758,91 @@ def _build_summary_sheet(ws, cs, cur, usd,
     if show_costs and "BOM Cost (%s)" % cur in ci:
         _cell_comment(
             ws, row, ci["BOM Cost (%s)" % cur],
-            "GRAND TOTAL BOM COST\n\n"
-            "= Subtotal Components + Subtotal Operations\n\n"
-            "Components: Σ (qty_i × std_cost_i × production_qty_factor)\n"
-            "Operations: Σ ((duration_j ÷ 60) × wc_cost_per_hour)\n\n"
-            "Scaled to the production quantity shown in the BOM header.\n"
-            "(Product Cost is excluded from this total — see\n"
-            " 'Subtotal Components > Product Cost' for that figure.)",
+            "TOTAL BOM COST\n\n"
+            "= Subtotal Components + Subtotal Operations \u2212 Subtotal Byproducts\n\n"
+            "Components: \u03a3 (qty_i \u00d7 std_cost_i \u00d7 production_qty_factor)\n"
+            "Operations: \u03a3 ((duration_j \u00f7 60) \u00d7 wc_cost_per_hour)\n"
+            "Byproducts: \u2212 \u03a3 (qty_k \u00d7 std_cost_k \u00d7 cost_share_k)\n\n"
+            "Scaled to the production quantity shown in the BOM header.",
         )
     total_row = row
     row += 1
 
+    # Row 2: TOTAL PRODUCT COST (gross, before byproduct recoverable deduction)
+    if show_costs and "Product Cost (%s)" % cur in ci:
+        vals = [""] * col_count
+        vals[ci["Type"] - 1] = "TOTAL"
+        vals[ci["Name"] - 1] = "Total Product Cost  (Components + Operations)"
+        vals[ci["Product Cost (%s)" % cur] - 1] = _flt(
+            cs["totals"].get("total_prod")
+        )
+        if has_usd and "Product Cost (%s)" % usd in ci:
+            vals[ci["Product Cost (%s)" % usd] - 1] = _flt(
+                cs["totals"].get("total_prod_usd")
+            )
+        _write_row(ws, row, vals, _C["total"], bold=True)
+        ws.row_dimensions[row].height = 15
+        _cell_comment(
+            ws, row, ci["Product Cost (%s)" % cur],
+            "TOTAL PRODUCT COST (Gross)\n\n"
+            "= Subtotal Components (Prod. Cost) + Subtotal Operations (BOM Cost)\n\n"
+            "Gross catalogue cost before deducting byproduct recoverable value.\n"
+            "Does not include the BOM cost_share allocation to byproducts.",
+        )
+        row += 1
+
+    # Rows 3 & 4: only when byproducts exist
+    if bp_categories and show_costs and "Product Cost (%s)" % cur in ci:
+        # Row 3: BYPRODUCTS RECOVERABLE VALUE
+        vals = [""] * col_count
+        vals[ci["Type"] - 1] = "TOTAL"
+        vals[ci["Name"] - 1] = "Byproducts Recoverable Value  (\u2212 from Product Cost)"
+        vals[ci["Product Cost (%s)" % cur] - 1] = _flt(
+            cs["totals"].get("byproducts_prod_cost")
+        )
+        if has_usd and "Product Cost (%s)" % usd in ci:
+            vals[ci["Product Cost (%s)" % usd] - 1] = _flt(
+                cs["totals"].get("byproducts_prod_cost_usd")
+            )
+        _write_row(ws, row, vals, _C["bp_subtotal"], bold=True)
+        ws.row_dimensions[row].height = 15
+        _cell_comment(
+            ws, row, ci["Product Cost (%s)" % cur],
+            "BYPRODUCTS RECOVERABLE VALUE\n\n"
+            "= \u03a3 (qty_k \u00d7 product.standard_price)  for all byproducts.\n\n"
+            "Catalogue value of recovered co-products, subtracted from\n"
+            "Total Product Cost to obtain Net Product Cost.",
+        )
+        row += 1
+
+        # Row 4: NET PRODUCT COST
+        vals = [""] * col_count
+        vals[ci["Type"] - 1] = "TOTAL"
+        vals[ci["Name"] - 1] = "Net Product Cost  (Total \u2212 Byproducts Recoverable)"
+        vals[ci["Product Cost (%s)" % cur] - 1] = _flt(
+            cs["totals"].get("net_prod")
+        )
+        if has_usd and "Product Cost (%s)" % usd in ci:
+            vals[ci["Product Cost (%s)" % usd] - 1] = _flt(
+                cs["totals"].get("net_prod_usd")
+            )
+        _write_row(ws, row, vals, _C["total"], bold=True)
+        ws.row_dimensions[row].height = 15
+        _cell_comment(
+            ws, row, ci["Product Cost (%s)" % cur],
+            "NET PRODUCT COST\n\n"
+            "= Total Product Cost \u2212 Byproducts Recoverable Value\n\n"
+            "Effective cost of the finished product after accounting for\n"
+            "the value recovered from byproducts / co-products.\n"
+            "Can be negative when co-product value exceeds input cost.",
+        )
+        row += 1
+
     # ── Auto-filter on header row ─────────────────────────────────────────────
+    # Use row - 1 so the filter covers all written rows including any
+    # additional grand-total rows added after the TOTAL BOM COST row.
     ws.auto_filter.ref = (
-        "A%d:%s%d" % (header_row, get_column_letter(col_count), total_row)
+        "A%d:%s%d" % (header_row, get_column_letter(col_count), row - 1)
     )
 
 

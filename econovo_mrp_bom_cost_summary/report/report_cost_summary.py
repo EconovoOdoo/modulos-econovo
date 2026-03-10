@@ -101,7 +101,11 @@ class ReportEconovoBomCostSummary(models.AbstractModel):
         """
         category_map = {}
         workcenter_map = {}
-        self._collect_costs(data, category_map, workcenter_map)
+        byproduct_category_map = {}
+        self._collect_costs(
+            data, category_map, workcenter_map,
+            byproduct_category_map=byproduct_category_map,
+        )
 
         rate = secondary_currency.get("rate", 0) if secondary_currency else 0
 
@@ -109,18 +113,30 @@ class ReportEconovoBomCostSummary(models.AbstractModel):
         workcenters = sorted(
             workcenter_map.values(), key=lambda w: w["total"], reverse=True
         )
+        byproduct_categories = self._build_category_tree(byproduct_category_map)
 
-        if not categories and not workcenters:
+        if not categories and not workcenters and not byproduct_categories:
             return False
 
         total_components = sum(c["total"] for c in categories)
         total_prod_cost = sum(c["prod_cost_total"] for c in categories)
         total_operations = sum(w["total"] for w in workcenters)
         total_duration = sum(w["total_duration"] for w in workcenters)
-        total_bom = total_components + total_operations
+        total_byproducts = sum(c["total"] for c in byproduct_categories)
+        total_byproducts_prod_cost = sum(
+            c["prod_cost_total"] for c in byproduct_categories
+        )
+        # Byproducts reduce the net BOM cost (their bom_cost is allocated away
+        # from the main product via cost_share).
+        total_bom = total_components + total_operations - total_byproducts
         total_prod = total_prod_cost + total_operations
+        net_prod = total_prod - total_byproducts_prod_cost
 
         self._enrich_category_tree(categories, rate, total_components)
+        # bom_cost-based % for byproducts (0 when cost_share=0).
+        self._enrich_category_tree(byproduct_categories, rate, total_byproducts)
+        # prod_cost-based % (always meaningful, independent of cost_share).
+        self._enrich_byproduct_prod_cost_pct(byproduct_categories, total_byproducts_prod_cost)
 
         for wc in workcenters:
             wc["percentage"] = (
@@ -138,6 +154,7 @@ class ReportEconovoBomCostSummary(models.AbstractModel):
         return {
             "categories": categories,
             "workcenters": workcenters,
+            "byproduct_categories": byproduct_categories,
             "totals": {
                 "components": total_components,
                 "components_usd": total_components * rate if rate else False,
@@ -146,21 +163,30 @@ class ReportEconovoBomCostSummary(models.AbstractModel):
                 "operations": total_operations,
                 "operations_usd": total_operations * rate if rate else False,
                 "operations_duration": total_duration,
+                "byproducts": total_byproducts,
+                "byproducts_usd": total_byproducts * rate if rate else False,
+                "byproducts_prod_cost": total_byproducts_prod_cost,
+                "byproducts_prod_cost_usd": (
+                    total_byproducts_prod_cost * rate if rate else False
+                ),
                 "total": total_bom,
                 "total_usd": total_bom * rate if rate else False,
                 "total_prod": total_prod,
                 "total_prod_usd": total_prod * rate if rate else False,
+                "net_prod": net_prod,
+                "net_prod_usd": net_prod * rate if rate else False,
             },
             "currency_id": data.get("currency_id"),
         }
 
     @api.model
     def _collect_costs(
-        self, node, category_map, workcenter_map, ancestor_cost_share=1.0
+        self, node, category_map, workcenter_map, ancestor_cost_share=1.0,
+        byproduct_category_map=None,
     ):
         """
-        Recursively walk the BOM tree collecting leaf component and operation
-        costs.  Mirrors ``collectCosts`` in bom_cost_summary_utils.js.
+        Recursively walk the BOM tree collecting leaf component, operation,
+        and byproduct costs.  Mirrors ``collectCosts`` in bom_cost_summary_utils.js.
         """
         parent_name = node.get("name", "")
         parent_product_id = node.get("product_id")
@@ -208,12 +234,79 @@ class ReportEconovoBomCostSummary(models.AbstractModel):
                 }
             )
 
+        # Process byproducts at this BOM level.
+        # Scaled only by ancestor_cost_share (not effective_cost_share) because
+        # the byproduct's own cost_share is already embedded in bp["bom_cost"].
+        if byproduct_category_map is not None:
+            for bp in node.get("byproducts", []):
+                cat_id = bp.get("categ_id") or 0
+                cat_name = bp.get("categ_name") or _("Uncategorized")
+                if cat_id not in byproduct_category_map:
+                    byproduct_category_map[cat_id] = {
+                        "id": cat_id,
+                        "name": cat_name,
+                        "total": 0.0,
+                        "prod_cost_total": 0.0,
+                        "products": {},
+                        "ancestors": bp.get("categ_ancestors")
+                        or [{"id": cat_id, "name": cat_name}],
+                    }
+                adjusted_cost = (
+                    (bp.get("bom_cost") or 0.0) * ancestor_cost_share
+                )
+                adjusted_prod_cost = (
+                    (bp.get("prod_cost") or 0.0) * ancestor_cost_share
+                )
+                cat = byproduct_category_map[cat_id]
+                cat["total"] += adjusted_cost
+                cat["prod_cost_total"] += adjusted_prod_cost
+
+                prod_key = bp.get("link_id") or bp.get("id")
+                if prod_key not in cat["products"]:
+                    cat["products"][prod_key] = {
+                        "product_id": prod_key,
+                        "name": bp.get("name", ""),
+                        "link_id": bp.get("link_id") or False,
+                        "link_model": bp.get("link_model", "product.product"),
+                        "total": 0.0,
+                        "prod_cost_total": 0.0,
+                        "usages": [],
+                    }
+                bp_product = cat["products"][prod_key]
+                bp_product["total"] += adjusted_cost
+                bp_product["prod_cost_total"] += adjusted_prod_cost
+
+                existing_usage = next(
+                    (
+                        u
+                        for u in bp_product["usages"]
+                        if u["parent_product_id"] == parent_product_id
+                    ),
+                    None,
+                )
+                if existing_usage:
+                    existing_usage["quantity"] += bp.get("quantity") or 0.0
+                    existing_usage["total"] += adjusted_cost
+                    existing_usage["prod_cost"] += adjusted_prod_cost
+                else:
+                    bp_product["usages"].append(
+                        {
+                            "parent_product_id": parent_product_id,
+                            "parent_name": parent_name,
+                            "quantity": bp.get("quantity") or 0.0,
+                            "uom_name": bp.get("uom_name", ""),
+                            "total": adjusted_cost,
+                            "prod_cost": adjusted_prod_cost,
+                        }
+                    )
+
         # Process components
         for comp in node.get("components", []):
             if comp.get("type") == "bom" and comp.get("components"):
                 # Sub-BOM: recurse
                 self._collect_costs(
-                    comp, category_map, workcenter_map, effective_cost_share
+                    comp, category_map, workcenter_map, effective_cost_share,
+                    byproduct_category_map=byproduct_category_map,
                 )
             else:
                 # Leaf component
@@ -362,6 +455,35 @@ class ReportEconovoBomCostSummary(models.AbstractModel):
 
         sort_tree(roots)
         return roots
+
+    @api.model
+    def _enrich_byproduct_prod_cost_pct(self, nodes, total_prod_cost):
+        """
+        Recursively add prod_cost_percentage to every node, product and usage
+        in a byproduct category tree.  This is the second % column shown in
+        the byproducts section: prod_cost_total / total * 100.
+        Always meaningful, even when bom_cost = 0 (cost_share = 0%).
+        Python port of ``enrichByproductProdCostPct`` in bom_cost_summary_utils.js.
+        """
+        for node in nodes:
+            node["prod_cost_percentage"] = (
+                node["prod_cost_total"] / total_prod_cost * 100
+                if total_prod_cost
+                else 0.0
+            )
+            for prod in node.get("products", []):
+                prod["prod_cost_percentage"] = (
+                    prod["prod_cost_total"] / total_prod_cost * 100
+                    if total_prod_cost
+                    else 0.0
+                )
+                for usage in prod.get("usages", []):
+                    usage["prod_cost_percentage"] = (
+                        usage["prod_cost"] / total_prod_cost * 100
+                        if total_prod_cost
+                        else 0.0
+                    )
+            self._enrich_byproduct_prod_cost_pct(node.get("children", []), total_prod_cost)
 
     @api.model
     def _enrich_category_tree(self, nodes, rate, total_components):

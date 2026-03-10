@@ -109,3 +109,18 @@ class ReportBomStructure(models.AbstractModel):
                 op['workcenter_name'] = bom_operations[i].workcenter_id.name
                 op['operation_name'] = bom_operations[i].name
         return operations
+
+    @api.model
+    def _get_byproducts_lines(self, product, bom, bom_quantity, level, total, index):
+        """Add product category info to byproduct lines for cost grouping."""
+        byproducts, byproduct_cost_portion = super()._get_byproducts_lines(
+            product, bom, bom_quantity, level, total, index,
+        )
+        for bp in byproducts:
+            categ = (
+                self.env['mrp.bom.byproduct'].browse(bp['id']).product_id.categ_id
+            )
+            bp['categ_id'] = categ.id
+            bp['categ_name'] = categ.name or _("Uncategorized")
+            bp['categ_ancestors'] = self._get_categ_ancestors(categ)
+        return byproducts, byproduct_cost_portion

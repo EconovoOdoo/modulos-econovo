@@ -9,15 +9,16 @@ import { _t } from "@web/core/l10n/translation";
 // ---------------------------------------------------------------------------
 
 /**
- * Recursively walks the BOM tree collecting leaf component and
- * operation costs, tracking parent product for traceability.
+ * Recursively walks the BOM tree collecting leaf component,
+ * operation, and byproduct costs, tracking parent product for traceability.
  *
  * @param {Object} node - Current BOM tree node
- * @param {Object} categoryMap - Accumulator for category groupings
+ * @param {Object} categoryMap - Accumulator for component category groupings
  * @param {Object} workcenterMap - Accumulator for workcenter groupings
+ * @param {Object} byproductCategoryMap - Accumulator for byproduct category groupings
  * @param {number} [ancestorCostShare=1.0] - Accumulated cost_share factor
  */
-export function collectCosts(node, categoryMap, workcenterMap, ancestorCostShare = 1.0) {
+export function collectCosts(node, categoryMap, workcenterMap, byproductCategoryMap, ancestorCostShare = 1.0) {
     const parentName = node.name;
     const parentProductId = node.product_id;
 
@@ -68,12 +69,75 @@ export function collectCosts(node, categoryMap, workcenterMap, ancestorCostShare
         }
     }
 
+    // Collect byproducts at this BOM level.
+    // bp.bom_cost is already expressed in this node's cost units; scale only
+    // by ancestorCostShare (not effectiveCostShare) since the byproduct's own
+    // cost_share is already embedded inside bp.bom_cost.
+    if (node.byproducts) {
+        for (const bp of node.byproducts) {
+            const catId = bp.categ_id || 0;
+            const catName = bp.categ_name || _t("Uncategorized");
+            if (!byproductCategoryMap[catId]) {
+                byproductCategoryMap[catId] = {
+                    id: catId,
+                    name: catName,
+                    total: 0,
+                    prod_cost_total: 0,
+                    products: {},
+                    ancestors: bp.categ_ancestors || [
+                        { id: catId, name: catName },
+                    ],
+                };
+            }
+            const adjustedCost = (bp.bom_cost || 0) * ancestorCostShare;
+            const adjustedProdCost = (bp.prod_cost || 0) * ancestorCostShare;
+            const cat = byproductCategoryMap[catId];
+            cat.total += adjustedCost;
+            cat.prod_cost_total += adjustedProdCost;
+
+            // Group by product (link_id = product.product.id or template.id)
+            const prodKey = bp.link_id || bp.id;
+            if (!cat.products[prodKey]) {
+                cat.products[prodKey] = {
+                    product_id: prodKey,
+                    name: bp.name,
+                    link_id: bp.link_id || false,
+                    link_model: bp.link_model || "product.product",
+                    total: 0,
+                    prod_cost_total: 0,
+                    usages: [],
+                };
+            }
+            const bpProduct = cat.products[prodKey];
+            bpProduct.total += adjustedCost;
+            bpProduct.prod_cost_total += adjustedProdCost;
+
+            const existingUsage = bpProduct.usages.find(
+                (u) => u.parent_product_id === parentProductId
+            );
+            if (existingUsage) {
+                existingUsage.quantity += bp.quantity || 0;
+                existingUsage.total += adjustedCost;
+                existingUsage.prod_cost += adjustedProdCost;
+            } else {
+                bpProduct.usages.push({
+                    parent_product_id: parentProductId,
+                    parent_name: parentName,
+                    quantity: bp.quantity || 0,
+                    uom_name: bp.uom_name,
+                    total: adjustedCost,
+                    prod_cost: adjustedProdCost,
+                });
+            }
+        }
+    }
+
     // Process components
     if (node.components) {
         for (const comp of node.components) {
             if (comp.type === "bom" && comp.components) {
                 // Sub-BOM: recurse
-                collectCosts(comp, categoryMap, workcenterMap, effectiveCostShare);
+                collectCosts(comp, categoryMap, workcenterMap, byproductCategoryMap, effectiveCostShare);
             } else {
                 // Leaf component: add to category -> product -> usages
                 const catId = comp.categ_id || 0;
@@ -239,7 +303,7 @@ export function buildCategoryTree(categoryMap) {
  *
  * @param {Array} nodes - Array of tree nodes at current level
  * @param {number} rate - USD conversion rate (0 if no secondary currency)
- * @param {number} totalComponents - Grand total of all component costs
+ * @param {number} totalComponents - Grand total of all component costs (bom_cost basis)
  */
 export function enrichCategoryTree(nodes, rate, totalComponents) {
     for (const node of nodes) {
@@ -269,7 +333,31 @@ export function enrichCategoryTree(nodes, rate, totalComponents) {
 }
 
 /**
- * Orchestrates the three lower-level functions to produce the full
+ * Adds prod_cost_percentage to every node, product and usage in a byproduct
+ * category tree.  This is the second % shown in the byproducts section:
+ * prod_cost_total / totalByproductsProdCost * 100.
+ * Always meaningful, even when bom_cost = 0 (cost_share = 0%).
+ *
+ * @param {Array} nodes - Byproduct category tree nodes
+ * @param {number} totalProdCost - Grand total of byproducts prod_cost (denominator)
+ */
+export function enrichByproductProdCostPct(nodes, totalProdCost) {
+    for (const node of nodes) {
+        node.prod_cost_percentage = totalProdCost
+            ? (node.prod_cost_total / totalProdCost) * 100 : 0;
+        for (const prod of node.products) {
+            prod.prod_cost_percentage = totalProdCost
+                ? (prod.prod_cost_total / totalProdCost) * 100 : 0;
+            for (const usage of prod.usages) {
+                usage.prod_cost_percentage = totalProdCost
+                    ? (usage.prod_cost / totalProdCost) * 100 : 0;
+            }
+        }
+        enrichByproductProdCostPct(node.children, totalProdCost);
+    }
+}
+
+/** * Orchestrates the three lower-level functions to produce the full
  * costSummary object consumed by BomCostSummarySection.
  *
  * @param {Object} data - The BOM data tree (state.bomData / bomData["lines"])
@@ -279,7 +367,8 @@ export function enrichCategoryTree(nodes, rate, totalComponents) {
 export function computeCostSummary(data, secondaryCurrency) {
     const categoryMap = {};
     const workcenterMap = {};
-    collectCosts(data, categoryMap, workcenterMap);
+    const byproductCategoryMap = {};
+    collectCosts(data, categoryMap, workcenterMap, byproductCategoryMap);
 
     const rate = secondaryCurrency ? secondaryCurrency.rate : 0;
 
@@ -287,8 +376,9 @@ export function computeCostSummary(data, secondaryCurrency) {
     const workcenters = Object.values(workcenterMap).sort(
         (a, b) => b.total - a.total
     );
+    const byproductCategories = buildCategoryTree(byproductCategoryMap);
 
-    if (categories.length === 0 && workcenters.length === 0) {
+    if (categories.length === 0 && workcenters.length === 0 && byproductCategories.length === 0) {
         return false;
     }
 
@@ -296,10 +386,18 @@ export function computeCostSummary(data, secondaryCurrency) {
     const totalProdCost = categories.reduce((s, c) => s + c.prod_cost_total, 0);
     const totalOperations = workcenters.reduce((s, w) => s + w.total, 0);
     const totalDuration = workcenters.reduce((s, w) => s + w.total_duration, 0);
-    const totalBom = totalComponents + totalOperations;
+    const totalByproducts = byproductCategories.reduce((s, c) => s + c.total, 0);
+    const totalByproductsProdCost = byproductCategories.reduce((s, c) => s + c.prod_cost_total, 0);
+    // Byproducts reduce the net BOM cost (their bom_cost is allocated away
+    // from the main product via cost_share).
+    const totalBom = totalComponents + totalOperations - totalByproducts;
     const totalProd = totalProdCost + totalOperations;
 
     enrichCategoryTree(categories, rate, totalComponents);
+    // bom_cost-based % for byproducts (native: 0 when cost_share=0)
+    enrichCategoryTree(byproductCategories, rate, totalByproducts);
+    // prod_cost-based % for byproducts (always meaningful)
+    enrichByproductProdCostPct(byproductCategories, totalByproductsProdCost);
 
     for (const wc of workcenters) {
         wc.percentage = totalOperations
@@ -315,6 +413,7 @@ export function computeCostSummary(data, secondaryCurrency) {
     return {
         categories,
         workcenters,
+        byproductCategories,
         totals: {
             components: totalComponents,
             components_usd: rate ? totalComponents * rate : false,
@@ -323,10 +422,19 @@ export function computeCostSummary(data, secondaryCurrency) {
             operations: totalOperations,
             operations_usd: rate ? totalOperations * rate : false,
             operations_duration: totalDuration,
+            byproducts: totalByproducts,
+            byproducts_usd: rate ? totalByproducts * rate : false,
+            byproducts_prod_cost: totalByproductsProdCost,
+            byproducts_prod_cost_usd: rate ? totalByproductsProdCost * rate : false,
             total: totalBom,
             total_usd: rate ? totalBom * rate : false,
             total_prod: totalProd,
             total_prod_usd: rate ? totalProd * rate : false,
+            // Net product cost = total catalogue cost of inputs minus recoverable
+            // value of all byproducts at their standard_price.  Can be negative
+            // when byproducts are worth more than the components (valid scenario).
+            net_prod: totalProd - totalByproductsProdCost,
+            net_prod_usd: rate ? (totalProd - totalByproductsProdCost) * rate : false,
         },
         currency_id: data.currency_id,
     };

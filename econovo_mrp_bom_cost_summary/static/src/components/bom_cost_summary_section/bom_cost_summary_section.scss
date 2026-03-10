@@ -5,7 +5,7 @@
     $-row-hover: rgba(0, 0, 0, 0.03);
 
     border-top: 2px solid $-border-color;
-    // padding-top: 1rem;
+    margin-bottom: 4rem;
 
     .o_econovo_cost_summary__title {
         color: var(--bs-secondary);
@@ -13,7 +13,7 @@
     }
 
     .o_econovo_cost_summary__table {
-        margin-bottom: 0;
+        margin-bottom: 4rem;
 
         thead {
             .o_econovo_cost_summary__section-header th {
@@ -73,6 +73,13 @@
         td {
             border-top: 2px solid var(--bs-dark);
             font-size: 1.05em;
+        }
+    }
+
+    // Accounting convention: double top border marks the final calculated result
+    .o_econovo_cost_summary__net-row {
+        td {
+            border-top: 3px double var(--bs-dark) !important;
         }
     }
 }

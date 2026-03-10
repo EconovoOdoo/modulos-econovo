@@ -197,11 +197,71 @@
                                 </table>
                             </t>
 
+                            <!-- ── Byproducts by Category ── -->
+                            <t t-if="cs['byproduct_categories']">
+                                <h4 class="mt-4">Byproducts by Category</h4>
+                                <table class="table table-sm table-bordered o_table">
+                                    <thead class="bg-light">
+                                        <tr>
+                                            <th>Category / Byproduct</th>
+                                            <th class="text-end">Quantity</th>
+                                            <th class="text-end">% / % Value</th>
+                                            <th class="text-end">
+                                                BOM Cost
+                                                <small t-if="cur">
+                                                    (<t t-esc="cur.name"/>)
+                                                </small>
+                                            </th>
+                                            <th class="text-end">
+                                                Prod. Cost
+                                                <small t-if="cur">
+                                                    (<t t-esc="cur.name"/>)
+                                                </small>
+                                            </th>
+                                            <t t-if="usd">
+                                                <th class="text-end">BOM Cost (USD)</th>
+                                                <th class="text-end">Prod. Cost (USD)</th>
+                                            </t>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-call="econovo_mrp_bom_cost_summary.report_cost_summary_bp_cat_rows">
+                                            <t t-set="nodes" t-value="cs['byproduct_categories']"/>
+                                            <t t-set="cur" t-value="cur"/>
+                                            <t t-set="usd" t-value="usd"/>
+                                        </t>
+                                    </tbody>
+                                    <tfoot class="fw-bold bg-light">
+                                        <tr>
+                                            <td>Total Byproducts</td>
+                                            <td/>
+                                            <td/>
+                                            <td class="text-end text-danger">
+                                                <t t-esc="'%.2f' % cs['totals']['byproducts']"/>
+                                            </td>
+                                            <td class="text-end text-success">
+                                                <t t-esc="'%.2f' % cs['totals']['byproducts_prod_cost']"/>
+                                            </td>
+                                            <t t-if="usd">
+                                                <td class="text-end text-danger">
+                                                    <t t-esc="'%.2f' % cs['totals']['byproducts_usd']"
+                                                       t-if="cs['totals']['byproducts_usd'] is not False"/>
+                                                </td>
+                                                <td class="text-end text-success">
+                                                    <t t-esc="'%.2f' % cs['totals']['byproducts_prod_cost_usd']"
+                                                       t-if="cs['totals']['byproducts_prod_cost_usd'] is not False"/>
+                                                </td>
+                                            </t>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </t>
+
                             <!-- ── Grand Total ── -->
                             <table class="table table-sm table-bordered mt-3 o_table">
                                 <tfoot class="fw-bold">
                                     <tr class="table-primary">
-                                        <td>Grand Total (Components + Operations)</td>
+                                        <td>Total BOM Cost (Components + Operations − Byproducts)</td>
                                         <td class="text-end">
                                             <t t-esc="'%.2f' % cs['totals']['total']"/>
                                             <small t-if="cur" class="ms-1">
@@ -216,6 +276,56 @@
                                             </td>
                                         </t>
                                     </tr>
+                                    <tr class="table-secondary">
+                                        <td>Total Product Cost (Components + Operations)</td>
+                                        <td class="text-end">
+                                            <t t-esc="'%.2f' % cs['totals']['total_prod']"/>
+                                            <small t-if="cur" class="ms-1">
+                                                <t t-esc="cur.name"/>
+                                            </small>
+                                        </td>
+                                        <t t-if="usd">
+                                            <td class="text-end">
+                                                <t t-esc="'%.2f' % cs['totals']['total_prod_usd']"
+                                                   t-if="cs['totals']['total_prod_usd'] is not False"/>
+                                                <small class="ms-1">USD</small>
+                                            </td>
+                                        </t>
+                                    </tr>
+                                    <t t-if="cs['byproduct_categories']">
+                                        <tr class="table-success">
+                                            <td>Byproducts Recoverable Value (− from Product Cost)</td>
+                                            <td class="text-end text-success">
+                                                <t t-esc="'%.2f' % cs['totals']['byproducts_prod_cost']"/>
+                                                <small t-if="cur" class="ms-1">
+                                                    <t t-esc="cur.name"/>
+                                                </small>
+                                            </td>
+                                            <t t-if="usd">
+                                                <td class="text-end text-success">
+                                                    <t t-esc="'%.2f' % cs['totals']['byproducts_prod_cost_usd']"
+                                                       t-if="cs['totals']['byproducts_prod_cost_usd'] is not False"/>
+                                                    <small class="ms-1">USD</small>
+                                                </td>
+                                            </t>
+                                        </tr>
+                                        <tr class="table-primary">
+                                            <td>Net Product Cost</td>
+                                            <td class="text-end">
+                                                <t t-esc="'%.2f' % cs['totals']['net_prod']"/>
+                                                <small t-if="cur" class="ms-1">
+                                                    <t t-esc="cur.name"/>
+                                                </small>
+                                            </td>
+                                            <t t-if="usd">
+                                                <td class="text-end">
+                                                    <t t-esc="'%.2f' % cs['totals']['net_prod_usd']"
+                                                       t-if="cs['totals']['net_prod_usd'] is not False"/>
+                                                    <small class="ms-1">USD</small>
+                                                </td>
+                                            </t>
+                                        </tr>
+                                    </t>
                                 </tfoot>
                             </table>
 
@@ -289,6 +399,98 @@
             <!-- Children categories (recursive) -->
             <t t-if="node['children']">
                 <t t-call="econovo_mrp_bom_cost_summary.report_cost_summary_cat_rows">
+                    <t t-set="nodes" t-value="node['children']"/>
+                    <t t-set="cur" t-value="cur"/>
+                    <t t-set="usd" t-value="usd"/>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- =====================================================
+         Recursive sub-template: byproduct category tree rows
+         ===================================================== -->
+    <template id="report_cost_summary_bp_cat_rows">
+        <t t-foreach="nodes" t-as="node">
+            <!-- Category header row -->
+            <tr>
+                <td>
+                    <span t-attf-style="padding-left: #{node['depth'] * 16}px;">
+                        <strong t-if="node['depth'] == 0">
+                            <t t-esc="node['name']"/>
+                        </strong>
+                        <t t-else="" t-esc="node['name']"/>
+                        <small class="text-muted ms-1">
+                            (<t t-esc="len(node['products'])"/>
+                            product<t t-if="len(node['products']) != 1">s</t>)
+                        </small>
+                    </span>
+                </td>
+                <td/>
+                <td class="text-end">
+                    <t t-esc="'%.1f' % node['percentage'] + '%'"/>
+                    <br/>
+                    <small class="text-muted">
+                        <t t-esc="'%.1f' % node['prod_cost_percentage'] + '%'"/>
+                    </small>
+                </td>
+                <td class="text-end fw-bold text-danger">
+                    <t t-esc="'%.2f' % node['total']"/>
+                </td>
+                <td class="text-end fw-bold text-success">
+                    <t t-esc="'%.2f' % node['prod_cost_total']"/>
+                </td>
+                <t t-if="usd">
+                    <td class="text-end text-danger">
+                        <t t-esc="'%.2f' % node['total_usd']"
+                           t-if="node['total_usd'] is not False"/>
+                    </td>
+                    <td class="text-end text-success">
+                        <t t-esc="'%.2f' % node['prod_cost_total_usd']"
+                           t-if="node['prod_cost_total_usd'] is not False"/>
+                    </td>
+                </t>
+            </tr>
+            <!-- Product rows under this category -->
+            <t t-foreach="node['products']" t-as="prod">
+                <tr>
+                    <td>
+                        <span t-attf-style="padding-left: #{(node['depth'] + 1) * 16}px;"
+                              class="text-muted">
+                            <t t-esc="prod['name']"/>
+                        </span>
+                    </td>
+                    <td class="text-end text-muted">
+                        <t t-esc="prod.get('quantity_display', '')"/>
+                    </td>
+                    <td class="text-end text-muted">
+                        <t t-esc="'%.1f' % prod['percentage'] + '%'"/>
+                        <br/>
+                        <small>
+                            <t t-esc="'%.1f' % prod['prod_cost_percentage'] + '%'"/>
+                        </small>
+                    </td>
+                    <td class="text-end text-muted text-danger">
+                        <t t-esc="'%.2f' % prod['total']"/>
+                    </td>
+                    <td class="text-end text-muted text-success">
+                        <t t-esc="'%.2f' % prod['prod_cost_total']"/>
+                    </td>
+                    <t t-if="usd">
+                        <td class="text-end text-muted">
+                            <t t-esc="'%.2f' % prod['total_usd']"
+                               t-if="prod['total_usd'] is not False"/>
+                        </td>
+                        <td class="text-end text-muted">
+                            <t t-esc="'%.2f' % prod['prod_cost_total_usd']"
+                               t-if="prod['prod_cost_total_usd'] is not False"/>
+                        </td>
+                    </t>
+                </tr>
+            </t>
+            <!-- Children categories (recursive) -->
+            <t t-if="node['children']">
+                <t t-call="econovo_mrp_bom_cost_summary.report_cost_summary_bp_cat_rows">
                     <t t-set="nodes" t-value="node['children']"/>
                     <t t-set="cur" t-value="cur"/>
                     <t t-set="usd" t-value="usd"/>

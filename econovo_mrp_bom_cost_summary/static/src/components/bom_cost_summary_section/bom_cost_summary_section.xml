@@ -9,13 +9,13 @@
     </h5>
 
     <!-- Single unified table ensures all columns are aligned across sections -->
-    <table class="table table-sm o_econovo_cost_summary__table mb-0">
+    <table class="table table-sm o_econovo_cost_summary__table mb-1">
 
         <colgroup>
             <col class="o_econovo_cost_summary__fold-col"/>
             <col/><!-- Name: auto width (takes remaining space) -->
             <col style="width: 7%;"/><!-- Quantity / Duration -->
-            <col style="width: 4%;"/><!-- % -->
+            <col style="width: 9%;"/><!-- % -->
             <col t-if="showAvailabilities" style="width: 7%;"/><!-- Free to Use / On Hand -->
             <col t-if="showAvailabilities" style="width: 6%;"/><!-- Availability -->
             <col t-if="showLeadTimes" style="width: 4%;"/><!-- Lead Time -->
@@ -423,12 +423,218 @@
             </tbody>
         </t>
 
+        <br class="my-3"/>
+
+        <!-- ===== BYPRODUCTS BY CATEGORY ===== -->
+        <t t-if="data.byproductCategories &amp;&amp; data.byproductCategories.length > 0">
+            <thead>
+                <tr class="o_econovo_cost_summary__section-header">
+                    <th class="o_econovo_cost_summary__fold-col"/>
+                    <th>Byproducts by Category</th>
+                    <th class="text-end">Quantity
+                        <i class="fa fa-info-circle text-muted ms-1"
+                           data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                           t-att-data-tooltip-info="colTooltip('qty')"/>&#8203;
+                    </th>
+                    <th class="text-end">% LdM / % Val.
+                        <i class="fa fa-info-circle text-muted ms-1"
+                           data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                           t-att-data-tooltip-info="colTooltip('pct_byproducts')"/>&#8203;
+                    </th>
+                    <th t-if="showAvailabilities"/>
+                    <th t-if="showAvailabilities"/>
+                    <th t-if="showLeadTimes"/>
+                    <th t-if="showLeadTimes"/>
+                    <th t-if="showCosts" class="text-end">BoM Cost
+                        <i class="fa fa-info-circle text-muted ms-1"
+                           data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                           t-att-data-tooltip-info="colTooltip('bom_cost_byproducts')"/>&#8203;
+                    </th>
+                    <th t-if="showCostsUsd" class="text-end">BoM Cost <t t-esc="secondaryCurrency.name"/>
+                        <i class="fa fa-info-circle text-muted ms-1"
+                           data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                           t-att-data-tooltip-info="colTooltip('bom_cost_usd')"/>&#8203;
+                    </th>
+                    <th t-if="showCosts" class="text-end">Product Cost
+                        <i class="fa fa-info-circle text-muted ms-1"
+                           data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                           t-att-data-tooltip-info="colTooltip('prod_cost_byproducts')"/>&#8203;
+                    </th>
+                    <th t-if="showCostsUsd" class="text-end">Product Cost <t t-esc="secondaryCurrency.name"/>
+                        <i class="fa fa-info-circle text-muted ms-1"
+                           data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                           t-att-data-tooltip-info="colTooltip('prod_cost_usd')"/>&#8203;
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <t t-foreach="flatByproductCategoryRows" t-as="row" t-key="row.rowKey">
+                    <!-- CATEGORY ROW -->
+                    <tr t-if="row.type === 'category'"
+                        class="o_econovo_cost_summary__group-row"
+                        t-on-click="() => this.toggleByproductCategory(row.node.id)">
+                        <td class="o_econovo_cost_summary__fold-col"/>
+                        <td t-attf-style="padding-left: {{ row.depth * 20 }}px">
+                            <button class="btn btn-light btn-sm py-0 px-1 me-1"
+                                    t-att-title="isByproductCategoryFolded(row.node.id) ? 'Unfold' : 'Fold'">
+                                <i t-att-class="'fa fa-fw ' + (isByproductCategoryFolded(row.node.id) ? 'fa-caret-right' : 'fa-caret-down')"
+                                   role="img"/>
+                            </button>
+                            <strong t-esc="row.node.name"/>
+                            <span class="text-muted ms-1 fw-normal">(<t t-esc="byproductCategoryCount(row.node)"/>)</span>
+                        </td>
+                        <td/>
+                        <td class="text-end text-muted">
+                            <strong t-esc="fmtPct(row.node.percentage)"/>
+                            <span class="text-muted"> / </span>
+                            <span t-esc="fmtPct(row.node.prod_cost_percentage)"/>
+                        </td>
+                        <td t-if="showAvailabilities"/>
+                        <td t-if="showAvailabilities"/>
+                        <td t-if="showLeadTimes"/>
+                        <td t-if="showLeadTimes"/>
+                        <td t-if="showCosts" class="text-end">
+                            <strong t-esc="fmtMoney(row.node.total)"/>
+                        </td>
+                        <td t-if="showCostsUsd" class="text-end text-muted">
+                            <strong t-esc="fmtUsd(row.node.total_usd)"/>
+                        </td>
+                        <td t-if="showCosts" class="text-end">
+                            <strong t-esc="fmtMoney(row.node.prod_cost_total)"/>
+                        </td>
+                        <td t-if="showCostsUsd" class="text-end text-muted">
+                            <strong t-esc="fmtUsd(row.node.prod_cost_total_usd)"/>
+                        </td>
+                    </tr>
+                    <!-- PRODUCT ROW -->
+                    <tr t-elif="row.type === 'product'"
+                        class="o_econovo_cost_summary__product-row"
+                        t-on-click="() => this.toggleByproductProduct(row.node.id, row.prod.product_id)">
+                        <td/>
+                        <td t-attf-style="padding-left: {{ row.depth * 20 }}px">
+                            <button class="btn btn-light btn-sm py-0 px-1 me-1"
+                                    t-att-title="isByproductProductFolded(row.node.id, row.prod.product_id) ? 'Show where produced' : 'Hide'">
+                                <i t-att-class="'fa fa-fw ' + (isByproductProductFolded(row.node.id, row.prod.product_id) ? 'fa-caret-right' : 'fa-caret-down')"
+                                   role="img"/>
+                            </button>
+                            <a href="#" class="o_econovo_cost_summary__link"
+                               t-on-click.stop.prevent="() => this.openFormDialog(row.prod.link_id, row.prod.link_model)">
+                                <t t-esc="row.prod.name"/>
+                            </a>
+                            <span class="text-muted ms-1">(<t t-esc="row.prod.usages.length"/>)</span>
+                        </td>
+                        <td class="text-end text-muted">
+                            <t t-set="bpQty" t-value="productQuantity(row.prod)"/>
+                            <t t-if="bpQty">
+                                <t t-esc="formatFloat(bpQty.quantity, {digits: [false, props.precision]})"/>
+                                <t t-if="showUom">
+                                    <span class="ms-1" t-esc="bpQty.uom_name"/>
+                                </t>
+                            </t>
+                            <t t-else="">
+                                <span title="Mixed units of measure">&#8212;</span>
+                            </t>
+                        </td>
+                        <td class="text-end text-muted">
+                            <t t-esc="fmtPct(row.prod.percentage)"/>
+                            <span class="text-muted"> / </span>
+                            <span t-esc="fmtPct(row.prod.prod_cost_percentage)"/>
+                        </td>
+                        <td t-if="showAvailabilities"/>
+                        <td t-if="showAvailabilities"/>
+                        <td t-if="showLeadTimes"/>
+                        <td t-if="showLeadTimes"/>
+                        <td t-if="showCosts" class="text-end">
+                            <t t-esc="fmtMoney(row.prod.total)"/>
+                        </td>
+                        <td t-if="showCostsUsd" class="text-end text-muted">
+                            <t t-esc="fmtUsd(row.prod.total_usd)"/>
+                        </td>
+                        <td t-if="showCosts" class="text-end">
+                            <t t-esc="fmtMoney(row.prod.prod_cost_total)"/>
+                        </td>
+                        <td t-if="showCostsUsd" class="text-end text-muted">
+                            <t t-esc="fmtUsd(row.prod.prod_cost_total_usd)"/>
+                        </td>
+                    </tr>
+                    <!-- USAGE ROW: shows which product's BOM produces this byproduct -->
+                    <tr t-else=""
+                        class="o_econovo_cost_summary__usage-row">
+                        <td/>
+                        <td t-attf-style="padding-left: {{ row.depth * 20 + 44 }}px">
+                            <a href="#" class="o_econovo_cost_summary__link"
+                               t-on-click.stop.prevent="() => this.openFormDialog(row.usage.parent_product_id, 'product.product')">
+                                <t t-esc="row.usage.parent_name"/>
+                            </a>
+                        </td>
+                        <td class="text-end text-muted">
+                            <t t-esc="formatFloat(row.usage.quantity, {digits: [false, props.precision]})"/>
+                            <t t-if="showUom">
+                                <span class="ms-1" t-esc="row.usage.uom_name"/>
+                            </t>
+                        </td>
+                        <td class="text-end text-muted">
+                            <t t-esc="fmtPct(row.usage.percentage)"/>
+                            <span class="text-muted"> / </span>
+                            <span t-esc="fmtPct(row.usage.prod_cost_percentage)"/>
+                        </td>
+                        <td t-if="showAvailabilities"/>
+                        <td t-if="showAvailabilities"/>
+                        <td t-if="showLeadTimes"/>
+                        <td t-if="showLeadTimes"/>
+                        <td t-if="showCosts" class="text-end">
+                            <t t-esc="fmtMoney(row.usage.total)"/>
+                        </td>
+                        <td t-if="showCostsUsd" class="text-end text-muted">
+                            <t t-esc="fmtUsd(row.usage.total_usd)"/>
+                        </td>
+                        <td t-if="showCosts" class="text-end">
+                            <t t-esc="fmtMoney(row.usage.prod_cost)"/>
+                        </td>
+                        <td t-if="showCostsUsd" class="text-end text-muted">
+                            <t t-esc="fmtUsd(row.usage.prod_cost_usd)"/>
+                        </td>
+                    </tr>
+                </t>
+
+                <!-- Subtotal Byproducts -->
+                <tr class="o_econovo_cost_summary__subtotal-row">
+                    <td/>
+                    <td class="text-end"><strong>Subtotal Byproducts</strong></td>
+                    <td/>
+                    <td/>
+                    <td t-if="showAvailabilities"/>
+                    <td t-if="showAvailabilities"/>
+                    <td t-if="showLeadTimes"/>
+                    <td t-if="showLeadTimes"/>
+                    <td t-if="showCosts" class="text-end">
+                        <strong class="text-danger" t-esc="fmtMoney(data.totals.byproducts)"/>
+                        <i class="fa fa-info-circle text-muted ms-1"
+                           data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                           t-att-data-tooltip-info="colTooltip('subtotal_byproducts_cost')"/>&#8203;
+                    </td>
+                    <td t-if="showCostsUsd" class="text-end text-muted">
+                        <strong t-esc="fmtUsd(data.totals.byproducts_usd)"/>
+                    </td>
+                    <td t-if="showCosts" class="text-end">
+                        <strong t-esc="fmtMoney(data.totals.byproducts_prod_cost)"/>
+                    </td>
+                    <td t-if="showCostsUsd" class="text-end text-muted">
+                        <strong t-esc="fmtUsd(data.totals.byproducts_prod_cost_usd)"/>
+                    </td>
+                </tr>
+            </tbody>
+        </t>
+
+        <br class="my-3"/>
+
         <!-- ===== GRAND TOTAL ===== -->
-        <tfoot>
+        <tfoot style="border-top: 0px">
+            <!-- ===== Row 1: combined BoM &amp; Product totals in a single row ===== -->
             <tr class="o_econovo_cost_summary__grand-total-row">
                 <td class="o_econovo_cost_summary__fold-col"/>
                 <td class="text-end">
-                    <strong>TOTAL BOM COST</strong>
+                    <strong>Total of BoM &amp; Product</strong>
                     <i class="fa fa-info-circle text-muted ms-1"
                        data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
                        t-att-data-tooltip-info="colTooltip('grand_total')"/>&#8203;
@@ -445,25 +651,6 @@
                 <td t-if="showCostsUsd" class="text-end">
                     <strong t-esc="fmtUsd(data.totals.total_usd)"/>
                 </td>
-                <td t-if="showCosts"/>
-                <td t-if="showCostsUsd"/>
-            </tr>
-            <tr class="o_econovo_cost_summary__grand-total-row">
-                <td class="o_econovo_cost_summary__fold-col"/>
-                <td class="text-end">
-                    <strong>TOTAL PRODUCT COST</strong>
-                    <i class="fa fa-info-circle text-muted ms-1"
-                       data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
-                       t-att-data-tooltip-info="colTooltip('grand_total_prod')"/>
-                </td>
-                <td/>
-                <td/>
-                <td t-if="showAvailabilities"/>
-                <td t-if="showAvailabilities"/>
-                <td t-if="showLeadTimes"/>
-                <td t-if="showLeadTimes"/>
-                <td t-if="showCosts"/>
-                <td t-if="showCostsUsd"/>
                 <td t-if="showCosts" class="text-end">
                     <strong t-esc="fmtMoney(data.totals.total_prod)"/>
                 </td>
@@ -471,6 +658,57 @@
                     <strong t-esc="fmtUsd(data.totals.total_prod_usd)"/>
                 </td>
             </tr>
+            <!-- ===== Rows 2 &amp; 3: byproduct adjustment — only when byproducts exist ===== -->
+            <t t-if="data.byproductCategories &amp;&amp; data.byproductCategories.length > 0">
+                <!-- Row 2: (−) recoverable value from byproducts -->
+                <tr class="o_econovo_cost_summary__grand-total-row">
+                    <td class="o_econovo_cost_summary__fold-col"/>
+                    <td class="text-end">
+                        <strong class="text-success">(&#x2212;) Recoverable value (SP)</strong>
+                        <i class="fa fa-info-circle text-muted ms-1"
+                           data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                           t-att-data-tooltip-info="colTooltip('subtotal_byproducts_prod_cost')"/>&#8203;
+                    </td>
+                    <td/>
+                    <td/>
+                    <td t-if="showAvailabilities"/>
+                    <td t-if="showAvailabilities"/>
+                    <td t-if="showLeadTimes"/>
+                    <td t-if="showLeadTimes"/>
+                    <td t-if="showCosts" class="text-end text-muted">&#8212;</td>
+                    <td t-if="showCostsUsd" class="text-end text-muted">&#8212;</td>
+                    <td t-if="showCosts" class="text-end">
+                        <strong class="text-success" t-esc="fmtMoney(data.totals.byproducts_prod_cost)"/>
+                    </td>
+                    <td t-if="showCostsUsd" class="text-end">
+                        <strong class="text-success" t-esc="fmtUsd(data.totals.byproducts_prod_cost_usd)"/>
+                    </td>
+                </tr>
+                <!-- Row 3: (=) net product cost — double top border as accounting convention -->
+                <tr class="o_econovo_cost_summary__grand-total-row o_econovo_cost_summary__net-row">
+                    <td class="o_econovo_cost_summary__fold-col"/>
+                    <td class="text-end">
+                        <strong>(=) NET PRODUCT COST</strong>
+                        <i class="fa fa-info-circle text-muted ms-1"
+                           data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                           t-att-data-tooltip-info="colTooltip('net_prod')"/>&#8203;
+                    </td>
+                    <td/>
+                    <td/>
+                    <td t-if="showAvailabilities"/>
+                    <td t-if="showAvailabilities"/>
+                    <td t-if="showLeadTimes"/>
+                    <td t-if="showLeadTimes"/>
+                    <td t-if="showCosts" class="text-end text-muted">&#8212;</td>
+                    <td t-if="showCostsUsd" class="text-end text-muted">&#8212;</td>
+                    <td t-if="showCosts" class="text-end">
+                        <strong t-esc="fmtMoney(data.totals.net_prod)"/>
+                    </td>
+                    <td t-if="showCostsUsd" class="text-end">
+                        <strong t-esc="fmtUsd(data.totals.net_prod_usd)"/>
+                    </td>
+                </tr>
+            </t>
         </tfoot>
 
     </table>

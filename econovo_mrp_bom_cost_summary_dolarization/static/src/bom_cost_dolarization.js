@@ -129,15 +129,112 @@ function injectAndBubbleDirectUsd(nodes, directMap) {
 }
 
 /**
+ * Traverse the raw BOM tree and collect the ``bom_cost_usd_direct`` /
+ * ``prod_cost_usd_direct`` values for every BYPRODUCT, grouped as:
+ *
+ *   byproductDirectMap[catId][prodId][parentProdId] = { bom, prod }
+ *
+ * The ``effectiveCostShare`` factor is propagated when descending into
+ * sub-BOM components (same mechanics as ``collectDirectUsd``).
+ *
+ * @param {Object} node                Raw BOM node.
+ * @param {Object} byproductDirectMap  Accumulator dict (mutated in place).
+ * @param {number} [effectiveCostShare=1.0]
+ */
+function collectDirectUsdByproducts(node, byproductDirectMap, effectiveCostShare = 1.0) {
+    if (node.byproducts) {
+        for (const bp of node.byproducts) {
+            const catId = bp.categ_id || 0;
+            // Byproduct dicts use link_id (product.product/template id) or
+            // id (mrp.bom.byproduct id) as the product key – same as
+            // collectCosts uses for prodKey.  bp.product_id does not exist.
+            const prodId = bp.link_id || bp.id;
+            const parentProdId = node.product_id;
+
+            if (!byproductDirectMap[catId]) byproductDirectMap[catId] = {};
+            if (!byproductDirectMap[catId][prodId]) byproductDirectMap[catId][prodId] = {};
+            if (!byproductDirectMap[catId][prodId][parentProdId]) {
+                byproductDirectMap[catId][prodId][parentProdId] = { bom: 0, prod: 0 };
+            }
+            byproductDirectMap[catId][prodId][parentProdId].bom +=
+                (bp.bom_cost_usd_direct || 0) * effectiveCostShare;
+            byproductDirectMap[catId][prodId][parentProdId].prod +=
+                (bp.prod_cost_usd_direct || 0) * effectiveCostShare;
+        }
+    }
+    // Recurse into sub-BOM components to collect THEIR byproducts too.
+    if (!node.components) return;
+    const nodeCostShare =
+        node.cost_share !== undefined && node.cost_share !== null
+            ? node.cost_share
+            : 1.0;
+    const eff = effectiveCostShare * nodeCostShare;
+    for (const comp of node.components) {
+        if (comp.type === 'bom' && comp.components) {
+            collectDirectUsdByproducts(comp, byproductDirectMap, eff);
+        }
+    }
+}
+
+/**
+ * Mirror of ``injectAndBubbleDirectUsd`` for the byproduct category tree.
+ * Walks ``costSummary.byproductCategories`` and sets ``total_usd_direct``
+ * / ``prod_cost_total_usd_direct`` on every node, product and usage.
+ *
+ * @param {Array}  nodes               Root-level byproduct category nodes.
+ * @param {Object} byproductDirectMap  Output of ``collectDirectUsdByproducts``.
+ */
+function injectAndBubbleDirectUsdByproducts(nodes, byproductDirectMap) {
+    for (const node of nodes) {
+        injectAndBubbleDirectUsdByproducts(node.children || [], byproductDirectMap);
+
+        let nodeTotal = 0;
+        let nodeProdTotal = 0;
+
+        for (const child of node.children || []) {
+            nodeTotal += child.total_usd_direct || 0;
+            nodeProdTotal += child.prod_cost_total_usd_direct || 0;
+        }
+
+        const catDirect = byproductDirectMap[node.id];
+        for (const prod of node.products || []) {
+            let prodTotal = 0;
+            let prodProdTotal = 0;
+            const prodDirect = catDirect && catDirect[prod.product_id];
+
+            for (const usage of prod.usages || []) {
+                const parentId = usage.parent_product_id;
+                const usageDirect = prodDirect && prodDirect[parentId];
+                usage.total_usd_direct = usageDirect ? usageDirect.bom : 0;
+                usage.prod_cost_usd_direct = usageDirect ? usageDirect.prod : 0;
+                prodTotal += usage.total_usd_direct;
+                prodProdTotal += usage.prod_cost_usd_direct;
+            }
+
+            prod.total_usd_direct = prodTotal;
+            prod.prod_cost_total_usd_direct = prodProdTotal;
+            nodeTotal += prodTotal;
+            nodeProdTotal += prodProdTotal;
+        }
+
+        node.total_usd_direct = nodeTotal;
+        node.prod_cost_total_usd_direct = nodeProdTotal;
+    }
+}
+
+/**
  * Post-process an existing ``costSummary`` object (returned by
  * ``computeCostSummary``) by injecting the direct USD values from the
  * server-side data.
  *
- * Also writes the grand-total keys used by the summary footer:
- *   costSummary.totals.components_usd_direct
- *   costSummary.totals.prod_cost_usd_direct
- *   costSummary.totals.total_usd_direct
- *   costSummary.totals.total_prod_usd_direct
+ * Writes the following grand-total keys on ``costSummary.totals``:
+ *   components_usd_direct         – BoM Cost USD direct (components)
+ *   prod_cost_usd_direct          – Product Cost USD direct (components)
+ *   total_usd_direct              – same as components (no ops contribution)
+ *   total_prod_usd_direct         – same as prod_cost_usd_direct
+ *   byproducts_usd_direct         – BoM Cost USD direct (byproducts)
+ *   byproducts_prod_cost_usd_direct – Product Cost USD direct (byproducts)
+ *   net_prod_usd_direct           – total_prod_usd_direct − byproducts_prod_cost_usd_direct
  *
  * Operations do not carry ``standard_price_usd`` (they use work-centre
  * hourly rates), so their direct-USD contribution is zero.
@@ -149,6 +246,7 @@ function injectAndBubbleDirectUsd(nodes, directMap) {
 function augmentWithDirectUsd(costSummary, rawData) {
     if (!costSummary) return costSummary;
 
+    // --- Components ---
     const directMap = {};
     collectDirectUsd(rawData, directMap);
     injectAndBubbleDirectUsd(costSummary.categories || [], directMap);
@@ -167,6 +265,28 @@ function augmentWithDirectUsd(costSummary, rawData) {
     // No operations contribution to direct USD.
     costSummary.totals.total_usd_direct = totalCompUsdDirect;
     costSummary.totals.total_prod_usd_direct = totalProdCostUsdDirect;
+
+    // --- Byproducts ---
+    const byproductDirectMap = {};
+    collectDirectUsdByproducts(rawData, byproductDirectMap);
+    injectAndBubbleDirectUsdByproducts(
+        costSummary.byproductCategories || [],
+        byproductDirectMap,
+    );
+
+    const totalByprodUsdDirect = (costSummary.byproductCategories || []).reduce(
+        (s, c) => s + (c.total_usd_direct || 0),
+        0,
+    );
+    const totalByprodProdCostUsdDirect = (costSummary.byproductCategories || []).reduce(
+        (s, c) => s + (c.prod_cost_total_usd_direct || 0),
+        0,
+    );
+
+    costSummary.totals.byproducts_usd_direct = totalByprodUsdDirect;
+    costSummary.totals.byproducts_prod_cost_usd_direct = totalByprodProdCostUsdDirect;
+    costSummary.totals.net_prod_usd_direct =
+        totalProdCostUsdDirect - totalByprodProdCostUsdDirect;
 
     return costSummary;
 }
@@ -251,12 +371,15 @@ patch(BomCostSummarySection.prototype, {
 
     /**
      * Tooltip helper for the new direct-USD column headers.
-     * The base class has no colTooltip method — this is a new addition.
+     * Handles the 4 bridge-specific keys; for any other key, delegates
+     * to the base class implementation so that all base-module tooltips
+     * (Components, Operations, Byproducts sections, Grand Total, etc.)
+     * continue to work correctly when this bridge module is installed.
      *
      * @param {string} key
      * @returns {string}  JSON-serialised tooltip object or empty string.
      */
-    colTooltip(key) {
+    colTooltip(key, curName, usdName) {
         const tips = {
             bom_cost_usd_direct: {
                 title: _t("BoM Cost USD (direct price)"),
@@ -294,6 +417,8 @@ patch(BomCostSummarySection.prototype, {
         };
 
         const tip = tips[key];
-        return tip ? JSON.stringify(tip) : "";
+        if (tip) return JSON.stringify(tip);
+        // Delegate all other keys to the base-module implementation.
+        return super.colTooltip(key, curName, usdName);
     },
 });

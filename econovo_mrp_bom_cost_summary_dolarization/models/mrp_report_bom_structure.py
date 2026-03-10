@@ -54,3 +54,36 @@ class ReportBomStructure(models.AbstractModel):
         res['prod_cost_usd_direct'] = prod_cost_usd_direct
         res['bom_cost_usd_direct'] = bom_cost_usd_direct
         return res
+
+    @api.model
+    def _get_byproducts_lines(self, product, bom, bom_quantity, level, total, index):
+        """Add direct-USD cost fields to byproduct lines.
+
+        Extends the base override from ``econovo_mrp_bom_cost_summary``
+        (which adds category info) by computing:
+
+        - ``prod_cost_usd_direct``: quantity × product.standard_price_usd
+        - ``bom_cost_usd_direct``:  bom_cost × (usd_price / ars_price),
+          falling back to prod_cost_usd_direct when no ARS price is set.
+        """
+        byproducts, byproduct_cost_portion = super()._get_byproducts_lines(
+            product, bom, bom_quantity, level, total, index,
+        )
+        for bp in byproducts:
+            byproduct_obj = self.env['mrp.bom.byproduct'].browse(bp['id'])
+            prod = byproduct_obj.product_id
+            std_usd = getattr(prod, 'standard_price_usd', 0.0) or 0.0
+            std_ars = prod.standard_price or 0.0
+
+            quantity = bp.get('quantity', 0.0) or 0.0
+            prod_cost_usd_direct = quantity * std_usd
+
+            bom_cost = bp.get('bom_cost', 0.0) or 0.0
+            if std_ars > 0:
+                bom_cost_usd_direct = bom_cost * (std_usd / std_ars)
+            else:
+                bom_cost_usd_direct = prod_cost_usd_direct
+
+            bp['prod_cost_usd_direct'] = prod_cost_usd_direct
+            bp['bom_cost_usd_direct'] = bom_cost_usd_direct
+        return byproducts, byproduct_cost_portion
