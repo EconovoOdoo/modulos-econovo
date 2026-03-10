@@ -584,8 +584,10 @@ export class BomCostSummarySection extends Component {
             "subtotal_prod_cost": {
                 title: T("TOTAL PRODUCT COST \u2014 Components"),
                 lines: [
-                    T("= \u03a3 (qty \u00d7 product.standard_price)"),
-                    T("Catalogue standard cost; no operations or overhead"),
+                    T("= \u03a3 (qty \u00d7 component.standard_price) per DIRECT component"),
+                    T("For sub-assemblies: uses the sub-product\u2019s standard_price,"),
+                    T("not the sum of its internal leaf material costs"),
+                    T("Same semantics as native Odoo BOM Overview Product Cost column"),
                 ],
             },
             "subtotal_ops_cost": {

@@ -258,70 +258,95 @@
                             </t>
 
                             <!-- ── Grand Total ── -->
+                            <!-- 3-row layout: Row 1 Gross | Row 2 (−) Byproducts | Row 3 (=) Net -->
+                            <!-- Mirrors the web-UI tfoot: BoM Cost and Product Cost side-by-side. -->
                             <table class="table table-sm table-bordered mt-3 o_table">
+                                <thead class="bg-light fw-bold text-center">
+                                    <tr>
+                                        <td/>
+                                        <td class="text-end">BoM Cost
+                                            <small t-if="cur" class="ms-1">
+                                                (<t t-esc="cur.name"/>)
+                                            </small>
+                                        </td>
+                                        <t t-if="usd">
+                                            <td class="text-end">BoM Cost (USD)</td>
+                                        </t>
+                                        <td class="text-end">Product Cost
+                                            <small t-if="cur" class="ms-1">
+                                                (<t t-esc="cur.name"/>)
+                                            </small>
+                                        </td>
+                                        <t t-if="usd">
+                                            <td class="text-end">Product Cost (USD)</td>
+                                        </t>
+                                    </tr>
+                                </thead>
                                 <tfoot class="fw-bold">
+                                    <!-- Row 1: Gross total (Components + Operations) -->
                                     <tr class="table-primary">
-                                        <td>Total BOM Cost (Components + Operations − Byproducts)</td>
+                                        <td>Total  (Components + Operations)</td>
                                         <td class="text-end">
                                             <t t-esc="'%.2f' % cs['totals']['total']"/>
-                                            <small t-if="cur" class="ms-1">
-                                                <t t-esc="cur.name"/>
-                                            </small>
                                         </td>
                                         <t t-if="usd">
                                             <td class="text-end">
                                                 <t t-esc="'%.2f' % cs['totals']['total_usd']"
                                                    t-if="cs['totals']['total_usd'] is not False"/>
-                                                <small class="ms-1">USD</small>
                                             </td>
                                         </t>
-                                    </tr>
-                                    <tr class="table-secondary">
-                                        <td>Total Product Cost (Components + Operations)</td>
                                         <td class="text-end">
                                             <t t-esc="'%.2f' % cs['totals']['total_prod']"/>
-                                            <small t-if="cur" class="ms-1">
-                                                <t t-esc="cur.name"/>
-                                            </small>
                                         </td>
                                         <t t-if="usd">
                                             <td class="text-end">
                                                 <t t-esc="'%.2f' % cs['totals']['total_prod_usd']"
                                                    t-if="cs['totals']['total_prod_usd'] is not False"/>
-                                                <small class="ms-1">USD</small>
                                             </td>
                                         </t>
                                     </tr>
                                     <t t-if="cs['byproduct_categories']">
+                                        <!-- Row 2: (−) Recoverable byproduct value -->
                                         <tr class="table-success">
-                                            <td>Byproducts Recoverable Value (− from Product Cost)</td>
+                                            <td>(&#x2212;) Recoverable byproduct value</td>
+                                            <td class="text-end text-success">
+                                                <t t-esc="'%.2f' % cs['totals']['byproducts']"/>
+                                            </td>
+                                            <t t-if="usd">
+                                                <td class="text-end text-success">
+                                                    <t t-esc="'%.2f' % cs['totals']['byproducts_usd']"
+                                                       t-if="cs['totals']['byproducts_usd'] is not False"/>
+                                                </td>
+                                            </t>
                                             <td class="text-end text-success">
                                                 <t t-esc="'%.2f' % cs['totals']['byproducts_prod_cost']"/>
-                                                <small t-if="cur" class="ms-1">
-                                                    <t t-esc="cur.name"/>
-                                                </small>
                                             </td>
                                             <t t-if="usd">
                                                 <td class="text-end text-success">
                                                     <t t-esc="'%.2f' % cs['totals']['byproducts_prod_cost_usd']"
                                                        t-if="cs['totals']['byproducts_prod_cost_usd'] is not False"/>
-                                                    <small class="ms-1">USD</small>
                                                 </td>
                                             </t>
                                         </tr>
+                                        <!-- Row 3: (=) Net cost after byproduct deduction -->
                                         <tr class="table-primary">
-                                            <td>Net Product Cost</td>
+                                            <td>(=) NET COST</td>
+                                            <td class="text-end">
+                                                <t t-esc="'%.2f' % cs['totals']['net_bom']"/>
+                                            </td>
+                                            <t t-if="usd">
+                                                <td class="text-end">
+                                                    <t t-esc="'%.2f' % cs['totals']['net_bom_usd']"
+                                                       t-if="cs['totals']['net_bom_usd'] is not False"/>
+                                                </td>
+                                            </t>
                                             <td class="text-end">
                                                 <t t-esc="'%.2f' % cs['totals']['net_prod']"/>
-                                                <small t-if="cur" class="ms-1">
-                                                    <t t-esc="cur.name"/>
-                                                </small>
                                             </td>
                                             <t t-if="usd">
                                                 <td class="text-end">
                                                     <t t-esc="'%.2f' % cs['totals']['net_prod_usd']"
                                                        t-if="cs['totals']['net_prod_usd'] is not False"/>
-                                                    <small class="ms-1">USD</small>
                                                 </td>
                                             </t>
                                         </tr>

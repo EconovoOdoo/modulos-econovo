@@ -287,9 +287,11 @@
     <!--     col: …[empty ARS] | [empty direct] | [empty TC] | Prod ARS | [direct] | TC -->
     <!-- ============================================================ -->
 
-    <!-- Empty placeholder before the empty showCostsUsd td in recovery row -->
+    <!-- BoM Cost USD Direct for byproducts recoverable row (before BoM exchange-rate td) -->
     <xpath expr="//td[strong[@t-esc='fmtUsd(data.totals.byproducts_prod_cost_usd)'][@class='text-success']]/preceding-sibling::td[@t-if='showCostsUsd']" position="before">
-        <td t-if="showCostsUsdDirect"/>
+        <td t-if="showCostsUsdDirect" class="text-end">
+            <strong class="text-success" t-esc="fmtUsdDirect(data.totals.byproducts_usd_direct)"/>
+        </td>
     </xpath>
     <!-- Direct USD recoverable value (before exchange-rate, strong has text-success class) -->
     <xpath expr="//td[strong[@t-esc='fmtUsd(data.totals.byproducts_prod_cost_usd)'][@class='text-success']]" position="before">
@@ -303,9 +305,11 @@
     <!--     col: …[empty ARS] | [empty direct] | [empty TC] | Net ARS | [direct] | TC -->
     <!-- ============================================================ -->
 
-    <!-- Empty placeholder before the empty showCostsUsd td in net prod row -->
+    <!-- BoM Cost USD Direct for net product cost row (before BoM exchange-rate td) -->
     <xpath expr="//td[strong[@t-esc='fmtUsd(data.totals.net_prod_usd)']]/preceding-sibling::td[@t-if='showCostsUsd']" position="before">
-        <td t-if="showCostsUsdDirect"/>
+        <td t-if="showCostsUsdDirect" class="text-end">
+            <strong t-esc="fmtUsdDirect(data.totals.net_bom_usd_direct)"/>
+        </td>
     </xpath>
     <!-- Direct USD net product cost (before exchange-rate net_prod_usd) -->
     <xpath expr="//td[strong[@t-esc='fmtUsd(data.totals.net_prod_usd)']]" position="before">

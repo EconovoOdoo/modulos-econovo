@@ -745,58 +745,42 @@ def _build_summary_sheet(ws, cs, cur, usd,
         row += 1  # blank separator
 
     # ── Grand Total ───────────────────────────────────────────────────────────
-    # Row 1: TOTAL BOM COST (Components + Operations − Byproducts)
+    # Row 1: TOTAL (Gross — Components + Operations) — BoM Cost and Prod Cost together.
     vals = [""] * col_count
     vals[ci["Type"] - 1] = "TOTAL"
-    vals[ci["Name"] - 1] = "Total BOM Cost  (Components + Operations \u2212 Byproducts)"
+    vals[ci["Name"] - 1] = "Total  (Components + Operations)"
     if show_costs:
         vals[ci["BOM Cost (%s)" % cur] - 1] = _flt(cs["totals"]["total"])
         if has_usd and "BOM Cost (%s)" % usd in ci:
             vals[ci["BOM Cost (%s)" % usd] - 1] = _flt(cs["totals"].get("total_usd"))
+        if "Product Cost (%s)" % cur in ci:
+            vals[ci["Product Cost (%s)" % cur] - 1] = _flt(cs["totals"].get("total_prod"))
+        if has_usd and "Product Cost (%s)" % usd in ci:
+            vals[ci["Product Cost (%s)" % usd] - 1] = _flt(cs["totals"].get("total_prod_usd"))
     _write_row(ws, row, vals, _C["total"], bold=True)
     ws.row_dimensions[row].height = 15
     if show_costs and "BOM Cost (%s)" % cur in ci:
         _cell_comment(
             ws, row, ci["BOM Cost (%s)" % cur],
-            "TOTAL BOM COST\n\n"
-            "= Subtotal Components + Subtotal Operations \u2212 Subtotal Byproducts\n\n"
+            "TOTAL BOM COST (Gross)\n\n"
+            "= Subtotal Components + Subtotal Operations\n\n"
             "Components: \u03a3 (qty_i \u00d7 std_cost_i \u00d7 production_qty_factor)\n"
-            "Operations: \u03a3 ((duration_j \u00f7 60) \u00d7 wc_cost_per_hour)\n"
-            "Byproducts: \u2212 \u03a3 (qty_k \u00d7 std_cost_k \u00d7 cost_share_k)\n\n"
+            "Operations: \u03a3 ((duration_j \u00f7 60) \u00d7 wc_cost_per_hour)\n\n"
+            "Gross value before deducting byproduct recoverable value.\n"
             "Scaled to the production quantity shown in the BOM header.",
         )
     total_row = row
     row += 1
 
-    # Row 2: TOTAL PRODUCT COST (gross, before byproduct recoverable deduction)
-    if show_costs and "Product Cost (%s)" % cur in ci:
-        vals = [""] * col_count
-        vals[ci["Type"] - 1] = "TOTAL"
-        vals[ci["Name"] - 1] = "Total Product Cost  (Components + Operations)"
-        vals[ci["Product Cost (%s)" % cur] - 1] = _flt(
-            cs["totals"].get("total_prod")
-        )
-        if has_usd and "Product Cost (%s)" % usd in ci:
-            vals[ci["Product Cost (%s)" % usd] - 1] = _flt(
-                cs["totals"].get("total_prod_usd")
-            )
-        _write_row(ws, row, vals, _C["total"], bold=True)
-        ws.row_dimensions[row].height = 15
-        _cell_comment(
-            ws, row, ci["Product Cost (%s)" % cur],
-            "TOTAL PRODUCT COST (Gross)\n\n"
-            "= Subtotal Components (Prod. Cost) + Subtotal Operations (BOM Cost)\n\n"
-            "Gross catalogue cost before deducting byproduct recoverable value.\n"
-            "Does not include the BOM cost_share allocation to byproducts.",
-        )
-        row += 1
-
-    # Rows 3 & 4: only when byproducts exist
+    # Rows 2 & 3: only when byproducts exist
     if bp_categories and show_costs and "Product Cost (%s)" % cur in ci:
-        # Row 3: BYPRODUCTS RECOVERABLE VALUE
+        # Row 2: (−) RECOVERABLE BYPRODUCT VALUE — both BoM and Prod columns
         vals = [""] * col_count
         vals[ci["Type"] - 1] = "TOTAL"
-        vals[ci["Name"] - 1] = "Byproducts Recoverable Value  (\u2212 from Product Cost)"
+        vals[ci["Name"] - 1] = "(\u2212) Recoverable byproduct value"
+        vals[ci["BOM Cost (%s)" % cur] - 1] = _flt(cs["totals"].get("byproducts"))
+        if has_usd and "BOM Cost (%s)" % usd in ci:
+            vals[ci["BOM Cost (%s)" % usd] - 1] = _flt(cs["totals"].get("byproducts_usd"))
         vals[ci["Product Cost (%s)" % cur] - 1] = _flt(
             cs["totals"].get("byproducts_prod_cost")
         )
@@ -809,16 +793,19 @@ def _build_summary_sheet(ws, cs, cur, usd,
         _cell_comment(
             ws, row, ci["Product Cost (%s)" % cur],
             "BYPRODUCTS RECOVERABLE VALUE\n\n"
-            "= \u03a3 (qty_k \u00d7 product.standard_price)  for all byproducts.\n\n"
-            "Catalogue value of recovered co-products, subtracted from\n"
-            "Total Product Cost to obtain Net Product Cost.",
+            "BOM Cost: \u03a3 (qty_k \u00d7 std_cost_k \u00d7 cost_share_k)  for all byproducts.\n"
+            "Prod Cost: \u03a3 (qty_k \u00d7 product.standard_price)  for all byproducts.\n\n"
+            "Catalogue value of recovered co-products, subtracted to obtain the NET COST.",
         )
         row += 1
 
-        # Row 4: NET PRODUCT COST
+        # Row 3: (=) NET COST — both BoM and Prod columns
         vals = [""] * col_count
         vals[ci["Type"] - 1] = "TOTAL"
-        vals[ci["Name"] - 1] = "Net Product Cost  (Total \u2212 Byproducts Recoverable)"
+        vals[ci["Name"] - 1] = "(=) NET COST"
+        vals[ci["BOM Cost (%s)" % cur] - 1] = _flt(cs["totals"].get("net_bom"))
+        if has_usd and "BOM Cost (%s)" % usd in ci:
+            vals[ci["BOM Cost (%s)" % usd] - 1] = _flt(cs["totals"].get("net_bom_usd"))
         vals[ci["Product Cost (%s)" % cur] - 1] = _flt(
             cs["totals"].get("net_prod")
         )
@@ -830,8 +817,8 @@ def _build_summary_sheet(ws, cs, cur, usd,
         ws.row_dimensions[row].height = 15
         _cell_comment(
             ws, row, ci["Product Cost (%s)" % cur],
-            "NET PRODUCT COST\n\n"
-            "= Total Product Cost \u2212 Byproducts Recoverable Value\n\n"
+            "NET COST\n\n"
+            "= Total \u2212 Byproducts Recoverable Value\n\n"
             "Effective cost of the finished product after accounting for\n"
             "the value recovered from byproducts / co-products.\n"
             "Can be negative when co-product value exceeds input cost.",

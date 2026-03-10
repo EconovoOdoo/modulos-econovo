@@ -40,16 +40,36 @@ import { BomCostSummaryView } from "@econovo_mrp_bom_cost_summary/views/bom_cost
  * sub-BOM level; we rely on the explicit byproducts subtraction in
  * ``augmentWithDirectUsd`` for the top-level adjustment.
  *
- * @param {Object} node       Raw BOM node (root or sub-BOM component).
- * @param {Object} directMap  Accumulator dict (mutated in place).
+ * Product Cost (prod) uses native Odoo semantics: for sub-BOM components
+ * the sub-product's own ``prod_cost_usd_direct`` is used (standard_price
+ * in USD × qty); its internal leaves receive prod = 0 to avoid
+ * double-counting – same strategy as base ``collectCosts``.
+ *
+ * @param {Object}  node         Raw BOM node (root or sub-BOM component).
+ * @param {Object}  directMap    Accumulator dict (mutated in place).
+ * @param {boolean} skipProdCost True when recursing inside a sub-BOM.
  */
-function collectDirectUsd(node, directMap) {
+function collectDirectUsd(node, directMap, skipProdCost = false) {
     if (!node.components) return;
 
     for (const comp of node.components) {
         if (comp.type === "bom" && comp.components) {
-            // Sub-BOM: descend without any cost-share scaling.
-            collectDirectUsd(comp, directMap);
+            // Sub-BOM: capture prod_cost_usd_direct at this level (native
+            // semantics); recurse for bom_cost_usd_direct leaf breakdown.
+            if (!skipProdCost) {
+                const catId = comp.categ_id || 0;
+                const prodId = comp.product_id;
+                const parentProdId = node.product_id;
+                if (!directMap[catId]) directMap[catId] = {};
+                if (!directMap[catId][prodId]) directMap[catId][prodId] = {};
+                if (!directMap[catId][prodId][parentProdId]) {
+                    directMap[catId][prodId][parentProdId] = { bom: 0, prod: 0 };
+                }
+                // bom stays 0 here — the recursive call below populates it.
+                directMap[catId][prodId][parentProdId].prod +=
+                    comp.prod_cost_usd_direct || 0;
+            }
+            collectDirectUsd(comp, directMap, true);
         } else {
             // Leaf component: record its direct USD contribution.
             const catId = comp.categ_id || 0;
@@ -63,8 +83,12 @@ function collectDirectUsd(node, directMap) {
             }
             directMap[catId][prodId][parentProdId].bom +=
                 comp.bom_cost_usd_direct || 0;
-            directMap[catId][prodId][parentProdId].prod +=
-                comp.prod_cost_usd_direct || 0;
+            // prod_cost_usd_direct = 0 for leaves inside a sub-BOM: already
+            // captured at the sub-BOM level above.
+            if (!skipProdCost) {
+                directMap[catId][prodId][parentProdId].prod +=
+                    comp.prod_cost_usd_direct || 0;
+            }
         }
     }
 }
@@ -217,13 +241,14 @@ function injectAndBubbleDirectUsdByproducts(nodes, byproductDirectMap) {
  * server-side data.
  *
  * Writes the following grand-total keys on ``costSummary.totals``:
- *   components_usd_direct         – BoM Cost USD direct (components)
- *   prod_cost_usd_direct          – Product Cost USD direct (components)
- *   total_usd_direct              – same as components (no ops contribution)
- *   total_prod_usd_direct         – same as prod_cost_usd_direct
- *   byproducts_usd_direct         – BoM Cost USD direct (byproducts)
+ *   components_usd_direct           – BoM Cost USD direct (components)
+ *   prod_cost_usd_direct            – Product Cost USD direct (components)
+ *   total_usd_direct                – same as components (no ops contribution)
+ *   total_prod_usd_direct           – same as prod_cost_usd_direct
+ *   byproducts_usd_direct           – BoM Cost USD direct (byproducts)
  *   byproducts_prod_cost_usd_direct – Product Cost USD direct (byproducts)
- *   net_prod_usd_direct           – total_prod_usd_direct − byproducts_prod_cost_usd_direct
+ *   net_bom_usd_direct              – total_usd_direct − byproducts_usd_direct
+ *   net_prod_usd_direct             – total_prod_usd_direct − byproducts_prod_cost_usd_direct
  *
  * Operations do not carry ``standard_price_usd`` (they use work-centre
  * hourly rates), so their direct-USD contribution is zero.
@@ -274,6 +299,7 @@ function augmentWithDirectUsd(costSummary, rawData) {
 
     costSummary.totals.byproducts_usd_direct = totalByprodUsdDirect;
     costSummary.totals.byproducts_prod_cost_usd_direct = totalByprodProdCostUsdDirect;
+    costSummary.totals.net_bom_usd_direct = totalCompUsdDirect - totalByprodUsdDirect;
     costSummary.totals.net_prod_usd_direct =
         totalProdCostUsdDirect - totalByprodProdCostUsdDirect;
 

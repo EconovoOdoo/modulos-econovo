@@ -126,9 +126,9 @@ class ReportEconovoBomCostSummary(models.AbstractModel):
         total_byproducts_prod_cost = sum(
             c["prod_cost_total"] for c in byproduct_categories
         )
-        # Byproducts reduce the net BOM cost (their bom_cost is allocated away
-        # from the main product via cost_share).
-        total_bom = total_components + total_operations - total_byproducts
+        # Gross BoM = all costs before byproduct deduction (mirrors JS totals.total).
+        total_bom = total_components + total_operations
+        net_bom = total_bom - total_byproducts
         total_prod = total_prod_cost + total_operations
         net_prod = total_prod - total_byproducts_prod_cost
 
@@ -173,6 +173,8 @@ class ReportEconovoBomCostSummary(models.AbstractModel):
                 "total_usd": total_bom * rate if rate else False,
                 "total_prod": total_prod,
                 "total_prod_usd": total_prod * rate if rate else False,
+                "net_bom": net_bom,
+                "net_bom_usd": net_bom * rate if rate else False,
                 "net_prod": net_prod,
                 "net_prod_usd": net_prod * rate if rate else False,
             },

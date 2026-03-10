@@ -9,23 +9,110 @@ import { _t } from "@web/core/l10n/translation";
 // ---------------------------------------------------------------------------
 
 /**
- * Recursively walks the BOM tree collecting leaf component,
- * operation, and byproduct costs, tracking parent product for traceability.
+ * Inserts or merges a component entry into the category map.
+ * Shared by leaf components and sub-BOM-level prod_cost entries.
  *
- * Raw values from the server are used WITHOUT any cost_share scaling.
- * Rationale: the Python backend already bakes each sub-BOM's cost_share
- * into the bom_cost values it returns (via `bom_cost *= cost_share` at
- * the end of `_get_bom_data`).  Applying cost_share again here would
- * double-count the byproduct deduction, because `computeCostSummary`
- * also subtracts totalByproducts explicitly — matching Odoo native
- * behaviour: total_bom = components_raw + operations_raw − byproducts.
+ * @param {Object} categoryMap
+ * @param {Object} comp - BOM tree node providing categ/product metadata
+ * @param {number} bomCost - Value to add to the BoM Cost aggregation
+ * @param {number} prodCost - Value to add to the Product Cost aggregation
+ * @param {string} parentName
+ * @param {number} parentProductId
+ * @param {Object} parentRouteInfo
+ */
+function _addComponentEntry(categoryMap, comp, bomCost, prodCost, parentName, parentProductId, parentRouteInfo) {
+    const catId = comp.categ_id || 0;
+    const catName = comp.categ_name || _t("Uncategorized");
+    if (!categoryMap[catId]) {
+        categoryMap[catId] = {
+            id: catId,
+            name: catName,
+            total: 0,
+            prod_cost_total: 0,
+            products: {},
+            ancestors: comp.categ_ancestors || [{ id: catId, name: catName }],
+        };
+    }
+    const cat = categoryMap[catId];
+    cat.total += bomCost;
+    cat.prod_cost_total += prodCost;
+
+    const prodId = comp.product_id;
+    if (!cat.products[prodId]) {
+        cat.products[prodId] = {
+            product_id: prodId,
+            name: comp.name,
+            link_id: comp.link_id || prodId,
+            link_model: comp.link_model || "product.product",
+            total: 0,
+            prod_cost_total: 0,
+            usages: [],
+            // Availability: stock levels for this component product.
+            // All usages share the same stock data, so capture it once.
+            quantity_available: comp.quantity_available !== undefined
+                ? comp.quantity_available : false,
+            quantity_on_hand: comp.quantity_on_hand !== undefined
+                ? comp.quantity_on_hand : false,
+            availability_state: comp.availability_state || false,
+            availability_display: comp.availability_display || "",
+        };
+    }
+    const product = cat.products[prodId];
+    product.total += bomCost;
+    product.prod_cost_total += prodCost;
+
+    const existingUsage = product.usages.find(
+        (u) => u.parent_product_id === parentProductId
+    );
+    if (existingUsage) {
+        existingUsage.quantity += comp.quantity || 0;
+        existingUsage.total += bomCost;
+        existingUsage.prod_cost += prodCost;
+    } else {
+        product.usages.push({
+            parent_product_id: parentProductId,
+            parent_name: parentName,
+            quantity: comp.quantity || 0,
+            uom_name: comp.uom_name,
+            total: bomCost,
+            prod_cost: prodCost,
+            lead_time: comp.lead_time || false,
+            route_name: comp.route_name || "",
+            route_detail: comp.route_detail || "",
+            route_type: comp.route_type || "",
+            bom_id: comp.bom_id || false,
+            parent_route_name: parentRouteInfo.route_name,
+            parent_route_detail: parentRouteInfo.route_detail,
+            parent_route_type: parentRouteInfo.route_type,
+            parent_bom_id: parentRouteInfo.bom_id,
+        });
+    }
+}
+
+/**
+ * Recursively walks the BOM tree collecting component, operation, and
+ * byproduct costs.
+ *
+ * BoM Cost column  — recursive leaf breakdown: every leaf component
+ *   (including those deep inside sub-BOMs) contributes its server-side
+ *   `bom_cost` (= standard_price × qty × factor, cost_share already
+ *   applied by _get_bom_data).  This gives a full manufacturing-cost
+ *   breakdown per product category.
+ *
+ * Product Cost column — native Odoo semantics: each DIRECT component
+ *   contributes its own `prod_cost` (= component.standard_price × qty).
+ *   For sub-BOM components the sub-BOM product's standard_price is used
+ *   (same as native BOM Overview); its internal leaf components receive
+ *   prod_cost = 0 so they don't double-count.
  *
  * @param {Object} node - Current BOM tree node
  * @param {Object} categoryMap - Accumulator for component category groupings
  * @param {Object} workcenterMap - Accumulator for workcenter groupings
  * @param {Object} byproductCategoryMap - Accumulator for byproduct category groupings
+ * @param {boolean} skipProdCost - True when recursing inside a sub-BOM;
+ *   prevents double-counting the sub-BOM's prod_cost in leaf entries.
  */
-export function collectCosts(node, categoryMap, workcenterMap, byproductCategoryMap) {
+export function collectCosts(node, categoryMap, workcenterMap, byproductCategoryMap, skipProdCost = false) {
     const parentName = node.name;
     const parentProductId = node.product_id;
 
@@ -73,6 +160,8 @@ export function collectCosts(node, categoryMap, workcenterMap, byproductCategory
     // Collect byproducts at this BOM level.
     // bp.bom_cost is the cost-share-allocated portion already computed
     // server-side.  Use it as-is without any additional scaling.
+    // Byproducts always use their own prod_cost regardless of skipProdCost
+    // because each byproduct IS a distinct product with its own standard_price.
     if (node.byproducts) {
         for (const bp of node.byproducts) {
             const catId = bp.categ_id || 0;
@@ -132,86 +221,37 @@ export function collectCosts(node, categoryMap, workcenterMap, byproductCategory
         }
     }
 
-    // Process components — use raw bom_cost/prod_cost from server as-is.
-    // Sub-BOM nodes already have their own byproduct cost_share applied
-    // server-side, so no additional scaling is needed here.
+    // Process components.
+    //
+    // BoM Cost  → always recurse to collect real manufacturing costs from leaves.
+    // Product Cost → native Odoo semantics:
+    //   • Direct component (leaf): use comp.prod_cost (standard_price × qty).
+    //   • Sub-BOM component: add ONE entry for the sub-product using its own
+    //     comp.prod_cost (its standard_price × qty), then recurse with
+    //     skipProdCost=true so the internal leaves contribute bom_cost only.
     if (node.components) {
         for (const comp of node.components) {
             if (comp.type === "bom" && comp.components) {
-                // Sub-BOM: recurse without any cost_share factor
-                collectCosts(comp, categoryMap, workcenterMap, byproductCategoryMap);
+                // Sub-BOM: capture prod_cost at this level (native semantics).
+                if (!skipProdCost) {
+                    _addComponentEntry(
+                        categoryMap, comp,
+                        0,                   // bom_cost comes from recursed leaves
+                        comp.prod_cost || 0, // standard_price × qty of the sub-product
+                        parentName, parentProductId, parentRouteInfo
+                    );
+                }
+                // Recurse for the full BoM Cost breakdown; skip prod_cost to
+                // avoid double-counting the sub-BOM's standard_price.
+                collectCosts(comp, categoryMap, workcenterMap, byproductCategoryMap, true);
             } else {
-                // Leaf component: add to category -> product -> usages
-                const catId = comp.categ_id || 0;
-                const catName = comp.categ_name || _t("Uncategorized");
-                if (!categoryMap[catId]) {
-                    categoryMap[catId] = {
-                        id: catId,
-                        name: catName,
-                        total: 0,
-                        prod_cost_total: 0,
-                        products: {},
-                        ancestors: comp.categ_ancestors || [
-                            { id: catId, name: catName },
-                        ],
-                    };
-                }
-                const adjustedCost = comp.bom_cost || 0;
-                const adjustedProdCost = comp.prod_cost || 0;
-                const cat = categoryMap[catId];
-                cat.total += adjustedCost;
-                cat.prod_cost_total += adjustedProdCost;
-
-                const prodId = comp.product_id;
-                if (!cat.products[prodId]) {
-                    cat.products[prodId] = {
-                        product_id: prodId,
-                        name: comp.name,
-                        link_id: comp.link_id || prodId,
-                        link_model: comp.link_model || "product.product",
-                        total: 0,
-                        prod_cost_total: 0,
-                        usages: [],
-                        // Availability: stock levels for this component product.
-                        // All usages share the same stock data, so capture it once.
-                        quantity_available: comp.quantity_available !== undefined
-                            ? comp.quantity_available : false,
-                        quantity_on_hand: comp.quantity_on_hand !== undefined
-                            ? comp.quantity_on_hand : false,
-                        availability_state: comp.availability_state || false,
-                        availability_display: comp.availability_display || "",
-                    };
-                }
-                const product = cat.products[prodId];
-                product.total += adjustedCost;
-                product.prod_cost_total += adjustedProdCost;
-
-                const existingUsage = product.usages.find(
-                    (u) => u.parent_product_id === parentProductId
+                // Leaf component: bom_cost and prod_cost both from server.
+                _addComponentEntry(
+                    categoryMap, comp,
+                    comp.bom_cost || 0,
+                    skipProdCost ? 0 : (comp.prod_cost || 0),
+                    parentName, parentProductId, parentRouteInfo
                 );
-                if (existingUsage) {
-                    existingUsage.quantity += comp.quantity || 0;
-                    existingUsage.total += adjustedCost;
-                    existingUsage.prod_cost += adjustedProdCost;
-                } else {
-                    product.usages.push({
-                        parent_product_id: parentProductId,
-                        parent_name: parentName,
-                        quantity: comp.quantity || 0,
-                        uom_name: comp.uom_name,
-                        total: adjustedCost,
-                        prod_cost: adjustedProdCost,
-                        lead_time: comp.lead_time || false,
-                        route_name: comp.route_name || "",
-                        route_detail: comp.route_detail || "",
-                        route_type: comp.route_type || "",
-                        bom_id: comp.bom_id || false,
-                        parent_route_name: parentRouteInfo.route_name,
-                        parent_route_detail: parentRouteInfo.route_detail,
-                        parent_route_type: parentRouteInfo.route_type,
-                        parent_bom_id: parentRouteInfo.bom_id,
-                    });
-                }
             }
         }
     }
