@@ -124,9 +124,13 @@
     <!--    We identify the operations thead by its unique header text -->
     <!-- ============================================================ -->
 
-    <!-- Empty BoM Cost USD direct placeholder header in ops section -->
+    <!-- BoM Cost USD direct header in ops section (no Product Cost USD direct for ops) -->
     <xpath expr="//thead[tr/th[contains(normalize-space(.), 'Operations by Work Center')]]/tr/th[@t-if='showCostsUsd']" position="before">
-        <th t-if="showCostsUsdDirect"/>
+        <th t-if="showCostsUsdDirect" class="text-end">BoM Cost <t t-esc="secondaryCurrency.name"/>
+            <i class="fa fa-info-circle text-muted ms-1"
+               data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+               t-att-data-tooltip-info="colTooltip('ops_bom_cost_usd_direct')"/>&#8203;
+        </th>
     </xpath>
     <!-- Empty Product Cost USD direct placeholder header (before the
          bare <th/> that holds the placeholder for the Product Cost area) -->
@@ -139,8 +143,11 @@
     <!-- ============================================================ -->
 
     <xpath expr="//td[strong[@t-esc='fmtUsd(wc.total_usd)']]" position="before">
-        <td t-if="showCostsUsdDirect"/>
+        <td t-if="showCostsUsdDirect" class="text-end">
+            <strong t-esc="fmtUsdDirect(wc.total_usd_direct)"/>
+        </td>
     </xpath>
+    <!-- empty placeholder keeps Product Cost USD direct column alignment for ops -->
     <xpath expr="//td[strong[@t-esc='fmtUsd(wc.total_usd)']]/following-sibling::td[1]" position="before">
         <td t-if="showCostsUsdDirect"/>
     </xpath>
@@ -150,8 +157,11 @@
     <!-- ============================================================ -->
 
     <xpath expr="//td[t[@t-esc='fmtUsd(op.total_usd)']]" position="before">
-        <td t-if="showCostsUsdDirect"/>
+        <td t-if="showCostsUsdDirect" class="text-end text-muted">
+            <t t-esc="fmtUsdDirect(op.total_usd_direct)"/>
+        </td>
     </xpath>
+    <!-- empty placeholder keeps Product Cost USD direct column alignment for ops -->
     <xpath expr="//td[t[@t-esc='fmtUsd(op.total_usd)']]/following-sibling::td[1]" position="before">
         <td t-if="showCostsUsdDirect"/>
     </xpath>
@@ -161,8 +171,11 @@
     <!-- ============================================================ -->
 
     <xpath expr="//td[strong[@t-esc='fmtUsd(data.totals.operations_usd)']]" position="before">
-        <td t-if="showCostsUsdDirect"/>
+        <td t-if="showCostsUsdDirect" class="text-end">
+            <strong t-esc="fmtUsdDirect(data.totals.operations_usd_direct)"/>
+        </td>
     </xpath>
+    <!-- empty placeholder keeps Product Cost USD direct column alignment for ops -->
     <xpath expr="//td[strong[@t-esc='fmtUsd(data.totals.operations_usd)']]/following-sibling::td[1]" position="before">
         <td t-if="showCostsUsdDirect"/>
     </xpath>
