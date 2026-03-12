@@ -639,6 +639,16 @@ export class BomCostSummarySection extends Component {
                     T("Deducted from gross totals to obtain net cost"),
                 ],
             },
+            "subtotal_byproducts_prod_cost_note": {
+                title: T("Byproduct market value (independent of cost_share)"),
+                lines: [
+                    T("= \u03a3 (qty \u00d7 standard_price) of each byproduct"),
+                    T("This value is always shown regardless of the cost_share% setting"),
+                    T("If cost_share = 0%: the BoM Cost column reads \u24280 but this column"),
+                    T("still shows the full catalogue value \u2014 byproducts are not"),
+                    T("reducing manufacturing cost but may still be sold/reused"),
+                ],
+            },
             "net_prod": {
                 title: T("Net cost after byproduct recovery"),
                 lines: [
@@ -661,9 +671,12 @@ export class BomCostSummarySection extends Component {
             "grand_total_prod": {
                 title: T("Grand Total Product Cost"),
                 lines: [
-                    T("= \u03a3 (qty \u00d7 product.standard_price) + Subtotal Operations"),
-                    T("Catalogue standard cost of all components plus operation costs"),
-                    T("See \u2018Net Product Cost\u2019 row for the value after byproduct recovery"),
+                    T("= standard_price of the FINISHED product \u00d7 quantity produced"),
+                    T("This is the catalogue price stored on the finished product itself,"),
+                    T("NOT the sum of the Product Cost column in the components section"),
+                    T("(which shows per-component catalogue values for purchase analysis)"),
+                    T("To compare: BoM Cost = what it costs to MAKE; Product Cost = what"),
+                    T("it costs to BUY the finished product at its standard price"),
                 ],
             },
             "duration": {

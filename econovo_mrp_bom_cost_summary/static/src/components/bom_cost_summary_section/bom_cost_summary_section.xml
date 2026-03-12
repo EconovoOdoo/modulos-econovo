@@ -618,6 +618,9 @@
                     </td>
                     <td t-if="showCosts" class="text-end">
                         <strong t-esc="fmtMoney(data.totals.byproducts_prod_cost)"/>
+                        <i class="fa fa-info-circle text-muted ms-1"
+                           data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                           t-att-data-tooltip-info="colTooltip('subtotal_byproducts_prod_cost_note')"/>&#8203;
                     </td>
                     <td t-if="showCostsUsd" class="text-end text-muted">
                         <strong t-esc="fmtUsd(data.totals.byproducts_prod_cost_usd)"/>
@@ -653,6 +656,9 @@
                 </td>
                 <td t-if="showCosts" class="text-end">
                     <strong t-esc="fmtMoney(data.totals.total_prod)"/>
+                    <i class="fa fa-info-circle text-muted ms-1"
+                       data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                       t-att-data-tooltip-info="colTooltip('grand_total_prod')"/>&#8203;
                 </td>
                 <td t-if="showCostsUsd" class="text-end">
                     <strong t-esc="fmtUsd(data.totals.total_prod_usd)"/>
