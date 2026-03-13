@@ -692,6 +692,8 @@ def _build_summary_sheet(ws, cs, cur, usd,
 
     # ── Build ordered column list ─────────────────────────────────────────────
     cols = ["Level", "Type", "Name", "Qty / Duration", "UoM", "%"]
+    if show_operations:
+        cols += ["Qty (ud)", "min/ud", "ud/hr"]
     if show_costs:
         cols.append("BOM Cost (%s)" % cur)
         if has_usd:
@@ -916,6 +918,20 @@ def _build_summary_sheet(ws, cs, cur, usd,
                 vals[ci["Name"] - 1] = "        " + op_name
                 vals[ci["Qty / Duration"] - 1] = _flt(op.get("duration"))
                 vals[ci["%"] - 1] = _pct(op.get("percentage"))
+                if show_operations:
+                    _parent_qty = op.get("parent_qty") or 1
+                    _duration = op.get("duration") or 0
+                    vals[ci["Qty (ud)"] - 1] = _flt(_parent_qty)
+                    vals[ci["min/ud"] - 1] = (
+                        round(_duration / _parent_qty, 2)
+                        if _duration and _parent_qty
+                        else ""
+                    )
+                    vals[ci["ud/hr"] - 1] = (
+                        round((_parent_qty * 60) / _duration, 2)
+                        if _duration and _parent_qty
+                        else ""
+                    )
                 if show_costs:
                     vals[ci["BOM Cost (%s)" % cur] - 1] = _flt(op.get("total"))
                     if has_usd and "BOM Cost (%s)" % usd in ci:

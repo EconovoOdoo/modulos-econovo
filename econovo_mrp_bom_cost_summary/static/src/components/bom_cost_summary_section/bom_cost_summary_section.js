@@ -39,6 +39,9 @@ export class BomCostSummarySection extends Component {
         initByproductCategoryFold(this.props.data.byproductCategories || []);
         for (const wc of this.props.data.workcenters) {
             foldState[`wc_${wc.id}`] = true;
+            for (let i = 0; i < wc.items.length; i++) {
+                foldState[`op_${wc.id}_${i}`] = true;
+            }
         }
         this.state = useState(foldState);
 
@@ -70,6 +73,9 @@ export class BomCostSummarySection extends Component {
                 collectByproductKeys(nextProps.data.byproductCategories || []);
                 for (const wc of nextProps.data.workcenters) {
                     newKeys.add(`wc_${wc.id}`);
+                    for (let i = 0; i < wc.items.length; i++) {
+                        newKeys.add(`op_${wc.id}_${i}`);
+                    }
                 }
                 // Remove stale keys (items no longer in the tree)
                 for (const key of Object.keys(this.state)) {
@@ -322,6 +328,16 @@ export class BomCostSummarySection extends Component {
         return this.state[`wc_${wcId}`];
     }
 
+    toggleOperation(wcId, opIdx) {
+        const key = `op_${wcId}_${opIdx}`;
+        this.state[key] = !this.state[key];
+    }
+
+    isOperationFolded(wcId, opIdx) {
+        const key = `op_${wcId}_${opIdx}`;
+        return key in this.state ? this.state[key] : true;
+    }
+
     isByproductCategoryFolded(categId) {
         return this.state[`bpcat_${categId}`];
     }
@@ -455,6 +471,16 @@ export class BomCostSummarySection extends Component {
             return "";
         }
         return `${days} ${_t("Days")}`;
+    }
+
+    fmtMinPerUd(duration, qty) {
+        if (!duration || !qty) return "—";
+        return formatFloat(duration / qty, { digits: [false, 2] }) + " min/ud";
+    }
+
+    fmtUdPerHr(duration, qty) {
+        if (!duration || !qty) return "—";
+        return formatFloat((qty * 60) / duration, { digits: [false, 2] }) + " ud/hr";
     }
 
     /**
@@ -684,6 +710,28 @@ export class BomCostSummarySection extends Component {
                 lines: [
                     T("Operation: manufacturing operation duration in minutes"),
                     T("Work Center: sum of all its operation durations"),
+                ],
+            },
+            "min_per_ud": {
+                title: T("Time cycle: min/ud"),
+                lines: [
+                    T("= duration ÷ quantity produced"),
+                    T("'—' when duration = 0"),
+                ],
+            },
+            "ud_per_hr": {
+                title: T("Production rate: ud/hr"),
+                lines: [
+                    T("= (qty × 60) ÷ duration"),
+                    T("Higher = faster throughput"),
+                    T("'—' when duration = 0"),
+                ],
+            },
+            "op_components": {
+                title: T("Components consumed in this operation"),
+                lines: [
+                    T("Set via 'Consumed in Operation' on BOM line"),
+                    T("Components without assignment not shown here"),
                 ],
             },
         };

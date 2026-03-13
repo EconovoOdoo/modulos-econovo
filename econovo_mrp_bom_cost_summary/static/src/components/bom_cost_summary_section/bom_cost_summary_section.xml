@@ -311,8 +311,16 @@
                            data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
                            t-att-data-tooltip-info="colTooltip('bom_cost_usd')"/>&#8203;
                     </th>
-                    <th/>
-                    <th t-if="showCosts"/>
+                    <th class="text-end">min/ud
+                        <i class="fa fa-info-circle text-muted ms-1"
+                           data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                           t-att-data-tooltip-info="colTooltip('min_per_ud')"/>&#8203;
+                    </th>
+                    <th t-if="showCosts" class="text-end">ud/hr
+                        <i class="fa fa-info-circle text-muted ms-1"
+                           data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                           t-att-data-tooltip-info="colTooltip('ud_per_hr')"/>&#8203;
+                    </th>
                 </tr>
             </thead>
             <tbody>
@@ -354,7 +362,16 @@
                         <t t-foreach="wc.items" t-as="op" t-key="op_index">
                             <!-- Operation + parent product in a single row -->
                             <tr class="o_econovo_cost_summary__product-row">
-                                <td/>
+                                <td class="o_econovo_cost_summary__fold-col">
+                                    <t t-if="op.components and op.components.length">
+                                        <button class="btn btn-light btn-sm py-0 px-1"
+                                                t-on-click.stop="() => this.toggleOperation(wc.id, op_index)"
+                                                t-att-title="isOperationFolded(wc.id, op_index) ? 'Show components' : 'Hide components'">
+                                            <i t-att-class="'fa fa-fw ' + (isOperationFolded(wc.id, op_index) ? 'fa-caret-right' : 'fa-caret-down')"
+                                               role="img"/>
+                                        </button>
+                                    </t>
+                                </td>
                                 <td style="padding-left: 58px;">
                                     <a href="#" class="o_econovo_cost_summary__link"
                                        t-on-click.stop.prevent="() => this.openFormDialog(op.link_id, 'mrp.routing.workcenter')">
@@ -366,6 +383,9 @@
                                 </td>
                                 <td class="text-end text-muted">
                                     <t t-esc="fmtDuration(op.duration)"/>
+                                    <t t-if="op.parent_qty and op.parent_qty !== 1">
+                                        <span class="text-muted ms-1" style="font-size:0.8em;">· <t t-esc="op.parent_qty"/> ud</span>
+                                    </t>
                                 </td>
                                 <td class="text-end text-muted">
                                     <t t-esc="fmtPct(op.percentage)"/>
@@ -389,9 +409,38 @@
                                 <td t-if="showCostsUsd" class="text-end text-muted">
                                     <t t-esc="fmtUsd(op.total_usd)"/>
                                 </td>
-                                <td/>
-                                <td t-if="showCosts"/>
+                                <td class="text-end text-muted">
+                                    <t t-esc="fmtMinPerUd(op.duration, op.parent_qty)"/>
+                                </td>
+                                <td t-if="showCosts" class="text-end text-muted">
+                                    <t t-esc="fmtUdPerHr(op.duration, op.parent_qty)"/>
+                                </td>
                             </tr>
+                            <!-- Expandable: components consumed in this operation -->
+                            <t t-if="op.components and op.components.length and !isOperationFolded(wc.id, op_index)">
+                                <t t-foreach="op.components" t-as="comp" t-key="comp_index">
+                                    <tr class="o_econovo_cost_summary__usage-row">
+                                        <td/>
+                                        <td style="padding-left: 88px;">
+                                            <i class="fa fa-cube text-muted me-1"
+                                               data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                                               t-att-data-tooltip-info="colTooltip('op_components')"/>
+                                            <span t-esc="comp.name"/>
+                                            <span class="text-muted ms-1">(<t t-esc="comp.quantity"/> <t t-esc="comp.uom"/>)</span>
+                                        </td>
+                                        <td/>
+                                        <td/>
+                                        <td t-if="showAvailabilities"/>
+                                        <td t-if="showAvailabilities"/>
+                                        <td t-if="showLeadTimes"/>
+                                        <td t-if="showLeadTimes"/>
+                                        <td t-if="showCosts"/>
+                                        <td t-if="showCostsUsd"/>
+                                        <td/>
+                                        <td t-if="showCosts"/>
+                                    </tr>
+                                </t>
+                            </t>
                         </t>
                     </t>
                 </t>

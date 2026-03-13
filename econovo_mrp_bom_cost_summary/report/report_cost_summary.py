@@ -233,6 +233,7 @@ class ReportEconovoBomCostSummary(models.AbstractModel):
                     "route_detail": node.get("route_detail", ""),
                     "route_type": node.get("route_type", ""),
                     "bom_id": node.get("bom_id", False),
+                    "parent_qty": node.get("quantity") or 1,
                 }
             )
 

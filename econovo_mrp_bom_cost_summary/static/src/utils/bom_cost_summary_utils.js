@@ -123,6 +123,14 @@ export function collectCosts(node, categoryMap, workcenterMap, byproductCategory
         bom_id: node.bom_id || false,
     };
 
+    // Build component→operation lookup for this BOM level.
+    const compsByOpId = {};
+    for (const comp of (node.components || [])) {
+        const opId = comp.operation_id || null;
+        if (!compsByOpId[opId]) compsByOpId[opId] = [];
+        compsByOpId[opId].push(comp);
+    }
+
     // Collect operations at this BOM level — use raw bom_cost from server
     if (node.operations) {
         for (const op of node.operations) {
@@ -153,6 +161,8 @@ export function collectCosts(node, categoryMap, workcenterMap, byproductCategory
                 route_detail: node.route_detail || "",
                 route_type: node.route_type || "",
                 bom_id: node.bom_id || false,
+                parent_qty: node.quantity || 1,
+                components: compsByOpId[op.link_id] || [],
             });
         }
     }
