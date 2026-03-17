@@ -109,6 +109,8 @@
                                             <th>Work Center / Operation</th>
                                             <th class="text-end">Duration (min)</th>
                                             <th class="text-end">%</th>
+                                            <th class="text-end">min/ud</th>
+                                            <th class="text-end">ud/hr</th>
                                             <th class="text-end">
                                                 Cost
                                                 <small t-if="cur">
@@ -137,6 +139,8 @@
                                                 <td class="text-end">
                                                     <t t-esc="'%.1f' % wc['percentage'] + '%'"/>
                                                 </td>
+                                                <td/>
+                                                <td/>
                                                 <td class="text-end">
                                                     <t t-esc="'%.2f' % wc['total']"/>
                                                 </td>
@@ -164,6 +168,16 @@
                                                         <t t-esc="'%.1f' % item['percentage'] + '%'"/>
                                                     </td>
                                                     <td class="text-end">
+                                                        <t t-if="item.get('duration') and item.get('parent_qty')"
+                                                           t-esc="'%.2f' % (item['duration'] / item['parent_qty'])"/>
+                                                        <t t-else="">—</t>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <t t-if="item.get('duration') and item.get('parent_qty')"
+                                                           t-esc="'%.2f' % (item['parent_qty'] * 60 / item['duration'])"/>
+                                                        <t t-else="">—</t>
+                                                    </td>
+                                                    <td class="text-end">
                                                         <t t-esc="'%.2f' % item['total']"/>
                                                     </td>
                                                     <t t-if="usd">
@@ -183,6 +197,8 @@
                                                 <t t-esc="'%.1f' % cs['totals']['operations_duration']"/>
                                             </td>
                                             <td class="text-end">100%</td>
+                                            <td/>
+                                            <td/>
                                             <td class="text-end">
                                                 <t t-esc="'%.2f' % cs['totals']['operations']"/>
                                             </td>

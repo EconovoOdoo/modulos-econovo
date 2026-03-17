@@ -289,8 +289,16 @@
                            data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
                            t-att-data-tooltip-info="colTooltip('pct_operations')"/>&#8203;
                     </th>
-                    <th t-if="showAvailabilities"/>
-                    <th t-if="showAvailabilities"/>
+                    <th t-if="showAvailabilities" class="text-end">min/ud
+                        <i class="fa fa-info-circle text-muted ms-1"
+                           data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                           t-att-data-tooltip-info="colTooltip('min_per_ud')"/>&#8203;
+                    </th>
+                    <th t-if="showAvailabilities" class="text-end">ud/hr
+                        <i class="fa fa-info-circle text-muted ms-1"
+                           data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                           t-att-data-tooltip-info="colTooltip('ud_per_hr')"/>&#8203;
+                    </th>
                     <th t-if="showLeadTimes" class="text-end">Lead Time
                         <i class="fa fa-info-circle text-muted ms-1"
                            data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
@@ -310,16 +318,6 @@
                         <i class="fa fa-info-circle text-muted ms-1"
                            data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
                            t-att-data-tooltip-info="colTooltip('bom_cost_usd')"/>&#8203;
-                    </th>
-                    <th class="text-end">min/ud
-                        <i class="fa fa-info-circle text-muted ms-1"
-                           data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
-                           t-att-data-tooltip-info="colTooltip('min_per_ud')"/>&#8203;
-                    </th>
-                    <th t-if="showCosts" class="text-end">ud/hr
-                        <i class="fa fa-info-circle text-muted ms-1"
-                           data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
-                           t-att-data-tooltip-info="colTooltip('ud_per_hr')"/>&#8203;
                     </th>
                 </tr>
             </thead>
@@ -354,8 +352,6 @@
                         <td t-if="showCostsUsd" class="text-end text-muted">
                             <strong t-esc="fmtUsd(wc.total_usd)"/>
                         </td>
-                        <td/>
-                        <td t-if="showCosts"/>
                     </tr>
 
                     <t t-if="!isWorkcenterFolded(wc.id)">
@@ -390,8 +386,12 @@
                                 <td class="text-end text-muted">
                                     <t t-esc="fmtPct(op.percentage)"/>
                                 </td>
-                                <td t-if="showAvailabilities"/>
-                                <td t-if="showAvailabilities"/>
+                                <td t-if="showAvailabilities" class="text-end text-muted">
+                                    <t t-esc="fmtMinPerUd(op.duration, op.parent_qty)"/>
+                                </td>
+                                <td t-if="showAvailabilities" class="text-end text-muted">
+                                    <t t-esc="fmtUdPerHr(op.duration, op.parent_qty)"/>
+                                </td>
                                 <td t-if="showLeadTimes" class="text-end text-muted">
                                     <span t-if="op.lead_time !== false" t-esc="fmtLeadTime(op.lead_time)"/>
                                 </td>
@@ -408,12 +408,6 @@
                                 </td>
                                 <td t-if="showCostsUsd" class="text-end text-muted">
                                     <t t-esc="fmtUsd(op.total_usd)"/>
-                                </td>
-                                <td class="text-end text-muted">
-                                    <t t-esc="fmtMinPerUd(op.duration, op.parent_qty)"/>
-                                </td>
-                                <td t-if="showCosts" class="text-end text-muted">
-                                    <t t-esc="fmtUdPerHr(op.duration, op.parent_qty)"/>
                                 </td>
                             </tr>
                             <!-- Expandable: components consumed in this operation -->
@@ -436,8 +430,6 @@
                                         <td t-if="showLeadTimes"/>
                                         <td t-if="showCosts"/>
                                         <td t-if="showCostsUsd"/>
-                                        <td/>
-                                        <td t-if="showCosts"/>
                                     </tr>
                                 </t>
                             </t>
@@ -466,8 +458,6 @@
                     <td t-if="showCostsUsd" class="text-end">
                         <strong t-esc="fmtUsd(data.totals.operations_usd)"/>
                     </td>
-                    <td/>
-                    <td t-if="showCosts"/>
                 </tr>
             </tbody>
         </t>
