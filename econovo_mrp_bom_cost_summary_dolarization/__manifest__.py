@@ -40,7 +40,6 @@ USD column order per section:
     'depends': [
         'econovo_mrp_bom_cost_summary',
         'gg_cost_dolarization',
-        'mrp_workorder_costs',
     ],
     'data': [
         'views/mrp_workcenter_views.xml',
