@@ -162,6 +162,7 @@ export function collectCosts(node, categoryMap, workcenterMap, byproductCategory
                 route_type: node.route_type || "",
                 bom_id: node.bom_id || false,
                 parent_qty: node.quantity || 1,
+                parent_uom_name: node.uom_name || "",
                 components: compsByOpId[op.link_id] || [],
             });
         }

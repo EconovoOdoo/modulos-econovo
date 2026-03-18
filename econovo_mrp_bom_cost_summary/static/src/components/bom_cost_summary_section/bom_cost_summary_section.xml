@@ -408,7 +408,7 @@
                                     <t t-esc="fmtPct(op.percentage)"/>
                                 </td>
                                 <td t-if="showAvailabilities" class="text-end text-muted">
-                                    <t t-esc="op.parent_qty"/> ud
+                                    <t t-esc="op.parent_qty"/> <span class="text-muted small" t-esc="op.parent_uom_name"/>
                                 </td>
                                 <td t-if="showAvailabilities"/>
                                 <td t-if="showPerformance" class="text-end text-muted">
