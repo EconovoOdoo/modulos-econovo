@@ -18,6 +18,9 @@ patch(BomOverviewComponent.prototype, {
             costSummary: false,
             secondaryCurrency: false,
         });
+        // Add the performance key so BomOverviewDisplayFilter receives it
+        // in showOptions and our patched checkbox can toggle it.
+        this.state.showOptions.performance = false;
         // Inject Excel export callback so bom_overview_control_panel_patch.xml
         // can render the "Excel" button on the native BOM overview page.
         useSubEnv({

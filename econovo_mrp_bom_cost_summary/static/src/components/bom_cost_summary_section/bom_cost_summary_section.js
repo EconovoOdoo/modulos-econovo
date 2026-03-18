@@ -216,6 +216,10 @@ export class BomCostSummarySection extends Component {
         return this.props.showOptions.operations;
     }
 
+    get showPerformance() {
+        return this.props.showOptions.performance;
+    }
+
     /**
      * Returns the Bootstrap text-color class for a given availability_state.
      *
@@ -732,6 +736,20 @@ export class BomCostSummarySection extends Component {
                 lines: [
                     T("Set via 'Consumed in Operation' on BOM line"),
                     T("Components without assignment not shown here"),
+                ],
+            },
+            "cant_prod": {
+                title: T("Qty. produced"),
+                lines: [
+                    T("Quantity of finished product linked to this operation"),
+                    T("= parent BOM quantity at this level"),
+                ],
+            },
+            "cant_consu": {
+                title: T("Qty. consumed"),
+                lines: [
+                    T("Quantity and unit of measure of the component"),
+                    T("consumed in this operation"),
                 ],
             },
         };

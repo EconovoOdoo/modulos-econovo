@@ -53,6 +53,7 @@ export class BomCostSummaryView extends Component {
             showOptions: {
                 uom: false,
                 availabilities: false,
+                performance: false,
                 costs: true,
                 operations: true,
                 leadTimes: true,
