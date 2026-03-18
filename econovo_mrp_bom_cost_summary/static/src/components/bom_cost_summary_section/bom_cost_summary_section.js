@@ -479,12 +479,12 @@ export class BomCostSummarySection extends Component {
 
     fmtMinPerUd(duration, qty) {
         if (!duration || !qty) return "—";
-        return formatFloat(duration / qty, { digits: [false, 2] }) + " min/ud";
+        return formatFloat(duration / qty, { digits: [false, 2] });
     }
 
     fmtUdPerHr(duration, qty) {
         if (!duration || !qty) return "—";
-        return formatFloat((qty * 60) / duration, { digits: [false, 2] }) + " ud/hr";
+        return formatFloat((qty * 60) / duration, { digits: [false, 2] });
     }
 
     /**
