@@ -382,17 +382,16 @@
                         <t t-foreach="wc.items" t-as="op" t-key="op_index">
                             <!-- Operation + parent product in a single row -->
                             <tr class="o_econovo_cost_summary__product-row">
-                                <td class="o_econovo_cost_summary__fold-col">
+                                <td class="o_econovo_cost_summary__fold-col"/>
+                                <td style="padding-left: 1.5rem;">
                                     <t t-if="op.components and op.components.length">
-                                        <button class="btn btn-light btn-sm py-0 px-1"
+                                        <button class="btn btn-light btn-sm py-0 px-1 me-1"
                                                 t-on-click.stop="() => this.toggleOperation(wc.id, op_index)"
                                                 t-att-title="isOperationFolded(wc.id, op_index) ? 'Show components' : 'Hide components'">
                                             <i t-att-class="'fa fa-fw ' + (isOperationFolded(wc.id, op_index) ? 'fa-caret-right' : 'fa-caret-down')"
                                                role="img"/>
                                         </button>
                                     </t>
-                                </td>
-                                <td style="padding-left: 58px;">
                                     <a href="#" class="o_econovo_cost_summary__link"
                                        t-on-click.stop.prevent="() => this.openFormDialog(op.link_id, 'mrp.routing.workcenter')">
                                         <t t-esc="op.name"/></a><t t-if="op.parent_name">: 
@@ -440,7 +439,7 @@
                                 <t t-foreach="op.components" t-as="comp" t-key="comp_index">
                                     <tr class="o_econovo_cost_summary__usage-row">
                                         <td/>
-                                        <td style="padding-left: 88px;">
+                                        <td style="padding-left: 3.5rem;">
                                             <i class="fa fa-cube text-muted me-1"
                                                data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
                                                t-att-data-tooltip-info="colTooltip('op_components')"/>
