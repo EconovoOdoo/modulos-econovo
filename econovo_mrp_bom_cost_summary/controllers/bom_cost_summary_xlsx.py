@@ -4,9 +4,12 @@
 Endpoint: GET /econovo/bom_cost_summary/export_xlsx
 Params:   bom_id, quantity, variant, warehouse_id, costs, operations, lead_times
 
-Returns a .xlsx workbook with two sheets:
-  Sheet 1 "Cost Summary"       — hierarchical view with Excel row groups.
-  Sheet 2 "Components Detail"  — flat pivot-ready list, one row per usage.
+Returns a .xlsx workbook with three sheets:
+  Sheet 1 "BOM Tree"           — hierarchical BOM breakdown mirroring the
+                                  native Odoo BOM Overview tree view, with
+                                  expandable operations and byproducts per level.
+  Sheet 2 "Cost Summary"       — costs aggregated by product category / work center.
+  Sheet 3 "Components Detail"  — flat pivot-ready list, one row per usage.
 """
 
 import io
@@ -37,6 +40,15 @@ _C = {
     "bp_cat_deep": "EAF4E7",  # byproduct category depth 2+
     "bp_product":  "F3FAF1",  # byproduct product rows
     "bp_subtotal": "A9D18E",  # byproduct section subtotal row
+    # BOM Tree sheet
+    "tree_root":    "1F4E79",  # root product row (dark blue)
+    "tree_root_fg": "FFFFFF",  # root product foreground (white)
+    "tree_bom":     "BDD7EE",  # sub-BOM rows (medium blue)
+    "tree_leaf":    "F2F2F2",  # leaf component rows
+    "tree_ops":     "E2EFDA",  # operations group header
+    "tree_op":      "F4F9F5",  # individual operation rows
+    "tree_bp":      "A9D18E",  # byproducts group header
+    "tree_bp_item": "D9EAD3",  # individual byproduct rows
 }
 
 
@@ -408,7 +420,252 @@ def _write_byproduct_category_rows(ws, row, node, ci, cur, usd,
     return row
 
 
-# ════════════════════════════ Sheet 1: Cost Summary ══════════════════════════
+# ════════════════════════════ Sheet 1: BOM Tree ══════════════════════════════
+
+def _tw_row(ws, row_idx, vals, bg, outline=0, bold=False, fg="000000"):
+    """Write a BOM-tree row with custom foreground colour support."""
+    fnt = _font(bold=bold, color=fg)
+    fill = _fill(bg)
+    for col_idx, val in enumerate(vals, start=1):
+        cell = ws.cell(row=row_idx, column=col_idx, value=val)
+        cell.font = fnt
+        cell.fill = fill
+        if isinstance(val, (int, float)) and col_idx > 2:
+            cell.alignment = _align_right()
+        else:
+            cell.alignment = _align_left()
+    if outline:
+        ws.row_dimensions[row_idx].outline_level = min(outline, 7)
+
+
+def _tree_costs(vals, ci, cur, usd, has_usd, rate, bom_cost, prod_cost):
+    """Fill BOM Cost and Product Cost columns for a tree row in-place."""
+    if "BOM Cost (%s)" % cur in ci:
+        vals[ci["BOM Cost (%s)" % cur] - 1] = _flt(bom_cost)
+    if has_usd and "BOM Cost (%s)" % usd in ci and bom_cost not in (None, False, "") and rate:
+        vals[ci["BOM Cost (%s)" % usd] - 1] = _flt(bom_cost * rate)
+    if "Product Cost (%s)" % cur in ci:
+        vals[ci["Product Cost (%s)" % cur] - 1] = _flt(prod_cost)
+    if has_usd and "Product Cost (%s)" % usd in ci and prod_cost not in (None, False, "") and rate:
+        vals[ci["Product Cost (%s)" % usd] - 1] = _flt(prod_cost * rate)
+
+
+def _write_tree_node(ws, row, node, ci, cur, usd, rate,
+                     has_usd, show_costs, show_operations, show_lead_times,
+                     outline_level, col_count):
+    """
+    Recursively write one BOM node (root, sub-BOM, or leaf component) and
+    all its children, then its operations and byproducts as collapsible groups.
+
+    outline_level 0 = root product row (always visible, dark blue).
+    outline_level N = components / ops / byproducts at depth N.
+    """  # noqa: E501
+    is_root = outline_level == 0
+    is_sub_bom = node.get("type") == "bom" and not is_root
+
+    if is_root:
+        bg, fg, bold = _C["tree_root"], _C["tree_root_fg"], True
+    elif is_sub_bom:
+        bg, fg, bold = _C["tree_bom"], "000000", True
+    else:
+        bg, fg, bold = _C["tree_leaf"], "000000", False
+
+    indent = "    " * outline_level
+    vals = [""] * col_count
+    vals[ci["Name"] - 1] = indent + _str(node.get("name", ""))
+    vals[ci["Qty"] - 1] = _flt(node.get("quantity"))
+    vals[ci["UoM"] - 1] = _str(node.get("uom_name"))
+    if show_lead_times:
+        lt = node.get("lead_time")
+        vals[ci["Lead Time (days)"] - 1] = lt if lt not in (None, False) else ""
+        route = _str(node.get("route_name", ""))
+        detail = _str(node.get("route_detail", ""))
+        if route and detail:
+            route = route + ": " + detail
+        elif detail:
+            route = detail
+        vals[ci["Route"] - 1] = route
+    if show_costs:
+        _tree_costs(
+            vals, ci, cur, usd, has_usd, rate,
+            node.get("bom_cost"), node.get("prod_cost"),
+        )
+    if not is_sub_bom and not is_root:
+        # Availability only for leaf components and their parent sub-BOM rows
+        vals[ci["Free to Use"] - 1] = _flt(node.get("quantity_available"))
+        vals[ci["On Hand"] - 1] = _flt(node.get("quantity_on_hand"))
+        vals[ci["Availability"] - 1] = _str(node.get("availability_display"))
+    _tw_row(ws, row, vals, bg, outline=outline_level, bold=bold, fg=fg)
+    if is_root:
+        ws.row_dimensions[row].height = 16
+    row += 1
+
+    # ── Recurse into direct components ───────────────────────────────────────
+    for comp in node.get("components", []):
+        row = _write_tree_node(
+            ws, row, comp, ci, cur, usd, rate,
+            has_usd, show_costs, show_operations, show_lead_times,
+            outline_level=outline_level + 1,
+            col_count=col_count,
+        )
+
+    child_outline = outline_level + 1
+
+    # ── Operations group for this BOM level ──────────────────────────────────
+    if show_operations:
+        ops = node.get("operations", [])
+        if ops:
+            ops_cost = node.get("operations_cost",
+                                sum(o.get("bom_cost", 0) for o in ops))
+            ops_time = node.get("operations_time",
+                                sum(o.get("quantity", 0) for o in ops))
+            ops_vals = [""] * col_count
+            ops_vals[ci["Name"] - 1] = (
+                "    " * child_outline + "\u25b6 Operations (%d)" % len(ops)
+            )
+            ops_vals[ci["Qty"] - 1] = _flt(ops_time)
+            ops_vals[ci["UoM"] - 1] = "min"
+            if show_costs and "BOM Cost (%s)" % cur in ci:
+                ops_vals[ci["BOM Cost (%s)" % cur] - 1] = _flt(ops_cost)
+                if has_usd and "BOM Cost (%s)" % usd in ci and rate:
+                    ops_vals[ci["BOM Cost (%s)" % usd] - 1] = _flt(
+                        ops_cost * rate
+                    )
+            _tw_row(ws, row, ops_vals, _C["tree_ops"],
+                    outline=child_outline, bold=True)
+            row += 1
+
+            for op in ops:
+                op_vals = [""] * col_count
+                op_vals[ci["Name"] - 1] = (
+                    "    " * (child_outline + 1) + _str(op.get("name", ""))
+                )
+                op_vals[ci["Qty"] - 1] = _flt(op.get("quantity"))  # minutes
+                op_vals[ci["UoM"] - 1] = "min"
+                if show_costs and "BOM Cost (%s)" % cur in ci:
+                    op_vals[ci["BOM Cost (%s)" % cur] - 1] = _flt(
+                        op.get("bom_cost")
+                    )
+                    if has_usd and "BOM Cost (%s)" % usd in ci and rate:
+                        oc = op.get("bom_cost") or 0
+                        op_vals[ci["BOM Cost (%s)" % usd] - 1] = (
+                            _flt(oc * rate) if oc else ""
+                        )
+                _tw_row(ws, row, op_vals, _C["tree_op"],
+                        outline=child_outline + 1)
+                row += 1
+
+    # ── Byproducts group for this BOM level ──────────────────────────────────
+    bps = node.get("byproducts", [])
+    if bps:
+        bp_cost = node.get("byproducts_cost",
+                           sum(b.get("bom_cost", 0) for b in bps))
+        bp_vals = [""] * col_count
+        bp_vals[ci["Name"] - 1] = (
+            "    " * child_outline + "\u25b6 Byproducts (%d)" % len(bps)
+        )
+        if show_costs and "BOM Cost (%s)" % cur in ci:
+            bp_vals[ci["BOM Cost (%s)" % cur] - 1] = _flt(bp_cost)
+            if has_usd and "BOM Cost (%s)" % usd in ci and rate:
+                bp_vals[ci["BOM Cost (%s)" % usd] - 1] = _flt(bp_cost * rate)
+        _tw_row(ws, row, bp_vals, _C["tree_bp"],
+                outline=child_outline, bold=True)
+        row += 1
+
+        for bp in bps:
+            bp_item_vals = [""] * col_count
+            bp_item_vals[ci["Name"] - 1] = (
+                "    " * (child_outline + 1) + _str(bp.get("name", ""))
+            )
+            bp_item_vals[ci["Qty"] - 1] = _flt(bp.get("quantity"))
+            bp_item_vals[ci["UoM"] - 1] = _str(bp.get("uom_name", ""))
+            if show_costs:
+                _tree_costs(
+                    bp_item_vals, ci, cur, usd, has_usd, rate,
+                    bp.get("bom_cost"), bp.get("prod_cost"),
+                )
+            _tw_row(ws, row, bp_item_vals, _C["tree_bp_item"],
+                    outline=child_outline + 1)
+            row += 1
+
+    return row
+
+
+def _build_tree_sheet(ws, bom_lines, cur, usd, rate,
+                      show_costs, show_operations, show_lead_times,
+                      bom_name, quantity):
+    """
+    Write Sheet 1: BOM hierarchical tree mirroring the Odoo BOM Overview.
+
+    Columns mirror the native UI: Product, Qty, UoM, Lead Time, Route,
+    BOM Cost, Product Cost (+ optional USD conversion), Free-to-Use, On Hand.
+
+    Operations and byproducts at each BOM level are written as collapsible
+    row groups (Excel outline) immediately below their parent BOM row.
+    """
+    from openpyxl.styles import Alignment  # noqa: PLC0415
+    from openpyxl.utils import get_column_letter  # noqa: PLC0415
+
+    has_usd = bool(usd and rate)
+
+    # ── Column definitions ────────────────────────────────────────────────────
+    cols = ["Name", "Qty", "UoM"]
+    if show_lead_times:
+        cols += ["Lead Time (days)", "Route"]
+    if show_costs:
+        cols.append("BOM Cost (%s)" % cur)
+        if has_usd:
+            cols.append("BOM Cost (%s)" % usd)
+        cols.append("Product Cost (%s)" % cur)
+        if has_usd:
+            cols.append("Product Cost (%s)" % usd)
+    cols += ["Free to Use", "On Hand", "Availability"]
+
+    col_count = len(cols)
+    ci = {name: idx + 1 for idx, name in enumerate(cols)}
+
+    # ── Column widths ─────────────────────────────────────────────────────────
+    ws.column_dimensions["A"].width = 50   # Name (indented tree)
+    ws.column_dimensions["B"].width = 10   # Qty
+    ws.column_dimensions["C"].width = 8    # UoM
+    col_d_letter = get_column_letter(4)
+    ws.column_dimensions[col_d_letter].width = 15  # Lead Time / BOM Cost
+    for letter_i in range(5, col_count + 1):
+        ws.column_dimensions[get_column_letter(letter_i)].width = 16
+
+    ws.sheet_properties.outlinePr.summaryBelow = False
+
+    row = 1
+
+    # ── BOM info banner ───────────────────────────────────────────────────────
+    _write_info(ws, row, "BOM", bom_name, col_count)
+    row += 1
+    _write_info(ws, row, "Quantity", str(quantity), col_count)
+    row += 1
+    row += 1  # blank separator
+
+    # ── Column-header row ─────────────────────────────────────────────────────
+    header_row = row
+    for col_idx, h in enumerate(cols, start=1):
+        c = ws.cell(row=row, column=col_idx, value=h)
+        c.font = _font(bold=True, color=_C["header_fg"])
+        c.fill = _fill(_C["header_bg"])
+        c.alignment = Alignment(horizontal="center", vertical="center",
+                                wrap_text=True)
+    ws.row_dimensions[row].height = 26
+    ws.freeze_panes = ws.cell(row=row + 1, column=1)
+    row += 1
+
+    # ── Tree ─────────────────────────────────────────────────────────────────
+    _write_tree_node(
+        ws, row, bom_lines, ci, cur, usd, rate,
+        has_usd, show_costs, show_operations, show_lead_times,
+        outline_level=0,
+        col_count=col_count,
+    )
+
+
+# ════════════════════════════ Sheet 2: Cost Summary ══════════════════════════
 
 def _build_summary_sheet(ws, cs, cur, usd,
                          show_costs, show_operations, show_lead_times,
@@ -435,6 +692,8 @@ def _build_summary_sheet(ws, cs, cur, usd,
 
     # ── Build ordered column list ─────────────────────────────────────────────
     cols = ["Level", "Type", "Name", "Qty / Duration", "UoM", "%"]
+    if show_operations:
+        cols += ["Qty (ud)", "min/ud", "ud/hr"]
     if show_costs:
         cols.append("BOM Cost (%s)" % cur)
         if has_usd:
@@ -659,6 +918,20 @@ def _build_summary_sheet(ws, cs, cur, usd,
                 vals[ci["Name"] - 1] = "        " + op_name
                 vals[ci["Qty / Duration"] - 1] = _flt(op.get("duration"))
                 vals[ci["%"] - 1] = _pct(op.get("percentage"))
+                if show_operations:
+                    _parent_qty = op.get("parent_qty") or 1
+                    _duration = op.get("duration") or 0
+                    vals[ci["Qty (ud)"] - 1] = _flt(_parent_qty)
+                    vals[ci["min/ud"] - 1] = (
+                        round(_duration / _parent_qty, 2)
+                        if _duration and _parent_qty
+                        else ""
+                    )
+                    vals[ci["ud/hr"] - 1] = (
+                        round((_parent_qty * 60) / _duration, 2)
+                        if _duration and _parent_qty
+                        else ""
+                    )
                 if show_costs:
                     vals[ci["BOM Cost (%s)" % cur] - 1] = _flt(op.get("total"))
                     if has_usd and "BOM Cost (%s)" % usd in ci:
@@ -1112,6 +1385,7 @@ class BomCostSummaryXlsxController(http.Controller):
         )
         bom_lines = raw.get("lines", {})
         secondary = raw.get("secondary_currency", False)
+        rate = secondary.get("rate", 0) if secondary else 0
 
         report_model = request.env[
             "report.econovo_mrp_bom_cost_summary.report_cost_summary"
@@ -1128,14 +1402,24 @@ class BomCostSummaryXlsxController(http.Controller):
         # ── Build workbook ────────────────────────────────────────────────────
         wb = Workbook()
 
-        ws1 = wb.active
-        ws1.title = "Cost Summary"
+        # Sheet 1: BOM Tree (first sheet — active when opening)
+        ws0 = wb.active
+        ws0.title = "BOM Tree"
+        _build_tree_sheet(
+            ws0, bom_lines, currency_name, usd_name, rate,
+            show_costs, show_operations, show_lead_times,
+            bom.display_name, qty,
+        )
+
+        # Sheet 2: Cost Summary (by category / work center)
+        ws1 = wb.create_sheet("Cost Summary")
         _build_summary_sheet(
             ws1, cost_summary, currency_name, usd_name,
             show_costs, show_operations, show_lead_times,
             bom.display_name, qty,
         )
 
+        # Sheet 3: Components Detail (flat pivot-ready list)
         ws2 = wb.create_sheet("Components Detail")
         _build_detail_sheet(
             ws2, cost_summary, currency_name, usd_name, show_lead_times,

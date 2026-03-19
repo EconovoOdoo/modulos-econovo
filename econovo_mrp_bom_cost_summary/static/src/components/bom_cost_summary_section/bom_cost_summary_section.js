@@ -39,6 +39,9 @@ export class BomCostSummarySection extends Component {
         initByproductCategoryFold(this.props.data.byproductCategories || []);
         for (const wc of this.props.data.workcenters) {
             foldState[`wc_${wc.id}`] = true;
+            for (let i = 0; i < wc.items.length; i++) {
+                foldState[`op_${wc.id}_${i}`] = true;
+            }
         }
         this.state = useState(foldState);
 
@@ -70,6 +73,9 @@ export class BomCostSummarySection extends Component {
                 collectByproductKeys(nextProps.data.byproductCategories || []);
                 for (const wc of nextProps.data.workcenters) {
                     newKeys.add(`wc_${wc.id}`);
+                    for (let i = 0; i < wc.items.length; i++) {
+                        newKeys.add(`op_${wc.id}_${i}`);
+                    }
                 }
                 // Remove stale keys (items no longer in the tree)
                 for (const key of Object.keys(this.state)) {
@@ -210,6 +216,10 @@ export class BomCostSummarySection extends Component {
         return this.props.showOptions.operations;
     }
 
+    get showPerformance() {
+        return this.props.showOptions.performance;
+    }
+
     /**
      * Returns the Bootstrap text-color class for a given availability_state.
      *
@@ -320,6 +330,16 @@ export class BomCostSummarySection extends Component {
 
     isWorkcenterFolded(wcId) {
         return this.state[`wc_${wcId}`];
+    }
+
+    toggleOperation(wcId, opIdx) {
+        const key = `op_${wcId}_${opIdx}`;
+        this.state[key] = !this.state[key];
+    }
+
+    isOperationFolded(wcId, opIdx) {
+        const key = `op_${wcId}_${opIdx}`;
+        return key in this.state ? this.state[key] : true;
     }
 
     isByproductCategoryFolded(categId) {
@@ -455,6 +475,16 @@ export class BomCostSummarySection extends Component {
             return "";
         }
         return `${days} ${_t("Days")}`;
+    }
+
+    fmtMinPerUd(duration, qty) {
+        if (!duration || !qty) return "—";
+        return formatFloat(duration / qty, { digits: [false, 2] });
+    }
+
+    fmtUdPerHr(duration, qty) {
+        if (!duration || !qty) return "—";
+        return formatFloat((qty * 60) / duration, { digits: [false, 2] });
     }
 
     /**
@@ -639,6 +669,16 @@ export class BomCostSummarySection extends Component {
                     T("Deducted from gross totals to obtain net cost"),
                 ],
             },
+            "subtotal_byproducts_prod_cost_note": {
+                title: T("Byproduct market value (independent of cost_share)"),
+                lines: [
+                    T("= \u03a3 (qty \u00d7 standard_price) of each byproduct"),
+                    T("This value is always shown regardless of the cost_share% setting"),
+                    T("If cost_share = 0%: the BoM Cost column reads \u24280 but this column"),
+                    T("still shows the full catalogue value \u2014 byproducts are not"),
+                    T("reducing manufacturing cost but may still be sold/reused"),
+                ],
+            },
             "net_prod": {
                 title: T("Net cost after byproduct recovery"),
                 lines: [
@@ -661,9 +701,12 @@ export class BomCostSummarySection extends Component {
             "grand_total_prod": {
                 title: T("Grand Total Product Cost"),
                 lines: [
-                    T("= \u03a3 (qty \u00d7 product.standard_price) + Subtotal Operations"),
-                    T("Catalogue standard cost of all components plus operation costs"),
-                    T("See \u2018Net Product Cost\u2019 row for the value after byproduct recovery"),
+                    T("= standard_price of the FINISHED product \u00d7 quantity produced"),
+                    T("This is the catalogue price stored on the finished product itself,"),
+                    T("NOT the sum of the Product Cost column in the components section"),
+                    T("(which shows per-component catalogue values for purchase analysis)"),
+                    T("To compare: BoM Cost = what it costs to MAKE; Product Cost = what"),
+                    T("it costs to BUY the finished product at its standard price"),
                 ],
             },
             "duration": {
@@ -671,6 +714,42 @@ export class BomCostSummarySection extends Component {
                 lines: [
                     T("Operation: manufacturing operation duration in minutes"),
                     T("Work Center: sum of all its operation durations"),
+                ],
+            },
+            "min_per_ud": {
+                title: T("Time cycle: min/ud"),
+                lines: [
+                    T("= duration ÷ quantity produced"),
+                    T("'—' when duration = 0"),
+                ],
+            },
+            "ud_per_hr": {
+                title: T("Production rate: ud/hr"),
+                lines: [
+                    T("= (qty × 60) ÷ duration"),
+                    T("Higher = faster throughput"),
+                    T("'—' when duration = 0"),
+                ],
+            },
+            "op_components": {
+                title: T("Components consumed in this operation"),
+                lines: [
+                    T("Set via 'Consumed in Operation' on BOM line"),
+                    T("Components without assignment not shown here"),
+                ],
+            },
+            "cant_prod": {
+                title: T("Qty. produced"),
+                lines: [
+                    T("Quantity of finished product linked to this operation"),
+                    T("= parent BOM quantity at this level"),
+                ],
+            },
+            "cant_consu": {
+                title: T("Qty. consumed"),
+                lines: [
+                    T("Quantity and unit of measure of the component"),
+                    T("consumed in this operation"),
                 ],
             },
         };

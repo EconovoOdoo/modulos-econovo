@@ -236,6 +236,80 @@ function injectAndBubbleDirectUsdByproducts(nodes, byproductDirectMap) {
 }
 
 /**
+ * Traverse the raw BOM tree and collect the ``bom_cost_usd_direct`` values
+ * injected by the Python ``_get_operation_line`` override into every
+ * operation node, grouped as:
+ *
+ *   opsDirectMap[workcenter_id][link_id][parent_product_id] = <sum>
+ *
+ * The triple key guarantees uniqueness even when the same operation
+ * (link_id) appears in multiple sub-BOM contexts (different
+ * parent_product_id values) and when multiple instances of a work center
+ * contribute to the same BOM (different link_ids).
+ *
+ * Recursion handles the edge case where operations are defined on
+ * sub-BOMs (E9): every BOM level in the tree is visited.
+ *
+ * @param {Object} node          Raw BOM node (root or sub-BOM component).
+ * @param {Object} opsDirectMap  Accumulator dict (mutated in place).
+ */
+function collectDirectUsdOps(node, opsDirectMap) {
+    if (node.operations) {
+        for (const op of node.operations) {
+            const wcId = op.workcenter_id || 0;
+            const linkId = op.link_id || 0;
+            const parentProdId = node.product_id;
+            const usdDirect = op.bom_cost_usd_direct || 0;
+
+            if (!opsDirectMap[wcId]) opsDirectMap[wcId] = {};
+            if (!opsDirectMap[wcId][linkId]) opsDirectMap[wcId][linkId] = {};
+            if (!opsDirectMap[wcId][linkId][parentProdId]) {
+                opsDirectMap[wcId][linkId][parentProdId] = 0;
+            }
+            opsDirectMap[wcId][linkId][parentProdId] += usdDirect;
+        }
+    }
+    // Recurse into sub-BOM components so that operations on nested BOMs
+    // are also collected (edge case E9).
+    if (node.components) {
+        for (const comp of node.components) {
+            if (comp.type === 'bom' && comp.components) {
+                collectDirectUsdOps(comp, opsDirectMap);
+            }
+        }
+    }
+}
+
+/**
+ * Walk ``costSummary.workcenters`` and inject direct-USD totals gathered by
+ * ``collectDirectUsdOps``.
+ *
+ * After this call:
+ *   wc.total_usd_direct  – summed direct USD cost for the whole work center
+ *   item.total_usd_direct – direct USD cost for a single operation row
+ *
+ * The lookup uses the same triple key [wcId][linkId][parentProdId] as the
+ * collector; if no matching entry is found (e.g. ``costs_hour_usd = 0``),
+ * the value defaults to 0.
+ *
+ * @param {Array}  workcenters  ``costSummary.workcenters`` array.
+ * @param {Object} opsDirectMap Output of ``collectDirectUsdOps``.
+ */
+function injectAndBubbleDirectUsdOps(workcenters, opsDirectMap) {
+    for (const wc of workcenters) {
+        let wcTotal = 0;
+        for (const item of wc.items || []) {
+            const wcMap = opsDirectMap[wc.id];
+            const linkMap = wcMap && wcMap[item.link_id];
+            const usdDirect = (linkMap && linkMap[item.parent_product_id]) || 0;
+            item.total_usd_direct = usdDirect;
+            wcTotal += usdDirect;
+        }
+        wc.total_usd_direct = wcTotal;
+    }
+}
+
+/**
  * Post-process an existing ``costSummary`` object (returned by
  * ``computeCostSummary``) by injecting the direct USD values from the
  * server-side data.
@@ -243,15 +317,18 @@ function injectAndBubbleDirectUsdByproducts(nodes, byproductDirectMap) {
  * Writes the following grand-total keys on ``costSummary.totals``:
  *   components_usd_direct           – BoM Cost USD direct (components)
  *   prod_cost_usd_direct            – Product Cost USD direct (components)
- *   total_usd_direct                – same as components (no ops contribution)
+ *   operations_usd_direct           – BoM Cost USD direct (operations)
+ *   total_usd_direct                – components + operations
  *   total_prod_usd_direct           – same as prod_cost_usd_direct
  *   byproducts_usd_direct           – BoM Cost USD direct (byproducts)
  *   byproducts_prod_cost_usd_direct – Product Cost USD direct (byproducts)
  *   net_bom_usd_direct              – total_usd_direct − byproducts_usd_direct
  *   net_prod_usd_direct             – total_prod_usd_direct − byproducts_prod_cost_usd_direct
  *
- * Operations do not carry ``standard_price_usd`` (they use work-centre
- * hourly rates), so their direct-USD contribution is zero.
+ * ``operations_usd_direct`` is derived from ``workcenter.costs_hour_usd``
+ * (added by this bridge module).  When no USD hourly rate is configured,
+ * the value is 0 — same treatment as components with
+ * ``standard_price_usd = 0``.
  *
  * @param {Object|null} costSummary  Output of ``computeCostSummary``.
  * @param {Object}      rawData      Raw BOM data from the server.
@@ -276,8 +353,20 @@ function augmentWithDirectUsd(costSummary, rawData) {
 
     costSummary.totals.components_usd_direct = totalCompUsdDirect;
     costSummary.totals.prod_cost_usd_direct = totalProdCostUsdDirect;
-    // No operations contribution to direct USD.
-    costSummary.totals.total_usd_direct = totalCompUsdDirect;
+
+    // --- Operations ---
+    const opsDirectMap = {};
+    collectDirectUsdOps(rawData, opsDirectMap);
+    injectAndBubbleDirectUsdOps(costSummary.workcenters || [], opsDirectMap);
+
+    const totalOpsUsdDirect = (costSummary.workcenters || []).reduce(
+        (s, wc) => s + (wc.total_usd_direct || 0),
+        0,
+    );
+    costSummary.totals.operations_usd_direct = totalOpsUsdDirect;
+
+    // Grand totals now include both components and operations.
+    costSummary.totals.total_usd_direct = totalCompUsdDirect + totalOpsUsdDirect;
     costSummary.totals.total_prod_usd_direct = totalProdCostUsdDirect;
 
     // --- Byproducts ---
@@ -299,7 +388,8 @@ function augmentWithDirectUsd(costSummary, rawData) {
 
     costSummary.totals.byproducts_usd_direct = totalByprodUsdDirect;
     costSummary.totals.byproducts_prod_cost_usd_direct = totalByprodProdCostUsdDirect;
-    costSummary.totals.net_bom_usd_direct = totalCompUsdDirect - totalByprodUsdDirect;
+    costSummary.totals.net_bom_usd_direct =
+        costSummary.totals.total_usd_direct - totalByprodUsdDirect;
     costSummary.totals.net_prod_usd_direct =
         totalProdCostUsdDirect - totalByprodProdCostUsdDirect;
 
@@ -402,6 +492,15 @@ patch(BomCostSummarySection.prototype, {
                     _t("Calculated using product.standard_price_usd"),
                     _t("= BoM Cost (ARS) \u00d7 (standard_price_usd \u00f7 standard_price_ars)"),
                     _t("Reflects the USD catalogue price on the product, not the exchange rate"),
+                ],
+            },
+            ops_bom_cost_usd_direct: {
+                title: _t("Operations Cost USD (direct price)"),
+                lines: [
+                    _t("= (Duration in hours) \u00d7 workcenter.costs_hour_usd"),
+                    _t("costs_hour_usd is stored on each work center"),
+                    _t("Auto-updated from costs_hour (ARS) \u00d7 exchange rate when costs_hour changes"),
+                    _t("Can be overridden manually on the work center form"),
                 ],
             },
             prod_cost_usd_direct: {

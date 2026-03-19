@@ -87,3 +87,44 @@ class ReportBomStructure(models.AbstractModel):
             bp['prod_cost_usd_direct'] = prod_cost_usd_direct
             bp['bom_cost_usd_direct'] = bom_cost_usd_direct
         return byproducts, byproduct_cost_portion
+
+    @api.model
+    def _get_operation_line(self, product, bom, qty, level, index):
+        """Inject ``bom_cost_usd_direct`` into every operation line.
+
+        Mirrors the full ARS formula from ``_get_operation_cost``
+        (base + mrp_workorder enterprise override):
+
+            bom_cost_usd_direct =
+                (duration / 60) × costs_hour_usd
+              + (duration / 60) × employee_costs_hour_usd × employee_ratio
+
+        ``costs_hour_usd`` and ``employee_costs_hour_usd`` are the
+        direct-USD fields added to ``mrp.workcenter`` by this bridge module.
+        ``employee_ratio`` is defined by ``mrp_workorder`` (enterprise);
+        getattr guards are used so the formula degrades gracefully when
+        mrp_workorder is not installed.
+        """
+        operations = super()._get_operation_line(product, bom, qty, level, index)
+        bom_ops = bom.operation_ids.filtered(
+            lambda o: not product or not o._skip_operation_line(product)
+        )
+        for i, op_data in enumerate(operations):
+            if i < len(bom_ops):
+                op = bom_ops[i]
+                wc = op.workcenter_id
+                duration = op_data.get('quantity', 0.0) or 0.0  # minutes
+                costs_hour_usd = getattr(wc, 'costs_hour_usd', 0.0) or 0.0
+                employee_costs_hour_usd = (
+                    getattr(wc, 'employee_costs_hour_usd', 0.0) or 0.0
+                )
+                employee_ratio = getattr(op, 'employee_ratio', 0.0) or 0.0
+                hours = duration / 60.0
+                op_data['bom_cost_usd_direct'] = (
+                    hours * costs_hour_usd
+                    + hours * employee_costs_hour_usd * employee_ratio
+                )
+            else:
+                op_data['bom_cost_usd_direct'] = 0.0
+        return operations
+

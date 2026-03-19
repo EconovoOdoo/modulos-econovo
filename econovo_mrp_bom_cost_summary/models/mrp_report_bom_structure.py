@@ -92,6 +92,9 @@ class ReportBomStructure(models.AbstractModel):
         res['categ_ancestors'] = self._get_categ_ancestors(
             bom_line.product_id.categ_id,
         )
+        res['operation_id'] = (
+            bom_line.operation_id.id if bom_line.operation_id else False
+        )
         return res
 
     @api.model

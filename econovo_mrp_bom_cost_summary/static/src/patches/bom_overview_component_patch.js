@@ -1,5 +1,6 @@
 /** @odoo-module **/
 
+import { useSubEnv } from "@odoo/owl";
 import { patch } from "@web/core/utils/patch";
 import { BomOverviewComponent } from
     "@mrp/components/bom_overview/mrp_bom_overview";
@@ -17,6 +18,38 @@ patch(BomOverviewComponent.prototype, {
             costSummary: false,
             secondaryCurrency: false,
         });
+        // Add the performance key so BomOverviewDisplayFilter receives it
+        // in showOptions and our patched checkbox can toggle it.
+        this.state.showOptions.performance = false;
+        // Inject Excel export callback so bom_overview_control_panel_patch.xml
+        // can render the "Excel" button on the native BOM overview page.
+        useSubEnv({
+            overviewXlsxExport: () => this._onExportXlsx(),
+        });
+    },
+
+    /**
+     * Triggers a file download of the BOM Cost Summary as .xlsx.
+     * Mirrors the same logic in BomCostSummaryView.onExportXlsx().
+     */
+    _onExportXlsx() {
+        const params = new URLSearchParams({
+            bom_id:     this.props.action.context.active_id,
+            quantity:   this.state.bomQuantity || 1,
+            costs:      this.state.showOptions.costs,
+            operations: this.state.showOptions.operations,
+            lead_times: this.state.showOptions.leadTimes,
+        });
+        if (this.state.currentWarehouse && this.state.currentWarehouse.id) {
+            params.set("warehouse_id", this.state.currentWarehouse.id);
+        }
+        if (this.showVariants && this.state.currentVariantId) {
+            params.set("variant", this.state.currentVariantId);
+        }
+        window.open(
+            "/econovo/bom_cost_summary/export_xlsx?" + params.toString(),
+            "_blank",
+        );
     },
 
     async getBomData() {

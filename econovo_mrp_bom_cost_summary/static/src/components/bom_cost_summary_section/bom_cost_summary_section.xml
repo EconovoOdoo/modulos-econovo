@@ -16,8 +16,10 @@
             <col/><!-- Name: auto width (takes remaining space) -->
             <col style="width: 7%;"/><!-- Quantity / Duration -->
             <col style="width: 9%;"/><!-- % -->
-            <col t-if="showAvailabilities" style="width: 7%;"/><!-- Free to Use / On Hand -->
-            <col t-if="showAvailabilities" style="width: 6%;"/><!-- Availability -->
+            <col t-if="showAvailabilities" style="width: 7%;"/><!-- Cant. Prod. / Free to Use / On Hand -->
+            <col t-if="showAvailabilities" style="width: 6%;"/><!-- Cant. Consu. / Availability -->
+            <col t-if="showPerformance" style="width: 6%;"/><!-- min/ud -->
+            <col t-if="showPerformance" style="width: 6%;"/><!-- ud/hr -->
             <col t-if="showLeadTimes" style="width: 4%;"/><!-- Lead Time -->
             <col t-if="showLeadTimes" style="width: 10%;"/><!-- Route -->
             <col t-if="showCosts" style="width: 10%;"/><!-- BoM Cost -->
@@ -52,6 +54,8 @@
                            data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
                            t-att-data-tooltip-info="colTooltip('availability')"/>&#8203;
                     </th>
+                    <th t-if="showPerformance"/>
+                    <th t-if="showPerformance"/>
                     <th t-if="showLeadTimes" class="text-end">Lead Time
                         <i class="fa fa-info-circle text-muted ms-1"
                            data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
@@ -106,6 +110,8 @@
                         </td>
                         <td t-if="showAvailabilities"/>
                         <td t-if="showAvailabilities"/>
+                        <td t-if="showPerformance"/>
+                        <td t-if="showPerformance"/>
                         <td t-if="showLeadTimes"/>
                         <td t-if="showLeadTimes"/>
                         <td t-if="showCosts" class="text-end">
@@ -166,6 +172,8 @@
                                       t-esc="row.prod.availability_display"/>
                             </t>
                         </td>
+                        <td t-if="showPerformance"/>
+                        <td t-if="showPerformance"/>
                         <td t-if="showLeadTimes" class="text-end text-muted">
                             <t t-set="prodLt" t-value="productLeadTime(row.prod)"/>
                             <span t-if="prodLt !== false" t-esc="fmtLeadTime(prodLt)"/>
@@ -213,6 +221,8 @@
                         </td>
                         <td t-if="showAvailabilities"/>
                         <td t-if="showAvailabilities"/>
+                        <td t-if="showPerformance"/>
+                        <td t-if="showPerformance"/>
                         <td t-if="showLeadTimes" class="text-end text-muted">
                             <span t-if="row.usage.lead_time !== false" t-esc="fmtLeadTime(row.usage.lead_time)"/>
                         </td>
@@ -247,6 +257,8 @@
                     <td/>
                     <td t-if="showAvailabilities"/>
                     <td t-if="showAvailabilities"/>
+                    <td t-if="showPerformance"/>
+                    <td t-if="showPerformance"/>
                     <td t-if="showLeadTimes"/>
                     <td t-if="showLeadTimes"/>
                     <td t-if="showCosts" class="text-end">
@@ -289,8 +301,26 @@
                            data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
                            t-att-data-tooltip-info="colTooltip('pct_operations')"/>&#8203;
                     </th>
-                    <th t-if="showAvailabilities"/>
-                    <th t-if="showAvailabilities"/>
+                    <th t-if="showAvailabilities" class="text-end">Cant. Prod.
+                        <i class="fa fa-info-circle text-muted ms-1"
+                           data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                           t-att-data-tooltip-info="colTooltip('cant_prod')"/>&#8203;
+                    </th>
+                    <th t-if="showAvailabilities" class="text-end">Cant. Consu.
+                        <i class="fa fa-info-circle text-muted ms-1"
+                           data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                           t-att-data-tooltip-info="colTooltip('cant_consu')"/>&#8203;
+                    </th>
+                    <th t-if="showPerformance" class="text-end">min/ud
+                        <i class="fa fa-info-circle text-muted ms-1"
+                           data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                           t-att-data-tooltip-info="colTooltip('min_per_ud')"/>&#8203;
+                    </th>
+                    <th t-if="showPerformance" class="text-end">ud/hr
+                        <i class="fa fa-info-circle text-muted ms-1"
+                           data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                           t-att-data-tooltip-info="colTooltip('ud_per_hr')"/>&#8203;
+                    </th>
                     <th t-if="showLeadTimes" class="text-end">Lead Time
                         <i class="fa fa-info-circle text-muted ms-1"
                            data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
@@ -311,8 +341,6 @@
                            data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
                            t-att-data-tooltip-info="colTooltip('bom_cost_usd')"/>&#8203;
                     </th>
-                    <th/>
-                    <th t-if="showCosts"/>
                 </tr>
             </thead>
             <tbody>
@@ -338,6 +366,8 @@
                         </td>
                         <td t-if="showAvailabilities"/>
                         <td t-if="showAvailabilities"/>
+                        <td t-if="showPerformance"/>
+                        <td t-if="showPerformance"/>
                         <td t-if="showLeadTimes"/>
                         <td t-if="showLeadTimes"/>
                         <td t-if="showCosts" class="text-end">
@@ -346,16 +376,22 @@
                         <td t-if="showCostsUsd" class="text-end text-muted">
                             <strong t-esc="fmtUsd(wc.total_usd)"/>
                         </td>
-                        <td/>
-                        <td t-if="showCosts"/>
                     </tr>
 
                     <t t-if="!isWorkcenterFolded(wc.id)">
                         <t t-foreach="wc.items" t-as="op" t-key="op_index">
                             <!-- Operation + parent product in a single row -->
                             <tr class="o_econovo_cost_summary__product-row">
-                                <td/>
-                                <td style="padding-left: 58px;">
+                                <td class="o_econovo_cost_summary__fold-col"/>
+                                <td style="padding-left: 1.5rem;">
+                                    <t t-if="op.components and op.components.length">
+                                        <button class="btn btn-light btn-sm py-0 px-1 me-1"
+                                                t-on-click.stop="() => this.toggleOperation(wc.id, op_index)"
+                                                t-att-title="isOperationFolded(wc.id, op_index) ? 'Show components' : 'Hide components'">
+                                            <i t-att-class="'fa fa-fw ' + (isOperationFolded(wc.id, op_index) ? 'fa-caret-right' : 'fa-caret-down')"
+                                               role="img"/>
+                                        </button>
+                                    </t>
                                     <a href="#" class="o_econovo_cost_summary__link"
                                        t-on-click.stop.prevent="() => this.openFormDialog(op.link_id, 'mrp.routing.workcenter')">
                                         <t t-esc="op.name"/></a><t t-if="op.parent_name">: 
@@ -370,8 +406,16 @@
                                 <td class="text-end text-muted">
                                     <t t-esc="fmtPct(op.percentage)"/>
                                 </td>
+                                <td t-if="showAvailabilities" class="text-end text-muted">
+                                    <t t-esc="op.parent_qty"/> <span class="text-muted small" t-esc="op.parent_uom_name"/>
+                                </td>
                                 <td t-if="showAvailabilities"/>
-                                <td t-if="showAvailabilities"/>
+                                <td t-if="showPerformance" class="text-end text-muted">
+                                    <t t-esc="fmtMinPerUd(op.duration, op.parent_qty)"/>
+                                </td>
+                                <td t-if="showPerformance" class="text-end text-muted">
+                                    <t t-esc="fmtUdPerHr(op.duration, op.parent_qty)"/>
+                                </td>
                                 <td t-if="showLeadTimes" class="text-end text-muted">
                                     <span t-if="op.lead_time !== false" t-esc="fmtLeadTime(op.lead_time)"/>
                                 </td>
@@ -389,9 +433,33 @@
                                 <td t-if="showCostsUsd" class="text-end text-muted">
                                     <t t-esc="fmtUsd(op.total_usd)"/>
                                 </td>
-                                <td/>
-                                <td t-if="showCosts"/>
                             </tr>
+                            <!-- Expandable: components consumed in this operation -->
+                            <t t-if="op.components and op.components.length and !isOperationFolded(wc.id, op_index)">
+                                <t t-foreach="op.components" t-as="comp" t-key="comp_index">
+                                    <tr class="o_econovo_cost_summary__usage-row">
+                                        <td/>
+                                        <td style="padding-left: 3.5rem;">
+                                            <i class="fa fa-cube text-muted me-1"
+                                               data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                                               t-att-data-tooltip-info="colTooltip('op_components')"/>
+                                            <span t-esc="comp.name"/>
+                                        </td>
+                                        <td/>
+                                        <td/>
+                                        <td t-if="showAvailabilities"/>
+                                        <td t-if="showAvailabilities" class="text-end text-muted">
+                                            <t t-esc="comp.quantity"/> <span class="text-muted small" t-esc="comp.uom_name"/>
+                                        </td>
+                                        <td t-if="showPerformance"/>
+                                        <td t-if="showPerformance"/>
+                                        <td t-if="showLeadTimes"/>
+                                        <td t-if="showLeadTimes"/>
+                                        <td t-if="showCosts"/>
+                                        <td t-if="showCostsUsd"/>
+                                    </tr>
+                                </t>
+                            </t>
                         </t>
                     </t>
                 </t>
@@ -406,6 +474,8 @@
                     <td/>
                     <td t-if="showAvailabilities"/>
                     <td t-if="showAvailabilities"/>
+                    <td t-if="showPerformance"/>
+                    <td t-if="showPerformance"/>
                     <td t-if="showLeadTimes"/>
                     <td t-if="showLeadTimes"/>
                     <td t-if="showCosts" class="text-end">
@@ -417,8 +487,6 @@
                     <td t-if="showCostsUsd" class="text-end">
                         <strong t-esc="fmtUsd(data.totals.operations_usd)"/>
                     </td>
-                    <td/>
-                    <td t-if="showCosts"/>
                 </tr>
             </tbody>
         </t>
@@ -443,6 +511,8 @@
                     </th>
                     <th t-if="showAvailabilities"/>
                     <th t-if="showAvailabilities"/>
+                    <th t-if="showPerformance"/>
+                    <th t-if="showPerformance"/>
                     <th t-if="showLeadTimes"/>
                     <th t-if="showLeadTimes"/>
                     <th t-if="showCosts" class="text-end">BoM Cost
@@ -491,6 +561,8 @@
                         </td>
                         <td t-if="showAvailabilities"/>
                         <td t-if="showAvailabilities"/>
+                        <td t-if="showPerformance"/>
+                        <td t-if="showPerformance"/>
                         <td t-if="showLeadTimes"/>
                         <td t-if="showLeadTimes"/>
                         <td t-if="showCosts" class="text-end">
@@ -542,6 +614,8 @@
                         </td>
                         <td t-if="showAvailabilities"/>
                         <td t-if="showAvailabilities"/>
+                        <td t-if="showPerformance"/>
+                        <td t-if="showPerformance"/>
                         <td t-if="showLeadTimes"/>
                         <td t-if="showLeadTimes"/>
                         <td t-if="showCosts" class="text-end">
@@ -580,6 +654,8 @@
                         </td>
                         <td t-if="showAvailabilities"/>
                         <td t-if="showAvailabilities"/>
+                        <td t-if="showPerformance"/>
+                        <td t-if="showPerformance"/>
                         <td t-if="showLeadTimes"/>
                         <td t-if="showLeadTimes"/>
                         <td t-if="showCosts" class="text-end">
@@ -605,6 +681,8 @@
                     <td/>
                     <td t-if="showAvailabilities"/>
                     <td t-if="showAvailabilities"/>
+                    <td t-if="showPerformance"/>
+                    <td t-if="showPerformance"/>
                     <td t-if="showLeadTimes"/>
                     <td t-if="showLeadTimes"/>
                     <td t-if="showCosts" class="text-end">
@@ -618,6 +696,9 @@
                     </td>
                     <td t-if="showCosts" class="text-end">
                         <strong t-esc="fmtMoney(data.totals.byproducts_prod_cost)"/>
+                        <i class="fa fa-info-circle text-muted ms-1"
+                           data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                           t-att-data-tooltip-info="colTooltip('subtotal_byproducts_prod_cost_note')"/>&#8203;
                     </td>
                     <td t-if="showCostsUsd" class="text-end text-muted">
                         <strong t-esc="fmtUsd(data.totals.byproducts_prod_cost_usd)"/>
@@ -643,6 +724,8 @@
                 <td/>
                 <td t-if="showAvailabilities"/>
                 <td t-if="showAvailabilities"/>
+                <td t-if="showPerformance"/>
+                <td t-if="showPerformance"/>
                 <td t-if="showLeadTimes"/>
                 <td t-if="showLeadTimes"/>
                 <td t-if="showCosts" class="text-end">
@@ -653,6 +736,9 @@
                 </td>
                 <td t-if="showCosts" class="text-end">
                     <strong t-esc="fmtMoney(data.totals.total_prod)"/>
+                    <i class="fa fa-info-circle text-muted ms-1"
+                       data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                       t-att-data-tooltip-info="colTooltip('grand_total_prod')"/>&#8203;
                 </td>
                 <td t-if="showCostsUsd" class="text-end">
                     <strong t-esc="fmtUsd(data.totals.total_prod_usd)"/>
@@ -673,6 +759,8 @@
                     <td/>
                     <td t-if="showAvailabilities"/>
                     <td t-if="showAvailabilities"/>
+                    <td t-if="showPerformance"/>
+                    <td t-if="showPerformance"/>
                     <td t-if="showLeadTimes"/>
                     <td t-if="showLeadTimes"/>
                     <td t-if="showCosts" class="text-end">
@@ -701,6 +789,8 @@
                     <td/>
                     <td t-if="showAvailabilities"/>
                     <td t-if="showAvailabilities"/>
+                    <td t-if="showPerformance"/>
+                    <td t-if="showPerformance"/>
                     <td t-if="showLeadTimes"/>
                     <td t-if="showLeadTimes"/>
                     <td t-if="showCosts" class="text-end">
