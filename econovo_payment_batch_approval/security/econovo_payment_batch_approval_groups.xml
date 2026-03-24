@@ -2,7 +2,7 @@
 <odoo>
 
     <record id="grp_aprobadores_lote_pago" model="res.groups">
-        <field name="name">Aprobadores — Lotes de Pago</field>
+        <field name="name">Payment Batch Approvers</field>
         <field name="category_id" ref="base.module_category_hidden"/>
     </record>
 

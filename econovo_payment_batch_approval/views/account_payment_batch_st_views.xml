@@ -6,11 +6,11 @@
         <field name="model">account.payment.batch.st</field>
         <field name="inherit_id" ref="account_payment_batch_st.view_batch_payment_form"/>
         <field name="arch" type="xml">
-            <!-- Add "Aprobar Lote" as the primary action button in the header,
+            <!-- Add "Approve Batch" as the primary action button in the header,
                  visible only to authorised approvers and only while draft payments exist. -->
             <button name="action_draft" position="before">
                 <button name="action_approve_batch"
-                    string="Aprobar Lote"
+                    string="Approve Batch"
                     type="object"
                     invisible="not has_draft_payments"
                     groups="econovo_payment_batch_approval.grp_aprobadores_lote_pago"
