@@ -1,6 +1,6 @@
 {
     'name': 'Econovo Payment Batch Approval',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.1.0',
     'category': 'Accounting',
     'summary': 'Bridges Studio Approval Rules with the Sumitec payment batch module',
     'description': """

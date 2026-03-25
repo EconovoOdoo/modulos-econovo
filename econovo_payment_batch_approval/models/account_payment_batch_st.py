@@ -19,9 +19,14 @@ class AccountPaymentBatchSt(models.Model):
     def action_approve_batch(self):
         """Propagate approval to all draft payments in this batch, then confirm them.
 
-        For each draft payment, creates a studio.approval.entry for every active
-        Studio Approval Rule whose domain matches that payment. Studio then finds
-        those entries when action_post() is called and allows posting to proceed.
+        For each draft payment:
+        - Creates a studio.approval.entry for every active Studio Approval Rule
+          whose domain matches that payment. Studio then finds those entries when
+          action_post() is called and allows posting to proceed.
+        - Finds the linked studio.approval.request and marks its mail.activity as
+          done (action_feedback), attributed to the current batch approver. Uses
+          sudo() to bypass the activity owner check while keeping env.uid so the
+          chatter note shows the actual approver.
         """
         self.ensure_one()
         if not self.env.user.has_group(
@@ -72,6 +77,18 @@ class AccountPaymentBatchSt(models.Model):
                     'res_id': payment.id,
                     'approved': True,
                 })
+
+                # Mark the pending Studio approval activity as done.
+                # sudo() bypasses the activity owner check (activity may be
+                # assigned to a different responsible user); env.uid is unchanged
+                # so the chatter note is attributed to the actual batch approver.
+                request = self.env['studio.approval.request'].sudo().search(
+                    [('rule_id', '=', rule.id), ('res_id', '=', payment.id)], limit=1
+                )
+                if request and request.mail_activity_id:
+                    request.mail_activity_id.sudo().action_feedback(
+                        feedback=_('Approved via batch %s', self.name)
+                    )
 
         # Studio will now find the entries above and allow action_post to proceed.
         draft_payments.action_post()

@@ -1,6 +1,6 @@
 # Payment Batch Approval
 
-**Version:** 17.0.1.0.0 | **License:** AGPL-3 | **Odoo:** 17.0
+**Version:** 17.0.1.1.0 | **License:** AGPL-3 | **Odoo:** 17.0
 
 Bridges **Odoo Studio Approval Rules** on `account.payment.action_post` with
 the **Sumitec payment batch module** (`account_payment_batch_st`), and adds a
@@ -30,8 +30,10 @@ one-click bulk-approval action to batch payment forms.
 - **Bulk approval:** Adds an **Approve Batch** button to the batch payment form.
   When clicked by an authorised approver, it creates `studio.approval.entry`
   records for every applicable Studio Approval Rule on each draft payment in the
-  batch, then calls `action_post()` on all of them in one transaction. The form
-  soft-refreshes automatically after approval.
+  batch, then calls `action_post()` on all of them in one transaction.
+  Pending *Grant Approval* activities on each payment are automatically marked
+  as done, attributed to the batch approver, with the batch name as feedback.
+  The form soft-refreshes automatically after approval.
 
 - **Approval group:** Installs the `Payment Batch Approvers` security group that
   controls visibility of the Approve Batch button.
@@ -135,10 +137,12 @@ add users from the **Users** tab.
 3. Click **Approve Batch**. The module:
    - Finds all active Studio Approval Rules whose domain matches each payment.
    - Creates a `studio.approval.entry` (approved=True) for each rule × payment.
+   - Marks each pending *Grant Approval* activity as done (attributed to the
+     batch approver, feedback includes the batch name).
    - Calls `action_post()` on all draft payments. Studio finds the pre-created
      entries and allows posting to proceed.
 4. The form soft-refreshes in place. The button disappears and all payments
-   show **Posted** status.
+   show **Posted** status. No pending approval activities remain.
 
 ---
 
