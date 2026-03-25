@@ -1,0 +1,62 @@
+<?xml version="1.0" ?>
+<odoo>
+    <!-- Rename action and menu to "Win or Lost Reasons" -->
+    <record id="crm.crm_lost_reason_action" model="ir.actions.act_window">
+        <field name="name">Win or Lost Reasons</field>
+    </record>
+
+    <record id="crm.menu_crm_lost_reason" model="ir.ui.menu">
+        <field name="name">Win or Lost Reasons</field>
+    </record>
+
+    <!-- Add reason_type column to lost reason list view -->
+    <record id="crm_lost_reason_view_tree" model="ir.ui.view">
+        <field name="name">crm.lost.reason.tree.inherit</field>
+        <field name="model">crm.lost.reason</field>
+        <field name="inherit_id" ref="crm.crm_lost_reason_view_tree" />
+        <field name="arch" type="xml">
+            <field name="name" position="after">
+                <field name="reason_type" />
+            </field>
+        </field>
+    </record>
+
+    <!-- Replace native Won button with one that opens the won reason wizard -->
+    <record id="crm_lead_view_form" model="ir.ui.view">
+        <field name="name">crm.lead.form.inherit</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form" />
+        <field name="arch" type="xml">
+            <!-- Hide the standard Won button -->
+            <xpath
+                expr="//button[@name='action_set_won_rainbowman']"
+                position="attributes"
+            >
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <!-- Insert our Won button (with wizard) before the hidden one -->
+            <xpath
+                expr="//button[@name='action_set_won_rainbowman']"
+                position="before"
+            >
+                <button
+                    name="%(crm_won_reason.crm_lead_win_action)d"
+                    string="Won"
+                    type="action"
+                    class="oe_highlight"
+                    data-hotkey="w"
+                    title="Mark as won"
+                    invisible="not active or probability == 100 or type == 'lead'"
+                />
+            </xpath>
+            <!-- Show won_reason_id in form when opportunity is won -->
+            <xpath expr="//field[@name='lost_reason_ids']" position="after">
+                <field
+                    name="won_reason_id"
+                    invisible="probability != 100"
+                    readonly="1"
+                />
+            </xpath>
+        </field>
+    </record>
+</odoo>
