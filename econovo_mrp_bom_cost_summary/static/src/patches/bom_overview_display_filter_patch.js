@@ -5,9 +5,15 @@ import { patch } from "@web/core/utils/patch";
 import { BomOverviewDisplayFilter } from
     "@mrp/components/bom_overview_display_filter/mrp_bom_overview_display_filter";
 
-// Extend props shape so OWL does not warn when 'performance' is passed
-// in showOptions from BomCostSummaryView or the patched BomOverviewComponent.
-BomOverviewDisplayFilter.props.showOptions.shape.performance = Boolean;
+// Extend props so OWL does not warn when 'performance' is passed in showOptions.
+// mrp_plm (Enterprise) patches BomOverviewDisplayFilter.props.showOptions into a
+// flat object (no 'shape' key), so we must handle both structures.
+const _showOptions = BomOverviewDisplayFilter.props.showOptions;
+if (_showOptions.shape) {
+    _showOptions.shape.performance = Boolean;
+} else {
+    _showOptions.performance = Boolean;
+}
 
 patch(BomOverviewDisplayFilter.prototype, {
     setup() {
