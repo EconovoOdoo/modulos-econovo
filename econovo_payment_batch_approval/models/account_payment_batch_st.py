@@ -76,13 +76,12 @@ class AccountPaymentBatchSt(models.Model):
         # Studio will now find the entries above and allow action_post to proceed.
         draft_payments.action_post()
 
+        # Soft-refresh: re-open the same form record so the view updates in place
+        # (button disappears, statusbar shows posted) without a full page reload.
         return {
-            'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'title': _('Batch approved'),
-                'message': _('%s payment(s) confirmed successfully.', len(draft_payments)),
-                'type': 'success',
-                'sticky': False,
-            },
+            'type': 'ir.actions.act_window',
+            'res_model': 'account.payment.batch.st',
+            'res_id': self.id,
+            'view_mode': 'form',
+            'target': 'current',
         }
