@@ -33,7 +33,7 @@
                                 </tr>
                                 <tr>
                                     <td style="background-color: #f5f5f5;">
-                                        <strong>Título</strong>
+                                        <strong>Titulo</strong>
                                     </td>
                                     <td colspan="3">
                                         <span t-field="doc.title"/>
@@ -117,7 +117,7 @@
                                         <span t-else="" style="color: #999;">—</span>
                                     </td>
                                     <td style="background-color: #f5f5f5;">
-                                        <strong>Fecha Verificación</strong>
+                                        <strong>Fecha Verificacion</strong>
                                     </td>
                                     <td>
                                         <span t-if="doc.verification_date"
