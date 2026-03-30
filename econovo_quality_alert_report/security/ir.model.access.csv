@@ -1,0 +1,9 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_econovo_quality_severity_user,econovo.quality.severity.user,model_econovo_quality_severity,quality.group_quality_user,1,0,0,0
+access_econovo_quality_severity_manager,econovo.quality.severity.manager,model_econovo_quality_severity,quality.group_quality_manager,1,1,1,1
+access_econovo_quality_origin_user,econovo.quality.origin.user,model_econovo_quality_origin,quality.group_quality_user,1,0,0,0
+access_econovo_quality_origin_manager,econovo.quality.origin.manager,model_econovo_quality_origin,quality.group_quality_manager,1,1,1,1
+access_econovo_quality_cause_user,econovo.quality.cause.user,model_econovo_quality_cause,quality.group_quality_user,1,0,0,0
+access_econovo_quality_cause_manager,econovo.quality.cause.manager,model_econovo_quality_cause,quality.group_quality_manager,1,1,1,1
+access_econovo_quality_system_user,econovo.quality.system.user,model_econovo_quality_system,quality.group_quality_user,1,0,0,0
+access_econovo_quality_system_manager,econovo.quality.system.manager,model_econovo_quality_system,quality.group_quality_manager,1,1,1,1

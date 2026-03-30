@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo noupdate="1">
+
+    <!-- ===== Severity levels ===== -->
+    <record id="severity_nc_mayor" model="econovo.quality.severity">
+        <field name="name">NC Mayor</field>
+        <field name="sequence">10</field>
+        <field name="description">Non-conformity with significant impact on the management system or product quality.</field>
+    </record>
+    <record id="severity_nc_menor" model="econovo.quality.severity">
+        <field name="name">NC Menor</field>
+        <field name="sequence">20</field>
+        <field name="description">Non-conformity with limited impact, isolated failure.</field>
+    </record>
+    <record id="severity_observacion" model="econovo.quality.severity">
+        <field name="name">Observación</field>
+        <field name="sequence">30</field>
+        <field name="description">Observation or potential non-conformity that could escalate.</field>
+    </record>
+    <record id="severity_oportunidad_mejora" model="econovo.quality.severity">
+        <field name="name">Oportunidad de Mejora</field>
+        <field name="sequence">40</field>
+        <field name="description">Improvement opportunity, not a non-conformity.</field>
+    </record>
+
+    <!-- ===== Origins ===== -->
+    <record id="origin_auditoria_interna" model="econovo.quality.origin">
+        <field name="name">Auditoría Interna</field>
+        <field name="ref_code">AI</field>
+        <field name="sequence">10</field>
+    </record>
+    <record id="origin_auditoria_externa" model="econovo.quality.origin">
+        <field name="name">Auditoría Externa</field>
+        <field name="ref_code">AE</field>
+        <field name="sequence">20</field>
+    </record>
+    <record id="origin_reclamo_cliente" model="econovo.quality.origin">
+        <field name="name">Reclamo de Cliente</field>
+        <field name="ref_code">RC</field>
+        <field name="sequence">30</field>
+    </record>
+    <record id="origin_inspeccion" model="econovo.quality.origin">
+        <field name="name">Inspección</field>
+        <field name="ref_code">IN</field>
+        <field name="sequence">40</field>
+    </record>
+    <record id="origin_otro" model="econovo.quality.origin">
+        <field name="name">Otro</field>
+        <field name="ref_code">OT</field>
+        <field name="sequence">99</field>
+    </record>
+
+    <!-- ===== Management Systems ===== -->
+    <record id="system_iso_9001" model="econovo.quality.system">
+        <field name="name">ISO 9001:2015</field>
+    </record>
+
+</odoo>
