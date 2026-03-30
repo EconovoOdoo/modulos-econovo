@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- ===== Inherit quality.alert form view ===== -->
+    <record id="quality_alert_view_form_inherit" model="ir.ui.view">
+        <field name="name">quality.alert.view.form.inherit.econovo_quality_alert_report</field>
+        <field name="model">quality.alert</field>
+        <field name="inherit_id" ref="quality_control.quality_alert_view_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Classification fields: after picking_id in the left column -->
+            <field name="picking_id" position="after">
+                <field name="severity_id"/>
+                <field name="department_id"/>
+                <field name="system_id"/>
+            </field>
+
+            <!-- People fields: after user_id in the right column -->
+            <field name="reason_id" position="after">
+                <field name="manager_user_id"/>
+                <field name="containment_responsible_id"/>
+                <field name="verification_date"/>
+            </field>
+
+            <!-- Origin and cause tags: after the main group, before notebook -->
+            <xpath expr="//sheet/group" position="after">
+                <group>
+                    <group>
+                        <field name="origin_ids" widget="many2many_tags"/>
+                    </group>
+                    <group>
+                        <field name="cause_ids" widget="many2many_tags"/>
+                    </group>
+                </group>
+            </xpath>
+
+            <!-- Immediate Action page: before Description -->
+            <page name="description" position="before">
+                <page string="Immediate Action" name="immediate_action">
+                    <field name="immediate_action"
+                           placeholder="Describe the immediate containment action taken..."/>
+                </page>
+            </page>
+
+            <!-- Analysis page: after Corrective Actions -->
+            <page name="corrective_actions" position="after">
+                <page string="Analysis" name="analysis">
+                    <field name="analysis"
+                           placeholder="Root cause analysis details..."/>
+                </page>
+            </page>
+
+            <!-- Evaluation page: after Preventive Actions -->
+            <page name="preventive_actions" position="after">
+                <page string="Evaluation" name="evaluation">
+                    <field name="evaluation_comments"
+                           placeholder="Evaluation of action effectiveness..."/>
+                </page>
+            </page>
+
+        </field>
+    </record>
+
+</odoo>
