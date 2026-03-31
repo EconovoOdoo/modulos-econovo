@@ -8,118 +8,114 @@
                     <div class="page" style="font-size: 12px;">
 
                         <!-- ===== HEADER ===== -->
-                        <div style="text-align: center; margin-bottom: 16px;">
-                            <h2 style="margin-bottom: 4px;">
-                                <strong>REPORTE DE NO CONFORMIDAD</strong>
-                            </h2>
+                        <div style="text-align: center; margin-top: -8px; margin-bottom: 8px;">
+                            <h3 style="margin: 0; font-weight: bold;">
+                                REPORTE DE NO CONFORMIDAD
+                            </h3>
                         </div>
 
-                        <!-- ===== IDENTIFICATION TABLE ===== -->
-                        <table class="table table-sm table-bordered" style="margin-bottom: 12px;">
+                        <!-- ===== UNIFIED DATA TABLE (Identification + Classification) ===== -->
+                        <table class="table table-sm table-bordered" style="margin-bottom: 6px; font-size: 11px;">
                             <tbody>
+                                <!-- Identification -->
                                 <tr>
-                                    <td style="width: 25%; background-color: #f5f5f5;">
+                                    <td style="width: 15%; background-color: #e9ecef; padding: 3px 6px;">
                                         <strong>N° NC</strong>
                                     </td>
-                                    <td style="width: 25%;">
+                                    <td style="width: 35%; padding: 3px 6px;">
                                         <span t-field="doc.name"/>
                                     </td>
-                                    <td style="width: 25%; background-color: #f5f5f5;">
+                                    <td style="width: 15%; background-color: #e9ecef; padding: 3px 6px;">
                                         <strong>Fecha</strong>
                                     </td>
-                                    <td style="width: 25%;">
+                                    <td style="width: 35%; padding: 3px 6px;">
                                         <span t-field="doc.create_date" t-options="{'widget': 'date'}"/>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td style="background-color: #f5f5f5;">
+                                    <td style="background-color: #e9ecef; padding: 3px 6px;">
                                         <strong>Título</strong>
                                     </td>
-                                    <td colspan="3">
+                                    <td colspan="3" style="padding: 3px 6px;">
                                         <span t-field="doc.title"/>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td style="background-color: #f5f5f5;">
+                                    <td style="background-color: #e9ecef; padding: 3px 6px;">
                                         <strong>Equipo</strong>
                                     </td>
-                                    <td>
+                                    <td style="padding: 3px 6px;">
                                         <span t-field="doc.team_id.name"/>
                                     </td>
-                                    <td style="background-color: #f5f5f5;">
+                                    <td style="background-color: #e9ecef; padding: 3px 6px;">
                                         <strong>Etapa</strong>
                                     </td>
-                                    <td>
+                                    <td style="padding: 3px 6px;">
                                         <span t-field="doc.stage_id.name"/>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td style="background-color: #f5f5f5;">
+                                    <td style="background-color: #e9ecef; padding: 3px 6px;">
                                         <strong>Responsable</strong>
                                     </td>
-                                    <td>
+                                    <td style="padding: 3px 6px;">
                                         <span t-field="doc.user_id.name"/>
                                     </td>
-                                    <td style="background-color: #f5f5f5;">
+                                    <td style="background-color: #e9ecef; padding: 3px 6px;">
                                         <strong>Prioridad</strong>
                                     </td>
-                                    <td>
+                                    <td style="padding: 3px 6px;">
                                         <t t-if="doc.priority == '3'">Muy Alta</t>
                                         <t t-elif="doc.priority == '2'">Alta</t>
                                         <t t-elif="doc.priority == '1'">Baja</t>
                                         <t t-else="">Normal</t>
                                     </td>
                                 </tr>
-                            </tbody>
-                        </table>
-
-                        <!-- ===== CLASSIFICATION ===== -->
-                        <table class="table table-sm table-bordered" style="margin-bottom: 12px;">
-                            <tbody>
+                                <!-- Classification -->
                                 <tr>
-                                    <td style="width: 25%; background-color: #f5f5f5;">
+                                    <td style="background-color: #e9ecef; padding: 3px 6px;">
                                         <strong>Severidad</strong>
                                     </td>
-                                    <td style="width: 25%;">
+                                    <td style="padding: 3px 6px;">
                                         <span t-if="doc.severity_id" t-field="doc.severity_id.name"/>
                                         <span t-else="" style="color: #999;">—</span>
                                     </td>
-                                    <td style="width: 25%; background-color: #f5f5f5;">
+                                    <td style="background-color: #e9ecef; padding: 3px 6px;">
                                         <strong>Departamento</strong>
                                     </td>
-                                    <td style="width: 25%;">
+                                    <td style="padding: 3px 6px;">
                                         <span t-if="doc.department_id" t-field="doc.department_id.name"/>
                                         <span t-else="" style="color: #999;">—</span>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td style="background-color: #f5f5f5;">
+                                    <td style="background-color: #e9ecef; padding: 3px 6px;">
                                         <strong>Norma / Sistema</strong>
                                     </td>
-                                    <td>
+                                    <td style="padding: 3px 6px;">
                                         <span t-if="doc.system_id" t-field="doc.system_id.name"/>
                                         <span t-else="" style="color: #999;">—</span>
                                     </td>
-                                    <td style="background-color: #f5f5f5;">
+                                    <td style="background-color: #e9ecef; padding: 3px 6px;">
                                         <strong>Resp. Calidad</strong>
                                     </td>
-                                    <td>
+                                    <td style="padding: 3px 6px;">
                                         <span t-if="doc.manager_user_id" t-field="doc.manager_user_id.name"/>
                                         <span t-else="" style="color: #999;">—</span>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td style="background-color: #f5f5f5;">
+                                    <td style="background-color: #e9ecef; padding: 3px 6px;">
                                         <strong>Resp. Contención</strong>
                                     </td>
-                                    <td>
+                                    <td style="padding: 3px 6px;">
                                         <span t-if="doc.containment_responsible_id" t-field="doc.containment_responsible_id.name"/>
                                         <span t-else="" style="color: #999;">—</span>
                                     </td>
-                                    <td style="background-color: #f5f5f5;">
+                                    <td style="background-color: #e9ecef; padding: 3px 6px;">
                                         <strong>Fecha Verificación</strong>
                                     </td>
-                                    <td>
+                                    <td style="padding: 3px 6px;">
                                         <span t-if="doc.verification_date"
                                               t-field="doc.verification_date"
                                               t-options="{'widget': 'date'}"/>
@@ -127,190 +123,207 @@
                                     </td>
                                 </tr>
                                 <tr t-if="doc.origin_ids or doc.cause_ids">
-                                    <td style="background-color: #f5f5f5;">
+                                    <td style="background-color: #e9ecef; padding: 3px 6px;">
                                         <strong>Origen</strong>
                                     </td>
-                                    <td>
+                                    <td style="padding: 3px 6px;">
                                         <t t-foreach="doc.origin_ids" t-as="origin">
                                             <span t-out="origin.name"/>
                                             <t t-if="not origin_last">, </t>
                                         </t>
                                     </td>
-                                    <td style="background-color: #f5f5f5;">
+                                    <td style="background-color: #e9ecef; padding: 3px 6px;">
                                         <strong>Causas</strong>
                                     </td>
-                                    <td>
+                                    <td style="padding: 3px 6px;">
                                         <t t-foreach="doc.cause_ids" t-as="cause">
                                             <span t-out="cause.name"/>
                                             <t t-if="not cause_last">, </t>
                                         </t>
                                     </td>
                                 </tr>
+                                <!-- Product / Picking (conditional rows) -->
+                                <tr t-if="doc.product_tmpl_id">
+                                    <td style="background-color: #e9ecef; padding: 3px 6px;">
+                                        <strong>Producto</strong>
+                                    </td>
+                                    <td colspan="3" style="padding: 3px 6px;">
+                                        <span t-field="doc.product_tmpl_id.display_name"/>
+                                        <t t-if="doc.product_id and doc.product_id != doc.product_tmpl_id.product_variant_id">
+                                            (<span t-field="doc.product_id.display_name"/>)
+                                        </t>
+                                    </td>
+                                </tr>
+                                <tr t-if="doc.lot_id or doc.picking_id">
+                                    <t t-if="doc.lot_id">
+                                        <td style="background-color: #e9ecef; padding: 3px 6px;">
+                                            <strong>Lote/Serie</strong>
+                                        </td>
+                                        <td style="padding: 3px 6px;">
+                                            <span t-field="doc.lot_id.display_name"/>
+                                        </td>
+                                    </t>
+                                    <t t-if="doc.picking_id">
+                                        <td style="background-color: #e9ecef; padding: 3px 6px;">
+                                            <strong>Transferencia</strong>
+                                        </td>
+                                        <td style="padding: 3px 6px;">
+                                            <span t-field="doc.picking_id.display_name"/>
+                                        </td>
+                                    </t>
+                                </tr>
+                                <tr t-if="doc.partner_id">
+                                    <td style="background-color: #e9ecef; padding: 3px 6px;">
+                                        <strong>Contacto</strong>
+                                    </td>
+                                    <td colspan="3" style="padding: 3px 6px;">
+                                        <span t-field="doc.partner_id.display_name"/>
+                                    </td>
+                                </tr>
+                                <!-- Root Cause (conditional row) -->
+                                <tr t-if="doc.reason_id">
+                                    <td style="background-color: #e9ecef; padding: 3px 6px;">
+                                        <strong>Causa Raíz</strong>
+                                    </td>
+                                    <td colspan="3" style="padding: 3px 6px;">
+                                        <span t-field="doc.reason_id.name"/>
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
 
-                        <!-- ===== PRODUCT / PICKING INFO (if present) ===== -->
-                        <t t-if="doc.product_tmpl_id or doc.lot_id or doc.picking_id or doc.partner_id">
-                            <table class="table table-sm table-bordered" style="margin-bottom: 12px;">
-                                <tbody>
-                                    <tr t-if="doc.product_tmpl_id">
-                                        <td style="width: 25%; background-color: #f5f5f5;">
-                                            <strong>Producto</strong>
-                                        </td>
-                                        <td colspan="3">
-                                            <span t-field="doc.product_tmpl_id.display_name"/>
-                                            <t t-if="doc.product_id and doc.product_id != doc.product_tmpl_id.product_variant_id">
-                                                (<span t-field="doc.product_id.display_name"/>)
-                                            </t>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <t t-if="doc.lot_id">
-                                            <td style="width: 25%; background-color: #f5f5f5;">
-                                                <strong>Lote/Serie</strong>
-                                            </td>
-                                            <td style="width: 25%;">
-                                                <span t-field="doc.lot_id.display_name"/>
-                                            </td>
+                        <!-- ===== NARRATIVE SECTIONS (2-column layout) ===== -->
+
+                        <!-- Row 1: Immediate Action + Description -->
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 4px;">
+                            <tr>
+                                <td style="width: 50%; vertical-align: top; padding-right: 3px;">
+                                    <div style="background-color: #343a40; color: white; padding: 3px 8px; font-weight: bold; font-size: 10px;">
+                                        1. Acción Inmediata / Contención
+                                    </div>
+                                    <div style="border: 1px solid #dee2e6; border-top: none; padding: 6px 8px; min-height: 40px; font-size: 11px;">
+                                        <t t-if="doc.immediate_action">
+                                            <t t-raw="doc.immediate_action"/>
                                         </t>
-                                        <t t-if="doc.picking_id">
-                                            <td style="width: 25%; background-color: #f5f5f5;">
-                                                <strong>Transferencia</strong>
-                                            </td>
-                                            <td style="width: 25%;">
-                                                <span t-field="doc.picking_id.display_name"/>
-                                            </td>
+                                        <t t-else="">
+                                            <span style="color: #999;">—</span>
                                         </t>
-                                    </tr>
-                                    <tr t-if="doc.partner_id">
-                                        <td style="background-color: #f5f5f5;">
-                                            <strong>Contacto</strong>
+                                    </div>
+                                </td>
+                                <td style="width: 50%; vertical-align: top; padding-left: 3px;">
+                                    <div style="background-color: #343a40; color: white; padding: 3px 8px; font-weight: bold; font-size: 10px;">
+                                        2. Descripción
+                                    </div>
+                                    <div style="border: 1px solid #dee2e6; border-top: none; padding: 6px 8px; min-height: 40px; font-size: 11px;">
+                                        <t t-if="doc.description">
+                                            <t t-raw="doc.description"/>
+                                        </t>
+                                        <t t-else="">
+                                            <span style="color: #999;">—</span>
+                                        </t>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- Row 2: Corrective + Preventive -->
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 4px;">
+                            <tr>
+                                <td style="width: 50%; vertical-align: top; padding-right: 3px;">
+                                    <div style="background-color: #343a40; color: white; padding: 3px 8px; font-weight: bold; font-size: 10px;">
+                                        3. Acciones Correctivas
+                                    </div>
+                                    <div style="border: 1px solid #dee2e6; border-top: none; padding: 6px 8px; min-height: 40px; font-size: 11px;">
+                                        <t t-if="doc.action_corrective">
+                                            <t t-raw="doc.action_corrective"/>
+                                        </t>
+                                        <t t-else="">
+                                            <span style="color: #999;">—</span>
+                                        </t>
+                                    </div>
+                                </td>
+                                <td style="width: 50%; vertical-align: top; padding-left: 3px;">
+                                    <div style="background-color: #343a40; color: white; padding: 3px 8px; font-weight: bold; font-size: 10px;">
+                                        4. Acciones Preventivas
+                                    </div>
+                                    <div style="border: 1px solid #dee2e6; border-top: none; padding: 6px 8px; min-height: 40px; font-size: 11px;">
+                                        <t t-if="doc.action_preventive">
+                                            <t t-raw="doc.action_preventive"/>
+                                        </t>
+                                        <t t-else="">
+                                            <span style="color: #999;">—</span>
+                                        </t>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- Row 3: Analysis + Evaluation (conditional, side by side if both exist) -->
+                        <t t-if="doc.analysis or doc.evaluation_comments">
+                            <table style="width: 100%; border-collapse: collapse; margin-bottom: 4px;">
+                                <tr>
+                                    <t t-if="doc.analysis and doc.evaluation_comments">
+                                        <!-- Both exist: side by side -->
+                                        <td style="width: 50%; vertical-align: top; padding-right: 3px;">
+                                            <div style="background-color: #343a40; color: white; padding: 3px 8px; font-weight: bold; font-size: 10px;">
+                                                5. Análisis
+                                            </div>
+                                            <div style="border: 1px solid #dee2e6; border-top: none; padding: 6px 8px; min-height: 40px; font-size: 11px;">
+                                                <span t-field="doc.analysis"/>
+                                            </div>
                                         </td>
-                                        <td colspan="3">
-                                            <span t-field="doc.partner_id.display_name"/>
+                                        <td style="width: 50%; vertical-align: top; padding-left: 3px;">
+                                            <div style="background-color: #343a40; color: white; padding: 3px 8px; font-weight: bold; font-size: 10px;">
+                                                6. Evaluación
+                                            </div>
+                                            <div style="border: 1px solid #dee2e6; border-top: none; padding: 6px 8px; min-height: 40px; font-size: 11px;">
+                                                <span t-field="doc.evaluation_comments"/>
+                                            </div>
                                         </td>
-                                    </tr>
-                                </tbody>
+                                    </t>
+                                    <t t-elif="doc.analysis">
+                                        <!-- Only analysis: full width -->
+                                        <td style="width: 100%; vertical-align: top;">
+                                            <div style="background-color: #343a40; color: white; padding: 3px 8px; font-weight: bold; font-size: 10px;">
+                                                5. Análisis
+                                            </div>
+                                            <div style="border: 1px solid #dee2e6; border-top: none; padding: 6px 8px; min-height: 40px; font-size: 11px;">
+                                                <span t-field="doc.analysis"/>
+                                            </div>
+                                        </td>
+                                    </t>
+                                    <t t-else="">
+                                        <!-- Only evaluation: full width -->
+                                        <td style="width: 100%; vertical-align: top;">
+                                            <div style="background-color: #343a40; color: white; padding: 3px 8px; font-weight: bold; font-size: 10px;">
+                                                6. Evaluación
+                                            </div>
+                                            <div style="border: 1px solid #dee2e6; border-top: none; padding: 6px 8px; min-height: 40px; font-size: 11px;">
+                                                <span t-field="doc.evaluation_comments"/>
+                                            </div>
+                                        </td>
+                                    </t>
+                                </tr>
                             </table>
                         </t>
 
-                        <!-- ===== ROOT CAUSE ===== -->
-                        <t t-if="doc.reason_id">
-                            <table class="table table-sm table-bordered" style="margin-bottom: 12px;">
-                                <tbody>
-                                    <tr>
-                                        <td style="width: 25%; background-color: #f5f5f5;">
-                                            <strong>Causa Raíz</strong>
-                                        </td>
-                                        <td>
-                                            <span t-field="doc.reason_id.name"/>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </t>
-
-                        <!-- ===== 1. IMMEDIATE ACTION ===== -->
-                        <div style="margin-bottom: 16px;">
-                            <div style="background-color: #343a40; color: white; padding: 6px 12px; font-weight: bold;">
-                                1. Acción Inmediata / Contención
-                            </div>
-                            <div style="border: 1px solid #dee2e6; border-top: none; padding: 12px; min-height: 60px;">
-                                <t t-if="doc.immediate_action">
-                                    <t t-raw="doc.immediate_action"/>
-                                </t>
-                                <t t-else="">
-                                    <span style="color: #999;">—</span>
-                                </t>
-                            </div>
-                        </div>
-
-                        <!-- ===== 2. DESCRIPTION ===== -->
-                        <div style="margin-bottom: 16px;">
-                            <div style="background-color: #343a40; color: white; padding: 6px 12px; font-weight: bold;">
-                                2. Descripción
-                            </div>
-                            <div style="border: 1px solid #dee2e6; border-top: none; padding: 12px; min-height: 60px;">
-                                <t t-if="doc.description">
-                                    <t t-raw="doc.description"/>
-                                </t>
-                                <t t-else="">
-                                    <span style="color: #999;">—</span>
-                                </t>
-                            </div>
-                        </div>
-
-                        <!-- ===== 3. CORRECTIVE ACTIONS ===== -->
-                        <div style="margin-bottom: 16px;">
-                            <div style="background-color: #343a40; color: white; padding: 6px 12px; font-weight: bold;">
-                                3. Acciones Correctivas
-                            </div>
-                            <div style="border: 1px solid #dee2e6; border-top: none; padding: 12px; min-height: 60px;">
-                                <t t-if="doc.action_corrective">
-                                    <t t-raw="doc.action_corrective"/>
-                                </t>
-                                <t t-else="">
-                                    <span style="color: #999;">—</span>
-                                </t>
-                            </div>
-                        </div>
-
-                        <!-- ===== 4. PREVENTIVE ACTIONS ===== -->
-                        <div style="margin-bottom: 16px;">
-                            <div style="background-color: #343a40; color: white; padding: 6px 12px; font-weight: bold;">
-                                4. Acciones Preventivas
-                            </div>
-                            <div style="border: 1px solid #dee2e6; border-top: none; padding: 12px; min-height: 60px;">
-                                <t t-if="doc.action_preventive">
-                                    <t t-raw="doc.action_preventive"/>
-                                </t>
-                                <t t-else="">
-                                    <span style="color: #999;">—</span>
-                                </t>
-                            </div>
-                        </div>
-
-                        <!-- ===== 5. ANALYSIS ===== -->
-                        <t t-if="doc.analysis">
-                            <div style="margin-bottom: 16px;">
-                                <div style="background-color: #343a40; color: white; padding: 6px 12px; font-weight: bold;">
-                                    5. Análisis
-                                </div>
-                                <div style="border: 1px solid #dee2e6; border-top: none; padding: 12px; min-height: 60px;">
-                                    <span t-field="doc.analysis"/>
-                                </div>
-                            </div>
-                        </t>
-
-                        <!-- ===== 6. EVALUATION ===== -->
-                        <t t-if="doc.evaluation_comments">
-                            <div style="margin-bottom: 16px;">
-                                <div style="background-color: #343a40; color: white; padding: 6px 12px; font-weight: bold;">
-                                    6. Evaluación
-                                </div>
-                                <div style="border: 1px solid #dee2e6; border-top: none; padding: 12px; min-height: 60px;">
-                                    <span t-field="doc.evaluation_comments"/>
-                                </div>
-                            </div>
-                        </t>
-
-                        <!-- ===== 7. CLOSURE ===== -->
-                        <table class="table table-sm table-bordered" style="margin-bottom: 20px;">
+                        <!-- ===== CLOSURE + SIGNATURES ===== -->
+                        <table class="table table-sm table-bordered" style="margin-bottom: 4px; font-size: 11px;">
                             <tbody>
                                 <tr>
-                                    <td style="width: 25%; background-color: #f5f5f5;">
+                                    <td style="width: 15%; background-color: #e9ecef; padding: 3px 6px;">
                                         <strong>Fecha Asignación</strong>
                                     </td>
-                                    <td style="width: 25%;">
+                                    <td style="width: 35%; padding: 3px 6px;">
                                         <span t-if="doc.date_assign"
                                               t-field="doc.date_assign"
                                               t-options="{'widget': 'date'}"/>
                                         <span t-else="" style="color: #999;">—</span>
                                     </td>
-                                    <td style="width: 25%; background-color: #f5f5f5;">
+                                    <td style="width: 15%; background-color: #e9ecef; padding: 3px 6px;">
                                         <strong>Fecha Cierre</strong>
                                     </td>
-                                    <td style="width: 25%;">
+                                    <td style="width: 35%; padding: 3px 6px;">
                                         <span t-if="doc.date_close"
                                               t-field="doc.date_close"
                                               t-options="{'widget': 'date'}"/>
@@ -320,27 +333,27 @@
                             </tbody>
                         </table>
 
-                        <!-- ===== SIGNATURES ===== -->
-                        <div style="margin-top: 40px;">
+                        <!-- Signatures -->
+                        <div style="margin-top: 16px;">
                             <table style="width: 100%; border: none;">
                                 <tr>
-                                    <td style="width: 33%; text-align: center; vertical-align: bottom; padding: 0 12px;">
-                                        <div style="border-bottom: 1px solid #333; height: 50px;"/>
-                                        <div style="padding-top: 4px; font-size: 11px;">
+                                    <td style="width: 33%; text-align: center; vertical-align: bottom; padding: 0 10px;">
+                                        <div style="border-bottom: 1px solid #333; height: 30px;"/>
+                                        <div style="padding-top: 3px; font-size: 10px;">
                                             <strong>Reportado por</strong><br/>
                                             <span t-field="doc.create_uid.name"/>
                                         </div>
                                     </td>
-                                    <td style="width: 33%; text-align: center; vertical-align: bottom; padding: 0 12px;">
-                                        <div style="border-bottom: 1px solid #333; height: 50px;"/>
-                                        <div style="padding-top: 4px; font-size: 11px;">
+                                    <td style="width: 33%; text-align: center; vertical-align: bottom; padding: 0 10px;">
+                                        <div style="border-bottom: 1px solid #333; height: 30px;"/>
+                                        <div style="padding-top: 3px; font-size: 10px;">
                                             <strong>Responsable</strong><br/>
                                             <span t-field="doc.user_id.name"/>
                                         </div>
                                     </td>
-                                    <td style="width: 33%; text-align: center; vertical-align: bottom; padding: 0 12px;">
-                                        <div style="border-bottom: 1px solid #333; height: 50px;"/>
-                                        <div style="padding-top: 4px; font-size: 11px;">
+                                    <td style="width: 33%; text-align: center; vertical-align: bottom; padding: 0 10px;">
+                                        <div style="border-bottom: 1px solid #333; height: 30px;"/>
+                                        <div style="padding-top: 3px; font-size: 10px;">
                                             <strong>Resp. Calidad</strong><br/>
                                             <span t-if="doc.manager_user_id" t-field="doc.manager_user_id.name"/>
                                         </div>
