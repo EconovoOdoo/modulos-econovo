@@ -7,39 +7,31 @@
                 <t t-call="web.external_layout">
                     <div class="page" style="font-size: 12px;">
 
-                        <!-- ===== HEADER ===== -->
-                        <div style="text-align: center; margin-top: -8px; margin-bottom: 8px;">
-                            <h3 style="margin: 0; font-weight: bold;">
-                                REPORTE DE NO CONFORMIDAD
-                            </h3>
+                        <!-- ===== HEADER (B3 — Corporate Gray Banner) ===== -->
+                        <div style="background-color: #f8f9fa; border: 1px solid #dee2e6; padding: 10px 14px; margin-top: -8px; margin-bottom: 10px; border-radius: 2px;">
+                            <div class="row" style="margin: 0;">
+                                <div class="col-8" style="padding: 0;">
+                                    <div style="font-size: 15px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: #333;">
+                                        Reporte de No Conformidad
+                                    </div>
+                                    <div style="font-size: 12px; color: #555; margin-top: 3px;">
+                                        <span t-field="doc.title"/>
+                                    </div>
+                                </div>
+                                <div class="col-4 text-right" style="padding: 0;">
+                                    <div style="font-size: 22px; font-weight: bold; color: #333;">
+                                        <span t-field="doc.name"/>
+                                    </div>
+                                    <div style="font-size: 11px; color: #888;">
+                                        <span t-field="doc.create_date" t-options="{'widget': 'date'}"/>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- ===== UNIFIED DATA TABLE (Identification + Classification) ===== -->
                         <table class="table table-sm table-bordered" style="margin-bottom: 6px; font-size: 11px;">
                             <tbody>
-                                <!-- Identification -->
-                                <tr>
-                                    <td style="width: 15%; background-color: #e9ecef; padding: 3px 6px;">
-                                        <strong>N° NC</strong>
-                                    </td>
-                                    <td style="width: 35%; padding: 3px 6px;">
-                                        <span t-field="doc.name"/>
-                                    </td>
-                                    <td style="width: 15%; background-color: #e9ecef; padding: 3px 6px;">
-                                        <strong>Fecha</strong>
-                                    </td>
-                                    <td style="width: 35%; padding: 3px 6px;">
-                                        <span t-field="doc.create_date" t-options="{'widget': 'date'}"/>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="background-color: #e9ecef; padding: 3px 6px;">
-                                        <strong>Título</strong>
-                                    </td>
-                                    <td colspan="3" style="padding: 3px 6px;">
-                                        <span t-field="doc.title"/>
-                                    </td>
-                                </tr>
                                 <tr>
                                     <td style="background-color: #e9ecef; padding: 3px 6px;">
                                         <strong>Equipo</strong>
