@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Econovo Quality Alert Report',
-    'version': '17.0.2.0.0',
+    'version': '17.0.2.0.1',
     'summary': 'PDF report and non-conformity fields for Quality Alerts (ISO)',
     'description': """
         Adds a printable PDF report to Quality Alerts and extends the model

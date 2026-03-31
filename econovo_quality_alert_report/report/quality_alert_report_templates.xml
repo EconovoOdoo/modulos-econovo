@@ -360,4 +360,14 @@
         </t>
     </template>
 
+    <!-- Footer: hardcoded revision code for quality.alert PDF reports -->
+    <template id="quality_alert_revision_footer" inherit_id="web.external_layout_standard">
+        <xpath expr="//ul[hasclass('list-inline')]" position="after">
+            <div t-if="report_type == 'pdf' and o and o._name == 'quality.alert'"
+                 class="text-muted" style="font-size: 8px; margin-top: 2px;">
+                GC03-F01-Rev09
+            </div>
+        </xpath>
+    </template>
+
 </odoo>
