@@ -15,7 +15,7 @@
                         <div style="font-size: 15px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: #333;">
                             <t t-out="report_title"/>
                         </div>
-                        <div style="font-size: 12px; color: #555; margin-top: 3px;">
+                        <div style="font-size: 14px; font-weight: 600; color: #333; margin-top: 4px;">
                             <span t-field="doc.title"/>
                         </div>
                     </div>
@@ -355,6 +355,11 @@
                             </table>
                         </div>
 
+                        <!-- Revision code (set by wrapper template) -->
+                        <div t-if="revision_code" class="text-muted text-right" style="font-size: 8px; margin-top: 8px;">
+                            <t t-out="revision_code"/>
+                        </div>
+
                     </div>
     </template>
 
@@ -398,16 +403,6 @@
                 </t>
             </t>
         </t>
-    </template>
-
-    <!-- Footer: revision code passed via variable from wrapper templates -->
-    <template id="quality_alert_revision_footer" inherit_id="web.external_layout_standard">
-        <xpath expr="//ul[hasclass('list-inline')]" position="after">
-            <div t-if="report_type == 'pdf' and revision_code"
-                 class="text-muted" style="font-size: 8px; margin-top: 2px;">
-                <t t-out="revision_code"/>
-            </div>
-        </xpath>
     </template>
 
 </odoo>
