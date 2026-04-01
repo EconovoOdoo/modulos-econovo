@@ -1,33 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
 
-    <template id="quality_alert_report">
-        <t t-call="web.html_container">
-            <t t-foreach="docs" t-as="doc">
-                <t t-call="web.external_layout">
-                    <div class="page" style="font-size: 12px;">
+    <!-- ================================================================
+         Shared sub-template: report body (called by both ext & int)
+         Expects: doc (quality.alert record), report_title (string)
+         ================================================================ -->
+    <template id="_quality_alert_report_body">
+        <div class="page" style="font-size: 12px;">
 
-                        <!-- ===== HEADER (B3 — Corporate Gray Banner) ===== -->
-                        <div style="background-color: #f8f9fa; border: 1px solid #dee2e6; padding: 10px 14px; margin-top: -8px; margin-bottom: 10px; border-radius: 2px;">
-                            <div class="row" style="margin: 0;">
-                                <div class="col-8" style="padding: 0;">
-                                    <div style="font-size: 15px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: #333;">
-                                        Reporte de No Conformidad
-                                    </div>
-                                    <div style="font-size: 12px; color: #555; margin-top: 3px;">
-                                        <span t-field="doc.title"/>
-                                    </div>
-                                </div>
-                                <div class="col-4 text-right" style="padding: 0;">
-                                    <div style="font-size: 22px; font-weight: bold; color: #333;">
-                                        <span t-field="doc.name"/>
-                                    </div>
-                                    <div style="font-size: 11px; color: #888;">
-                                        <span t-field="doc.create_date" t-options="{'widget': 'date'}"/>
-                                    </div>
-                                </div>
-                            </div>
+            <!-- ===== HEADER (B3 — Corporate Gray Banner) ===== -->
+            <div style="background-color: #f8f9fa; border: 1px solid #dee2e6; padding: 10px 14px; margin-top: -8px; margin-bottom: 10px; border-radius: 2px;">
+                <div class="row" style="margin: 0;">
+                    <div class="col-8" style="padding: 0;">
+                        <div style="font-size: 15px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: #333;">
+                            <t t-out="report_title"/>
                         </div>
+                        <div style="font-size: 12px; color: #555; margin-top: 3px;">
+                            <span t-field="doc.title"/>
+                        </div>
+                    </div>
+                    <div class="col-4 text-right" style="padding: 0;">
+                        <div style="font-size: 22px; font-weight: bold; color: #333;">
+                            <span t-field="doc.name"/>
+                        </div>
+                        <div style="font-size: 11px; color: #888;">
+                            <span t-field="doc.create_date" t-options="{'widget': 'date'}"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
                         <!-- ===== UNIFIED DATA TABLE (Identification + Classification) ===== -->
                         <table class="table table-sm table-bordered" style="margin-bottom: 6px; font-size: 11px;">
@@ -355,17 +356,56 @@
                         </div>
 
                     </div>
+    </template>
+
+    <!-- ================================================================
+         External NC Report (Hallazgos Externos)
+         ================================================================ -->
+    <template id="quality_alert_report_external">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-set="report_title">Reporte de No Conformidad Externa</t>
+                <t t-set="revision_code">REG-SGI-03/BA01. Rev 00 - Feb 26</t>
+                <t t-call="web.external_layout">
+                    <t t-call="econovo_quality_alert_report._quality_alert_report_body"/>
                 </t>
             </t>
         </t>
     </template>
 
-    <!-- Footer: hardcoded revision code for quality.alert PDF reports -->
+    <!-- ================================================================
+         Internal NC Report (Hallazgos Internos)
+         ================================================================ -->
+    <template id="quality_alert_report_internal">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-set="report_title">Reporte de No Conformidad Interna</t>
+                <t t-set="revision_code">REG-SGI-07/BA01. Rev 00 - Feb 26</t>
+                <t t-call="web.external_layout">
+                    <t t-call="econovo_quality_alert_report._quality_alert_report_body"/>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- Legacy template kept for backward compatibility (no revision code) -->
+    <template id="quality_alert_report">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-set="report_title">Reporte de No Conformidad</t>
+                <t t-call="web.external_layout">
+                    <t t-call="econovo_quality_alert_report._quality_alert_report_body"/>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- Footer: revision code passed via variable from wrapper templates -->
     <template id="quality_alert_revision_footer" inherit_id="web.external_layout_standard">
         <xpath expr="//ul[hasclass('list-inline')]" position="after">
-            <div t-if="report_type == 'pdf' and o and o._name == 'quality.alert'"
+            <div t-if="report_type == 'pdf' and revision_code"
                  class="text-muted" style="font-size: 8px; margin-top: 2px;">
-                GC03-F01-Rev09
+                <t t-out="revision_code"/>
             </div>
         </xpath>
     </template>

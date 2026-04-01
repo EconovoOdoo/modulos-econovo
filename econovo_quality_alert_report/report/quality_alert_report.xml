@@ -1,6 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
 
+    <!-- External NC Report (Hallazgos Externos) -->
+    <record id="quality_alert_report_external_action" model="ir.actions.report">
+        <field name="name">NC Report - External</field>
+        <field name="model">quality.alert</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">econovo_quality_alert_report.quality_alert_report_external</field>
+        <field name="report_file">econovo_quality_alert_report.quality_alert_report_external</field>
+        <field name="print_report_name">'NC_EXT_%s' % object.name</field>
+        <field name="binding_model_id" ref="quality.model_quality_alert"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- Internal NC Report (Hallazgos Internos) -->
+    <record id="quality_alert_report_internal_action" model="ir.actions.report">
+        <field name="name">NC Report - Internal</field>
+        <field name="model">quality.alert</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">econovo_quality_alert_report.quality_alert_report_internal</field>
+        <field name="report_file">econovo_quality_alert_report.quality_alert_report_internal</field>
+        <field name="print_report_name">'NC_INT_%s' % object.name</field>
+        <field name="binding_model_id" ref="quality.model_quality_alert"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- Legacy report kept without binding (not shown in Print menu, but still callable) -->
     <record id="quality_alert_report_action" model="ir.actions.report">
         <field name="name">Non-Conformity Report</field>
         <field name="model">quality.alert</field>
@@ -8,7 +33,7 @@
         <field name="report_name">econovo_quality_alert_report.quality_alert_report</field>
         <field name="report_file">econovo_quality_alert_report.quality_alert_report</field>
         <field name="print_report_name">'NC_%s' % object.name</field>
-        <field name="binding_model_id" ref="quality.model_quality_alert"/>
+        <field name="binding_model_id" eval="False"/>
         <field name="binding_type">report</field>
     </record>
 
