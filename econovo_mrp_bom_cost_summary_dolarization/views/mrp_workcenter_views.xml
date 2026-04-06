@@ -21,7 +21,7 @@
                 <div>
                     <field name="costs_hour_usd"
                            widget="monetary"
-                           options="{'currency_field': false}"
+                           options="{'no_symbol': 1}"
                            class="oe_inline"
                            help="Direct USD hourly rate. Auto-set from the exchange rate when 'Cost per Hour' is saved; can be overridden manually."/> per workcenter (USD)
                 </div>
