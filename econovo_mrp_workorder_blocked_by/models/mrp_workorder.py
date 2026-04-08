@@ -14,10 +14,15 @@ class MrpWorkorder(models.Model):
                 lambda b: b.state not in ('done', 'cancel')
             )
             if pending_blockers:
+                blocker_lines = '\n'.join(
+                    '  • %s (%s)' % (b.name, b.production_id.name)
+                    for b in pending_blockers
+                )
                 raise UserError(_(
-                    'Cannot process "%s". The following operations must be completed first:\n%s',
+                    'Cannot process "%s" (%s). The following operations must be completed first:\n%s',
                     wo.name,
-                    ', '.join(pending_blockers.mapped('name')),
+                    wo.production_id.name,
+                    blocker_lines,
                 ))
 
     def button_start(self):

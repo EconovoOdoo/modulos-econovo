@@ -1,6 +1,6 @@
 {
     'name': 'Econovo MRP Workorder Blocked By Enforcement',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     'category': 'Manufacturing',
     'summary': 'Enforce workorder dependencies: prevent starting a workorder until all its blockers are done.',
     'description': """
