@@ -215,7 +215,7 @@ class StockQuantCountHistoryValuation(models.Model):
             if svl_records:
                 record.svl_total_value = sum(svl_records.mapped('value'))
                 # USD value: use gg_cost_dolarization field if available
-                if hasattr(svl_records, 'total_cost_usd'):
+                if 'total_cost_usd' in self.env['stock.valuation.layer']._fields:
                     record.svl_total_value_usd = sum(
                         svl_records.mapped('total_cost_usd')
                     )

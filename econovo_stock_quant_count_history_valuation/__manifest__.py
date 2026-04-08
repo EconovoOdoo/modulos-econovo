@@ -2,7 +2,7 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 {
     'name': 'Stock Quant Count History - Valuation',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     'category': 'Inventory/Inventory',
     'summary': 'Cost valuation for inventory count history with dual currency support',
     'description': """
