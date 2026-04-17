@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        Adds the lot_id (equipment serial) field to the FSM task form view.
+        Placed after worksheet_template_id so the technician selects:
+          1. The worksheet template  →  2. The equipment (lot_id)
+
+        lot_id is only shown when allow_worksheets is True (FSM project with worksheets).
+        The stored related x_lot_id on the worksheet model is kept in sync automatically.
+    -->
+    <record id="project_task_view_form_fsm_lot_id" model="ir.ui.view">
+        <field name="name">project.task.view.form.fsm.lot.id</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="industry_fsm_report.view_task_form2_inherit"/>
+        <field name="arch" type="xml">
+            <xpath
+                expr="//field[@name='worksheet_template_id'][contains(@context,'form_view_ref')]"
+                position="after"
+            >
+                <field
+                    name="lot_id"
+                    string="Equipo (N/S)"
+                    invisible="not allow_worksheets"
+                    options="{'no_create': True, 'no_open': True}"
+                />
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

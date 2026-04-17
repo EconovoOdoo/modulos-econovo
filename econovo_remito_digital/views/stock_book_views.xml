@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- stock.book.printer form view -->
+    <record id="view_stock_book_printer_form" model="ir.ui.view">
+        <field name="name">stock.book.printer.form</field>
+        <field name="model">stock.book.printer</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="legal_name"/>
+                            <field name="phone"/>
+                        </group>
+                        <group>
+                            <field name="vat"/>
+                            <field name="gross_income"/>
+                            <field name="hab_mun"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="print_date"/>
+                        <field name="copies_desc"/>
+                        <field name="logo" widget="image" class="oe_avatar"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- stock.book.printer tree view -->
+    <record id="view_stock_book_printer_tree" model="ir.ui.view">
+        <field name="name">stock.book.printer.tree</field>
+        <field name="model">stock.book.printer</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="legal_name"/>
+                <field name="vat"/>
+                <field name="print_date"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Action and menu for stock.book.printer -->
+    <record id="action_stock_book_printer" model="ir.actions.act_window">
+        <field name="name">Imprentas Autorizadas</field>
+        <field name="res_model">stock.book.printer</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem
+        id="menu_stock_book_printer"
+        name="Imprentas Autorizadas"
+        action="action_stock_book_printer"
+        parent="stock.menu_warehouse_config"
+        sequence="21"/>
+
+    <!-- Inherit stock.book form to add digital remito fields -->
+    <record id="view_stock_book_form_remito_digital" model="ir.ui.view">
+        <field name="name">stock.book.form.inherit.remito_digital</field>
+        <field name="model">stock.book</field>
+        <field name="inherit_id" ref="stock_voucher_ux.view_stock_book_form_ux"/>
+        <field name="arch" type="xml">
+            <!-- Digital toggle after autoprinted -->
+            <field name="autoprinted" position="after">
+                <field name="is_digital" widget="boolean_toggle"/>
+            </field>
+            <!-- Make autoprinted readonly when is_digital is True -->
+            <field name="autoprinted" position="attributes">
+                <attribute name="readonly">is_digital</attribute>
+            </field>
+            <!-- Override CAI visibility: show when autoprinted OR is_digital -->
+            <xpath expr="//field[@name='l10n_ar_cai']" position="attributes">
+                <attribute name="invisible">not autoprinted and not is_digital</attribute>
+            </xpath>
+            <xpath expr="//field[@name='l10n_ar_cai_due']" position="attributes">
+                <attribute name="invisible">not autoprinted and not is_digital</attribute>
+            </xpath>
+            <!-- Sequence range and other digital fields after l10n_ar_cai_due -->
+            <field name="l10n_ar_cai_due" position="after">
+                <field name="sequence_start" invisible="not is_digital"/>
+                <field name="sequence_end" invisible="not is_digital"/>
+                <field name="is_interwarehouse_company_transfer"
+                       widget="boolean_toggle"
+                       invisible="not is_digital"/>
+                <field name="printer_id" invisible="not is_digital"/>
+            </field>
+        </field>
+    </record>
+</odoo>

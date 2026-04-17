@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!--
+            PDF report action for REG-SVT-04 — Orden de Trabajo y Servicio Técnico.
+
+            Bound to project.task so it appears in the Print menu alongside the
+            standard "Field Service Report" from industry_fsm_report.
+
+            report_name must match the _name suffix of the AbstractModel
+            (report.econovo_fsm_worksheet.report_svt04) after the "report." prefix.
+        -->
+        <record id="action_report_svt04" model="ir.actions.report">
+            <field name="name">Orden de Trabajo SVT-04</field>
+            <field name="model">project.task</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">econovo_fsm_worksheet.report_svt04</field>
+            <field name="report_file">econovo_fsm_worksheet.report_svt04</field>
+            <field name="print_report_name">'OT %s - %s' % (object.name, object.partner_id.name or '')</field>
+            <field name="binding_model_id" ref="project.model_project_task"/>
+            <field name="binding_type">report</field>
+        </record>
+
+    </data>
+</odoo>

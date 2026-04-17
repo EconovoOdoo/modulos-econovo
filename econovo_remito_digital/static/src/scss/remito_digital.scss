@@ -1,0 +1,360 @@
+/* ============================================================
+   Remito Digital — Econovo A4 Layout
+   ============================================================ */
+
+$remito-border: 1px solid #333;
+$remito-green: #2e7d32;
+$remito-header-bg: #fff;
+$remito-font-size: 8pt;
+$remito-label-font-size: 7.5pt;
+
+.remito-page {
+    font-family: Arial, sans-serif;
+    font-size: $remito-font-size;
+    color: #222;
+    padding: 4mm;
+    box-sizing: border-box;
+}
+
+/* ---- Header ---- */
+.remito-header-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: $remito-border;
+    margin-bottom: 0;
+
+    td {
+        vertical-align: top;
+        padding: 2mm;
+    }
+}
+
+.remito-company-cell {
+    width: 50%;
+    border-right: $remito-border;
+}
+
+.company-logo-img {
+    max-height: 14mm;
+    max-width: 40mm;
+    display: block;
+    margin-bottom: 1mm;
+}
+
+.remito-company-info {
+    font-size: 7pt;
+    line-height: 1.4;
+}
+
+.remito-company-secondary {
+    font-size: 7.5pt;
+    margin-top: 1mm;
+}
+
+.remito-iva-type {
+    font-size: 7pt;
+    font-style: italic;
+}
+
+.remito-phone {
+    font-size: 8pt;
+    margin-top: 1mm;
+}
+
+.remito-badge-cell {
+    width: 12%;
+    text-align: center;
+    vertical-align: middle;
+    border-right: $remito-border;
+    padding: 2mm;
+}
+
+.remito-r-badge {
+    background-color: #d32f2f;
+    color: #fff;
+    font-size: 22pt;
+    font-weight: bold;
+    width: 14mm;
+    height: 14mm;
+    line-height: 14mm;
+    text-align: center;
+    margin: 0 auto 2mm auto;
+    border: 2px solid #333;
+}
+
+.remito-codigo {
+    font-size: 6pt;
+    text-align: center;
+    line-height: 1.3;
+}
+
+.remito-number-cell {
+    width: 38%;
+    vertical-align: top;
+    padding: 2mm;
+}
+
+.remito-number-header {
+    font-size: 14pt;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 1mm;
+}
+
+.remito-date-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1mm;
+
+    th, td {
+        border: $remito-border;
+        padding: 1mm 2mm;
+        text-align: center;
+    }
+}
+
+.remito-th-green {
+    background-color: $remito-green;
+    color: #fff;
+    font-size: 9pt;
+    font-weight: bold;
+}
+
+.remito-td-empty,
+.remito-td-date {
+    min-height: 6mm;
+    height: 6mm;
+}
+
+.remito-fiscal-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 7pt;
+
+    td {
+        padding: 0.5mm 1mm;
+        border: $remito-border;
+    }
+}
+
+/* ---- Destinatario ---- */
+.remito-recipient-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: $remito-border;
+    border-top: 0;
+
+    td {
+        padding: 1mm 2mm;
+        vertical-align: top;
+    }
+}
+
+.remito-recipient-left {
+    width: 55%;
+    border-right: $remito-border;
+}
+
+.remito-recipient-right {
+    width: 45%;
+}
+
+.remito-field-row {
+    min-height: 5mm;
+    border-bottom: 1px solid #ccc;
+    padding: 0.5mm 0;
+    display: flex;
+    align-items: baseline;
+}
+
+.remito-label {
+    font-weight: bold;
+    font-size: $remito-label-font-size;
+    white-space: nowrap;
+    margin-right: 1mm;
+}
+
+.remito-value {
+    flex: 1;
+    font-size: $remito-font-size;
+}
+
+/* ---- Transport row ---- */
+.remito-transport-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: $remito-border;
+    border-top: 0;
+
+    td {
+        padding: 1mm 2mm;
+        border-right: $remito-border;
+        min-height: 6mm;
+
+        &:last-child {
+            border-right: 0;
+        }
+    }
+}
+
+.remito-transport-cell { width: 35%; }
+.remito-oc-cell { width: 35%; }
+.remito-solicitado-cell { width: 30%; }
+
+/* ---- Products table ---- */
+.remito-products-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: $remito-border;
+    border-top: 0;
+
+    th {
+        background-color: $remito-green;
+        color: #fff;
+        font-size: 8pt;
+        font-weight: bold;
+        padding: 1mm 2mm;
+        border-right: 1px solid #fff;
+        text-align: left;
+
+        &:last-child {
+            border-right: 0;
+        }
+    }
+
+    td {
+        padding: 0.8mm 2mm;
+        border-right: $remito-border;
+        border-bottom: 1px solid #eee;
+        vertical-align: top;
+        font-size: 7.5pt;
+
+        &:last-child {
+            border-right: 0;
+        }
+    }
+}
+
+.col-code { width: 12%; }
+.col-qty  { width: 12%; text-align: right; }
+.col-detail { width: 76%; }
+
+.product-name { font-weight: normal; }
+.product-lots { font-size: 7pt; color: #444; margin-top: 0.5mm; }
+
+.remito-empty-row td {
+    height: 5.5mm;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+/* ---- Observations ---- */
+.remito-observations {
+    border: $remito-border;
+    border-top: 0;
+    padding: 1mm 2mm;
+    font-size: 7.5pt;
+}
+
+/* ---- Footer: traslado + firma ---- */
+.remito-footer-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: $remito-border;
+    border-top: 0;
+
+    td {
+        padding: 2mm;
+        vertical-align: top;
+    }
+}
+
+.remito-traslado-cell {
+    width: 40%;
+    border-right: $remito-border;
+    min-height: 18mm;
+}
+
+.remito-traslado-text {
+    font-size: 8pt;
+    font-weight: bold;
+    text-transform: uppercase;
+    border: $remito-border;
+    padding: 2mm;
+    display: inline-block;
+}
+
+.remito-firma-cell {
+    width: 60%;
+    font-size: 8pt;
+    line-height: 2;
+}
+
+.remito-conformidad {
+    font-weight: bold;
+    margin-bottom: 3mm;
+}
+
+.remito-fecha-firma,
+.remito-firma-sello {
+    margin-bottom: 2mm;
+}
+
+/* ---- Bottom: imprenta + CAI ---- */
+.remito-imprenta-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: $remito-border;
+    border-top: 0;
+
+    td {
+        padding: 1mm 2mm;
+        vertical-align: middle;
+    }
+}
+
+.remito-imprenta-cell {
+    width: 70%;
+    border-right: $remito-border;
+}
+
+.imprenta-logo-img {
+    max-height: 6mm;
+    vertical-align: middle;
+    margin-right: 1mm;
+}
+
+.imprenta-name {
+    font-size: 8pt;
+    font-weight: bold;
+    margin-bottom: 0.5mm;
+}
+
+.imprenta-details {
+    font-size: 6.5pt;
+    color: #333;
+}
+
+.imprenta-copies {
+    font-size: 6.5pt;
+    margin-top: 0.5mm;
+}
+
+.remito-cai-cell {
+    width: 30%;
+    text-align: right;
+}
+
+.remito-cai-number {
+    font-size: 8pt;
+}
+
+.remito-cai-due {
+    font-size: 8pt;
+    margin-top: 0.5mm;
+}
+
+.remito-page-num {
+    font-size: 7pt;
+    color: #666;
+    margin-top: 1mm;
+}

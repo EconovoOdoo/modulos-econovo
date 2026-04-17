@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!--
+            Creates the "Orden de Trabajo SVT-04" worksheet template.
+
+            _generate_worksheet_model() auto-creates:
+              - ir.model: x_project_task_worksheet_template_<id>
+              - Base fields: x_project_task_id, x_comments, x_name
+              - Default form/tree/search views + report_view_id (auto-gen QWeb)
+              - ir.model.access for project.manager / project.user
+
+            Custom x_* fields are added in post_init_hook (hooks.py) to avoid
+            polluting the _default_project_task_template_fields() hook that
+            would affect ALL project.task worksheet templates.
+        -->
+        <record id="fsm_worksheet_svt04_template" model="worksheet.template">
+            <field name="name">Orden de Trabajo SVT-04</field>
+            <field name="res_model">project.task</field>
+            <field name="sequence">10</field>
+        </record>
+
+    </data>
+</odoo>

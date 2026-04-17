@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        QWeb template for the REG-SVT-04 "Orden de Trabajo y Servicio Técnico" PDF.
+
+        Variables supplied by FsmWorksheetSvt04Report._get_report_values():
+          doc            →  project.task record
+          worksheet_map  →  {task.id: worksheet_record}  (auto-gen model)
+
+        Materials filter: all SOLs on the linked sale.order EXCEPT the main service
+        line (doc.sale_line_id), which is the task's own billing line.
+        See plan §8.2 for the reasoning behind this filter.
+    -->
+    <template id="report_svt04">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-set="ws" t-value="worksheet_map.get(doc.id)"/>
+                <div class="page o_report_layout_standard">
+
+                    <!-- ══ ENCABEZADO ══════════════════════════════════════════════ -->
+                    <table class="table table-sm table-bordered mb-2" style="font-size:9pt;">
+                        <tr>
+                            <td style="width:18%; vertical-align:middle; text-align:center;">
+                                <img t-if="doc.company_id.logo"
+                                     t-att-src="image_data_uri(doc.company_id.logo)"
+                                     style="max-height:55px; max-width:120px;"/>
+                            </td>
+                            <td style="text-align:center; vertical-align:middle; font-weight:bold; font-size:11pt; width:56%;">
+                                GESTIÓN OPERATIVA
+                            </td>
+                            <td style="text-align:center; vertical-align:middle; width:26%;">
+                                <div><strong>Código:</strong> REG-SVT-04</div>
+                                <div><strong>Revisión:</strong> 04</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" style="text-align:center; font-weight:bold; font-size:12pt; padding:6px 0;">
+                                ORDEN DE TRABAJO Y SERVICIO TÉCNICO
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- ══ DATOS DE LA TAREA ═══════════════════════════════════════ -->
+                    <table class="table table-sm table-bordered mb-2" style="font-size:9pt;">
+                        <tr>
+                            <td style="width:12%; font-weight:bold;">N° OT</td>
+                            <td style="width:38%;"><span t-field="doc.name"/></td>
+                            <td style="width:12%; font-weight:bold;">Fecha</td>
+                            <td>
+                                <span t-if="doc.planned_date_begin"
+                                      t-field="doc.planned_date_begin"
+                                      t-options='{"format": "dd/MM/yyyy"}'/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight:bold;">Técnico</td>
+                            <td colspan="3">
+                                <t t-foreach="doc.user_ids" t-as="u">
+                                    <span t-if="u_index == 0" t-out="u.name"/>
+                                    <t t-if="u_index > 0">, <span t-out="u.name"/></t>
+                                </t>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- ══ DATOS DEL CLIENTE ═══════════════════════════════════════ -->
+                    <table class="table table-sm table-bordered mb-2" style="font-size:9pt;">
+                        <tr>
+                            <td style="width:12%; font-weight:bold;">Cliente</td>
+                            <td colspan="3"><span t-field="doc.partner_id.name"/></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight:bold;">Lugar</td>
+                            <td colspan="3">
+                                <span t-if="doc.partner_id.city" t-out="doc.partner_id.city"/>
+                                <t t-if="doc.partner_id.city and doc.partner_id.street"> — </t>
+                                <span t-if="doc.partner_id.street" t-out="doc.partner_id.street"/>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- ══ DATOS DEL EQUIPO ════════════════════════════════════════ -->
+                    <table class="table table-sm table-bordered mb-2" style="font-size:9pt;">
+                        <tr>
+                            <td style="width:22%; font-weight:bold;">Modelo del equipo</td>
+                            <td style="width:28%;">
+                                <t t-if="doc.lot_id">
+                                    <span t-out="(doc.lot_id.marca or '') + ' ' + (doc.lot_id.modelo or '')"/>
+                                </t>
+                            </td>
+                            <td style="width:17%; font-weight:bold;">Nro Chasis (últ. 6)</td>
+                            <td>
+                                <t t-if="doc.lot_id and doc.lot_id.nro_chasis">
+                                    <span t-out="doc.lot_id.nro_chasis[-6:]"/>
+                                </t>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight:bold;">HORÓMETRO (hs)</td>
+                            <td><span t-if="ws" t-out="ws.x_horometro or ''"/></td>
+                            <td style="font-weight:bold;">Nro Remito</td>
+                            <td><span t-if="ws" t-out="ws.x_so_remito or ''"/></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight:bold;">Ref. Orden de Venta</td>
+                            <td><span t-if="ws" t-out="ws.x_so_name or ''"/></td>
+                            <td style="font-weight:bold;">Nro Interno</td>
+                            <td><span t-if="ws" t-out="ws.x_num_interno or ''"/></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight:bold;">OC Cliente</td>
+                            <td><span t-if="ws" t-out="ws.x_so_oc_cliente or ''"/></td>
+                            <td style="font-weight:bold;">Nro Factura</td>
+                            <td><span t-if="ws" t-out="ws.x_so_factura or ''"/></td>
+                        </tr>
+                    </table>
+
+                    <!-- ══ TIEMPOS ══════════════════════════════════════════════════ -->
+                    <table class="table table-sm table-bordered mb-2" style="font-size:9pt;">
+                        <tr>
+                            <td style="width:22%; font-weight:bold;">Inicio de trabajo</td>
+                            <td style="width:28%;">
+                                <span t-if="doc.planned_date_begin"
+                                      t-field="doc.planned_date_begin"
+                                      t-options='{"format": "dd/MM/yyyy HH:mm"}'/>
+                            </td>
+                            <td style="width:22%; font-weight:bold;">Finalización de trabajo</td>
+                            <td>
+                                <span t-if="doc.date_deadline"
+                                      t-field="doc.date_deadline"
+                                      t-options='{"format": "dd/MM/yyyy HH:mm"}'/>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- ══ DESCRIPCIÓN DEL TRABAJO (timesheets nativos) ════════════ -->
+                    <t t-set="is_uom_day" t-value="doc.timesheet_ids._is_timesheet_encode_uom_day()"/>
+                    <t t-if="doc.timesheet_ids">
+                        <p style="font-weight:bold; margin-bottom:2px; font-size:9pt;">
+                            Descripción del trabajo realizado
+                        </p>
+                        <table class="table table-sm table-bordered mb-2" style="font-size:9pt;">
+                            <thead style="background-color:#f5f5f5;">
+                                <tr>
+                                    <th style="width:15%;">Fecha</th>
+                                    <th style="width:22%;">Técnico</th>
+                                    <th>Descripción</th>
+                                    <th style="width:12%; text-align:right;">
+                                        <t t-if="is_uom_day">Días</t>
+                                        <t t-else="">Horas</t>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="doc.timesheet_ids" t-as="line">
+                                    <tr>
+                                        <td><span t-field="line.date"/></td>
+                                        <td><span t-field="line.employee_id.name"/></td>
+                                        <td><span t-field="line.display_name"/></td>
+                                        <td style="text-align:right;">
+                                            <t t-if="is_uom_day">
+                                                <span t-out="line._convert_hours_to_days(line.unit_amount)"
+                                                      t-options='{"widget": "timesheet_uom"}'/>
+                                            </t>
+                                            <t t-else="">
+                                                <span t-out="line.unit_amount"
+                                                      t-options="{'widget': 'float_time'}"/>
+                                            </t>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </t>
+
+                    <!-- ══ CLASIFICACIÓN ════════════════════════════════════════════ -->
+                    <table class="table table-sm table-bordered mb-2" style="font-size:9pt;">
+                        <tr>
+                            <td style="width:22%; font-weight:bold;">Tipo de servicio</td>
+                            <td style="width:28%;">
+                                <t t-foreach="[('50_250hs','50/250 HS'),('500hs','500 HS'),('750hs','750 HS'),('1000hs','1000 HS'),('otro','Otro')]" t-as="opt">
+                                    <i t-att-class="'fa fa-check-square-o me-1' if ws and ws.x_tipo_servicio == opt[0] else 'fa fa-square-o me-1'"/>
+                                    <span t-out="opt[1]" style="margin-right:8px;"/>
+                                </t>
+                            </td>
+                            <td style="width:17%; font-weight:bold;">Tipo de falla</td>
+                            <td>
+                                <t t-foreach="[('electrico','Eléctrico'),('mecanico','Mecánico'),('hidraulico','Hidráulico'),('otro','Otro')]" t-as="opt">
+                                    <i t-att-class="'fa fa-check-square-o me-1' if ws and ws.x_tipo_falla == opt[0] else 'fa fa-square-o me-1'"/>
+                                    <span t-out="opt[1]" style="margin-right:8px;"/>
+                                </t>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight:bold;">Equipo Operativo</td>
+                            <td>
+                                <i t-att-class="'fa fa-check-square-o me-1' if ws and ws.x_equipo_operativo else 'fa fa-square-o me-1'"/>SI
+                                <i t-att-class="'fa fa-check-square-o ms-2 me-1' if ws and not ws.x_equipo_operativo else 'fa fa-square-o ms-2 me-1'"/>NO
+                            </td>
+                            <td style="font-weight:bold;">Próxima visita (hs)</td>
+                            <td><span t-if="ws and ws.x_proxima_visita_hs" t-out="ws.x_proxima_visita_hs"/></td>
+                        </tr>
+                    </table>
+
+                    <!-- ══ MATERIALES Y OBSERVACIONES ═══════════════════════════════ -->
+                    <table class="table table-sm table-bordered mb-2" style="font-size:9pt;">
+                        <thead style="background-color:#f5f5f5;">
+                            <tr>
+                                <th style="width:55%;">Materiales y repuestos utilizados</th>
+                                <th>Observaciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="vertical-align:top; padding:4px;">
+                                    <t t-if="doc.sale_order_id">
+                                        <t t-foreach="doc.sale_order_id.order_line" t-as="sol">
+                                            <!--
+                                                Exclude the main service SOL (doc.sale_line_id).
+                                                See plan §8.2: in Econovo, materials are loaded
+                                                directly on the SO, not via FSM Materials button.
+                                                All other SOLs have task_id = False. The only SOL
+                                                linked to the task is the service line (sale_line_id).
+                                            -->
+                                            <t t-if="sol.id != doc.sale_line_id.id">
+                                                <div style="margin-bottom:2px;">
+                                                    <span t-out="sol.product_id.display_name"/>
+                                                    —
+                                                    <span t-out="sol.product_uom_qty"/>
+                                                    <span t-out="sol.product_uom.name"/>
+                                                </div>
+                                            </t>
+                                        </t>
+                                    </t>
+                                </td>
+                                <td style="vertical-align:top; padding:4px;">
+                                    <span t-if="ws" t-out="ws.x_observaciones or ''"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- ══ FIRMA DEL CLIENTE ════════════════════════════════════════ -->
+                    <table class="table table-sm table-bordered mb-0" style="font-size:9pt;">
+                        <thead style="background-color:#f5f5f5; text-align:center;">
+                            <tr>
+                                <th style="width:20%;">Fecha</th>
+                                <th style="width:35%;">Firma del cliente</th>
+                                <th style="width:25%;">Aclaración</th>
+                                <th style="width:20%;">DNI</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="height:65px;">
+                                <td style="text-align:center; vertical-align:middle;">
+                                    <span t-if="doc.planned_date_begin"
+                                          t-field="doc.planned_date_begin"
+                                          t-options='{"format": "dd/MM/yyyy"}'/>
+                                </td>
+                                <td style="text-align:center; vertical-align:middle;">
+                                    <img t-if="doc.worksheet_signature"
+                                         t-att-src="image_data_uri(doc.worksheet_signature)"
+                                         style="max-height:55px;"/>
+                                </td>
+                                <td style="text-align:center; vertical-align:middle;">
+                                    <span t-out="doc.worksheet_signed_by or ''"/>
+                                </td>
+                                <td style="text-align:center; vertical-align:middle;">
+                                    <span t-if="ws" t-out="ws.x_dni_firmante or ''"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                </div><!-- .page -->
+            </t><!-- t-foreach docs -->
+        </t><!-- web.html_container -->
+    </template>
+
+</odoo>
