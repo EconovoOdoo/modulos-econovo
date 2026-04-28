@@ -4,65 +4,100 @@
 
 $remito-border: 1px solid #333;
 $remito-green: #2e7d32;
-$remito-header-bg: #fff;
 $remito-font-size: 8pt;
 $remito-label-font-size: 7.5pt;
 
+/* ---- Page wrapper ---- */
 .remito-page {
     font-family: Arial, sans-serif;
     font-size: $remito-font-size;
     color: #222;
     padding: 4mm;
     box-sizing: border-box;
+    width: 100%;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
 }
 
-/* ---- Header ---- */
+/* ============================================================
+   HEADER TABLE
+   ============================================================ */
 .remito-header-table {
     width: 100%;
     border-collapse: collapse;
     border: $remito-border;
     margin-bottom: 0;
-
-    td {
-        vertical-align: top;
-        padding: 2mm;
-    }
 }
 
+.remito-header-table td {
+    vertical-align: top;
+    padding: 2mm;
+}
+
+/* Left: company info */
 .remito-company-cell {
-    width: 50%;
+    width: 48%;
     border-right: $remito-border;
 }
 
+.remito-company-top {
+    width: 100%;
+}
+
+.remito-company-logo,
+.remito-company-info {
+    display: inline-block;
+    vertical-align: top;
+}
+
+.remito-company-logo {
+    width: 46%;
+}
+
+.remito-company-info {
+    width: 52%;
+}
+
 .company-logo-img {
-    max-height: 14mm;
-    max-width: 40mm;
+    max-height: 16mm;
+    max-width: 45mm;
     display: block;
-    margin-bottom: 1mm;
 }
 
 .remito-company-info {
     font-size: 7pt;
-    line-height: 1.4;
+    line-height: 1.5;
+}
+
+.remito-company-secondary-line {
+    margin-top: 1.5mm;
 }
 
 .remito-company-secondary {
-    font-size: 7.5pt;
-    margin-top: 1mm;
+    display: inline-block;
+    vertical-align: middle;
+    font-size: 8pt;
+    font-weight: bold;
 }
 
 .remito-iva-type {
+    display: block;
     font-size: 7pt;
     font-style: italic;
-}
-
-.remito-phone {
-    font-size: 8pt;
     margin-top: 1mm;
 }
 
+.remito-phone {
+    display: inline-block;
+    vertical-align: middle;
+    font-size: 8pt;
+    font-weight: bold;
+    margin-left: 2mm;
+}
+
+/* Center: R badge */
 .remito-badge-cell {
-    width: 12%;
+    width: 14%;
     text-align: center;
     vertical-align: middle;
     border-right: $remito-border;
@@ -70,24 +105,26 @@ $remito-label-font-size: 7.5pt;
 }
 
 .remito-r-badge {
-    background-color: #d32f2f;
-    color: #fff;
-    font-size: 22pt;
+    background-color: #fff;
+    color: #111;
+    font-size: 26pt;
     font-weight: bold;
-    width: 14mm;
-    height: 14mm;
-    line-height: 14mm;
+    width: 15mm;
+    height: 15mm;
+    line-height: 15mm;
     text-align: center;
     margin: 0 auto 2mm auto;
-    border: 2px solid #333;
+    border: 3px solid #333;
+    display: block;
 }
 
 .remito-codigo {
-    font-size: 6pt;
+    font-size: 5.5pt;
     text-align: center;
-    line-height: 1.3;
+    line-height: 1.4;
 }
 
+/* Right: number + date */
 .remito-number-cell {
     width: 38%;
     vertical-align: top;
@@ -95,22 +132,25 @@ $remito-label-font-size: 7.5pt;
 }
 
 .remito-number-header {
-    font-size: 14pt;
+    font-size: 13pt;
     font-weight: bold;
     text-align: center;
-    margin-bottom: 1mm;
+    margin-bottom: 2mm;
+    border-bottom: $remito-border;
+    padding-bottom: 1mm;
 }
 
 .remito-date-table {
     width: 100%;
     border-collapse: collapse;
-    margin-bottom: 1mm;
+    margin-bottom: 1.5mm;
+}
 
-    th, td {
-        border: $remito-border;
-        padding: 1mm 2mm;
-        text-align: center;
-    }
+.remito-date-table th,
+.remito-date-table td {
+    border: $remito-border;
+    padding: 1mm 2mm;
+    text-align: center;
 }
 
 .remito-th-green {
@@ -118,36 +158,60 @@ $remito-label-font-size: 7.5pt;
     color: #fff;
     font-size: 9pt;
     font-weight: bold;
+    letter-spacing: 0.5pt;
+}
+
+.remito-th-full {
+    text-align: center;
+    letter-spacing: 0.5pt;
+}
+
+.remito-td-barcode-full {
+    height: 11mm;
+    text-align: center;
+    vertical-align: middle;
+    padding: 1mm 1mm 2mm;
+}
+
+.remito-picking-name-under-barcode {
+    font-size: 7pt;
+    text-align: center;
+    letter-spacing: 0.5px;
+    margin-top: 1.5mm;
+    color: #222;
 }
 
 .remito-td-empty,
 .remito-td-date {
-    min-height: 6mm;
-    height: 6mm;
+    height: 7mm;
+    min-height: 7mm;
+    font-size: 8pt;
 }
 
 .remito-fiscal-table {
     width: 100%;
     border-collapse: collapse;
     font-size: 7pt;
-
-    td {
-        padding: 0.5mm 1mm;
-        border: $remito-border;
-    }
 }
 
-/* ---- Destinatario ---- */
+.remito-fiscal-table td {
+    padding: 0.5mm 1mm;
+    border: $remito-border;
+}
+
+/* ============================================================
+   DESTINATARIO
+   ============================================================ */
 .remito-recipient-table {
     width: 100%;
     border-collapse: collapse;
     border: $remito-border;
     border-top: 0;
+}
 
-    td {
-        padding: 1mm 2mm;
-        vertical-align: top;
-    }
+.remito-recipient-table td {
+    padding: 0.5mm 2mm;
+    vertical-align: top;
 }
 
 .remito-recipient-left {
@@ -160,11 +224,10 @@ $remito-label-font-size: 7.5pt;
 }
 
 .remito-field-row {
-    min-height: 5mm;
+    min-height: 5.5mm;
     border-bottom: 1px solid #ccc;
     padding: 0.5mm 0;
-    display: flex;
-    align-items: baseline;
+    line-height: 1.5;
 }
 
 .remito-label {
@@ -175,141 +238,194 @@ $remito-label-font-size: 7.5pt;
 }
 
 .remito-value {
-    flex: 1;
     font-size: $remito-font-size;
 }
 
-/* ---- Transport row ---- */
+/* ============================================================
+   TRANSPORT / OC / SOLICITADO
+   ============================================================ */
 .remito-transport-table {
     width: 100%;
     border-collapse: collapse;
     border: $remito-border;
     border-top: 0;
-
-    td {
-        padding: 1mm 2mm;
-        border-right: $remito-border;
-        min-height: 6mm;
-
-        &:last-child {
-            border-right: 0;
-        }
-    }
 }
 
-.remito-transport-cell { width: 35%; }
-.remito-oc-cell { width: 35%; }
-.remito-solicitado-cell { width: 30%; }
+.remito-transport-table td {
+    padding: 1mm 2mm;
+    border-right: $remito-border;
+    height: 6mm;
+    font-size: 7.5pt;
+}
 
-/* ---- Products table ---- */
+.remito-transport-table td:last-child {
+    border-right: 0;
+}
+
+.remito-transport-cell { width: 30%; }
+.remito-oc-cell        { width: 45%; }
+.remito-fecha-cell     { width: 25%; }
+.remito-transport-full-cell { width: 100%; }
+
+/* ============================================================
+   PICKING OPERATION BARCODE (inside footer traslado cell)
+   ============================================================ */
+.remito-picking-barcode-cell {
+    text-align: center;
+    padding-top: 1mm;
+}
+
+.remito-picking-barcode-fallback {
+    font-size: 7pt;
+    color: #999;
+}
+
+.remito-picking-barcode-text {
+    font-size: 7pt;
+    letter-spacing: 0.5px;
+    margin-top: 1mm;
+    text-align: center;
+}
+
+.remito-picking-barcode-label {
+    font-size: 6pt;
+    color: #666;
+    text-align: center;
+    margin-bottom: 0.5mm;
+}
+
+/* ============================================================
+   PRODUCTS TABLE
+   ============================================================ */
 .remito-products-table {
     width: 100%;
     border-collapse: collapse;
     border: $remito-border;
     border-top: 0;
-
-    th {
-        background-color: $remito-green;
-        color: #fff;
-        font-size: 8pt;
-        font-weight: bold;
-        padding: 1mm 2mm;
-        border-right: 1px solid #fff;
-        text-align: left;
-
-        &:last-child {
-            border-right: 0;
-        }
-    }
-
-    td {
-        padding: 0.8mm 2mm;
-        border-right: $remito-border;
-        border-bottom: 1px solid #eee;
-        vertical-align: top;
-        font-size: 7.5pt;
-
-        &:last-child {
-            border-right: 0;
-        }
-    }
 }
 
-.col-code { width: 12%; }
-.col-qty  { width: 12%; text-align: right; }
-.col-detail { width: 76%; }
-
-.product-name { font-weight: normal; }
-.product-lots { font-size: 7pt; color: #444; margin-top: 0.5mm; }
-
-.remito-empty-row td {
-    height: 5.5mm;
-    border-bottom: 1px solid #f0f0f0;
+.remito-products-table th {
+    background-color: $remito-green;
+    color: #fff;
+    font-size: 8pt;
+    font-weight: bold;
+    padding: 1.5mm 2mm;
+    border-right: 1px solid #4caf50;
+    text-align: left;
 }
 
-/* ---- Observations ---- */
-.remito-observations {
-    border: $remito-border;
-    border-top: 0;
-    padding: 1mm 2mm;
+.remito-products-table th:last-child {
+    border-right: 0;
+}
+
+.remito-products-table td {
+    padding: 0.8mm 2mm;
+    border-right: $remito-border;
+    border-bottom: 1px solid #ddd;
+    vertical-align: top;
     font-size: 7.5pt;
 }
 
-/* ---- Footer: traslado + firma ---- */
+.remito-products-table td:last-child {
+    border-right: 0;
+}
+
+.col-code   { width: 12%; }
+.col-qty    { width: 13%; text-align: right; }
+.col-detail { width: 46%; }
+.col-lots   { width: 29%; font-size: 7pt; vertical-align: top; }
+
+.remito-empty-row td {
+    height: 5.5mm;
+    border-bottom: 1px solid #eee;
+}
+
+/* ============================================================
+   OBSERVATIONS
+   ============================================================ */
+.remito-observations {
+    border: $remito-border;
+    border-top: 0;
+    padding: 0;
+}
+
+.remito-observations-header {
+    background-color: $remito-green;
+    color: #fff;
+    font-size: 8pt;
+    font-weight: bold;
+    padding: 1mm 2mm;
+    print-color-adjust: exact;
+}
+
+.remito-observations-body {
+    padding: 1.5mm 2mm;
+    font-size: 7.5pt;
+
+    p { margin: 0; }
+}
+
+/* ============================================================
+   FOOTER: TRASLADO + FIRMA
+   ============================================================ */
 .remito-footer-table {
     width: 100%;
     border-collapse: collapse;
     border: $remito-border;
     border-top: 0;
+}
 
-    td {
-        padding: 2mm;
-        vertical-align: top;
-    }
+.remito-footer-table td {
+    padding: 2mm;
+    vertical-align: top;
+    height: 22mm;
 }
 
 .remito-traslado-cell {
     width: 40%;
     border-right: $remito-border;
-    min-height: 18mm;
+    vertical-align: middle;
 }
 
 .remito-traslado-text {
     font-size: 8pt;
     font-weight: bold;
     text-transform: uppercase;
-    border: $remito-border;
-    padding: 2mm;
-    display: inline-block;
 }
 
 .remito-firma-cell {
     width: 60%;
     font-size: 8pt;
-    line-height: 2;
+    line-height: 1.8;
+    vertical-align: bottom;
 }
 
 .remito-conformidad {
     font-weight: bold;
-    margin-bottom: 3mm;
+    margin-bottom: 1mm;
 }
 
-.remito-fecha-firma,
+.remito-fecha-firma {
+    margin-bottom: 8mm;
+}
+
 .remito-firma-sello {
     margin-bottom: 2mm;
 }
 
-/* ---- Bottom: imprenta + CAI ---- */
+/* ============================================================
+   BOTTOM: IMPRENTA + CAI
+   ============================================================ */
 .remito-imprenta-table {
     width: 100%;
     border-collapse: collapse;
     border: $remito-border;
     border-top: 0;
+}
 
-    td {
-        padding: 1mm 2mm;
-        vertical-align: middle;
-    }
+.remito-imprenta-table td {
+    padding: 1mm 2mm;
+    vertical-align: middle;
 }
 
 .remito-imprenta-cell {
@@ -317,26 +433,46 @@ $remito-label-font-size: 7.5pt;
     border-right: $remito-border;
 }
 
+.imprenta-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.imprenta-logo-wrap {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    margin-right: 2mm;
+}
+
 .imprenta-logo-img {
-    max-height: 6mm;
-    vertical-align: middle;
-    margin-right: 1mm;
+    max-height: 5mm;
+    width: auto;
 }
 
-.imprenta-name {
-    font-size: 8pt;
-    font-weight: bold;
-    margin-bottom: 0.5mm;
+.imprenta-info {
+    flex: 1;
+    min-width: 0;
 }
 
-.imprenta-details {
+.imprenta-line1 {
     font-size: 6.5pt;
+    font-weight: bold;
+    line-height: 1.4;
+    margin-bottom: 0.3mm;
+}
+
+.imprenta-line2 {
+    font-size: 6pt;
     color: #333;
+    line-height: 1.4;
+    margin-bottom: 0.3mm;
 }
 
 .imprenta-copies {
-    font-size: 6.5pt;
-    margin-top: 0.5mm;
+    font-size: 6pt;
+    font-weight: bold;
+    margin-top: 0.3mm;
 }
 
 .remito-cai-cell {
@@ -346,15 +482,16 @@ $remito-label-font-size: 7.5pt;
 
 .remito-cai-number {
     font-size: 8pt;
+    font-weight: bold;
 }
 
 .remito-cai-due {
     font-size: 8pt;
-    margin-top: 0.5mm;
+    margin-top: 1mm;
 }
 
 .remito-page-num {
     font-size: 7pt;
     color: #666;
-    margin-top: 1mm;
+    margin-top: 2mm;
 }
