@@ -487,6 +487,153 @@
                     <td t-if="showCostsUsd" class="text-end">
                         <strong t-esc="fmtUsd(data.totals.operations_usd)"/>
                     </td>
+                    <!-- Operations section has no Product Cost column, keep cells aligned -->
+                    <td t-if="showCosts"/>
+                    <td t-if="showCostsUsd"/>
+                </tr>
+            </tbody>
+        </t>
+
+        <br class="my-3"/>
+
+        <!-- ===== SUBCONTRACTING BY VENDOR ===== -->
+        <t t-if="showSubcontracting">
+            <thead>
+                <tr class="o_econovo_cost_summary__section-header">
+                    <th class="o_econovo_cost_summary__fold-col"/>
+                    <th>Subcontracting by Vendor</th>
+                    <th class="text-end">Quantity
+                        <i class="fa fa-info-circle text-muted ms-1"
+                           data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                           t-att-data-tooltip-info="colTooltip('qty')"/>&#8203;
+                    </th>
+                    <th class="text-end">%</th>
+                    <th t-if="showAvailabilities"/>
+                    <th t-if="showAvailabilities"/>
+                    <th t-if="showPerformance"/>
+                    <th t-if="showPerformance"/>
+                    <th t-if="showLeadTimes"/>
+                    <th t-if="showLeadTimes"/>
+                    <th t-if="showCosts" class="text-end">BoM Cost
+                        <i class="fa fa-info-circle text-muted ms-1"
+                           data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                           t-att-data-tooltip-info="colTooltip('bom_cost_sc')"/>&#8203;
+                    </th>
+                    <th t-if="showCostsUsd" class="text-end">BoM Cost <t t-esc="secondaryCurrency.name"/>
+                    </th>
+                    <th t-if="showCosts" class="text-end">Product Cost
+                        <i class="fa fa-info-circle text-muted ms-1"
+                           data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                           t-att-data-tooltip-info="colTooltip('prod_cost_sc')"/>&#8203;
+                    </th>
+                    <th t-if="showCostsUsd" class="text-end">Product Cost <t t-esc="secondaryCurrency.name"/>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <t t-foreach="data.subcontracting" t-as="vendor" t-key="vendor.id">
+                    <!-- Level 1: Vendor row -->
+                    <tr class="o_econovo_cost_summary__group-row"
+                        t-on-click="() => this.toggleSubcontractingVendor(vendor.id)">
+                        <td class="o_econovo_cost_summary__fold-col"/>
+                        <td>
+                            <button class="btn btn-light btn-sm py-0 px-1 me-1"
+                                    t-att-title="isSubcontractingVendorFolded(vendor.id) ? 'Unfold' : 'Fold'">
+                                <i t-att-class="'fa fa-fw ' + (isSubcontractingVendorFolded(vendor.id) ? 'fa-caret-right' : 'fa-caret-down')"
+                                   role="img"/>
+                            </button>
+                            <strong t-esc="vendor.name"/>
+                            <span class="text-muted ms-1 fw-normal">(<t t-esc="vendor.items.length"/>)</span>
+                        </td>
+                        <td/>
+                        <td class="text-end text-muted">
+                            <strong t-esc="fmtPct(vendor.percentage)"/>
+                        </td>
+                        <td t-if="showAvailabilities"/>
+                        <td t-if="showAvailabilities"/>
+                        <td t-if="showPerformance"/>
+                        <td t-if="showPerformance"/>
+                        <td t-if="showLeadTimes"/>
+                        <td t-if="showLeadTimes"/>
+                        <td t-if="showCosts" class="text-end">
+                            <strong t-esc="fmtMoney(vendor.total)"/>
+                        </td>
+                        <td t-if="showCostsUsd" class="text-end text-muted">
+                            <strong t-esc="fmtUsd(vendor.total_usd)"/>
+                        </td>
+                        <td t-if="showCosts" class="text-end">
+                            <strong t-esc="fmtMoney(vendor.prod_cost_total)"/>
+                        </td>
+                        <td t-if="showCostsUsd" class="text-end text-muted">
+                            <strong t-esc="fmtUsd(vendor.prod_cost_total_usd)"/>
+                        </td>
+                    </tr>
+
+                    <!-- Level 2: individual subcontracted product rows -->
+                    <t t-if="!isSubcontractingVendorFolded(vendor.id)">
+                        <t t-foreach="vendor.items" t-as="sc_item" t-key="sc_item_index">
+                            <tr class="o_econovo_cost_summary__product-row">
+                                <td class="o_econovo_cost_summary__fold-col"/>
+                                <td style="padding-left: 1.5rem;">
+                                    <a href="#" class="o_econovo_cost_summary__link"
+                                       t-on-click.stop.prevent="() => this.openFormDialog(sc_item.product_id, 'product.product')">
+                                        <t t-esc="sc_item.product_name"/>
+                                    </a>
+                                </td>
+                                <td class="text-end text-muted">
+                                    <t t-esc="sc_item.quantity"/>
+                                    <span t-if="sc_item.uom_name" class="ms-1 text-muted small" t-esc="sc_item.uom_name"/>
+                                </td>
+                                <td class="text-end text-muted">
+                                    <t t-esc="fmtPct(sc_item.percentage)"/>
+                                </td>
+                                <td t-if="showAvailabilities"/>
+                                <td t-if="showAvailabilities"/>
+                                <td t-if="showPerformance"/>
+                                <td t-if="showPerformance"/>
+                                <td t-if="showLeadTimes"/>
+                                <td t-if="showLeadTimes"/>
+                                <td t-if="showCosts" class="text-end">
+                                    <t t-esc="fmtMoney(sc_item.total)"/>
+                                </td>
+                                <td t-if="showCostsUsd" class="text-end text-muted">
+                                    <t t-esc="fmtUsd(sc_item.total_usd)"/>
+                                </td>
+                                <td t-if="showCosts" class="text-end">
+                                    <t t-esc="fmtMoney(sc_item.prod_cost)"/>
+                                </td>
+                                <td t-if="showCostsUsd" class="text-end text-muted">
+                                    <t t-esc="fmtUsd(sc_item.prod_cost_usd)"/>
+                                </td>
+                            </tr>
+                        </t>
+                    </t>
+                </t>
+
+                <!-- Subtotal Subcontracting -->
+                <tr class="o_econovo_cost_summary__subtotal-row">
+                    <td/>
+                    <td class="text-end"><strong>Subtotal Subcontracting</strong></td>
+                    <td/>
+                    <td/>
+                    <td t-if="showAvailabilities"/>
+                    <td t-if="showAvailabilities"/>
+                    <td t-if="showPerformance"/>
+                    <td t-if="showPerformance"/>
+                    <td t-if="showLeadTimes"/>
+                    <td t-if="showLeadTimes"/>
+                    <td t-if="showCosts" class="text-end">
+                        <strong t-esc="fmtMoney(data.totals.subcontracting)"/>
+                    </td>
+                    <td t-if="showCostsUsd" class="text-end text-muted">
+                        <strong t-esc="fmtUsd(data.totals.subcontracting_usd)"/>
+                    </td>
+                    <td t-if="showCosts" class="text-end">
+                        <strong t-esc="fmtMoney(data.totals.subcontracting_prod_cost)"/>
+                    </td>
+                    <td t-if="showCostsUsd" class="text-end text-muted">
+                        <strong t-esc="fmtUsd(data.totals.subcontracting_prod_cost_usd)"/>
+                    </td>
                 </tr>
             </tbody>
         </t>

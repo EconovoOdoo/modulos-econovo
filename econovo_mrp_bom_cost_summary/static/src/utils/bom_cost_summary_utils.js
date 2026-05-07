@@ -90,8 +90,8 @@ function _addComponentEntry(categoryMap, comp, bomCost, prodCost, parentName, pa
 }
 
 /**
- * Recursively walks the BOM tree collecting component, operation, and
- * byproduct costs.
+ * Recursively walks the BOM tree collecting component, operation, byproduct,
+ * and subcontracting costs.
  *
  * BoM Cost column  — recursive leaf breakdown: every leaf component
  *   (including those deep inside sub-BOMs) contributes its server-side
@@ -105,14 +105,18 @@ function _addComponentEntry(categoryMap, comp, bomCost, prodCost, parentName, pa
  *   (same as native BOM Overview); its internal leaf components receive
  *   prod_cost = 0 so they don't double-count.
  *
+ * Subcontracting — every BOM node whose server data includes a `subcontracting`
+ *   key contributes one entry to `subcontractingMap` grouped by vendor partner.
+ *
  * @param {Object} node - Current BOM tree node
  * @param {Object} categoryMap - Accumulator for component category groupings
  * @param {Object} workcenterMap - Accumulator for workcenter groupings
  * @param {Object} byproductCategoryMap - Accumulator for byproduct category groupings
+ * @param {Object} subcontractingMap - Accumulator for subcontracting groupings by vendor
  * @param {boolean} skipProdCost - True when recursing inside a sub-BOM;
  *   prevents double-counting the sub-BOM's prod_cost in leaf entries.
  */
-export function collectCosts(node, categoryMap, workcenterMap, byproductCategoryMap, skipProdCost = false) {
+export function collectCosts(node, categoryMap, workcenterMap, byproductCategoryMap, subcontractingMap = {}, skipProdCost = false) {
     const parentName = node.name;
     const parentProductId = node.product_id;
 
@@ -166,6 +170,39 @@ export function collectCosts(node, categoryMap, workcenterMap, byproductCategory
                 components: compsByOpId[op.link_id] || [],
             });
         }
+    }
+
+    // Collect subcontracting cost for this BOM level.
+    // node.subcontracting is injected by mrp_subcontracting's
+    // _get_bom_data override when bom.type == 'subcontract'.
+    // It contains: { name (vendor display_name), partner_id, quantity, uom,
+    //                bom_cost, prod_cost, level }
+    if (node.subcontracting) {
+        const sc = node.subcontracting;
+        const vendorId = sc.partner_id || 0;
+        const vendorName = sc.name || _t("Unknown Vendor");
+        if (!subcontractingMap[vendorId]) {
+            subcontractingMap[vendorId] = {
+                id: vendorId,
+                name: vendorName,
+                total: 0,
+                prod_cost_total: 0,
+                items: [],
+            };
+        }
+        const scCost = sc.bom_cost || 0;
+        const scProdCost = sc.prod_cost || 0;
+        subcontractingMap[vendorId].total += scCost;
+        subcontractingMap[vendorId].prod_cost_total += scProdCost;
+        subcontractingMap[vendorId].items.push({
+            product_id: node.product_id,
+            product_name: node.name,
+            quantity: sc.quantity || 0,
+            uom_name: sc.uom || node.uom_name || "",
+            total: scCost,
+            prod_cost: scProdCost,
+            partner_id: vendorId,
+        });
     }
 
     // Collect byproducts at this BOM level.
@@ -254,7 +291,7 @@ export function collectCosts(node, categoryMap, workcenterMap, byproductCategory
                 }
                 // Recurse for the full BoM Cost breakdown; skip prod_cost to
                 // avoid double-counting the sub-BOM's standard_price.
-                collectCosts(comp, categoryMap, workcenterMap, byproductCategoryMap, true);
+                collectCosts(comp, categoryMap, workcenterMap, byproductCategoryMap, subcontractingMap, true);
             } else {
                 // Leaf component: bom_cost and prod_cost both from server.
                 _addComponentEntry(
@@ -421,7 +458,8 @@ export function computeCostSummary(data, secondaryCurrency) {
     const categoryMap = {};
     const workcenterMap = {};
     const byproductCategoryMap = {};
-    collectCosts(data, categoryMap, workcenterMap, byproductCategoryMap);
+    const subcontractingMap = {};
+    collectCosts(data, categoryMap, workcenterMap, byproductCategoryMap, subcontractingMap);
 
     const rate = secondaryCurrency ? secondaryCurrency.rate : 0;
 
@@ -430,8 +468,11 @@ export function computeCostSummary(data, secondaryCurrency) {
         (a, b) => b.total - a.total
     );
     const byproductCategories = buildCategoryTree(byproductCategoryMap);
+    const subcontracting = Object.values(subcontractingMap).sort(
+        (a, b) => b.total - a.total
+    );
 
-    if (categories.length === 0 && workcenters.length === 0 && byproductCategories.length === 0) {
+    if (categories.length === 0 && workcenters.length === 0 && byproductCategories.length === 0 && subcontracting.length === 0) {
         return false;
     }
 
@@ -441,15 +482,14 @@ export function computeCostSummary(data, secondaryCurrency) {
     const totalDuration = workcenters.reduce((s, w) => s + w.total_duration, 0);
     const totalByproducts = byproductCategories.reduce((s, c) => s + c.total, 0);
     const totalByproductsProdCost = byproductCategories.reduce((s, c) => s + c.prod_cost_total, 0);
-    // Gross: components + operations before byproduct cost_share deduction.
-    const grossBom = totalComponents + totalOperations;
+    const totalSubcontracting = subcontracting.reduce((s, v) => s + v.total, 0);
+    const totalSubcontractingProdCost = subcontracting.reduce((s, v) => s + v.prod_cost_total, 0);
+    // Gross: components + operations + subcontracting before byproduct cost_share deduction.
+    const grossBom = totalComponents + totalOperations + totalSubcontracting;
     // Net: gross minus the cost_share portion allocated to byproducts.
-    // Mirrors native Odoo data.bom_cost (= grossBom × main product cost_share).
     const netBom = grossBom - totalByproducts;
     // Native Odoo Product Cost column = product.standard_price × quantity of the
     // FINISHED product being manufactured (data.prod_cost from server).
-    // This intentionally differs from the body section subtotals, which show
-    // the bottom-up sum of component prod_costs for per-category analysis.
     const rootProdCost = data.prod_cost || 0;
 
     enrichCategoryTree(categories, rate, totalComponents);
@@ -469,10 +509,24 @@ export function computeCostSummary(data, secondaryCurrency) {
         }
     }
 
+    for (const vendor of subcontracting) {
+        vendor.percentage = totalSubcontracting
+            ? (vendor.total / totalSubcontracting) * 100 : 0;
+        vendor.total_usd = rate ? vendor.total * rate : false;
+        vendor.prod_cost_total_usd = rate ? vendor.prod_cost_total * rate : false;
+        for (const item of vendor.items) {
+            item.percentage = totalSubcontracting
+                ? (item.total / totalSubcontracting) * 100 : 0;
+            item.total_usd = rate ? item.total * rate : false;
+            item.prod_cost_usd = rate ? item.prod_cost * rate : false;
+        }
+    }
+
     return {
         categories,
         workcenters,
         byproductCategories,
+        subcontracting,
         totals: {
             components: totalComponents,
             components_usd: rate ? totalComponents * rate : false,
@@ -481,6 +535,10 @@ export function computeCostSummary(data, secondaryCurrency) {
             operations: totalOperations,
             operations_usd: rate ? totalOperations * rate : false,
             operations_duration: totalDuration,
+            subcontracting: totalSubcontracting,
+            subcontracting_usd: rate ? totalSubcontracting * rate : false,
+            subcontracting_prod_cost: totalSubcontractingProdCost,
+            subcontracting_prod_cost_usd: rate ? totalSubcontractingProdCost * rate : false,
             byproducts: totalByproducts,
             byproducts_usd: rate ? totalByproducts * rate : false,
             byproducts_prod_cost: totalByproductsProdCost,
@@ -489,12 +547,9 @@ export function computeCostSummary(data, secondaryCurrency) {
             total: grossBom,
             total_usd: rate ? grossBom * rate : false,
             // Product Cost = standard_price of the finished product (native Odoo semantics).
-            // NOTE: this does NOT equal the sum of the body section subtotals, which
-            // show the bottom-up component prod_costs — same intentional asymmetry as native.
             total_prod: rootProdCost,
             total_prod_usd: rate ? rootProdCost * rate : false,
             // Row 3 — net totals (after byproduct recovery)
-            // net_bom mirrors native Odoo data.bom_cost exactly.
             net_bom: netBom,
             net_bom_usd: rate ? netBom * rate : false,
             // net_prod: standard_price of finished product minus byproduct standard prices.

@@ -334,6 +334,64 @@ function injectAndBubbleDirectUsdOps(workcenters, opsDirectMap) {
  * @param {Object}      rawData      Raw BOM data from the server.
  * @returns {Object|null}
  */
+
+/**
+ * Walk the raw BOM tree and collect ``bom_cost_usd_direct`` /
+ * ``prod_cost_usd_direct`` values injected by the Python override of
+ * ``_get_subcontracting_line``.  Results are keyed by ``"{partnerId}:{productId}"``
+ * so each (vendor, product) pair can be matched exactly to its item entry in
+ * ``costSummary.subcontracting[].items``.
+ *
+ * @param {Object} node         Raw BOM node.
+ * @param {Object} scDirectMap  Accumulator: { ["vendorId:productId"]: { vendorId, productId, total, prodCostTotal } }
+ */
+function collectDirectUsdSubcontracting(node, scDirectMap) {
+    if (node.subcontracting) {
+        const sc = node.subcontracting;
+        const vendorId = sc.partner_id || 0;
+        const productId = node.product_id;
+        const key = `${vendorId}:${productId}`;
+        if (!scDirectMap[key]) {
+            scDirectMap[key] = { vendorId, productId, total: 0, prodCostTotal: 0 };
+        }
+        scDirectMap[key].total += sc.bom_cost_usd_direct || 0;
+        scDirectMap[key].prodCostTotal += sc.prod_cost_usd_direct || 0;
+    }
+    for (const comp of node.components || []) {
+        if (comp.type === "bom") {
+            collectDirectUsdSubcontracting(comp, scDirectMap);
+        }
+    }
+}
+
+/**
+ * Apply the collected direct-USD totals to the vendor objects in
+ * ``costSummary.subcontracting``.  Each item is matched by the composite key
+ * ``"{vendor.id}:{item.product_id}"`` so that multiple items under the same
+ * vendor receive their own individual direct-USD value instead of an equal
+ * share of the vendor total.
+ *
+ * The vendor-level totals are derived by summing the matched item values, so
+ * they are always consistent with the item breakdown.
+ *
+ * @param {Array}  subcontracting  costSummary.subcontracting array.
+ * @param {Object} scDirectMap     Output of collectDirectUsdSubcontracting.
+ */
+function injectDirectUsdSubcontracting(subcontracting, scDirectMap) {
+    for (const vendor of subcontracting) {
+        vendor.total_usd_direct = 0;
+        vendor.prod_cost_total_usd_direct = 0;
+        for (const item of vendor.items || []) {
+            const key = `${vendor.id}:${item.product_id}`;
+            const entry = scDirectMap[key] || { total: 0, prodCostTotal: 0 };
+            item.total_usd_direct = entry.total;
+            item.prod_cost_usd_direct = entry.prodCostTotal;
+            vendor.total_usd_direct += entry.total;
+            vendor.prod_cost_total_usd_direct += entry.prodCostTotal;
+        }
+    }
+}
+
 function augmentWithDirectUsd(costSummary, rawData) {
     if (!costSummary) return costSummary;
 
@@ -365,8 +423,24 @@ function augmentWithDirectUsd(costSummary, rawData) {
     );
     costSummary.totals.operations_usd_direct = totalOpsUsdDirect;
 
-    // Grand totals now include both components and operations.
-    costSummary.totals.total_usd_direct = totalCompUsdDirect + totalOpsUsdDirect;
+    // --- Subcontracting ---
+    const scDirectMap = {};
+    collectDirectUsdSubcontracting(rawData, scDirectMap);
+    injectDirectUsdSubcontracting(costSummary.subcontracting || [], scDirectMap);
+
+    const totalScUsdDirect = (costSummary.subcontracting || []).reduce(
+        (s, v) => s + (v.total_usd_direct || 0),
+        0,
+    );
+    const totalScProdCostUsdDirect = (costSummary.subcontracting || []).reduce(
+        (s, v) => s + (v.prod_cost_total_usd_direct || 0),
+        0,
+    );
+    costSummary.totals.subcontracting_usd_direct = totalScUsdDirect;
+    costSummary.totals.subcontracting_prod_cost_usd_direct = totalScProdCostUsdDirect;
+
+    // Grand totals now include components, operations and subcontracting.
+    costSummary.totals.total_usd_direct = totalCompUsdDirect + totalOpsUsdDirect + totalScUsdDirect;
     costSummary.totals.total_prod_usd_direct = totalProdCostUsdDirect;
 
     // --- Byproducts ---

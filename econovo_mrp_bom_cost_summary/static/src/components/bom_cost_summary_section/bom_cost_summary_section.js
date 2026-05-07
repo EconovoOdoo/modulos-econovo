@@ -43,6 +43,9 @@ export class BomCostSummarySection extends Component {
                 foldState[`op_${wc.id}_${i}`] = true;
             }
         }
+        for (const vendor of (this.props.data.subcontracting || [])) {
+            foldState[`sc_${vendor.id}`] = true;
+        }
         this.state = useState(foldState);
 
         // When the data tree is replaced (e.g. qty / warehouse / variant change),
@@ -76,6 +79,9 @@ export class BomCostSummarySection extends Component {
                     for (let i = 0; i < wc.items.length; i++) {
                         newKeys.add(`op_${wc.id}_${i}`);
                     }
+                }
+                for (const vendor of (nextProps.data.subcontracting || [])) {
+                    newKeys.add(`sc_${vendor.id}`);
                 }
                 // Remove stale keys (items no longer in the tree)
                 for (const key of Object.keys(this.state)) {
@@ -127,6 +133,15 @@ export class BomCostSummarySection extends Component {
     toggleWorkcenter(wcId) {
         const key = `wc_${wcId}`;
         this.state[key] = !this.state[key];
+    }
+
+    toggleSubcontractingVendor(vendorId) {
+        const key = `sc_${vendorId}`;
+        this.state[key] = !this.state[key];
+    }
+
+    isSubcontractingVendorFolded(vendorId) {
+        return this.state[`sc_${vendorId}`];
     }
 
     toggleByproductCategory(categId) {
@@ -330,6 +345,10 @@ export class BomCostSummarySection extends Component {
 
     isWorkcenterFolded(wcId) {
         return this.state[`wc_${wcId}`];
+    }
+
+    get showSubcontracting() {
+        return (this.data.subcontracting || []).length > 0;
     }
 
     toggleOperation(wcId, opIdx) {

@@ -332,6 +332,78 @@
         </td>
     </xpath>
 
+    <!-- ============================================================ -->
+    <!-- 17. SUBCONTRACTING THEAD – two direct-USD column headers     -->
+    <!-- ============================================================ -->
+
+    <!-- BoM Cost USD direct header in subcontracting section -->
+    <xpath expr="//thead[tr/th[contains(normalize-space(.), 'Subcontracting by Vendor')]]/tr/th[@t-if='showCostsUsd'][1]" position="before">
+        <th t-if="showCostsUsdDirect" class="text-end">BoM Cost <t t-esc="secondaryCurrency.name"/>
+            <i class="fa fa-info-circle text-muted ms-1"
+               data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+               t-att-data-tooltip-info="colTooltip('bom_cost_usd_direct')"/>&#8203;
+        </th>
+    </xpath>
+    <!-- Product Cost USD direct header in subcontracting section -->
+    <xpath expr="//thead[tr/th[contains(normalize-space(.), 'Subcontracting by Vendor')]]/tr/th[@t-if='showCostsUsd'][2]" position="before">
+        <th t-if="showCostsUsdDirect" class="text-end">Product Cost <t t-esc="secondaryCurrency.name"/>
+            <i class="fa fa-info-circle text-muted ms-1"
+               data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+               t-att-data-tooltip-info="colTooltip('prod_cost_usd_direct')"/>&#8203;
+        </th>
+    </xpath>
+
+    <!-- ============================================================ -->
+    <!-- 18. SUBCONTRACTING TBODY – vendor group rows                 -->
+    <!-- ============================================================ -->
+
+    <!-- Direct USD BoM Cost for subcontracting vendor rows -->
+    <xpath expr="//td[@t-if='showCostsUsd'][strong[@t-esc='fmtUsd(vendor.total_usd)']]" position="before">
+        <td t-if="showCostsUsdDirect" class="text-end text-muted">
+            <strong t-esc="fmtUsdDirect(vendor.total_usd_direct)"/>
+        </td>
+    </xpath>
+    <!-- Direct USD Product Cost for subcontracting vendor rows -->
+    <xpath expr="//td[@t-if='showCostsUsd'][strong[@t-esc='fmtUsd(vendor.prod_cost_total_usd)']]" position="before">
+        <td t-if="showCostsUsdDirect" class="text-end text-muted">
+            <strong t-esc="fmtUsdDirect(vendor.prod_cost_total_usd_direct)"/>
+        </td>
+    </xpath>
+
+    <!-- ============================================================ -->
+    <!-- 19. SUBCONTRACTING TBODY – item rows                         -->
+    <!-- ============================================================ -->
+
+    <!-- Direct USD BoM Cost for subcontracting item rows -->
+    <xpath expr="//td[@t-if='showCostsUsd'][t[@t-esc='fmtUsd(sc_item.total_usd)']]" position="before">
+        <td t-if="showCostsUsdDirect" class="text-end text-muted">
+            <t t-esc="fmtUsdDirect(sc_item.total_usd_direct)"/>
+        </td>
+    </xpath>
+    <!-- Direct USD Product Cost for subcontracting item rows -->
+    <xpath expr="//td[@t-if='showCostsUsd'][t[@t-esc='fmtUsd(sc_item.prod_cost_usd)']]" position="before">
+        <td t-if="showCostsUsdDirect" class="text-end text-muted">
+            <t t-esc="fmtUsdDirect(sc_item.prod_cost_usd_direct)"/>
+        </td>
+    </xpath>
+
+    <!-- ============================================================ -->
+    <!-- 20. SUBCONTRACTING SUBTOTAL ROW                              -->
+    <!-- ============================================================ -->
+
+    <!-- Direct USD BoM Cost subtotal subcontracting -->
+    <xpath expr="//td[@t-if='showCostsUsd'][strong[@t-esc='fmtUsd(data.totals.subcontracting_usd)']]" position="before">
+        <td t-if="showCostsUsdDirect" class="text-end text-muted">
+            <strong t-esc="fmtUsdDirect(data.totals.subcontracting_usd_direct)"/>
+        </td>
+    </xpath>
+    <!-- Direct USD Product Cost subtotal subcontracting -->
+    <xpath expr="//td[@t-if='showCostsUsd'][strong[@t-esc='fmtUsd(data.totals.subcontracting_prod_cost_usd)']]" position="before">
+        <td t-if="showCostsUsdDirect" class="text-end text-muted">
+            <strong t-esc="fmtUsdDirect(data.totals.subcontracting_prod_cost_usd_direct)"/>
+        </td>
+    </xpath>
+
 </t>
 
 </templates>

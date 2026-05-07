@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 17.0+e-20250501\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-05 13:28+0000\n"
-"PO-Revision-Date: 2026-03-05 13:28+0000\n"
+"POT-Creation-Date: 2026-05-07 15:35+0000\n"
+"PO-Revision-Date: 2026-05-07 15:35+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -16,18 +16,49 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: econovo_mrp_bom_cost_summary
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_bom_cost_summary.report_cost_summary
+msgid "% / % Value"
+msgstr ""
+
+#. module: econovo_mrp_bom_cost_summary
+#. odoo-javascript
+#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.xml:0
+#, python-format
+msgid "% LdM / % Val."
+msgstr ""
+
+#. module: econovo_mrp_bom_cost_summary
 #: model:ir.actions.report,print_report_name:econovo_mrp_bom_cost_summary.action_report_mrp_bom_cost_summary
 msgid "'BOM Cost Summary - %s' % (object.display_name)"
 msgstr "'Resumen de Costo LdM - %s' % (object.display_name)"
 
 #. module: econovo_mrp_bom_cost_summary
 #: model_terms:ir.ui.view,arch_db:econovo_mrp_bom_cost_summary.report_cost_summary
-msgid "100%"
+msgid "(=) NET COST"
+msgstr ""
+
+#. module: econovo_mrp_bom_cost_summary
+#. odoo-javascript
+#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.xml:0
+#, python-format
+msgid "(=) NET PRODUCT COST"
 msgstr ""
 
 #. module: econovo_mrp_bom_cost_summary
 #: model_terms:ir.ui.view,arch_db:econovo_mrp_bom_cost_summary.report_cost_summary
-msgid "<small class=\"ms-1\">USD</small>"
+msgid "(−) Recoverable byproduct value"
+msgstr ""
+
+#. module: econovo_mrp_bom_cost_summary
+#. odoo-javascript
+#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.xml:0
+#, python-format
+msgid "(−) Recoverable value (SP)"
+msgstr ""
+
+#. module: econovo_mrp_bom_cost_summary
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_bom_cost_summary.report_cost_summary
+msgid "100%"
 msgstr ""
 
 #. module: econovo_mrp_bom_cost_summary
@@ -41,11 +72,26 @@ msgid "<strong>BOM: </strong>"
 msgstr ""
 
 #. module: econovo_mrp_bom_cost_summary
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_bom_cost_summary.report_cost_summary
+msgid "<strong>Total Subcontracting</strong>"
+msgstr "<strong>Total Subcontratación</strong>"
+
+#. module: econovo_mrp_bom_cost_summary
 #. odoo-javascript
 #: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.xml:0
 #, python-format
 msgid "Availability"
 msgstr "Disponibilidad"
+
+#. module: econovo_mrp_bom_cost_summary
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_bom_cost_summary.report_cost_summary
+msgid "BOM Cost"
+msgstr ""
+
+#. module: econovo_mrp_bom_cost_summary
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_bom_cost_summary.report_cost_summary
+msgid "BOM Cost (USD)"
+msgstr ""
 
 #. module: econovo_mrp_bom_cost_summary
 #: model:ir.actions.report,name:econovo_mrp_bom_cost_summary.action_report_mrp_bom_cost_summary
@@ -68,9 +114,46 @@ msgstr "Reporte de resumen de la lista de materiales"
 #: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.xml:0
 #: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.xml:0
 #: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.xml:0
+#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.xml:0
+#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.xml:0
+#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.xml:0
+#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.xml:0
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_bom_cost_summary.report_cost_summary
 #, python-format
 msgid "BoM Cost"
 msgstr "Costo LdM"
+
+#. module: econovo_mrp_bom_cost_summary
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_bom_cost_summary.report_cost_summary
+msgid "BoM Cost (USD)"
+msgstr ""
+
+#. module: econovo_mrp_bom_cost_summary
+#. odoo-javascript
+#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.xml:0
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_bom_cost_summary.report_cost_summary
+#, python-format
+msgid "Byproducts by Category"
+msgstr ""
+
+#. module: econovo_mrp_bom_cost_summary
+#. odoo-javascript
+#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.xml:0
+#, python-format
+msgid "Cant. Consu."
+msgstr ""
+
+#. module: econovo_mrp_bom_cost_summary
+#. odoo-javascript
+#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.xml:0
+#, python-format
+msgid "Cant. Prod."
+msgstr ""
+
+#. module: econovo_mrp_bom_cost_summary
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_bom_cost_summary.report_cost_summary
+msgid "Category / Byproduct"
+msgstr ""
 
 #. module: econovo_mrp_bom_cost_summary
 #: model_terms:ir.ui.view,arch_db:econovo_mrp_bom_cost_summary.report_cost_summary
@@ -131,7 +214,14 @@ msgstr "Duración (min)"
 #: code:addons/econovo_mrp_bom_cost_summary/static/src/patches/bom_overview_control_panel_patch.xml:0
 #, python-format
 msgid "Excel"
-msgstr "Excel"
+msgstr ""
+
+#. module: econovo_mrp_bom_cost_summary
+#. odoo-javascript
+#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.xml:0
+#, python-format
+msgid "Fold"
+msgstr "Plegar"
 
 #. module: econovo_mrp_bom_cost_summary
 #. odoo-javascript
@@ -139,11 +229,6 @@ msgstr "Excel"
 #, python-format
 msgid "Free to Use / On Hand"
 msgstr "Disponibles para usar / A la Mano"
-
-#. module: econovo_mrp_bom_cost_summary
-#: model_terms:ir.ui.view,arch_db:econovo_mrp_bom_cost_summary.report_cost_summary
-msgid "Grand Total (Components + Operations)"
-msgstr "Gran Total (Componentes + Operaciones)"
 
 #. module: econovo_mrp_bom_cost_summary
 #. odoo-javascript
@@ -155,6 +240,7 @@ msgstr "Tiempo de Entrega"
 
 #. module: econovo_mrp_bom_cost_summary
 #. odoo-javascript
+#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.xml:0
 #: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.xml:0
 #, python-format
 msgid "Mixed units of measure"
@@ -194,15 +280,37 @@ msgid "Plegar"
 msgstr ""
 
 #. module: econovo_mrp_bom_cost_summary
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_bom_cost_summary.report_cost_summary
+msgid "Prod. Cost"
+msgstr ""
+
+#. module: econovo_mrp_bom_cost_summary
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_bom_cost_summary.report_cost_summary
+msgid "Prod. Cost (USD)"
+msgstr ""
+
+#. module: econovo_mrp_bom_cost_summary
 #. odoo-javascript
 #: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.xml:0
 #: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.xml:0
+#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.xml:0
+#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.xml:0
+#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.xml:0
+#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.xml:0
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_bom_cost_summary.report_cost_summary
 #, python-format
 msgid "Product Cost"
 msgstr "Costo de Producto"
 
 #. module: econovo_mrp_bom_cost_summary
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_bom_cost_summary.report_cost_summary
+msgid "Product Cost (USD)"
+msgstr ""
+
+#. module: econovo_mrp_bom_cost_summary
 #. odoo-javascript
+#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.xml:0
+#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.xml:0
 #: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.xml:0
 #: model_terms:ir.ui.view,arch_db:econovo_mrp_bom_cost_summary.report_cost_summary
 #, python-format
@@ -211,11 +319,33 @@ msgstr "Cantidad"
 
 #. module: econovo_mrp_bom_cost_summary
 #. odoo-javascript
+#: code:addons/econovo_mrp_bom_cost_summary/static/src/patches/bom_overview_display_filter_patch.js:0
+#, python-format
+msgid "Rendimiento de operaciones"
+msgstr ""
+
+#. module: econovo_mrp_bom_cost_summary
+#. odoo-javascript
 #: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.xml:0
 #: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.xml:0
 #, python-format
 msgid "Route"
 msgstr "Ruta"
+
+#. module: econovo_mrp_bom_cost_summary
+#. odoo-javascript
+#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.xml:0
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_bom_cost_summary.report_cost_summary
+#, python-format
+msgid "Subcontracting by Vendor"
+msgstr "Subcontratación por Proveedor"
+
+#. module: econovo_mrp_bom_cost_summary
+#. odoo-javascript
+#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.xml:0
+#, python-format
+msgid "Subtotal Byproducts"
+msgstr ""
 
 #. module: econovo_mrp_bom_cost_summary
 #. odoo-javascript
@@ -235,15 +365,18 @@ msgstr "Subtotal Operaciones"
 #. odoo-javascript
 #: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.xml:0
 #, python-format
-msgid "TOTAL BOM COST"
-msgstr "COSTO TOTAL LdM"
+msgid "Subtotal Subcontracting"
+msgstr "Subtotal Subcontratación"
 
 #. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.xml:0
-#, python-format
-msgid "TOTAL PRODUCT COST"
-msgstr "COSTO TOTAL DE PRODUCTO"
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_bom_cost_summary.report_cost_summary
+msgid "Total  (Components + Operations + Subcontracting)"
+msgstr "Total  (Componentes + Operaciones + Subcontratación)"
+
+#. module: econovo_mrp_bom_cost_summary
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_bom_cost_summary.report_cost_summary
+msgid "Total Byproducts"
+msgstr ""
 
 #. module: econovo_mrp_bom_cost_summary
 #: model_terms:ir.ui.view,arch_db:econovo_mrp_bom_cost_summary.report_cost_summary
@@ -257,14 +390,31 @@ msgstr "Total Operaciones"
 
 #. module: econovo_mrp_bom_cost_summary
 #. odoo-javascript
+#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.xml:0
+#, python-format
+msgid "Total of BoM & Product"
+msgstr ""
+
+#. module: econovo_mrp_bom_cost_summary
+#. odoo-javascript
 #. odoo-python
 #: code:addons/econovo_mrp_bom_cost_summary/models/mrp_report_bom_structure.py:0
 #: code:addons/econovo_mrp_bom_cost_summary/models/mrp_report_bom_structure.py:0
+#: code:addons/econovo_mrp_bom_cost_summary/models/mrp_report_bom_structure.py:0
 #: code:addons/econovo_mrp_bom_cost_summary/report/report_cost_summary.py:0
+#: code:addons/econovo_mrp_bom_cost_summary/report/report_cost_summary.py:0
+#: code:addons/econovo_mrp_bom_cost_summary/static/src/utils/bom_cost_summary_utils.js:0
 #: code:addons/econovo_mrp_bom_cost_summary/static/src/utils/bom_cost_summary_utils.js:0
 #, python-format
 msgid "Uncategorized"
 msgstr "Sin categoría"
+
+#. module: econovo_mrp_bom_cost_summary
+#. odoo-javascript
+#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.xml:0
+#, python-format
+msgid "Unfold"
+msgstr "Desplegar"
 
 #. module: econovo_mrp_bom_cost_summary
 #. odoo-javascript
@@ -274,6 +424,20 @@ msgstr "Sin categoría"
 #, python-format
 msgid "Unknown"
 msgstr "Desconocido"
+
+#. module: econovo_mrp_bom_cost_summary
+#. odoo-javascript
+#. odoo-python
+#: code:addons/econovo_mrp_bom_cost_summary/report/report_cost_summary.py:0
+#: code:addons/econovo_mrp_bom_cost_summary/static/src/utils/bom_cost_summary_utils.js:0
+#, python-format
+msgid "Unknown Vendor"
+msgstr ""
+
+#. module: econovo_mrp_bom_cost_summary
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_bom_cost_summary.report_cost_summary
+msgid "Vendor / Product"
+msgstr ""
 
 #. module: econovo_mrp_bom_cost_summary
 #: model_terms:ir.ui.view,arch_db:econovo_mrp_bom_cost_summary.report_cost_summary
@@ -288,14 +452,31 @@ msgid "\\u2014"
 msgstr ""
 
 #. module: econovo_mrp_bom_cost_summary
+#. odoo-javascript
+#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.xml:0
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_bom_cost_summary.report_cost_summary
+#, python-format
+msgid "min/ud"
+msgstr ""
+
+#. module: econovo_mrp_bom_cost_summary
 #: model_terms:ir.ui.view,arch_db:econovo_mrp_bom_cost_summary.report_cost_summary
 msgid "operation"
 msgstr "operación"
 
 #. module: econovo_mrp_bom_cost_summary
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_bom_cost_summary.report_cost_summary_bp_cat_rows
 #: model_terms:ir.ui.view,arch_db:econovo_mrp_bom_cost_summary.report_cost_summary_cat_rows
 msgid "product"
 msgstr "producto"
+
+#. module: econovo_mrp_bom_cost_summary
+#. odoo-javascript
+#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.xml:0
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_bom_cost_summary.report_cost_summary
+#, python-format
+msgid "ud/hr"
+msgstr ""
 
 #. module: econovo_mrp_bom_cost_summary
 #: model_terms:ir.ui.view,arch_db:econovo_mrp_bom_cost_summary.report_cost_summary
@@ -303,472 +484,3 @@ msgid ""
 "| \n"
 "                                    <strong>Qty: </strong>"
 msgstr ""
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Quantity / UoM"
-msgstr "Cantidad / UdM"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Usage: qty consumed per unit of the finished product"
-msgstr "Uso: cantidad consumida por unidad del producto terminado"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Product: sum across all usages (\u2014 when UoMs differ)"
-msgstr "Producto: suma de todos los usos (\u2014 cuando las UdM difieren)"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "% of Components total"
-msgstr "% del total de Componentes"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "= row BOM Cost \u00f7 Subtotal Components \u00d7 100"
-msgstr "= Costo LdM de fila \u00f7 Subtotal Componentes \u00d7 100"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Applies to Categories, Products and Usages"
-msgstr "Aplica a Categorías, Productos y Usos"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Subtotal: Subtotal Components \u00f7 Grand Total \u00d7 100"
-msgstr "Subtotal: Subtotal Componentes \u00f7 Gran Total \u00d7 100"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "% of Operations total"
-msgstr "% del total de Operaciones"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "= row BOM Cost \u00f7 Subtotal Operations \u00d7 100"
-msgstr "= Costo LdM de fila \u00f7 Subtotal Operaciones \u00d7 100"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Applies to Work Centers and Operations"
-msgstr "Aplica a Centros de Trabajo y Operaciones"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Subtotal: Subtotal Operations \u00f7 Grand Total \u00d7 100"
-msgstr "Subtotal: Subtotal Operaciones \u00f7 Gran Total \u00d7 100"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Stock availability"
-msgstr "Disponibilidad en stock"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Free to Use = On Hand \u2212 Reserved (virtual_available)"
-msgstr "Libre de Uso = En Mano \u2212 Reservado (virtual_available)"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "On Hand = total physical quantity in storage"
-msgstr "En Mano = cantidad física total en almacenamiento"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Source: stock.quant"
-msgstr "Fuente: stock.quant"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Availability status vs. required qty"
-msgstr "Estado de disponibilidad vs. cantidad requerida"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Available: Free to Use \u2265 required quantity"
-msgstr "Disponible: Libre de Uso \u2265 cantidad requerida"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Partial: some stock, but insufficient"
-msgstr "Parcial: hay stock, pero insuficiente"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Not Available: no usable stock"
-msgstr "No Disponible: sin stock utilizable"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Lead time (days)"
-msgstr "Tiempo de entrega (días)"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Supplier or manufacturing lead time in calendar days"
-msgstr "Tiempo de entrega de proveedor o fabricación en días calendario"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Derived from the replenishment route of each component"
-msgstr "Derivado de la ruta de reabastecimiento de cada componente"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Manufacturing lead time (days)"
-msgstr "Tiempo de fabricación (días)"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Lead time linked to this work center or routing step"
-msgstr "Tiempo de entrega vinculado a este centro de trabajo o paso de ruta"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Replenishment route"
-msgstr "Ruta de reabastecimiento"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "e.g. Buy, Manufacture, MTO, Resupply"
-msgstr "p. ej. Comprar, Fabricar, MTO, Reabastecer"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "May include vendor name or sub-route detail"
-msgstr "Puede incluir nombre de proveedor o detalle de sub-ruta"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Manufacturing route"
-msgstr "Ruta de fabricación"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Replenishment or manufacturing route for this operation"
-msgstr "Ruta de reabastecimiento o fabricación para esta operación"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "BOM Cost contribution"
-msgstr "Contribución al Costo LdM"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Usage: qty \u00d7 unit cost \u00d7 production factor"
-msgstr "Uso: cantidad \u00d7 costo unitario \u00d7 factor de producción"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Product: \u03a3 BOM Costs of all usages"
-msgstr "Producto: \u03a3 Costos LdM de todos los usos"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Category: \u03a3 BOM Costs of products + child categories"
-msgstr "Categoría: \u03a3 Costos LdM de productos + categorías hijas"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Includes nested sub-assembly costs recursively"
-msgstr "Incluye costos de sub-ensambles anidados de forma recursiva"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "BOM Cost contribution (Operations)"
-msgstr "Contribución al Costo LdM (Operaciones)"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Operation: (duration \u00f7 60) \u00d7 work center cost/hour"
-msgstr "Operación: (duración \u00f7 60) \u00d7 costo/hora del centro de trabajo"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Work Center: \u03a3 BOM Costs of all its operations"
-msgstr "Centro de Trabajo: \u03a3 Costos LdM de todas sus operaciones"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "BOM Cost (secondary currency)"
-msgstr "Costo LdM (moneda secundaria)"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "BOM Cost converted using the company exchange rate"
-msgstr "Costo LdM convertido usando el tipo de cambio de la empresa"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "= BOM Cost (local) \u00d7 rate(local \u2192 secondary)"
-msgstr "= Costo LdM (local) \u00d7 tasa(local \u2192 secundaria)"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Product catalogue cost"
-msgstr "Costo de catálogo del producto"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Usage: qty \u00d7 product.standard_price"
-msgstr "Uso: cantidad \u00d7 product.standard_price"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Product: \u03a3 Product Costs of all usages"
-msgstr "Producto: \u03a3 Costos de Producto de todos los usos"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Category: \u03a3 down the category tree"
-msgstr "Categoría: \u03a3 del árbol de categorías"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Does NOT include operations or overhead"
-msgstr "NO incluye operaciones ni gastos generales"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Product Cost (secondary currency)"
-msgstr "Costo de Producto (moneda secundaria)"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Product Cost converted using the company exchange rate"
-msgstr "Costo de Producto convertido usando el tipo de cambio de la empresa"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "= Product Cost (local) \u00d7 rate(local \u2192 secondary)"
-msgstr "= Costo de Producto (local) \u00d7 tasa(local \u2192 secundaria)"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "TOTAL BOM COST \u2014 Components"
-msgstr "COSTO TOTAL LdM \u2014 Componentes"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "= \u03a3 (qty \u00d7 unit_cost \u00d7 production_factor)"
-msgstr "= \u03a3 (cantidad \u00d7 costo_unitario \u00d7 factor_producción)"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "for all components at the requested quantity"
-msgstr "para todos los componentes en la cantidad solicitada"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "TOTAL PRODUCT COST \u2014 Components"
-msgstr "COSTO TOTAL DE PRODUCTO \u2014 Componentes"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "= \u03a3 (qty \u00d7 product.standard_price)"
-msgstr "= \u03a3 (cantidad \u00d7 product.standard_price)"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Catalogue standard cost; no operations or overhead"
-msgstr "Costo estándar de catálogo; sin operaciones ni gastos generales"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "TOTAL BOM COST \u2014 Operations"
-msgstr "COSTO TOTAL LdM \u2014 Operaciones"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "= \u03a3 ((duration \u00f7 60) \u00d7 wc_cost_per_hour)"
-msgstr "= \u03a3 ((duración \u00f7 60) \u00d7 costo_por_hora_ct)"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Duration in minutes; rate from work center settings"
-msgstr "Duración en minutos; tasa de la configuración del centro de trabajo"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Grand Total BOM Cost"
-msgstr "Gran Total Costo LdM"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "= Subtotal Components + Subtotal Operations"
-msgstr "= Subtotal Componentes + Subtotal Operaciones"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Components: \u03a3 (qty \u00d7 unit_cost \u00d7 production_factor)"
-msgstr "Componentes: \u03a3 (cantidad \u00d7 costo_unitario \u00d7 factor_producción)"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Operations: \u03a3 ((duration \u00f7 60) \u00d7 wc_cost/hour)"
-msgstr "Operaciones: \u03a3 ((duración \u00f7 60) \u00d7 costo_ct/hora)"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Scaled to the BOM production quantity"
-msgstr "Escalado a la cantidad de producción de la LdM"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Grand Total Product Cost"
-msgstr "Gran Total Costo de Producto"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Catalogue standard cost of all components"
-msgstr "Costo estándar de catálogo de todos los componentes"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Duration (minutes)"
-msgstr "Duración (minutos)"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Operation: manufacturing operation duration in minutes"
-msgstr "Operación: duración de la operación de fabricación en minutos"
-
-#. module: econovo_mrp_bom_cost_summary
-#. odoo-javascript
-#: code:addons/econovo_mrp_bom_cost_summary/static/src/components/bom_cost_summary_section/bom_cost_summary_section.js:0
-#, python-format
-msgid "Work Center: sum of all its operation durations"
-msgstr "Centro de Trabajo: suma de todas las duraciones de sus operaciones"

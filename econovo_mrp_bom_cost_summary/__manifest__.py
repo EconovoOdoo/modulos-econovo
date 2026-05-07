@@ -1,12 +1,13 @@
 {
     'name': 'Econovo MRP BOM Cost Summary',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.1.0',
     'category': 'Manufacturing',
     'summary': 'Collapsible cost breakdown summary in BOM Overview report',
     'description': """
 Adds a cost summary section at the bottom of the BOM Overview (mrp_bom_report)
-that displays component costs grouped by product category and operation costs
-grouped by work center, with 3-level drill-down and dual currency (ARS + USD).
+that displays component costs grouped by product category, operation costs
+grouped by work center, and subcontracting costs grouped by vendor,
+with 3-level drill-down, dual currency (ARS + USD) and grand total.
     """,
     'depends': ['mrp', 'product'],
     'author': 'Jose D. Leonett',

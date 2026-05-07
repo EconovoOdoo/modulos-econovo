@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Econovo - BOM Cost Summary (Dolarization)',
-    'version': '17.0.1.1.1',
+    'version': '17.0.1.2.0',
     'category': 'Manufacturing',
     'summary': (
         'Bridge module: adds direct-USD columns (from standard_price_usd) '
@@ -21,6 +21,7 @@ New columns added to BOM Cost Summary:
 - BoM Cost USD (direct): quantity × product.standard_price_usd  (components)
 - Product Cost USD (direct): quantity × product.standard_price_usd  (components)
 - BoM Cost USD (direct): (duration ÷ 60) × workcenter.costs_hour_usd  (operations)
+- BoM Cost / Product Cost USD (direct): seller.currency_id._convert(price, USD)  (subcontracting)
 
 New field on mrp.workcenter:
 - costs_hour_usd: direct USD hourly rate, auto-updated from exchange rate
