@@ -305,6 +305,17 @@ export class BomCostSummarySection extends Component {
                         rows.push({ type: 'product', node, prod, depth: node.depth + 1,
                             rowKey: `prod_${node.id}_${prod.product_id}` });
                         if (!this.isProductFolded(node.id, prod.product_id)) {
+                            // Sub-MO replenishments (mrp.production): each renders
+                            // as a named badge row followed by its own usage row.
+                            for (const rep of (prod.mo_replenishments || [])) {
+                                rows.push({ type: 'sub_mo', node, prod, rep,
+                                    depth: node.depth + 2,
+                                    rowKey: `sub_mo_${node.id}_${prod.product_id}_${rep.mo_id}` });
+                                rows.push({ type: 'sub_mo_usage', node, prod, rep,
+                                    depth: node.depth + 2,
+                                    rowKey: `sub_mo_usage_${node.id}_${prod.product_id}_${rep.mo_id}` });
+                            }
+                            // Standard usages (stock / PO / to_order).
                             for (const usage of prod.usages) {
                                 rows.push({ type: 'usage', node, prod, usage,
                                     depth: node.depth + 1,
@@ -466,15 +477,21 @@ export class BomCostSummarySection extends Component {
      * @returns {{quantity: number, uom_name: string}|false}
      */
     productQuantity(prod) {
-        if (!prod.usages.length) {
+    productQuantity(prod) {
+        // Combine standard usages and sub-MO replenishments for the total quantity.
+        const allEntries = [
+            ...(prod.usages || []).map((u) => ({ quantity: u.quantity, uom_name: u.uom_name })),
+            ...(prod.mo_replenishments || []).map((r) => ({ quantity: r.usage_quantity, uom_name: r.usage_uom_name })),
+        ];
+        if (!allEntries.length) {
             return false;
         }
-        const firstUom = prod.usages[0].uom_name;
-        const allSame = prod.usages.every((u) => u.uom_name === firstUom);
+        const firstUom = allEntries[0].uom_name;
+        const allSame = allEntries.every((u) => u.uom_name === firstUom);
         if (!allSame) {
             return false;
         }
-        const total = prod.usages.reduce((s, u) => s + (u.quantity || 0), 0);
+        const total = allEntries.reduce((s, u) => s + (u.quantity || 0), 0);
         return { quantity: total, uom_name: firstUom };
     }
 

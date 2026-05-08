@@ -14,17 +14,30 @@ import { getStateDecorator } from "@mrp/components/mo_overview_line/mo_overview_
 /**
  * Inserts or merges a single MO component into the category map.
  *
- * @param {Object} categoryMap - Accumulator keyed by categ_id
- * @param {Object} comp - Component summary dict from get_report_values
- * @param {number} moCost  - mo_cost value (col1: estimated)
- * @param {number} realCost - real_cost value (col2: actual consumed)
- * @param {string} parentName - Name of the finished product
- * @param {number} parentProductId - product.product ID of the finished product
- * @param {number} catId - Category ID (read from wrapper, not summary)
- * @param {string} catName - Category name
- * @param {Array}  catAncestors - [{id, name}] list from root to leaf
+ * Builds two parallel structures on each product entry:
+ *
+ *  - mo_replenishments[]: one entry per replenishment whose model is
+ *    'mrp.production' (sub-MOs).  Each entry carries the sub-MO name,
+ *    state badge data, and the quantity consumed by THAT sub-MO so a
+ *    dedicated usage row can be rendered underneath it.
+ *
+ *  - usages[]: aggregated usages from replenishments that are NOT
+ *    sub-MOs (stock, purchase orders, "to_order" lines) plus the
+ *    top-level component move itself when there are no sub-MO
+ *    replenishments for it.  These render as plain usage rows.
+ *
+ * @param {Object} categoryMap    - Accumulator keyed by categ_id
+ * @param {Object} comp           - Component summary dict (compWrapper.summary)
+ * @param {Array}  replenishments - compWrapper.replenishments array
+ * @param {number} moCost         - mo_cost (estimated / theoretical)
+ * @param {number} realCost       - real_cost (actual consumed)
+ * @param {string} parentName     - Name of the finished product (the MO product)
+ * @param {number} parentProductId- product.product ID of the finished product
+ * @param {number} catId          - Category ID (read from wrapper)
+ * @param {string} catName        - Category name
+ * @param {Array}  catAncestors   - [{id, name}] list from root to leaf
  */
-function _addMoComponentEntry(categoryMap, comp, moCost, realCost, parentName, parentProductId, catId, catName, catAncestors) {
+function _addMoComponentEntry(categoryMap, comp, replenishments, moCost, realCost, parentName, parentProductId, catId, catName, catAncestors) {
     catId = catId !== undefined ? catId : (comp.categ_id || 0);
     catName = catName !== undefined ? catName : (comp.categ_name || _t("Uncategorized"));
     catAncestors = catAncestors !== undefined ? catAncestors : (comp.categ_ancestors || [{ id: catId, name: catName }]);
@@ -52,6 +65,10 @@ function _addMoComponentEntry(categoryMap, comp, moCost, realCost, parentName, p
             link_model: "product.product",
             total: 0,
             prod_cost_total: 0,
+            // Sub-MO replenishments: one entry per mrp.production replenishment.
+            // Each carries its own usage row data (name, state badge, quantity).
+            mo_replenishments: [],
+            // Non-sub-MO usages: stock draws, purchase orders, "to_order" lines.
             usages: [],
             quantity_available: comp.quantity_free !== undefined ? comp.quantity_free : false,
             quantity_on_hand: comp.quantity_on_hand !== undefined ? comp.quantity_on_hand : false,
@@ -63,31 +80,67 @@ function _addMoComponentEntry(categoryMap, comp, moCost, realCost, parentName, p
     product.total += moCost;
     product.prod_cost_total += realCost;
 
-    const existingUsage = product.usages.find(
-        (u) => u.parent_product_id === parentProductId
-    );
-    if (existingUsage) {
-        existingUsage.quantity += comp.quantity || 0;
-        existingUsage.total += moCost;
-        existingUsage.prod_cost += realCost;
-    } else {
-        product.usages.push({
-            parent_product_id: parentProductId,
-            parent_name: parentName,
-            quantity: comp.quantity || 0,
-            uom_name: comp.uom_name || "",
-            total: moCost,
-            prod_cost: realCost,
-            lead_time: false,
-            route_name: "",
-            route_detail: "",
-            route_type: "",
-            bom_id: false,
-            parent_route_name: "",
-            parent_route_detail: "",
-            parent_route_type: "",
-            parent_bom_id: false,
-        });
+    // ---- Partition replenishments into sub-MOs vs. standard usages ----
+    const reps = replenishments || [];
+    const subMoReps = reps.filter((r) => r.summary && r.summary.model === "mrp.production");
+    const otherReps = reps.filter((r) => !r.summary || r.summary.model !== "mrp.production");
+
+    // Register sub-MO replenishments (each becomes a dedicated child row with badge).
+    for (const rep of subMoReps) {
+        const s = rep.summary;
+        // Avoid duplicates when the same product appears in multiple compWrappers
+        // (shouldn't happen for MO components, but guard anyway).
+        const alreadyExists = product.mo_replenishments.find((r) => r.mo_id === s.id);
+        if (!alreadyExists) {
+            product.mo_replenishments.push({
+                mo_id: s.id,
+                name: s.name || _t("Manufacturing Order"),
+                state: s.state || "",
+                formatted_state: s.formatted_state || s.state || "",
+                state_class: getStateDecorator("mrp.production", s.state || ""),
+                // Usage row data shown directly under this sub-MO row.
+                usage_quantity: s.quantity || 0,
+                usage_uom_name: comp.uom_name || "",
+                parent_name: parentName,
+                parent_product_id: parentProductId,
+            });
+        }
+    }
+
+    // Register non-sub-MO usages (stock / PO / to_order) aggregated by parent MO.
+    // When there are no replenishments at all (plain stock component with
+    // quantity already reserved) we still need a usage row for the parent.
+    const hasNonSubMoRep = otherReps.length > 0;
+    const hasSubMoRep = subMoReps.length > 0;
+
+    if (hasNonSubMoRep || !hasSubMoRep) {
+        // Aggregate into a single usage row keyed by parentProductId.
+        const existingUsage = product.usages.find(
+            (u) => u.parent_product_id === parentProductId
+        );
+        if (existingUsage) {
+            existingUsage.quantity += comp.quantity || 0;
+            existingUsage.total += moCost;
+            existingUsage.prod_cost += realCost;
+        } else {
+            product.usages.push({
+                parent_product_id: parentProductId,
+                parent_name: parentName,
+                quantity: comp.quantity || 0,
+                uom_name: comp.uom_name || "",
+                total: moCost,
+                prod_cost: realCost,
+                lead_time: false,
+                route_name: "",
+                route_detail: "",
+                route_type: "",
+                bom_id: false,
+                parent_route_name: "",
+                parent_route_detail: "",
+                parent_route_type: "",
+                parent_bom_id: false,
+            });
+        }
     }
 }
 
@@ -118,6 +171,7 @@ export function collectMoCosts(data) {
         const catAncestors = compWrapper.categ_ancestors !== undefined ? compWrapper.categ_ancestors : (comp.categ_ancestors || [{ id: catId, name: catName }]);
         _addMoComponentEntry(
             categoryMap, comp,
+            compWrapper.replenishments || [],
             comp.mo_cost || 0,
             comp.real_cost || 0,
             parentName,
