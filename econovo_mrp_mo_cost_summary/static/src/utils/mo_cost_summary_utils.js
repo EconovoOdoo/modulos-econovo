@@ -68,8 +68,11 @@ function _addMoComponentEntry(categoryMap, comp, replenishments, moCost, realCos
             // Sub-MO replenishments: one entry per mrp.production replenishment.
             // Each carries its own usage row data (name, state badge, quantity).
             mo_replenishments: [],
-            // Non-sub-MO usages: stock draws, purchase orders, "to_order" lines.
+            // Non-sub-MO usages: stock draws, purchase orders.
             usages: [],
+            // Components flagged as "to_order" (need replenishment): one entry
+            // per parent MO, shown with a "Reabastecer" button in the table.
+            to_order_replenishments: [],
             quantity_available: comp.quantity_free !== undefined ? comp.quantity_free : false,
             quantity_on_hand: comp.quantity_on_hand !== undefined ? comp.quantity_on_hand : false,
             availability_state: false,
@@ -107,7 +110,31 @@ function _addMoComponentEntry(categoryMap, comp, replenishments, moCost, realCos
         }
     }
 
-    // Register non-sub-MO usages (stock / PO / to_order) aggregated by parent MO.
+    // If the component itself is flagged as "to_order" (needs procurement),
+    // route it to to_order_replenishments[] so a dedicated Reabastecer row
+    // is shown instead of a plain usage row.
+    const isToOrder = comp.model === 'to_order' || comp.state === 'to_order';
+    if (isToOrder) {
+        const existingToOrder = product.to_order_replenishments.find(
+            (r) => r.parent_product_id === parentProductId
+        );
+        if (existingToOrder) {
+            existingToOrder.quantity += comp.replenish_quantity || comp.quantity || 0;
+        } else {
+            product.to_order_replenishments.push({
+                product_id: prodId,
+                quantity: comp.replenish_quantity || comp.quantity || 0,
+                uom_name: comp.uom_name || "",
+                parent_name: parentName,
+                parent_product_id: parentProductId,
+                formatted_state: comp.formatted_state || _t("To Order"),
+                state_class: 'text-bg-danger',
+            });
+        }
+        return;
+    }
+
+    // Register non-sub-MO usages (stock / PO) aggregated by parent MO.
     // When there are no replenishments at all (plain stock component with
     // quantity already reserved) we still need a usage row for the parent.
     const hasNonSubMoRep = otherReps.length > 0;

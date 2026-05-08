@@ -145,7 +145,7 @@
                                t-on-click.stop.prevent="() => this.openFormDialog(row.prod.link_id, row.prod.link_model)">
                                 <t t-esc="row.prod.name"/>
                             </a>
-                            <span class="text-muted ms-1">(<t t-esc="(row.prod.mo_replenishments || []).length + row.prod.usages.length"/>)</span>
+                            <span class="text-muted ms-1">(<t t-esc="(row.prod.mo_replenishments || []).length + (row.prod.to_order_replenishments || []).length + row.prod.usages.length"/>)</span>
                         </td>
                         <td t-if="showState"/>
                         <td class="text-end text-muted">
@@ -256,6 +256,46 @@
                             <t t-esc="formatFloat(row.rep.usage_quantity, {digits: [false, props.precision]})"/>
                             <t t-if="showUom">
                                 <span class="ms-1" t-esc="row.rep.usage_uom_name"/>
+                            </t>
+                        </td>
+                        <td/>
+                        <td t-if="showAvailabilities"/>
+                        <td t-if="showAvailabilities"/>
+                        <td t-if="showPerformance"/>
+                        <td t-if="showPerformance"/>
+                        <td t-if="showLeadTimes"/>
+                        <td t-if="showLeadTimes"/>
+                        <td t-if="showCosts"/>
+                        <td t-if="showCostsUsd"/>
+                        <td t-if="showCosts"/>
+                        <td t-if="showCostsUsd"/>
+                    </tr>
+                    <!-- TO_ORDER ROW: "Por ordenar" badge + Reabastecer button -->
+                    <tr t-elif="row.type === 'to_order'"
+                        class="o_econovo_cost_summary__usage-row">
+                        <td/>
+                        <td t-attf-style="padding-left: {{ row.depth * 20 + 44 }}px">
+                            <a href="#" class="o_econovo_cost_summary__link"
+                               t-on-click.stop.prevent="() => this.openFormDialog(row.toOrderRep.parent_product_id, 'product.product')">
+                                <t t-esc="row.toOrderRep.parent_name"/>
+                            </a>
+                            <button class="ms-2 py-0 btn btn-sm btn-secondary"
+                                    t-on-click.stop.prevent="() => this.openReplenish(row.toOrderRep.product_id, row.toOrderRep.quantity)">
+                                Reabastecer
+                            </button>
+                        </td>
+                        <td t-if="showState" class="text-center">
+                            <t t-if="row.toOrderRep.formatted_state">
+                                <div class="o_field_badge">
+                                    <span t-attf-class="badge rounded-pill o_mrp_overview_badge {{ row.toOrderRep.state_class }}"
+                                          t-out="row.toOrderRep.formatted_state"/>
+                                </div>
+                            </t>
+                        </td>
+                        <td class="text-end text-muted">
+                            <t t-esc="formatFloat(row.toOrderRep.quantity, {digits: [false, props.precision]})"/>
+                            <t t-if="showUom">
+                                <span class="ms-1" t-esc="row.toOrderRep.uom_name"/>
                             </t>
                         </td>
                         <td/>

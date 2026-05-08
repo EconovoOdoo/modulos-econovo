@@ -135,6 +135,30 @@ export class BomCostSummarySection extends Component {
         this.state[key] = !this.state[key];
     }
 
+    /**
+     * Opens the native Odoo replenishment wizard for a to_order component.
+     * Mirrors the native MoOverviewLine.openReplenish() behaviour.
+     *
+     * @param {number} productId  - product.product ID to replenish
+     * @param {number} quantity   - Suggested quantity
+     */
+    openReplenish(productId, quantity) {
+        this.actionService.doAction("stock.action_product_replenish", {
+            additionalContext: {
+                default_product_id: productId,
+                default_quantity: quantity,
+            },
+            onClose: (closeInfo) => {
+                if (closeInfo && closeInfo.done) {
+                    const bus = this.env.overviewBus;
+                    if (bus) {
+                        bus.trigger("reload");
+                    }
+                }
+            },
+        });
+    }
+
     toggleWorkcenter(wcId) {
         const key = `wc_${wcId}`;
         this.state[key] = !this.state[key];
@@ -322,7 +346,14 @@ export class BomCostSummarySection extends Component {
                                         rowKey: `sub_mo_usage_${node.id}_${prod.product_id}_${rep.mo_id}` });
                                 }
                             }
-                            // Standard usages (stock / PO / to_order).
+                            // to_order replenishments: each gets a dedicated row
+                            // with a "Reabastecer" button and the "Por ordenar" badge.
+                            for (const toOrderRep of (prod.to_order_replenishments || [])) {
+                                rows.push({ type: 'to_order', node, prod, toOrderRep,
+                                    depth: node.depth + 1,
+                                    rowKey: `to_order_${node.id}_${prod.product_id}_${toOrderRep.parent_product_id}` });
+                            }
+                            // Standard usages (stock / PO).
                             for (const usage of prod.usages) {
                                 rows.push({ type: 'usage', node, prod, usage,
                                     depth: node.depth + 1,
