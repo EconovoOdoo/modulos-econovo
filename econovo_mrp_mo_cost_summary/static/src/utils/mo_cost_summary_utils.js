@@ -172,6 +172,51 @@ function _addMoComponentEntry(categoryMap, comp, replenishments, moCost, realCos
 }
 
 // ---------------------------------------------------------------------------
+// Internal helpers (continued)
+// ---------------------------------------------------------------------------
+
+/**
+ * Process the components of a sub-MO replenishment, adding each one to the
+ * category map and recursing further for any nested sub-MO replenishments.
+ *
+ * This is needed because `data.components[]` only contains direct components
+ * of the main MO.  Each `mrp.production` replenishment carries its own
+ * `components[]` array (populated by the Python backend recursively) which
+ * must also be collected so that deep-level materials appear in the
+ * "Components by Category" section.
+ *
+ * @param {Object} subMoRep        - A replenishment dict with model='mrp.production'
+ * @param {Object} categoryMap     - Accumulator keyed by categ_id
+ * @param {string} parentName      - Display name of the intermediate product this sub-MO produces
+ * @param {number} parentProductId - product.product ID of that intermediate product
+ */
+function _processReplenishmentComponents(subMoRep, categoryMap, parentName, parentProductId) {
+    for (const subCompWrapper of (subMoRep.components || [])) {
+        const subComp = subCompWrapper.summary || subCompWrapper;
+        const catId = subCompWrapper.categ_id !== undefined ? subCompWrapper.categ_id : (subComp.categ_id || 0);
+        const catName = subCompWrapper.categ_name !== undefined ? subCompWrapper.categ_name : (subComp.categ_name || _t("Uncategorized"));
+        const catAncestors = subCompWrapper.categ_ancestors !== undefined ? subCompWrapper.categ_ancestors : (subComp.categ_ancestors || [{ id: catId, name: catName }]);
+        _addMoComponentEntry(
+            categoryMap, subComp,
+            subCompWrapper.replenishments || [],
+            subComp.mo_cost || 0,
+            subComp.real_cost || 0,
+            parentName,
+            parentProductId,
+            catId,
+            catName,
+            catAncestors,
+        );
+        // Recurse further for any sub-MO replenishments of this sub-component.
+        for (const rep of (subCompWrapper.replenishments || [])) {
+            if (rep.summary && rep.summary.model === "mrp.production" && rep.components) {
+                _processReplenishmentComponents(rep, categoryMap, subComp.name, subComp.product_id);
+            }
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
 
@@ -207,6 +252,12 @@ export function collectMoCosts(data) {
             catName,
             catAncestors,
         );
+        // Recurse into sub-MO replenishments to collect their own components.
+        for (const rep of (compWrapper.replenishments || [])) {
+            if (rep.summary && rep.summary.model === "mrp.production" && rep.components) {
+                _processReplenishmentComponents(rep, categoryMap, comp.name, comp.product_id);
+            }
+        }
     }
 
     // ---- Operations (workorders) ----
