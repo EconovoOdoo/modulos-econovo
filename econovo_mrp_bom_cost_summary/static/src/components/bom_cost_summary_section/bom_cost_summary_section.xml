@@ -206,10 +206,15 @@
                     </tr>
                     <!-- SUB-MO ROW: one row per mrp.production replenishment -->
                     <tr t-elif="row.type === 'sub_mo'"
-                        class="o_econovo_cost_summary__sub-mo-row">
+                        class="o_econovo_cost_summary__sub-mo-row"
+                        t-on-click="() => this.toggleSubMo(row.node.id, row.prod.product_id, row.rep.mo_id)">
                         <td/>
                         <td t-attf-style="padding-left: {{ row.depth * 20 }}px">
-                            <i class="fa fa-fw fa-industry text-muted me-1" role="img"/>
+                            <button class="btn btn-light btn-sm py-0 px-1 me-1"
+                                    t-att-title="isSubMoFolded(row.node.id, row.prod.product_id, row.rep.mo_id) ? 'Show detail' : 'Hide detail'">
+                                <i t-att-class="'fa fa-fw ' + (isSubMoFolded(row.node.id, row.prod.product_id, row.rep.mo_id) ? 'fa-caret-right' : 'fa-caret-down')"
+                                   role="img"/>
+                            </button>
                             <a href="#" class="o_econovo_cost_summary__link fw-semibold"
                                t-on-click.stop.prevent="() => this.openFormDialog(row.rep.mo_id, 'mrp.production')">
                                 <t t-esc="row.rep.name"/>

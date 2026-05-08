@@ -130,6 +130,11 @@ export class BomCostSummarySection extends Component {
         this.state[key] = !this.state[key];
     }
 
+    toggleSubMo(categId, productId, moId) {
+        const key = `submo_${categId}_${productId}_${moId}`;
+        this.state[key] = !this.state[key];
+    }
+
     toggleWorkcenter(wcId) {
         const key = `wc_${wcId}`;
         this.state[key] = !this.state[key];
@@ -311,9 +316,11 @@ export class BomCostSummarySection extends Component {
                                 rows.push({ type: 'sub_mo', node, prod, rep,
                                     depth: node.depth + 2,
                                     rowKey: `sub_mo_${node.id}_${prod.product_id}_${rep.mo_id}` });
-                                rows.push({ type: 'sub_mo_usage', node, prod, rep,
-                                    depth: node.depth + 2,
-                                    rowKey: `sub_mo_usage_${node.id}_${prod.product_id}_${rep.mo_id}` });
+                                if (!this.isSubMoFolded(node.id, prod.product_id, rep.mo_id)) {
+                                    rows.push({ type: 'sub_mo_usage', node, prod, rep,
+                                        depth: node.depth + 2,
+                                        rowKey: `sub_mo_usage_${node.id}_${prod.product_id}_${rep.mo_id}` });
+                                }
                             }
                             // Standard usages (stock / PO / to_order).
                             for (const usage of prod.usages) {
@@ -364,6 +371,12 @@ export class BomCostSummarySection extends Component {
 
     isProductFolded(categId, productId) {
         return this.state[`prod_${categId}_${productId}`];
+    }
+
+    isSubMoFolded(categId, productId, moId) {
+        const key = `submo_${categId}_${productId}_${moId}`;
+        // Default to expanded (false) — usage row visible by default.
+        return key in this.state ? this.state[key] : false;
     }
 
     isWorkcenterFolded(wcId) {
