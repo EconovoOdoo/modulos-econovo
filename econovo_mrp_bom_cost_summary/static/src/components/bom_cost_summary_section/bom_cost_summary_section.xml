@@ -297,14 +297,7 @@
                                 Reabastecer
                             </button>
                         </td>
-                        <td t-if="showState" class="text-center">
-                            <t t-if="row.toOrderRep.formatted_state">
-                                <div class="o_field_badge">
-                                    <span t-attf-class="badge rounded-pill o_mrp_overview_badge {{ row.toOrderRep.state_class }}"
-                                          t-out="row.toOrderRep.formatted_state"/>
-                                </div>
-                            </t>
-                        </td>
+                        <td t-if="showState"/>
                         <td class="text-end text-muted">
                             <t t-esc="formatFloat(row.toOrderRep.quantity, {digits: [false, props.precision]})"/>
                             <t t-if="showUom">

@@ -532,10 +532,11 @@ export class BomCostSummarySection extends Component {
      * @returns {{quantity: number, uom_name: string}|false}
      */
     productQuantity(prod) {
-        // Combine standard usages and sub-MO replenishments for the total quantity.
+        // Combine standard usages, sub-MO replenishments, and to_order replenishments.
         const allEntries = [
             ...(prod.usages || []).map((u) => ({ quantity: u.quantity, uom_name: u.uom_name })),
             ...(prod.mo_replenishments || []).map((r) => ({ quantity: r.usage_quantity, uom_name: r.usage_uom_name })),
+            ...(prod.to_order_replenishments || []).map((r) => ({ quantity: r.quantity, uom_name: r.uom_name })),
         ];
         if (!allEntries.length) {
             return false;
