@@ -245,7 +245,7 @@
                     <tr t-elif="row.type === 'sub_mo_usage'"
                         class="o_econovo_cost_summary__usage-row">
                         <td/>
-                        <td t-attf-style="padding-left: {{ row.depth * 20 + 24 }}px">
+                        <td t-attf-style="padding-left: {{ row.depth * 20 + 44 }}px">
                             <a href="#" class="o_econovo_cost_summary__link"
                                t-on-click.stop.prevent="() => this.openFormDialog(row.rep.parent_product_id, 'product.product')">
                                 <t t-esc="row.rep.parent_name"/>
@@ -465,7 +465,7 @@
                             <!-- Operation + parent product in a single row -->
                             <tr class="o_econovo_cost_summary__product-row">
                                 <td class="o_econovo_cost_summary__fold-col"/>
-                                <td style="padding-left: 1.5rem;">
+                                <td style="padding-left: 2rem;">
                                     <t t-if="op.components and op.components.length">
                                         <button class="btn btn-light btn-sm py-0 px-1 me-1"
                                                 t-on-click.stop="() => this.toggleOperation(wc.id, op_index)"
@@ -533,7 +533,7 @@
                                 <t t-foreach="op.components" t-as="comp" t-key="comp_index">
                                     <tr class="o_econovo_cost_summary__usage-row">
                                         <td/>
-                                        <td style="padding-left: 3.5rem;">
+                                        <td style="padding-left: 4.5rem;">
                                             <i class="fa fa-cube text-muted me-1"
                                                data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
                                                t-att-data-tooltip-info="colTooltip('op_components')"/>
@@ -676,7 +676,7 @@
                         <t t-foreach="vendor.items" t-as="sc_item" t-key="sc_item_index">
                             <tr class="o_econovo_cost_summary__product-row">
                                 <td class="o_econovo_cost_summary__fold-col"/>
-                                <td style="padding-left: 1.5rem;">
+                                <td style="padding-left: 2rem;">
                                     <a href="#" class="o_econovo_cost_summary__link"
                                        t-on-click.stop.prevent="() => this.openFormDialog(sc_item.product_id, 'product.product')">
                                         <t t-esc="sc_item.product_name"/>
