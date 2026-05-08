@@ -14,6 +14,7 @@
         <colgroup>
             <col class="o_econovo_cost_summary__fold-col"/>
             <col/><!-- Name: auto width (takes remaining space) -->
+            <col t-if="showState" style="width: 5%;"/><!-- State badge -->
             <col style="width: 7%;"/><!-- Quantity / Duration -->
             <col style="width: 9%;"/><!-- % -->
             <col t-if="showAvailabilities" style="width: 7%;"/><!-- Cant. Prod. / Free to Use / On Hand -->
@@ -34,6 +35,7 @@
                 <tr class="o_econovo_cost_summary__section-header">
                     <th class="o_econovo_cost_summary__fold-col"/>
                     <th>Components by Product Category</th>
+                    <th t-if="showState" class="text-center">State</th>
                     <th class="text-end">Quantity
                         <i class="fa fa-info-circle text-muted ms-1"
                            data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
@@ -66,22 +68,22 @@
                            data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
                            t-att-data-tooltip-info="colTooltip('route')"/>&#8203;
                     </th>
-                    <th t-if="showCosts" class="text-end">BoM Cost
+                    <th t-if="showCosts" class="text-end"><t t-out="col1Label"/>
                         <i class="fa fa-info-circle text-muted ms-1"
                            data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
                            t-att-data-tooltip-info="colTooltip('bom_cost')"/>&#8203;
                     </th>
-                    <th t-if="showCostsUsd" class="text-end">BoM Cost <t t-esc="secondaryCurrency.name"/>
+                    <th t-if="showCostsUsd" class="text-end"><t t-out="col1Label"/> <t t-esc="secondaryCurrency.name"/>
                         <i class="fa fa-info-circle text-muted ms-1"
                            data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
                            t-att-data-tooltip-info="colTooltip('bom_cost_usd')"/>&#8203;
                     </th>
-                    <th t-if="showCosts" class="text-end">Product Cost
+                    <th t-if="showCosts" class="text-end"><t t-out="col2Label"/>
                         <i class="fa fa-info-circle text-muted ms-1"
                            data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
                            t-att-data-tooltip-info="colTooltip('prod_cost')"/>&#8203;
                     </th>
-                    <th t-if="showCostsUsd" class="text-end">Product Cost <t t-esc="secondaryCurrency.name"/>
+                    <th t-if="showCostsUsd" class="text-end"><t t-out="col2Label"/> <t t-esc="secondaryCurrency.name"/>
                         <i class="fa fa-info-circle text-muted ms-1"
                            data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
                            t-att-data-tooltip-info="colTooltip('prod_cost_usd')"/>&#8203;
@@ -104,6 +106,7 @@
                             <strong t-esc="row.node.name"/>
                             <span class="text-muted ms-1 fw-normal">(<t t-esc="categoryCount(row.node)"/>)</span>
                         </td>
+                        <td t-if="showState"/>
                         <td/>
                         <td class="text-end text-muted">
                             <strong t-esc="fmtPct(row.node.percentage)"/>
@@ -144,6 +147,7 @@
                             </a>
                             <span class="text-muted ms-1">(<t t-esc="row.prod.usages.length"/>)</span>
                         </td>
+                        <td t-if="showState"/>
                         <td class="text-end text-muted">
                             <t t-set="prodQty" t-value="productQuantity(row.prod)"/>
                             <t t-if="prodQty">
@@ -210,6 +214,7 @@
                                 <t t-esc="row.usage.parent_name"/>
                             </a>
                         </td>
+                        <td t-if="showState"/>
                         <td class="text-end text-muted">
                             <t t-esc="formatFloat(row.usage.quantity, {digits: [false, props.precision]})"/>
                             <t t-if="showUom">
@@ -253,6 +258,7 @@
                 <tr class="o_econovo_cost_summary__subtotal-row">
                     <td/>
                     <td class="text-end"><strong>Subtotal Components</strong></td>
+                    <td t-if="showState"/>
                     <td/>
                     <td/>
                     <td t-if="showAvailabilities"/>
@@ -291,6 +297,7 @@
                 <tr class="o_econovo_cost_summary__section-header">
                     <th class="o_econovo_cost_summary__fold-col"/>
                     <th>Operations by Work Center</th>
+                    <th t-if="showState" class="text-center">State</th>
                     <th class="text-end">Duration
                         <i class="fa fa-info-circle text-muted ms-1"
                            data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
@@ -331,16 +338,18 @@
                            data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
                            t-att-data-tooltip-info="colTooltip('route_ops')"/>&#8203;
                     </th>
-                    <th t-if="showCosts" class="text-end">BoM Cost
+                    <th t-if="showCosts" class="text-end"><t t-out="col1Label"/>
                         <i class="fa fa-info-circle text-muted ms-1"
                            data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
                            t-att-data-tooltip-info="colTooltip('bom_cost_ops')"/>&#8203;
                     </th>
-                    <th t-if="showCostsUsd" class="text-end">BoM Cost <t t-esc="secondaryCurrency.name"/>
+                    <th t-if="showCostsUsd" class="text-end"><t t-out="col1Label"/> <t t-esc="secondaryCurrency.name"/>
                         <i class="fa fa-info-circle text-muted ms-1"
                            data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
                            t-att-data-tooltip-info="colTooltip('bom_cost_usd')"/>&#8203;
                     </th>
+                    <th t-if="showCosts" class="text-end"><t t-out="col2Label"/></th>
+                    <th t-if="showCostsUsd" class="text-end"><t t-out="col2Label"/> <t t-esc="secondaryCurrency.name"/></th>
                 </tr>
             </thead>
             <tbody>
@@ -358,6 +367,7 @@
                             <strong t-esc="wc.name"/>
                             <span class="text-muted ms-1 fw-normal">(<t t-esc="wc.items.length"/>)</span>
                         </td>
+                        <td t-if="showState"/>
                         <td class="text-end text-muted">
                             <strong t-esc="fmtDuration(wc.total_duration)"/>
                         </td>
@@ -376,6 +386,12 @@
                         <td t-if="showCostsUsd" class="text-end text-muted">
                             <strong t-esc="fmtUsd(wc.total_usd)"/>
                         </td>
+                        <td t-if="showCosts" class="text-end">
+                            <t t-if="wc.real_cost_total !== undefined">
+                                <strong t-esc="fmtMoney(wc.real_cost_total)"/>
+                            </t>
+                        </td>
+                        <td t-if="showCostsUsd"/>
                     </tr>
 
                     <t t-if="!isWorkcenterFolded(wc.id)">
@@ -399,6 +415,14 @@
                                        t-on-click.stop.prevent="() => this.openFormDialog(op.parent_product_id, 'product.product')">
                                         <t t-esc="op.parent_name"/>
                                     </a></t>
+                                </td>
+                                <td t-if="showState" class="text-center">
+                                    <t t-if="op.formatted_state">
+                                        <div class="o_field_badge">
+                                            <span t-attf-class="badge rounded-pill o_mrp_overview_badge {{ op.state_class }}"
+                                                  t-out="op.formatted_state"/>
+                                        </div>
+                                    </t>
                                 </td>
                                 <td class="text-end text-muted">
                                     <t t-esc="fmtDuration(op.duration)"/>
@@ -433,6 +457,10 @@
                                 <td t-if="showCostsUsd" class="text-end text-muted">
                                     <t t-esc="fmtUsd(op.total_usd)"/>
                                 </td>
+                                <td t-if="showCosts" class="text-end">
+                                    <t t-if="op.real_cost !== undefined" t-esc="fmtMoney(op.real_cost)"/>
+                                </td>
+                                <td t-if="showCostsUsd"/>
                             </tr>
                             <!-- Expandable: components consumed in this operation -->
                             <t t-if="op.components and op.components.length and !isOperationFolded(wc.id, op_index)">
@@ -445,6 +473,7 @@
                                                t-att-data-tooltip-info="colTooltip('op_components')"/>
                                             <span t-esc="comp.name"/>
                                         </td>
+                                        <td t-if="showState"/>
                                         <td/>
                                         <td/>
                                         <td t-if="showAvailabilities"/>
@@ -468,6 +497,7 @@
                 <tr class="o_econovo_cost_summary__subtotal-row">
                     <td/>
                     <td class="text-end"><strong>Subtotal Operations</strong></td>
+                    <td t-if="showState"/>
                     <td class="text-end">
                         <strong t-esc="fmtDuration(data.totals.operations_duration)"/>
                     </td>
@@ -487,8 +517,12 @@
                     <td t-if="showCostsUsd" class="text-end">
                         <strong t-esc="fmtUsd(data.totals.operations_usd)"/>
                     </td>
-                    <!-- Operations section has no Product Cost column, keep cells aligned -->
-                    <td t-if="showCosts"/>
+                    <!-- Operations col2: show real_cost total when available (MO mode), else empty -->
+                    <td t-if="showCosts" class="text-end">
+                        <t t-if="data.totals.operations_real_cost !== undefined">
+                            <strong t-esc="fmtMoney(data.totals.operations_real_cost)"/>
+                        </t>
+                    </td>
                     <td t-if="showCostsUsd"/>
                 </tr>
             </tbody>
@@ -502,6 +536,7 @@
                 <tr class="o_econovo_cost_summary__section-header">
                     <th class="o_econovo_cost_summary__fold-col"/>
                     <th>Subcontracting by Vendor</th>
+                    <th t-if="showState" class="text-center">State</th>
                     <th class="text-end">Quantity
                         <i class="fa fa-info-circle text-muted ms-1"
                            data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
@@ -514,19 +549,19 @@
                     <th t-if="showPerformance"/>
                     <th t-if="showLeadTimes"/>
                     <th t-if="showLeadTimes"/>
-                    <th t-if="showCosts" class="text-end">BoM Cost
+                    <th t-if="showCosts" class="text-end"><t t-out="col1Label"/>
                         <i class="fa fa-info-circle text-muted ms-1"
                            data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
                            t-att-data-tooltip-info="colTooltip('bom_cost_sc')"/>&#8203;
                     </th>
-                    <th t-if="showCostsUsd" class="text-end">BoM Cost <t t-esc="secondaryCurrency.name"/>
+                    <th t-if="showCostsUsd" class="text-end"><t t-out="col1Label"/> <t t-esc="secondaryCurrency.name"/>
                     </th>
-                    <th t-if="showCosts" class="text-end">Product Cost
+                    <th t-if="showCosts" class="text-end"><t t-out="col2Label"/>
                         <i class="fa fa-info-circle text-muted ms-1"
                            data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
                            t-att-data-tooltip-info="colTooltip('prod_cost_sc')"/>&#8203;
                     </th>
-                    <th t-if="showCostsUsd" class="text-end">Product Cost <t t-esc="secondaryCurrency.name"/>
+                    <th t-if="showCostsUsd" class="text-end"><t t-out="col2Label"/> <t t-esc="secondaryCurrency.name"/>
                     </th>
                 </tr>
             </thead>
@@ -545,6 +580,7 @@
                             <strong t-esc="vendor.name"/>
                             <span class="text-muted ms-1 fw-normal">(<t t-esc="vendor.items.length"/>)</span>
                         </td>
+                        <td t-if="showState"/>
                         <td/>
                         <td class="text-end text-muted">
                             <strong t-esc="fmtPct(vendor.percentage)"/>
@@ -580,6 +616,7 @@
                                         <t t-esc="sc_item.product_name"/>
                                     </a>
                                 </td>
+                                <td t-if="showState"/>
                                 <td class="text-end text-muted">
                                     <t t-esc="sc_item.quantity"/>
                                     <span t-if="sc_item.uom_name" class="ms-1 text-muted small" t-esc="sc_item.uom_name"/>
@@ -614,6 +651,7 @@
                 <tr class="o_econovo_cost_summary__subtotal-row">
                     <td/>
                     <td class="text-end"><strong>Subtotal Subcontracting</strong></td>
+                    <td t-if="showState"/>
                     <td/>
                     <td/>
                     <td t-if="showAvailabilities"/>
@@ -646,6 +684,7 @@
                 <tr class="o_econovo_cost_summary__section-header">
                     <th class="o_econovo_cost_summary__fold-col"/>
                     <th>Byproducts by Category</th>
+                    <th t-if="showState" class="text-center">State</th>
                     <th class="text-end">Quantity
                         <i class="fa fa-info-circle text-muted ms-1"
                            data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
@@ -662,22 +701,22 @@
                     <th t-if="showPerformance"/>
                     <th t-if="showLeadTimes"/>
                     <th t-if="showLeadTimes"/>
-                    <th t-if="showCosts" class="text-end">BoM Cost
+                    <th t-if="showCosts" class="text-end"><t t-out="col1Label"/>
                         <i class="fa fa-info-circle text-muted ms-1"
                            data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
                            t-att-data-tooltip-info="colTooltip('bom_cost_byproducts')"/>&#8203;
                     </th>
-                    <th t-if="showCostsUsd" class="text-end">BoM Cost <t t-esc="secondaryCurrency.name"/>
+                    <th t-if="showCostsUsd" class="text-end"><t t-out="col1Label"/> <t t-esc="secondaryCurrency.name"/>
                         <i class="fa fa-info-circle text-muted ms-1"
                            data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
                            t-att-data-tooltip-info="colTooltip('bom_cost_usd')"/>&#8203;
                     </th>
-                    <th t-if="showCosts" class="text-end">Product Cost
+                    <th t-if="showCosts" class="text-end"><t t-out="col2Label"/>
                         <i class="fa fa-info-circle text-muted ms-1"
                            data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
                            t-att-data-tooltip-info="colTooltip('prod_cost_byproducts')"/>&#8203;
                     </th>
-                    <th t-if="showCostsUsd" class="text-end">Product Cost <t t-esc="secondaryCurrency.name"/>
+                    <th t-if="showCostsUsd" class="text-end"><t t-out="col2Label"/> <t t-esc="secondaryCurrency.name"/>
                         <i class="fa fa-info-circle text-muted ms-1"
                            data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
                            t-att-data-tooltip-info="colTooltip('prod_cost_usd')"/>&#8203;
@@ -700,6 +739,7 @@
                             <strong t-esc="row.node.name"/>
                             <span class="text-muted ms-1 fw-normal">(<t t-esc="byproductCategoryCount(row.node)"/>)</span>
                         </td>
+                        <td t-if="showState"/>
                         <td/>
                         <td class="text-end text-muted">
                             <strong t-esc="fmtPct(row.node.percentage)"/>
@@ -742,6 +782,7 @@
                             </a>
                             <span class="text-muted ms-1">(<t t-esc="row.prod.usages.length"/>)</span>
                         </td>
+                        <td t-if="showState"/>
                         <td class="text-end text-muted">
                             <t t-set="bpQty" t-value="productQuantity(row.prod)"/>
                             <t t-if="bpQty">
@@ -788,6 +829,7 @@
                                 <t t-esc="row.usage.parent_name"/>
                             </a>
                         </td>
+                        <td t-if="showState"/>
                         <td class="text-end text-muted">
                             <t t-esc="formatFloat(row.usage.quantity, {digits: [false, props.precision]})"/>
                             <t t-if="showUom">
@@ -824,6 +866,7 @@
                 <tr class="o_econovo_cost_summary__subtotal-row">
                     <td/>
                     <td class="text-end"><strong>Subtotal Byproducts</strong></td>
+                    <td t-if="showState"/>
                     <td/>
                     <td/>
                     <td t-if="showAvailabilities"/>
@@ -867,6 +910,7 @@
                        data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
                        t-att-data-tooltip-info="colTooltip('grand_total')"/>&#8203;
                 </td>
+                <td t-if="showState"/>
                 <td/>
                 <td/>
                 <td t-if="showAvailabilities"/>
@@ -902,6 +946,7 @@
                            data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
                            t-att-data-tooltip-info="colTooltip('subtotal_byproducts_prod_cost')"/>&#8203;
                     </td>
+                    <td t-if="showState"/>
                     <td/>
                     <td/>
                     <td t-if="showAvailabilities"/>
@@ -932,6 +977,7 @@
                            data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
                            t-att-data-tooltip-info="colTooltip('net_prod')"/>&#8203;
                     </td>
+                    <td t-if="showState"/>
                     <td/>
                     <td/>
                     <td t-if="showAvailabilities"/>

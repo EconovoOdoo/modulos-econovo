@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- Inject BomCostSummarySection below the cost breakdown block
+         in the MO Overview main view. -->
+    <t t-name="econovo_mrp_mo_cost_summary.MoOverview"
+       t-inherit="mrp.MoOverview"
+       t-inherit-mode="extension">
+
+        <xpath expr="//t[@t-if='hasBreakdown']" position="after">
+            <BomCostSummarySection
+                t-if="state.costSummary"
+                data="state.costSummary"
+                showOptions="moCostSummaryShowOptions"
+                precision="2"
+                columnLabels="moCostSummaryColumnLabels"/>
+        </xpath>
+
+    </t>
+
+</templates>

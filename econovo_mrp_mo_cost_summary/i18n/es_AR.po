@@ -1,0 +1,94 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* econovo_mrp_mo_cost_summary
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 17.0+e-20250501\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-05-08 11:57+0000\n"
+"PO-Revision-Date: 2026-05-08 11:57+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: econovo_mrp_mo_cost_summary
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_mo_cost_summary.mrp_production_form_view_cost_summary_button
+msgid "<span class=\"o_stat_text\">Cost Summary</span>"
+msgstr ""
+
+#. module: econovo_mrp_mo_cost_summary
+#. odoo-javascript
+#: code:addons/econovo_mrp_mo_cost_summary/static/src/views/mo_cost_summary_view.xml:0
+#, python-format
+msgid "Excel"
+msgstr ""
+
+#. module: econovo_mrp_mo_cost_summary
+#. odoo-javascript
+#: code:addons/econovo_mrp_mo_cost_summary/static/src/views/mo_cost_summary_view.xml:0
+#, python-format
+msgid "Fold"
+msgstr ""
+
+#. module: econovo_mrp_mo_cost_summary
+#. odoo-javascript
+#: code:addons/econovo_mrp_mo_cost_summary/static/src/patches/mo_overview_patch.js:0
+#: code:addons/econovo_mrp_mo_cost_summary/static/src/views/mo_cost_summary_view.js:0
+#, python-format
+msgid "MO Cost"
+msgstr "Costo OF"
+
+#. module: econovo_mrp_mo_cost_summary
+#: model:ir.actions.client,name:econovo_mrp_mo_cost_summary.action_mrp_production_cost_summary
+msgid "MO Cost Summary"
+msgstr "Resumen de Costos OF"
+
+#. module: econovo_mrp_mo_cost_summary
+#: model:ir.model,name:econovo_mrp_mo_cost_summary.model_report_mrp_report_mo_overview
+msgid "MO Overview Report"
+msgstr "Reporte del resumen de la orden de fabricación"
+
+#. module: econovo_mrp_mo_cost_summary
+#. odoo-javascript
+#: code:addons/econovo_mrp_mo_cost_summary/static/src/views/mo_cost_summary_view.xml:0
+#, python-format
+msgid ""
+"No cost data available for this manufacturing order.\n"
+"                        Make sure components have a cost and work centers\n"
+"                        have an hourly cost configured."
+msgstr ""
+
+#. module: econovo_mrp_mo_cost_summary
+#. odoo-javascript
+#: code:addons/econovo_mrp_mo_cost_summary/static/src/patches/mo_overview_patch.js:0
+#: code:addons/econovo_mrp_mo_cost_summary/static/src/views/mo_cost_summary_view.js:0
+#, python-format
+msgid "Real Cost"
+msgstr "Costo Real"
+
+#. module: econovo_mrp_mo_cost_summary
+#. odoo-javascript
+#. odoo-python
+#: code:addons/econovo_mrp_mo_cost_summary/models/report_mo_overview.py:0
+#: code:addons/econovo_mrp_mo_cost_summary/static/src/utils/mo_cost_summary_utils.js:0
+#, python-format
+msgid "Uncategorized"
+msgstr "Sin categoría"
+
+#. module: econovo_mrp_mo_cost_summary
+#. odoo-javascript
+#: code:addons/econovo_mrp_mo_cost_summary/static/src/views/mo_cost_summary_view.xml:0
+#, python-format
+msgid "Unfold"
+msgstr ""
+
+#. module: econovo_mrp_mo_cost_summary
+#. odoo-javascript
+#: code:addons/econovo_mrp_mo_cost_summary/static/src/utils/mo_cost_summary_utils.js:0
+#, python-format
+msgid "Unknown"
+msgstr "Desconocido"

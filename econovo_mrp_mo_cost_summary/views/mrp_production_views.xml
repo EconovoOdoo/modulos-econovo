@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- =====================================================
+         ir.actions.client — entry point for the JS view
+         ===================================================== -->
+    <record id="action_mrp_production_cost_summary" model="ir.actions.client">
+        <field name="name">MO Cost Summary</field>
+        <field name="tag">mrp_mo_cost_summary_report</field>
+    </record>
+
+    <!-- =====================================================
+         Inherit mrp.production form view — add Cost Summary button
+         ===================================================== -->
+    <record id="mrp_production_form_view_cost_summary_button" model="ir.ui.view">
+        <field name="name">mrp.production.view.form.inherit.cost.summary</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="%(action_mrp_production_cost_summary)d"
+                        type="action"
+                        class="oe_stat_button"
+                        icon="fa-bar-chart">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">Cost Summary</span>
+                    </div>
+                </button>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

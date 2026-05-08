@@ -215,6 +215,14 @@ export class BomCostSummarySection extends Component {
         return this.props.showOptions.costs;
     }
 
+    get col1Label() {
+        return (this.props.columnLabels && this.props.columnLabels.col1) || _t("BoM Cost");
+    }
+
+    get col2Label() {
+        return (this.props.columnLabels && this.props.columnLabels.col2) || _t("Product Cost");
+    }
+
     get showCostsUsd() {
         return this.hasSecondary && this.showCosts;
     }
@@ -252,6 +260,10 @@ export class BomCostSummarySection extends Component {
 
     get showUom() {
         return this.props.showOptions.uom;
+    }
+
+    get showState() {
+        return !!this.props.showOptions.state;
     }
 
     isCategoryFolded(categId) {
@@ -787,4 +799,10 @@ BomCostSummarySection.props = {
     showOptions: Object,
     precision: Number,
     secondaryCurrency: { type: [Object, Boolean], optional: true },
+    /**
+     * Optional column header labels for the two cost columns.
+     * Defaults to BoM Cost / Product Cost when omitted.
+     * Shape: { col1: String (optional), col2: String (optional) }
+     */
+    columnLabels: { type: Object, optional: true },
 };
