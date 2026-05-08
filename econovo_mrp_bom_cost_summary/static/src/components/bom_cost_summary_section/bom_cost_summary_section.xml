@@ -146,8 +146,21 @@
                                 <t t-esc="row.prod.name"/>
                             </a>
                             <span class="text-muted ms-1">(<t t-esc="(row.prod.mo_replenishments || []).length + (row.prod.to_order_replenishments || []).length + row.prod.usages.length"/>)</span>
+                            <t t-if="(row.prod.to_order_replenishments || []).length">
+                                <button class="ms-2 py-0 btn btn-sm btn-secondary"
+                                        t-on-click.stop.prevent="() => this.openReplenish(row.prod.product_id, this._toOrderTotalQty(row.prod))">
+                                    Reabastecer
+                                </button>
+                            </t>
                         </td>
-                        <td t-if="showState"/>
+                        <td t-if="showState" class="text-center">
+                            <t t-if="(row.prod.to_order_replenishments || []).length">
+                                <div class="o_field_badge">
+                                    <span t-attf-class="badge rounded-pill o_mrp_overview_badge {{ row.prod.to_order_replenishments[0].state_class }}"
+                                          t-out="row.prod.to_order_replenishments[0].formatted_state"/>
+                                </div>
+                            </t>
+                        </td>
                         <td class="text-end text-muted">
                             <t t-set="prodQty" t-value="productQuantity(row.prod)"/>
                             <t t-if="prodQty">

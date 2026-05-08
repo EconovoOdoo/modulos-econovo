@@ -142,6 +142,17 @@ export class BomCostSummarySection extends Component {
      * @param {number} productId  - product.product ID to replenish
      * @param {number} quantity   - Suggested quantity
      */
+    /**
+     * Returns the total quantity to replenish for a product (sum of all
+     * to_order_replenishments).  Used by the product-row Reabastecer button.
+     *
+     * @param {Object} prod - product entry from categoryMap
+     * @returns {number}
+     */
+    _toOrderTotalQty(prod) {
+        return (prod.to_order_replenishments || []).reduce((sum, r) => sum + r.quantity, 0);
+    }
+
     openReplenish(productId, quantity) {
         this.actionService.doAction("stock.action_product_replenish", {
             additionalContext: {
