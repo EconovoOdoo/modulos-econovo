@@ -156,6 +156,7 @@ export function collectCosts(node, categoryMap, workcenterMap, byproductCategory
             workcenterMap[wcId].items.push({
                 name: op.operation_name || op.name,
                 link_id: op.link_id || false,
+                link_model: 'mrp.routing.workcenter',
                 duration: opDuration,
                 total: adjustedCost,
                 parent_name: parentName,

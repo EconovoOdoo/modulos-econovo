@@ -577,7 +577,7 @@
                                         </button>
                                     </t>
                                     <a href="#" class="o_econovo_cost_summary__link"
-                                       t-on-click.stop.prevent="() => this.openFormDialog(op.link_id, 'mrp.routing.workcenter')">
+                                       t-on-click.stop.prevent="() => this.openFormDialog(op.link_id, op.link_model || 'mrp.routing.workcenter')">
                                         <t t-esc="op.name"/></a><t t-if="op.parent_name">: 
                                     <a href="#" class="o_econovo_cost_summary__link"
                                        t-on-click.stop.prevent="() => this.openFormDialog(op.parent_product_id, 'product.product')">

@@ -282,6 +282,7 @@ function _processReplenishmentOperations(subMoRep, workcenterMap, parentName, pa
         wc.items.push({
             name: op.name,
             link_id: op.id || false,
+            link_model: 'mrp.workorder',
             duration: op.quantity || 0,
             total: op.mo_cost || 0,
             real_cost: op.real_cost || 0,
@@ -387,6 +388,7 @@ export function collectMoCosts(data) {
         wc.items.push({
             name: op.name,
             link_id: op.id || false,
+            link_model: 'mrp.workorder',
             duration: op.quantity || 0,
             total: op.mo_cost || 0,
             real_cost: op.real_cost || 0,
