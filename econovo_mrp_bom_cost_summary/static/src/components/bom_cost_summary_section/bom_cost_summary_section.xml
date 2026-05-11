@@ -17,8 +17,9 @@
             <col t-if="showState" style="width: 5%;"/><!-- State badge -->
             <col style="width: 7%;"/><!-- Quantity / Duration -->
             <col style="width: 9%;"/><!-- % -->
-            <col t-if="showAvailabilities" style="width: 7%;"/><!-- Cant. Prod. / Free to Use / On Hand -->
-            <col t-if="showAvailabilities" style="width: 6%;"/><!-- Cant. Consu. / Availability -->
+            <col t-if="showAvailabilities" style="width: 7%;"/><!-- Disp./Stock Real -->
+            <col t-if="showAvailabilities" style="width: 5%;"/><!-- Reservado -->
+            <col t-if="showAvailabilities" style="width: 6%;"/><!-- Recepción / Cant. Consu. -->
             <col t-if="showPerformance" style="width: 6%;"/><!-- min/ud -->
             <col t-if="showPerformance" style="width: 6%;"/><!-- ud/hr -->
             <col t-if="showLeadTimes" style="width: 4%;"/><!-- Lead Time -->
@@ -46,15 +47,20 @@
                            data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
                            t-att-data-tooltip-info="colTooltip('pct_components')"/>&#8203;
                     </th>
-                    <th t-if="showAvailabilities" class="text-end">Free to Use / On Hand
+                    <th t-if="showAvailabilities" class="text-end">Disp./Stock Real
                         <i class="fa fa-info-circle text-muted ms-1"
                            data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
                            t-att-data-tooltip-info="colTooltip('free_on_hand')"/>&#8203;
                     </th>
-                    <th t-if="showAvailabilities" class="text-center">Availability
+                    <th t-if="showAvailabilities" class="text-end">Reservado
                         <i class="fa fa-info-circle text-muted ms-1"
                            data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
                            t-att-data-tooltip-info="colTooltip('availability')"/>&#8203;
+                    </th>
+                    <th t-if="showAvailabilities" class="text-end">Recepción
+                        <i class="fa fa-info-circle text-muted ms-1"
+                           data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
+                           t-att-data-tooltip-info="colTooltip('receipt')"/>&#8203;
                     </th>
                     <th t-if="showPerformance"/>
                     <th t-if="showPerformance"/>
@@ -113,6 +119,7 @@
                         </td>
                         <td t-if="showAvailabilities"/>
                         <td t-if="showAvailabilities"/>
+                        <td t-if="showAvailabilities"/>
                         <td t-if="showPerformance"/>
                         <td t-if="showPerformance"/>
                         <td t-if="showLeadTimes"/>
@@ -145,7 +152,7 @@
                                t-on-click.stop.prevent="() => this.openFormDialog(row.prod.link_id, row.prod.link_model)">
                                 <t t-esc="row.prod.name"/>
                             </a>
-                            <span class="text-muted ms-1">(<t t-esc="(row.prod.mo_replenishments || []).length + (row.prod.to_order_replenishments || []).length + row.prod.usages.length"/>)</span>
+                            <span class="text-muted ms-1">(<t t-esc="(row.prod.mo_replenishments || []).length + (row.prod.to_order_replenishments || []).length + (row.prod.in_transit_replenishments || []).length + row.prod.usages.length"/>)</span>
                             <t t-if="(row.prod.to_order_replenishments || []).length">
                                 <button class="ms-2 py-0 btn btn-sm btn-secondary"
                                         t-on-click.stop.prevent="() => this.openReplenish(row.prod.product_id, this._toOrderTotalQty(row.prod))">
@@ -183,10 +190,15 @@
                                 <t t-esc="formatFloat(row.prod.quantity_on_hand, {digits: [false, props.precision]})"/>
                             </t>
                         </td>
-                        <td t-if="showAvailabilities" class="text-center">
-                            <t t-if="row.prod.availability_state">
-                                <span t-attf-class="{{ availabilityClass(row.prod.availability_state) }}"
-                                      t-esc="row.prod.availability_display"/>
+                        <td t-if="showAvailabilities" class="text-end text-muted">
+                            <t t-if="row.prod.quantity_reserved !== false">
+                                <t t-esc="formatFloat(row.prod.quantity_reserved, {digits: [false, props.precision]})"/>
+                            </t>
+                        </td>
+                        <td t-if="showAvailabilities" class="text-end">
+                            <t t-if="row.prod.receipt">
+                                <span t-attf-class="{{ receiptClass(row.prod.receipt) }}"
+                                      t-esc="row.prod.receipt.display"/>
                             </t>
                         </td>
                         <td t-if="showPerformance"/>
@@ -245,6 +257,7 @@
                         <td/>
                         <td t-if="showAvailabilities"/>
                         <td t-if="showAvailabilities"/>
+                        <td t-if="showAvailabilities"/>
                         <td t-if="showPerformance"/>
                         <td t-if="showPerformance"/>
                         <td t-if="showLeadTimes"/>
@@ -272,6 +285,7 @@
                             </t>
                         </td>
                         <td/>
+                        <td t-if="showAvailabilities"/>
                         <td t-if="showAvailabilities"/>
                         <td t-if="showAvailabilities"/>
                         <td t-if="showPerformance"/>
@@ -307,6 +321,44 @@
                         <td/>
                         <td t-if="showAvailabilities"/>
                         <td t-if="showAvailabilities"/>
+                        <td t-if="showAvailabilities" class="text-end">
+                            <t t-if="row.toOrderRep.receipt">
+                                <span t-attf-class="{{ receiptClass(row.toOrderRep.receipt) }}"
+                                      t-esc="row.toOrderRep.receipt.display"/>
+                            </t>
+                        </td>
+                        <td t-if="showPerformance"/>
+                        <td t-if="showPerformance"/>
+                        <td t-if="showLeadTimes"/>
+                        <td t-if="showLeadTimes"/>
+                        <td t-if="showCosts"/>
+                        <td t-if="showCostsUsd"/>
+                        <td t-if="showCosts"/>
+                        <td t-if="showCostsUsd"/>
+                    </tr>
+                    <!-- IN_TRANSIT ROW: goods already shipped, not yet received -->
+                    <tr t-elif="row.type === 'in_transit'"
+                        class="o_econovo_cost_summary__usage-row">
+                        <td/>
+                        <td t-attf-style="padding-left: {{ row.depth * 20 + 44 }}px">
+                            <span class="text-muted fst-italic">En tránsito</span>
+                        </td>
+                        <td t-if="showState"/>
+                        <td class="text-end text-muted">
+                            <t t-esc="formatFloat(row.inTransitRep.quantity, {digits: [false, props.precision]})"/>
+                            <t t-if="showUom">
+                                <span class="ms-1" t-esc="row.inTransitRep.uom_name"/>
+                            </t>
+                        </td>
+                        <td/>
+                        <td t-if="showAvailabilities"/>
+                        <td t-if="showAvailabilities"/>
+                        <td t-if="showAvailabilities" class="text-end">
+                            <t t-if="row.inTransitRep.receipt">
+                                <span t-attf-class="{{ receiptClass(row.inTransitRep.receipt) }}"
+                                      t-esc="row.inTransitRep.receipt.display"/>
+                            </t>
+                        </td>
                         <td t-if="showPerformance"/>
                         <td t-if="showPerformance"/>
                         <td t-if="showLeadTimes"/>
@@ -336,6 +388,7 @@
                         <td class="text-end text-muted">
                             <t t-esc="fmtPct(row.usage.percentage)"/>
                         </td>
+                        <td t-if="showAvailabilities"/>
                         <td t-if="showAvailabilities"/>
                         <td t-if="showAvailabilities"/>
                         <td t-if="showPerformance"/>
@@ -373,6 +426,7 @@
                     <td t-if="showState"/>
                     <td/>
                     <td/>
+                    <td t-if="showAvailabilities"/>
                     <td t-if="showAvailabilities"/>
                     <td t-if="showAvailabilities"/>
                     <td t-if="showPerformance"/>
@@ -430,6 +484,7 @@
                            data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
                            t-att-data-tooltip-info="colTooltip('cant_consu')"/>&#8203;
                     </th>
+                    <th t-if="showAvailabilities"/>
                     <th t-if="showPerformance" class="text-end">min/ud
                         <i class="fa fa-info-circle text-muted ms-1"
                            data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
@@ -486,6 +541,7 @@
                         <td class="text-end text-muted">
                             <strong t-esc="fmtPct(wc.percentage)"/>
                         </td>
+                        <td t-if="showAvailabilities"/>
                         <td t-if="showAvailabilities"/>
                         <td t-if="showAvailabilities"/>
                         <td t-if="showPerformance"/>
@@ -546,6 +602,7 @@
                                     <t t-esc="op.parent_qty"/> <span class="text-muted small" t-esc="op.parent_uom_name"/>
                                 </td>
                                 <td t-if="showAvailabilities"/>
+                                <td t-if="showAvailabilities"/>
                                 <td t-if="showPerformance" class="text-end text-muted">
                                     <t t-esc="fmtMinPerUd(op.duration, op.parent_qty)"/>
                                 </td>
@@ -592,6 +649,7 @@
                                         <td t-if="showAvailabilities" class="text-end text-muted">
                                             <t t-esc="comp.quantity"/> <span class="text-muted small" t-esc="comp.uom_name"/>
                                         </td>
+                                        <td t-if="showAvailabilities"/>
                                         <td t-if="showPerformance"/>
                                         <td t-if="showPerformance"/>
                                         <td t-if="showLeadTimes"/>
@@ -614,6 +672,7 @@
                         <strong t-esc="fmtDuration(data.totals.operations_duration)"/>
                     </td>
                     <td/>
+                    <td t-if="showAvailabilities"/>
                     <td t-if="showAvailabilities"/>
                     <td t-if="showAvailabilities"/>
                     <td t-if="showPerformance"/>
@@ -655,6 +714,7 @@
                            t-att-data-tooltip-info="colTooltip('qty')"/>&#8203;
                     </th>
                     <th class="text-end">%</th>
+                    <th t-if="showAvailabilities"/>
                     <th t-if="showAvailabilities"/>
                     <th t-if="showAvailabilities"/>
                     <th t-if="showPerformance"/>
@@ -699,6 +759,7 @@
                         </td>
                         <td t-if="showAvailabilities"/>
                         <td t-if="showAvailabilities"/>
+                        <td t-if="showAvailabilities"/>
                         <td t-if="showPerformance"/>
                         <td t-if="showPerformance"/>
                         <td t-if="showLeadTimes"/>
@@ -738,6 +799,7 @@
                                 </td>
                                 <td t-if="showAvailabilities"/>
                                 <td t-if="showAvailabilities"/>
+                                <td t-if="showAvailabilities"/>
                                 <td t-if="showPerformance"/>
                                 <td t-if="showPerformance"/>
                                 <td t-if="showLeadTimes"/>
@@ -766,6 +828,7 @@
                     <td t-if="showState"/>
                     <td/>
                     <td/>
+                    <td t-if="showAvailabilities"/>
                     <td t-if="showAvailabilities"/>
                     <td t-if="showAvailabilities"/>
                     <td t-if="showPerformance"/>
@@ -807,6 +870,7 @@
                            data-tooltip-template="econovo_mrp_bom_cost_summary.ColTooltip"
                            t-att-data-tooltip-info="colTooltip('pct_byproducts')"/>&#8203;
                     </th>
+                    <th t-if="showAvailabilities"/>
                     <th t-if="showAvailabilities"/>
                     <th t-if="showAvailabilities"/>
                     <th t-if="showPerformance"/>
@@ -858,6 +922,7 @@
                             <span class="text-muted"> / </span>
                             <span t-esc="fmtPct(row.node.prod_cost_percentage)"/>
                         </td>
+                        <td t-if="showAvailabilities"/>
                         <td t-if="showAvailabilities"/>
                         <td t-if="showAvailabilities"/>
                         <td t-if="showPerformance"/>
@@ -914,6 +979,7 @@
                         </td>
                         <td t-if="showAvailabilities"/>
                         <td t-if="showAvailabilities"/>
+                        <td t-if="showAvailabilities"/>
                         <td t-if="showPerformance"/>
                         <td t-if="showPerformance"/>
                         <td t-if="showLeadTimes"/>
@@ -955,6 +1021,7 @@
                         </td>
                         <td t-if="showAvailabilities"/>
                         <td t-if="showAvailabilities"/>
+                        <td t-if="showAvailabilities"/>
                         <td t-if="showPerformance"/>
                         <td t-if="showPerformance"/>
                         <td t-if="showLeadTimes"/>
@@ -981,6 +1048,7 @@
                     <td t-if="showState"/>
                     <td/>
                     <td/>
+                    <td t-if="showAvailabilities"/>
                     <td t-if="showAvailabilities"/>
                     <td t-if="showAvailabilities"/>
                     <td t-if="showPerformance"/>
@@ -1027,6 +1095,7 @@
                 <td/>
                 <td t-if="showAvailabilities"/>
                 <td t-if="showAvailabilities"/>
+                <td t-if="showAvailabilities"/>
                 <td t-if="showPerformance"/>
                 <td t-if="showPerformance"/>
                 <td t-if="showLeadTimes"/>
@@ -1063,6 +1132,7 @@
                     <td/>
                     <td t-if="showAvailabilities"/>
                     <td t-if="showAvailabilities"/>
+                    <td t-if="showAvailabilities"/>
                     <td t-if="showPerformance"/>
                     <td t-if="showPerformance"/>
                     <td t-if="showLeadTimes"/>
@@ -1092,6 +1162,7 @@
                     <td t-if="showState"/>
                     <td/>
                     <td/>
+                    <td t-if="showAvailabilities"/>
                     <td t-if="showAvailabilities"/>
                     <td t-if="showAvailabilities"/>
                     <td t-if="showPerformance"/>

@@ -298,6 +298,18 @@ export class BomCostSummarySection extends Component {
         }
     }
 
+    /**
+     * Returns the Bootstrap text-color class for a receipt object.
+     *
+     * @param {Object|null} receipt - receipt dict with optional `decorator` key
+     * @returns {string}
+     */
+    receiptClass(receipt) {
+        if (!receipt || !receipt.decorator) return "text-muted";
+        const map = { success: "text-success", warning: "text-warning", danger: "text-danger" };
+        return map[receipt.decorator] || "text-muted";
+    }
+
     get showUom() {
         return this.props.showOptions.uom;
     }
@@ -363,6 +375,12 @@ export class BomCostSummarySection extends Component {
                                 rows.push({ type: 'to_order', node, prod, toOrderRep,
                                     depth: node.depth + 1,
                                     rowKey: `to_order_${node.id}_${prod.product_id}_${toOrderRep.parent_product_id}` });
+                            }
+                            // in_transit replenishments: goods already shipped, not yet received.
+                            for (const inTransitRep of (prod.in_transit_replenishments || [])) {
+                                rows.push({ type: 'in_transit', node, prod, inTransitRep,
+                                    depth: node.depth + 1,
+                                    rowKey: `in_transit_${node.id}_${prod.product_id}_${inTransitRep.parent_product_id}` });
                             }
                             // Standard usages (stock / PO).
                             for (const usage of prod.usages) {
@@ -532,11 +550,12 @@ export class BomCostSummarySection extends Component {
      * @returns {{quantity: number, uom_name: string}|false}
      */
     productQuantity(prod) {
-        // Combine standard usages, sub-MO replenishments, and to_order replenishments.
+        // Combine standard usages, sub-MO replenishments, to_order and in_transit replenishments.
         const allEntries = [
             ...(prod.usages || []).map((u) => ({ quantity: u.quantity, uom_name: u.uom_name })),
             ...(prod.mo_replenishments || []).map((r) => ({ quantity: r.usage_quantity, uom_name: r.usage_uom_name })),
             ...(prod.to_order_replenishments || []).map((r) => ({ quantity: r.quantity, uom_name: r.uom_name })),
+            ...(prod.in_transit_replenishments || []).map((r) => ({ quantity: r.quantity, uom_name: r.uom_name })),
         ];
         if (!allEntries.length) {
             return false;
@@ -634,11 +653,19 @@ export class BomCostSummarySection extends Component {
                 ],
             },
             "availability": {
-                title: T("Availability status vs. required qty"),
+                title: T("Reservado"),
                 lines: [
-                    T("Available: Free to Use \u2265 required quantity"),
-                    T("Partial: some stock, but insufficient"),
-                    T("Not Available: no usable stock"),
+                    T("Quantity currently reserved for existing demand (manufacturing orders, sales orders, etc.)"),
+                    T("Source: stock.quant"),
+                ],
+            },
+            "receipt": {
+                title: T("Recepci\u00f3n esperada"),
+                lines: [
+                    T("Available: sufficient free stock to cover the required quantity"),
+                    T("Estimated DD/MM/YYYY: delivery date estimated from a replenishment rule"),
+                    T("Expected DD/MM/YYYY: scheduled receipt date from a confirmed purchase/MO"),
+                    T("Not Available: no scheduled receipt and insufficient stock"),
                 ],
             },
             "lead_time": {

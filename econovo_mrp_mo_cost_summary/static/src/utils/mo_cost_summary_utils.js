@@ -75,18 +75,24 @@ function _addMoComponentEntry(categoryMap, comp, replenishments, moCost, realCos
             to_order_replenishments: [],
             quantity_available: comp.quantity_free !== undefined ? comp.quantity_free : false,
             quantity_on_hand: comp.quantity_on_hand !== undefined ? comp.quantity_on_hand : false,
+            quantity_reserved: comp.quantity_reserved !== undefined ? comp.quantity_reserved : false,
+            receipt: comp.receipt || null,
             availability_state: false,
             availability_display: "",
+            in_transit_replenishments: [],
         };
     }
     const product = cat.products[prodId];
     product.total += moCost;
     product.prod_cost_total += realCost;
 
-    // ---- Partition replenishments into sub-MOs vs. standard usages ----
+    // ---- Partition replenishments into sub-MOs vs. in_transit vs. standard usages ----
     const reps = replenishments || [];
     const subMoReps = reps.filter((r) => r.summary && r.summary.model === "mrp.production");
-    const otherReps = reps.filter((r) => !r.summary || r.summary.model !== "mrp.production");
+    const inTransitReps = reps.filter((r) => r.summary && r.summary.model === "in_transit");
+    const otherReps = reps.filter(
+        (r) => !r.summary || (r.summary.model !== "mrp.production" && r.summary.model !== "in_transit")
+    );
 
     // Register sub-MO replenishments (each becomes a dedicated child row with badge).
     for (const rep of subMoReps) {
@@ -110,6 +116,19 @@ function _addMoComponentEntry(categoryMap, comp, replenishments, moCost, realCos
         }
     }
 
+    // Register in_transit replenishments (goods already shipped, not yet received).
+    for (const rep of inTransitReps) {
+        const s = rep.summary;
+        product.in_transit_replenishments.push({
+            product_id: prodId,
+            quantity: s.quantity || 0,
+            uom_name: s.uom_name || "",
+            receipt: s.receipt || null,
+            parent_name: parentName,
+            parent_product_id: parentProductId,
+        });
+    }
+
     // If the component itself is flagged as "to_order" (needs procurement),
     // route it to to_order_replenishments[] so a dedicated Reabastecer row
     // is shown instead of a plain usage row.
@@ -121,6 +140,7 @@ function _addMoComponentEntry(categoryMap, comp, replenishments, moCost, realCos
         if (existingToOrder) {
             existingToOrder.quantity += comp.replenish_quantity || comp.quantity || 0;
         } else {
+            const toOrderRep = otherReps.find((r) => r.summary && r.summary.model === "to_order");
             product.to_order_replenishments.push({
                 product_id: prodId,
                 quantity: comp.replenish_quantity || comp.quantity || 0,
@@ -129,6 +149,7 @@ function _addMoComponentEntry(categoryMap, comp, replenishments, moCost, realCos
                 parent_product_id: parentProductId,
                 formatted_state: comp.formatted_state || _t("To Order"),
                 state_class: 'text-bg-danger',
+                receipt: (toOrderRep && toOrderRep.summary.receipt) || comp.receipt || null,
             });
         }
         return;
