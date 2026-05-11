@@ -254,12 +254,14 @@ function _processReplenishmentComponents(subMoRep, categoryMap, parentName, pare
  */
 function _processReplenishmentOperations(subMoRep, workcenterMap, parentName, parentProductId) {
     const opsDetails = (subMoRep.operations && subMoRep.operations.details) || [];
+    const wcMap = (subMoRep.operations && subMoRep.operations.workcenter_map) || {};
     const parentQty = subMoRep.summary ? (subMoRep.summary.quantity || 1) : 1;
     const parentUomName = subMoRep.summary ? (subMoRep.summary.uom_name || "") : "";
 
     for (const op of opsDetails) {
-        const wcId = op.workcenter_id || 0;
-        const wcName = op.workcenter_name || _t("Unknown");
+        const wcInfo = wcMap[op.id] || {};
+        const wcId = wcInfo.workcenter_id || 0;
+        const wcName = wcInfo.workcenter_name || _t("Unknown");
 
         if (!workcenterMap[wcId]) {
             workcenterMap[wcId] = {
