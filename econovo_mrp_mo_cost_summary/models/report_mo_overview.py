@@ -67,16 +67,40 @@ class ReportMoOverview(models.AbstractModel):
         }
         return result
 
+    def _get_replenishment_lines(self, production, move_raw, replenish_data, level, current_index):
+        """Move workcenter_map out of rep['operations'] into rep['operations_workcenter_map'].
+
+        _get_operations_data adds 'workcenter_map' to the operations result so our
+        JS can group sub-MO operations by work center.  However, the native
+        MoOverviewComponentsBlock receives rep['operations'] as an OWL prop and
+        rejects any key that is not in its declared shape.  We therefore pop
+        'workcenter_map' here and re-attach it as a sibling key on the
+        replenishment dict itself, where OWL never looks.
+        """
+        replenishments = super()._get_replenishment_lines(
+            production, move_raw, replenish_data, level, current_index
+        )
+        for rep in replenishments:
+            ops = rep.get('operations')
+            if ops and 'workcenter_map' in ops:
+                rep['operations_workcenter_map'] = ops.pop('workcenter_map')
+        return replenishments
+
     def _get_report_data(self, production_id):
         """Inject 'operations_workcenter_info' as a top-level sibling of 'operations'.
 
         MoOverviewComponentsBlock validates the 'operations' prop with a strict
         shape {summary, details} — any extra key inside it triggers an OwlError.
-        Adding workcenter info here, at the root level of the report data dict,
-        keeps the 'operations' structure untouched while still making the data
-        available to our JS utility via state.data.operations_workcenter_info.
+        'workcenter_map' added by _get_operations_data must be removed from the
+        top-level operations dict here; for sub-MO replenishments it is already
+        moved to 'operations_workcenter_map' by _get_replenishment_lines above.
+        The top-level workcenter info is instead provided via the separate
+        'operations_workcenter_info' list (used by our JS utility by index).
         """
         result = super()._get_report_data(production_id)
+        # Remove workcenter_map injected by _get_operations_data so it does not
+        # reach MoOverviewComponentsBlock as an invalid prop key.
+        result.get('operations', {}).pop('workcenter_map', None)
         production = self.env['mrp.production'].browse(production_id)
         result['operations_workcenter_info'] = [
             {

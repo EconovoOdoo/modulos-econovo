@@ -254,7 +254,9 @@ function _processReplenishmentComponents(subMoRep, categoryMap, parentName, pare
  */
 function _processReplenishmentOperations(subMoRep, workcenterMap, parentName, parentProductId) {
     const opsDetails = (subMoRep.operations && subMoRep.operations.details) || [];
-    const wcMap = (subMoRep.operations && subMoRep.operations.workcenter_map) || {};
+    // workcenter_map is stored at the replenishment level (not inside operations)
+    // to avoid polluting the OWL prop shape of MoOverviewComponentsBlock.
+    const wcMap = subMoRep.operations_workcenter_map || {};
     const parentQty = subMoRep.summary ? (subMoRep.summary.quantity || 1) : 1;
     const parentUomName = subMoRep.summary ? (subMoRep.summary.uom_name || "") : "";
 
