@@ -50,7 +50,7 @@ patch(MoOverview.prototype, {
             operations: true,
             state: true,
             uom: false,
-            availabilities: false,
+            availabilities: true,
             leadTimes: false,
             performance: false,
         };
