@@ -216,6 +216,79 @@ function _processReplenishmentComponents(subMoRep, categoryMap, parentName, pare
     }
 }
 
+/**
+ * Process the workorders of a sub-MO replenishment and add each one to the
+ * workcenter map, then recurse into any nested sub-MO replenishments so that
+ * all levels of the manufacturing tree are represented in the Operations
+ * by Work Center section.
+ *
+ * Requires that _get_operations_data (Python) injects workcenter_id /
+ * workcenter_name into each detail dict; without that injection the operation
+ * falls into the "Unknown" bucket but is still counted.
+ *
+ * @param {Object} subMoRep        - A replenishment dict with model='mrp.production'
+ * @param {Object} workcenterMap   - Accumulator keyed by workcenter_id
+ * @param {string} parentName      - Display name of the product this sub-MO produces
+ * @param {number} parentProductId - product.product ID of that product
+ */
+function _processReplenishmentOperations(subMoRep, workcenterMap, parentName, parentProductId) {
+    const opsDetails = (subMoRep.operations && subMoRep.operations.details) || [];
+    const parentQty = subMoRep.summary ? (subMoRep.summary.quantity || 1) : 1;
+    const parentUomName = subMoRep.summary ? (subMoRep.summary.uom_name || "") : "";
+
+    for (const op of opsDetails) {
+        const wcId = op.workcenter_id || 0;
+        const wcName = op.workcenter_name || _t("Unknown");
+
+        if (!workcenterMap[wcId]) {
+            workcenterMap[wcId] = {
+                id: wcId,
+                name: wcName,
+                total: 0,
+                real_cost_total: 0,
+                total_duration: 0,
+                items: [],
+            };
+        }
+        const wc = workcenterMap[wcId];
+        wc.total += op.mo_cost || 0;
+        wc.real_cost_total += op.real_cost || 0;
+        wc.total_duration += op.quantity || 0;
+        wc.items.push({
+            name: op.name,
+            link_id: op.id || false,
+            duration: op.quantity || 0,
+            total: op.mo_cost || 0,
+            real_cost: op.real_cost || 0,
+            state: op.state || "",
+            formatted_state: op.formatted_state || op.state || "",
+            state_class: getStateDecorator("mrp.workorder", op.state || ""),
+            parent_name: parentName,
+            parent_product_id: parentProductId,
+            lead_time: false,
+            route_name: "",
+            route_detail: "",
+            route_type: "",
+            bom_id: false,
+            parent_qty: parentQty,
+            parent_uom_name: parentUomName,
+            components: [],
+        });
+    }
+
+    // Recurse into sub-MO replenishments of this sub-MO's own components.
+    for (const compWrapper of (subMoRep.components || [])) {
+        const subComp = compWrapper.summary || compWrapper;
+        for (const rep of (compWrapper.replenishments || [])) {
+            if (rep.summary && rep.summary.model === "mrp.production") {
+                _processReplenishmentOperations(
+                    rep, workcenterMap, subComp.name, subComp.product_id,
+                );
+            }
+        }
+    }
+}
+
 // ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
@@ -306,6 +379,19 @@ export function collectMoCosts(data) {
             parent_uom_name: data.summary ? (data.summary.uom_name || "") : "",
             components: [],
         });
+    }
+
+    // ---- Sub-MO Operations ----
+    // For each sub-MO replenishment in the top-level components, recursively
+    // collect all sub-MO workorders into the same workcenterMap so they
+    // appear alongside the parent MO operations in the section.
+    for (const compWrapper of (data.components || [])) {
+        const comp = compWrapper.summary || compWrapper;
+        for (const rep of (compWrapper.replenishments || [])) {
+            if (rep.summary && rep.summary.model === "mrp.production") {
+                _processReplenishmentOperations(rep, workcenterMap, comp.name, comp.product_id);
+            }
+        }
     }
 
     return { categoryMap, workcenterMap };

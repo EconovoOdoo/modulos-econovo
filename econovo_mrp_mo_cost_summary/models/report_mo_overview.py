@@ -50,9 +50,27 @@ class ReportMoOverview(models.AbstractModel):
         return components
 
     def _get_operations_data(self, production, level=0, current_index=False):
-        return super()._get_operations_data(
+        result = super()._get_operations_data(
             production, level=level, current_index=current_index
         )
+        # Inject workcenter_id/workcenter_name into each detail item so that
+        # sub-MO operations can be grouped by workcenter in the JS layer.
+        # The parent MO's operations use a separate top-level
+        # operations_workcenter_info array (see _get_report_data); this
+        # injection is primarily for sub-MO replenishments whose rep.operations
+        # data is consumed exclusively by our own JS (no native OWL prop
+        # validation concerns).
+        wc_by_wo_id = {
+            wo.id: (wo.workcenter_id.id, wo.workcenter_id.display_name)
+            for wo in production.workorder_ids
+        }
+        for detail in result.get('details', []):
+            wo_id = detail.get('id')
+            if wo_id and wo_id in wc_by_wo_id:
+                wc_id, wc_name = wc_by_wo_id[wo_id]
+                detail['workcenter_id'] = wc_id
+                detail['workcenter_name'] = wc_name
+        return result
 
     def _get_report_data(self, production_id):
         """Inject 'operations_workcenter_info' as a top-level sibling of 'operations'.
