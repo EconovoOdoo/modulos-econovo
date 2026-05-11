@@ -2,6 +2,7 @@
 
 import { _t } from "@web/core/l10n/translation";
 import { patch } from "@web/core/utils/patch";
+import { EventBus, useSubEnv } from "@odoo/owl";
 import { MoOverview } from "@mrp/components/mo_overview/mrp_mo_overview";
 import { BomCostSummarySection } from
     "@econovo_mrp_bom_cost_summary/components/bom_cost_summary_section/bom_cost_summary_section";
@@ -18,15 +19,41 @@ patch(MoOverview, {
 
 patch(MoOverview.prototype, {
     /**
-     * Extend setup to add costSummary to reactive state.
-     * The cost summary is computed after each data refresh in
-     * getManufacturingData() below.
+     * Extend setup to add costSummary to reactive state and provide
+     * overviewBus / overviewXlsxExport to the env so the patched
+     * MO Overview control-panel template can render the Plegar and
+     * Excel buttons.
      */
     setup() {
         super.setup(...arguments);
         Object.assign(this.state, {
             costSummary: false,
         });
+        // Provide the bus and callbacks expected by the XML template patch.
+        // BomCostSummarySection listens to this bus for fold-all / unfold-all.
+        const bus = new EventBus();
+        useSubEnv({
+            overviewBus: bus,
+            overviewHasFoldButton: true,
+            overviewXlsxExport: () => this._onMoExportXlsx(),
+        });
+    },
+
+    /**
+     * Triggers a file download of the MO Cost Summary as an .xlsx workbook.
+     */
+    _onMoExportXlsx() {
+        const productionId = this.props.action
+            && this.props.action.context
+            && this.props.action.context.active_id;
+        if (!productionId) {
+            return;
+        }
+        const params = new URLSearchParams({ production_id: productionId });
+        window.open(
+            "/econovo/mo_cost_summary/export_xlsx?" + params.toString(),
+            "_blank",
+        );
     },
 
     /**

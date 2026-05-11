@@ -7,6 +7,22 @@
        t-inherit="mrp.MoOverview"
        t-inherit-mode="extension">
 
+        <!-- Inject Plegar and Excel buttons next to the native Unfold button -->
+        <xpath expr="//button[@t-on-click='onUnfold']" position="after">
+            <button t-if="env.overviewHasFoldButton"
+                    t-on-click="() => env.overviewBus.trigger('fold-all')"
+                    type="button"
+                    class="btn btn-primary">
+                <i class="fa fa-compress me-1"/>Plegar
+            </button>
+            <button t-if="env.overviewXlsxExport"
+                    t-on-click="() => env.overviewXlsxExport()"
+                    type="button"
+                    class="btn btn-primary">
+                <i class="fa fa-file-excel-o me-1"/>Excel
+            </button>
+        </xpath>
+
         <xpath expr="//t[@t-if='hasBreakdown']" position="after">
             <BomCostSummarySection
                 t-if="state.costSummary"
