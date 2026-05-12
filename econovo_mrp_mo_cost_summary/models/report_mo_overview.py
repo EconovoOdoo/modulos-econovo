@@ -51,10 +51,12 @@ class ReportMoOverview(models.AbstractModel):
 
     def _get_byproducts_data(self, production, current_mo_cost, current_real_cost,
                              level=0, current_index=False):
-        """Inject categ_id, categ_name and categ_ancestors on each byproduct detail.
+        """Inject a categ_map sibling on the byproducts dict.
 
-        The category fields are added directly to each byproduct dict so the
-        JS utils can group byproducts by category (same approach as components).
+        Category info is stored in byproducts['categ_map'] keyed by product_id
+        instead of directly on each detail dict.  The detail dicts are passed
+        as-is to MoOverviewLine which has a strict OWL prop shape; any unknown
+        key there raises an OwlError.
         """
         remaining, byproducts = super()._get_byproducts_data(
             production, current_mo_cost, current_real_cost,
@@ -64,16 +66,21 @@ class ReportMoOverview(models.AbstractModel):
             move.product_id.id: move.product_id.categ_id
             for move in production.move_byproduct_ids
         }
-        for bp in byproducts.get('details', []):
-            categ = categ_by_product.get(bp.get('id'))
+        categ_map = {}
+        for product_id, categ in categ_by_product.items():
             if not categ:
-                bp['categ_id'] = 0
-                bp['categ_name'] = _("Uncategorized")
-                bp['categ_ancestors'] = []
-                continue
-            bp['categ_id'] = categ.id
-            bp['categ_name'] = categ.name or _("Uncategorized")
-            bp['categ_ancestors'] = self._get_categ_ancestors(categ)
+                categ_map[product_id] = {
+                    'categ_id': 0,
+                    'categ_name': _("Uncategorized"),
+                    'categ_ancestors': [],
+                }
+            else:
+                categ_map[product_id] = {
+                    'categ_id': categ.id,
+                    'categ_name': categ.name or _("Uncategorized"),
+                    'categ_ancestors': self._get_categ_ancestors(categ),
+                }
+        byproducts['categ_map'] = categ_map
         return remaining, byproducts
 
     def _get_operations_data(self, production, level=0, current_index=False):

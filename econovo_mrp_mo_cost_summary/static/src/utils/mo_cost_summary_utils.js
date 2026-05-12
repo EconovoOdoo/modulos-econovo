@@ -518,14 +518,16 @@ export function collectMoCosts(data) {
 
     // ---- Byproducts ----
     // data.byproducts.details[] is the flat list of byproduct moves for the
-    // top-level MO.  Each item carries categ_id / categ_name / categ_ancestors
-    // injected by our Python override of _get_byproducts_data.
+    // top-level MO.  Category info is in data.byproducts.categ_map keyed by
+    // product_id — NOT injected into detail dicts (MoOverviewLine rejects unknown keys).
     const byproductMap = {};
     const byproductDetails = (data.byproducts && data.byproducts.details) || [];
+    const bpCategMap = (data.byproducts && data.byproducts.categ_map) || {};
     for (const bp of byproductDetails) {
-        const catId = bp.categ_id !== undefined ? bp.categ_id : 0;
-        const catName = bp.categ_name || _t("Uncategorized");
-        const catAncestors = bp.categ_ancestors || [{ id: catId, name: catName }];
+        const catInfo = bpCategMap[bp.id] || {};
+        const catId = catInfo.categ_id !== undefined ? catInfo.categ_id : 0;
+        const catName = catInfo.categ_name || _t("Uncategorized");
+        const catAncestors = catInfo.categ_ancestors || [{ id: catId, name: catName }];
         const moCost = bp.mo_cost || 0;
         const realCost = bp.real_cost || 0;
 

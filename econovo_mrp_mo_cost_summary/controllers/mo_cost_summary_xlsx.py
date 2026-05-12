@@ -735,13 +735,21 @@ def _collect_byproduct_entries(data, parent_name, out):
     recurses into sub-MO replenishments so that byproducts at every
     manufacturing level are included.
 
+    Category info is stored in ``data["byproducts"]["categ_map"]`` keyed by
+    product_id (not injected directly into the detail dicts, which are passed
+    to MoOverviewLine and have a strict OWL prop shape).
+
     Each entry dict contains the byproduct fields (name, quantity, uom_name,
     mo_cost, real_cost, categ_id, categ_name, categ_ancestors) plus a
     ``_parent_name`` key indicating which MO produced it.
     """
-    for bp in (data.get("byproducts") or {}).get("details") or []:
+    byproducts_data = data.get("byproducts") or {}
+    categ_map = byproducts_data.get("categ_map") or {}
+    for bp in byproducts_data.get("details") or []:
         entry = dict(bp)
         entry["_parent_name"] = parent_name
+        categ_info = categ_map.get(bp.get("id")) or {}
+        entry.update(categ_info)
         out.append(entry)
 
     # Recurse into sub-MO replenishments embedded in component wrappers.
