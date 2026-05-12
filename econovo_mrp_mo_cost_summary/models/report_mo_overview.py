@@ -160,6 +160,11 @@ class ReportMoOverview(models.AbstractModel):
         # Remove workcenter_map injected by _get_operations_data so it does not
         # reach MoOverviewComponentsBlock as an invalid prop key.
         result.get('operations', {}).pop('workcenter_map', None)
+        # Remove categ_map injected by _get_byproducts_data — same reason.
+        # Promote it to a top-level sibling 'byproducts_categ_map' so that
+        # the byproducts dict keeps shape {summary, details} only.
+        bp_categ_map = (result.get('byproducts') or {}).pop('categ_map', {})
+        result['byproducts_categ_map'] = bp_categ_map
         production = self.env['mrp.production'].browse(production_id)
         result['operations_workcenter_info'] = [
             {

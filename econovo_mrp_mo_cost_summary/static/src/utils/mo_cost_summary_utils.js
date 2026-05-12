@@ -522,7 +522,7 @@ export function collectMoCosts(data) {
     // product_id — NOT injected into detail dicts (MoOverviewLine rejects unknown keys).
     const byproductMap = {};
     const byproductDetails = (data.byproducts && data.byproducts.details) || [];
-    const bpCategMap = (data.byproducts && data.byproducts.categ_map) || {};
+    const bpCategMap = data.byproducts_categ_map || {};
     for (const bp of byproductDetails) {
         const catInfo = bpCategMap[bp.id] || {};
         const catId = catInfo.categ_id !== undefined ? catInfo.categ_id : 0;
