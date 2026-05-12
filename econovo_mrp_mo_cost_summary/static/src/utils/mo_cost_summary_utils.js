@@ -68,8 +68,10 @@ function _addMoComponentEntry(categoryMap, comp, replenishments, moCost, realCos
             // Sub-MO replenishments: one entry per mrp.production replenishment.
             // Each carries its own usage row data (name, state badge, quantity).
             mo_replenishments: [],
-            // Non-sub-MO usages: stock draws, purchase orders.
+            // Non-sub-MO usages: stock draws (plain components already in stock).
             usages: [],
+            // PO / RFQ replenishments: each shown as an individual row with state badge.
+            supply_replenishments: [],
             // Components flagged as "to_order" (need replenishment): one entry
             // per parent MO, shown with a "Reabastecer" button in the table.
             to_order_replenishments: [],
@@ -155,14 +157,33 @@ function _addMoComponentEntry(categoryMap, comp, replenishments, moCost, realCos
         return;
     }
 
-    // Register non-sub-MO usages (stock / PO) aggregated by parent MO.
-    // When there are no replenishments at all (plain stock component with
-    // quantity already reserved) we still need a usage row for the parent.
-    const hasNonSubMoRep = otherReps.length > 0;
     const hasSubMoRep = subMoReps.length > 0;
 
-    if (hasNonSubMoRep || !hasSubMoRep) {
-        // Aggregate into a single usage row keyed by parentProductId.
+    // Partition otherReps: those with a known document state (POs, RFQs)
+    // become individual supply_rep rows; plain stock draws go to usages.
+    const supplyReps = otherReps.filter((r) => r.summary && r.summary.formatted_state);
+    const stockReps  = otherReps.filter((r) => !r.summary || !r.summary.formatted_state);
+
+    // Individual PO / RFQ rows — shown with their document name and state badge.
+    for (const rep of supplyReps) {
+        const s = rep.summary;
+        product.supply_replenishments.push({
+            name: s.name || "",
+            link_id: s.id || false,
+            link_model: s.model || "",
+            formatted_state: s.formatted_state || "",
+            state_class: getStateDecorator(s.model || "", s.state || ""),
+            quantity: s.quantity || comp.quantity || 0,
+            uom_name: s.uom_name || comp.uom_name || "",
+            receipt: s.receipt || comp.receipt || null,
+            parent_name: parentName,
+            parent_product_id: parentProductId,
+        });
+    }
+
+    // Aggregated usage row for plain stock draws or when there are no
+    // supply-document reps and no sub-MO reps (component comes from stock).
+    if (stockReps.length > 0 || (!hasSubMoRep && supplyReps.length === 0)) {
         const existingUsage = product.usages.find(
             (u) => u.parent_product_id === parentProductId
         );
@@ -206,12 +227,17 @@ function _addMoComponentEntry(categoryMap, comp, replenishments, moCost, realCos
  * must also be collected so that deep-level materials appear in the
  * "Components by Category" section.
  *
- * @param {Object} subMoRep        - A replenishment dict with model='mrp.production'
- * @param {Object} categoryMap     - Accumulator keyed by categ_id
- * @param {string} parentName      - Display name of the intermediate product this sub-MO produces
- * @param {number} parentProductId - product.product ID of that intermediate product
+ * When subcontractingMap is provided, nested sub-MOs with a subcontractor
+ * are also registered there so the Subcontracting section stays complete
+ * for deep manufacturing trees.
+ *
+ * @param {Object} subMoRep           - A replenishment dict with model='mrp.production'
+ * @param {Object} categoryMap        - Accumulator keyed by categ_id
+ * @param {string} parentName         - Display name of the intermediate product this sub-MO produces
+ * @param {number} parentProductId    - product.product ID of that intermediate product
+ * @param {Object} [subcontractingMap]- Optional accumulator keyed by vendor ID
  */
-function _processReplenishmentComponents(subMoRep, categoryMap, parentName, parentProductId) {
+function _processReplenishmentComponents(subMoRep, categoryMap, parentName, parentProductId, subcontractingMap) {
     for (const subCompWrapper of (subMoRep.components || [])) {
         const subComp = subCompWrapper.summary || subCompWrapper;
         const catId = subCompWrapper.categ_id !== undefined ? subCompWrapper.categ_id : (subComp.categ_id || 0);
@@ -230,11 +256,67 @@ function _processReplenishmentComponents(subMoRep, categoryMap, parentName, pare
         );
         // Recurse further for any sub-MO replenishments of this sub-component.
         for (const rep of (subCompWrapper.replenishments || [])) {
-            if (rep.summary && rep.summary.model === "mrp.production" && rep.components) {
-                _processReplenishmentComponents(rep, categoryMap, subComp.name, subComp.product_id);
+            if (rep.summary && rep.summary.model === "mrp.production") {
+                if (subcontractingMap && rep.summary.subcontractor_id) {
+                    _addSubcontractingEntry(
+                        subcontractingMap, rep, subComp,
+                        rep.summary.subcontractor_id,
+                        rep.summary.subcontractor_name || _t("Unknown Vendor"),
+                    );
+                }
+                if (rep.components) {
+                    _processReplenishmentComponents(
+                        rep, categoryMap, subComp.name, subComp.product_id, subcontractingMap,
+                    );
+                }
             }
         }
     }
+}
+
+/**
+ * Adds (or merges) a subcontracted sub-MO entry into the vendor accumulator.
+ *
+ * Each entry represents one sub-MO that is subcontracted to a specific vendor.
+ * The cost shown is the component cost from the parent MO context (comp.mo_cost
+ * / comp.real_cost), which equals the procurement cost for the subcontracted
+ * product.  The section is informational: costs are NOT re-summed into totals
+ * to avoid double-counting with the Components section.
+ *
+ * @param {Object} subcontractingMap - Accumulator keyed by vendor ID
+ * @param {Object} rep               - Replenishment dict (model='mrp.production')
+ * @param {Object} comp              - Component summary dict (the product being subcontracted)
+ * @param {number} vendorId          - res.partner ID of the subcontractor
+ * @param {string} vendorName        - Display name of the subcontractor
+ */
+function _addSubcontractingEntry(subcontractingMap, rep, comp, vendorId, vendorName) {
+    const s = rep.summary;
+    if (!subcontractingMap[vendorId]) {
+        subcontractingMap[vendorId] = {
+            id: vendorId,
+            name: vendorName,
+            total: 0,
+            prod_cost_total: 0,
+            items: [],
+        };
+    }
+    const vendor = subcontractingMap[vendorId];
+    const moCost  = comp.mo_cost  || 0;
+    const realCost = comp.real_cost || 0;
+    vendor.total           += moCost;
+    vendor.prod_cost_total += realCost;
+    vendor.items.push({
+        product_id:      comp.product_id,
+        product_name:    comp.name,
+        mo_id:           s.id   || false,
+        mo_name:         s.name || "",
+        quantity:        comp.quantity  || 0,
+        uom_name:        comp.uom_name  || "",
+        total:           moCost,
+        prod_cost:       realCost,
+        formatted_state: s.formatted_state || s.state || "",
+        state_class:     getStateDecorator("mrp.production", s.state || ""),
+    });
 }
 
 /**
@@ -329,6 +411,7 @@ function _processReplenishmentOperations(subMoRep, workcenterMap, parentName, pa
 export function collectMoCosts(data) {
     const categoryMap = {};
     const workcenterMap = {};
+    const subcontractingMap = {};
     const parentName = data.summary ? data.summary.name : "";
     const parentProductId = data.summary ? data.summary.product_id : 0;
 
@@ -351,10 +434,22 @@ export function collectMoCosts(data) {
             catName,
             catAncestors,
         );
-        // Recurse into sub-MO replenishments to collect their own components.
+        // Recurse into sub-MO replenishments to collect their own components
+        // and, when subcontracted, register them in the subcontractingMap.
         for (const rep of (compWrapper.replenishments || [])) {
-            if (rep.summary && rep.summary.model === "mrp.production" && rep.components) {
-                _processReplenishmentComponents(rep, categoryMap, comp.name, comp.product_id);
+            if (rep.summary && rep.summary.model === "mrp.production") {
+                if (rep.summary.subcontractor_id) {
+                    _addSubcontractingEntry(
+                        subcontractingMap, rep, comp,
+                        rep.summary.subcontractor_id,
+                        rep.summary.subcontractor_name || _t("Unknown Vendor"),
+                    );
+                }
+                if (rep.components) {
+                    _processReplenishmentComponents(
+                        rep, categoryMap, comp.name, comp.product_id, subcontractingMap,
+                    );
+                }
             }
         }
     }
@@ -426,8 +521,6 @@ export function collectMoCosts(data) {
     // top-level MO.  Each item carries categ_id / categ_name / categ_ancestors
     // injected by our Python override of _get_byproducts_data.
     const byproductMap = {};
-    const parentName = data.summary ? data.summary.name : "";
-    const parentProductId = data.summary ? data.summary.product_id : 0;
     const byproductDetails = (data.byproducts && data.byproducts.details) || [];
     for (const bp of byproductDetails) {
         const catId = bp.categ_id !== undefined ? bp.categ_id : 0;
@@ -475,7 +568,7 @@ export function collectMoCosts(data) {
         });
     }
 
-    return { categoryMap, workcenterMap, byproductMap };
+    return { categoryMap, workcenterMap, byproductMap, subcontractingMap };
 }
 
 /**
@@ -499,7 +592,7 @@ export function computeMoCostSummary(data) {
         return false;
     }
 
-    const { categoryMap, workcenterMap, byproductMap } = collectMoCosts(data);
+    const { categoryMap, workcenterMap, byproductMap, subcontractingMap } = collectMoCosts(data);
 
     // Build the category tree (same algorithm as BOM module)
     const categories = buildCategoryTree(categoryMap);
@@ -507,8 +600,11 @@ export function computeMoCostSummary(data) {
     const workcenters = Object.values(workcenterMap).sort(
         (a, b) => b.total - a.total,
     );
+    const subcontracting = Object.values(subcontractingMap).sort(
+        (a, b) => b.total - a.total,
+    );
 
-    if (!categories.length && !workcenters.length && !byproductCategories.length) {
+    if (!categories.length && !workcenters.length && !byproductCategories.length && !subcontracting.length) {
         return false;
     }
 
@@ -573,11 +669,31 @@ export function computeMoCostSummary(data) {
         }
     }
 
+    // Enrich subcontracting vendors with percentages (% of total component cost).
+    // The section is informational: costs are already counted in Components.
+    const scRefBase = totalMoCostComponents || 1;
+    for (const vendor of subcontracting) {
+        vendor.percentage = (vendor.total / scRefBase) * 100;
+        vendor.total_usd = false;
+        vendor.prod_cost_total_usd = false;
+        for (const item of vendor.items) {
+            item.percentage = totalMoCostComponents
+                ? (item.total / totalMoCostComponents) * 100 : 0;
+            item.total_usd = false;
+            item.prod_cost_usd = false;
+        }
+    }
+
+    // Reference totals for the subcontracting section footer.
+    // These are NOT added to the grand total to avoid double-counting.
+    const totalMoCostSubcontracting     = subcontracting.reduce((s, v) => s + v.total, 0);
+    const totalRealCostSubcontracting   = subcontracting.reduce((s, v) => s + v.prod_cost_total, 0);
+
     return {
         categories,
         workcenters,
         byproductCategories,
-        subcontracting: [],        // MO: subcontracting deferred to a future extension
+        subcontracting,
         totals: {
             components: totalMoCostComponents,
             components_usd: false,
@@ -587,9 +703,10 @@ export function computeMoCostSummary(data) {
             operations_usd: false,
             operations_duration: totalDuration,
             operations_real_cost: totalRealCostOperations,
-            subcontracting: 0,
+            // Reference values — already counted in components, shown for visibility.
+            subcontracting: totalMoCostSubcontracting,
             subcontracting_usd: false,
-            subcontracting_prod_cost: 0,
+            subcontracting_prod_cost: totalRealCostSubcontracting,
             subcontracting_prod_cost_usd: false,
             byproducts: totalMoCostByproducts,
             byproducts_usd: false,

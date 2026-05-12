@@ -382,7 +382,14 @@ export class BomCostSummarySection extends Component {
                                     depth: node.depth + 1,
                                     rowKey: `in_transit_${node.id}_${prod.product_id}_${inTransitRep.parent_product_id}` });
                             }
-                            // Standard usages (stock / PO).
+                            // Supply replenishments (POs, RFQs): individual rows with state badge.
+                            for (let si = 0; si < (prod.supply_replenishments || []).length; si++) {
+                                const supplyRep = prod.supply_replenishments[si];
+                                rows.push({ type: 'supply_rep', node, prod, supplyRep,
+                                    depth: node.depth + 1,
+                                    rowKey: `supply_${node.id}_${prod.product_id}_${si}` });
+                            }
+                            // Standard usages (plain stock draws without a supply document).
                             for (const usage of prod.usages) {
                                 rows.push({ type: 'usage', node, prod, usage,
                                     depth: node.depth + 1,

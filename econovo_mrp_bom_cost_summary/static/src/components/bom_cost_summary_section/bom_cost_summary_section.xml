@@ -368,6 +368,48 @@
                         <td t-if="showCosts"/>
                         <td t-if="showCostsUsd"/>
                     </tr>
+                    <!-- SUPPLY_REP ROW: individual PO / RFQ with state badge -->
+                    <tr t-elif="row.type === 'supply_rep'"
+                        class="o_econovo_cost_summary__usage-row">
+                        <td/>
+                        <td t-attf-style="padding-left: {{ row.depth * 20 + 44 }}px">
+                            <a href="#" class="o_econovo_cost_summary__link"
+                               t-on-click.stop.prevent="() => this.openFormDialog(row.supplyRep.link_id, row.supplyRep.link_model)">
+                                <t t-esc="row.supplyRep.name || row.supplyRep.parent_name"/>
+                            </a>
+                        </td>
+                        <td t-if="showState" class="text-center">
+                            <t t-if="row.supplyRep.formatted_state">
+                                <div class="o_field_badge">
+                                    <span t-attf-class="badge rounded-pill o_mrp_overview_badge {{ row.supplyRep.state_class }}"
+                                          t-out="row.supplyRep.formatted_state"/>
+                                </div>
+                            </t>
+                        </td>
+                        <td class="text-end text-muted">
+                            <t t-esc="formatFloat(row.supplyRep.quantity, {digits: [false, props.precision]})"/>
+                            <t t-if="showUom">
+                                <span class="ms-1" t-esc="row.supplyRep.uom_name"/>
+                            </t>
+                        </td>
+                        <td/>
+                        <td t-if="showAvailabilities"/>
+                        <td t-if="showAvailabilities"/>
+                        <td t-if="showAvailabilities" class="text-end">
+                            <t t-if="row.supplyRep.receipt">
+                                <span t-attf-class="{{ receiptClass(row.supplyRep.receipt) }}"
+                                      t-esc="row.supplyRep.receipt.display"/>
+                            </t>
+                        </td>
+                        <td t-if="showPerformance"/>
+                        <td t-if="showPerformance"/>
+                        <td t-if="showLeadTimes"/>
+                        <td t-if="showLeadTimes"/>
+                        <td t-if="showCosts"/>
+                        <td t-if="showCostsUsd"/>
+                        <td t-if="showCosts"/>
+                        <td t-if="showCostsUsd"/>
+                    </tr>
                     <!-- USAGE ROW -->
                     <tr t-else=""
                         class="o_econovo_cost_summary__usage-row">
@@ -784,12 +826,26 @@
                             <tr class="o_econovo_cost_summary__product-row">
                                 <td class="o_econovo_cost_summary__fold-col"/>
                                 <td style="padding-left: 2rem;">
-                                    <a href="#" class="o_econovo_cost_summary__link"
+                                    <!-- Link to sub-MO when available, otherwise fall back to product -->
+                                    <a t-if="sc_item.mo_id" href="#" class="o_econovo_cost_summary__link"
+                                       t-on-click.stop.prevent="() => this.openFormDialog(sc_item.mo_id, 'mrp.production')">
+                                        <t t-esc="sc_item.mo_name || sc_item.product_name"/>
+                                    </a>
+                                    <a t-else="" href="#" class="o_econovo_cost_summary__link"
                                        t-on-click.stop.prevent="() => this.openFormDialog(sc_item.product_id, 'product.product')">
                                         <t t-esc="sc_item.product_name"/>
                                     </a>
+                                    <span t-if="sc_item.mo_id" class="text-muted ms-1 small"
+                                          t-esc="'— ' + sc_item.product_name"/>
                                 </td>
-                                <td t-if="showState"/>
+                                <td t-if="showState" class="text-center">
+                                    <t t-if="sc_item.formatted_state">
+                                        <div class="o_field_badge">
+                                            <span t-attf-class="badge rounded-pill o_mrp_overview_badge {{ sc_item.state_class }}"
+                                                  t-out="sc_item.formatted_state"/>
+                                        </div>
+                                    </t>
+                                </td>
                                 <td class="text-end text-muted">
                                     <t t-esc="sc_item.quantity"/>
                                     <span t-if="sc_item.uom_name" class="ms-1 text-muted small" t-esc="sc_item.uom_name"/>

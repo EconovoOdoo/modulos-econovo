@@ -103,14 +103,39 @@ class ReportMoOverview(models.AbstractModel):
         rejects any key that is not in its declared shape.  We therefore pop
         'workcenter_map' here and re-attach it as a sibling key on the
         replenishment dict itself, where OWL never looks.
+
+        Additionally, for sub-MO replenishments we inject subcontractor_id and
+        subcontractor_name so the JS layer can build the Subcontracting section
+        without an extra round-trip to the server.
         """
         replenishments = super()._get_replenishment_lines(
             production, move_raw, replenish_data, level, current_index
         )
+        # Collect all sub-MO IDs in one pass so we can batch-browse them.
+        sub_mo_ids = [
+            rep['summary']['id']
+            for rep in replenishments
+            if rep.get('summary', {}).get('model') == 'mrp.production'
+            and rep.get('summary', {}).get('id')
+        ]
+        sub_mo_by_id = {}
+        if sub_mo_ids:
+            for mo in self.env['mrp.production'].browse(sub_mo_ids):
+                sub_mo_by_id[mo.id] = mo
+
         for rep in replenishments:
+            # Move workcenter_map to a sibling key (existing behaviour).
             ops = rep.get('operations')
             if ops and 'workcenter_map' in ops:
                 rep['operations_workcenter_map'] = ops.pop('workcenter_map')
+
+            # Inject subcontractor info for sub-MOs.
+            summary = rep.get('summary', {})
+            if summary.get('model') == 'mrp.production' and summary.get('id'):
+                mo = sub_mo_by_id.get(summary['id'])
+                if mo and mo.subcontractor_id:
+                    summary['subcontractor_id'] = mo.subcontractor_id.id
+                    summary['subcontractor_name'] = mo.subcontractor_id.display_name
         return replenishments
 
     def _get_report_data(self, production_id):

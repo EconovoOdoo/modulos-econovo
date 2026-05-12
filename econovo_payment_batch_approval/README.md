@@ -78,27 +78,40 @@ tier required. Each rule must target:
 - **Model:** `account.payment`
 - **Method:** `action_post`
 - **Group:** a `res.groups` whose members are the approvers for that tier
+- **Responsible:** a `res.users` approver to receive the `mail.activity`
 - **Domain:** *(optional)* filter to restrict which payments trigger the rule
 
 Example domain patterns:
 
 ```python
-# Payments above a threshold (local currency, outbound)
-[('amount', '>=', 1000000), ('currency_id.name', '=', 'ARS'), ('payment_type', '=', 'outbound')]
+# Payments above a threshold (local currency, outbound, excluding transfers)
+[('is_internal_transfer', '=', False), ('amount', '>=', 1000000), ('currency_id.name', '=', 'ARS'), ('payment_type', '=', 'outbound')]
 
-# Payments below a threshold (local currency, outbound)
-[('amount', '<', 1000000), ('currency_id.name', '=', 'ARS'), ('payment_type', '=', 'outbound')]
+# Payments below a threshold (local currency, outbound, excluding transfers)
+[('is_internal_transfer', '=', False), ('amount', '<', 1000000), ('currency_id.name', '=', 'ARS'), ('payment_type', '=', 'outbound')]
 
-# Payments in foreign currency
-[('currency_id.name', '!=', 'ARS'), ('payment_type', '=', 'outbound')]
+# Payments in foreign currency (excluding transfers)
+[('is_internal_transfer', '=', False), ('currency_id.name', '!=', 'ARS'), ('payment_type', '=', 'outbound')]
 
-# Payments belonging to a specific company (multi-company setup)
-[('journal_id.company_id', '=', <company_id>), ('payment_type', '=', 'outbound')]
+# Payments belonging to a specific company (multi-company setup, excluding transfers)
+[('is_internal_transfer', '=', False), ('journal_id.company_id', '=', <company_id>), ('payment_type', '=', 'outbound')]
 ```
 
 > **Important:** Domains are evaluated per payment. If a payment matches
 > multiple rules, the approver must satisfy **all** of them. Design domains so
 > that each payment is covered by exactly the rules intended for its tier.
+
+> **Important — Activity creation in Studio:**
+> `users_to_notify` only posts an internal note/chatter mention.
+> The pending task in Activities (`mail.activity`) is created from the
+> **Responsible** field of each Studio approval rule.
+> If Responsible is empty or wrong, approvers may be mentioned in chatter but
+> will not see a pending activity assigned to them.
+
+> **Tip — Excluding internal transfers:** Internal transfers (Bank & Cash >
+> Transfers) are `account.payment` records where `is_internal_transfer = True`.
+> These typically do not require approval. Add
+> `('is_internal_transfer', '=', False)` to every rule domain to exclude them.
 
 ### Step 2 — Assign users to groups
 
@@ -116,6 +129,32 @@ add users from the **Users** tab.
 > users who belong to the Studio Approval groups. They are managed separately
 > because they serve different purposes: Studio groups gate individual payment
 > posting; the batch group gates the bulk-approval shortcut.
+
+> **Production replication runbook:**
+> For AI-assisted production rollout, use
+> [docs/ECONOVO.md](docs/ECONOVO.md), section
+> **Production Replication Runbook (For AI Agents)**.
+
+### Optional — Journal entry approval rules
+
+Studio Approval Rules can also be applied to journal entries
+(`account.move.action_post`). These are **independent** of this module and
+work natively through Odoo Studio. They are useful for requiring approval before
+posting journal entries that affect sensitive accounts (loans, taxes, payroll).
+
+Example domain for journal entry rules:
+
+```python
+# Entries touching specific accounts, ARS, above threshold
+[('move_type', '=', 'entry'),
+ ('currency_id.name', '=', 'ARS'),
+ ('amount_total', '>=', 1000000),
+ ('line_ids.account_id.code', 'in', ['2.1.2.02.001', '2.1.4.01.010', ...])]
+```
+
+> **Tip:** The same approval groups used for payment rules can be reused for
+> journal entry rules. See `docs/ECONOVO.md` for the full account list and
+> domain configuration.
 
 ---
 
