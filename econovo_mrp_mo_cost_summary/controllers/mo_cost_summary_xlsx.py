@@ -88,13 +88,49 @@ def _write_header(ws, row_idx, values, bg_color):
 
 # ── Sheet 1: Components by Category ──────────────────────────────────────────
 
-def _build_category_map(components, parent_name):
-    """Build {categ_id: {...}} from a flat list of component summaries."""
+def _collect_component_entries(comp_wrappers, parent_name, out):
+    """Recursively collect flat component entries from the MO report tree.
+
+    Each wrapper produced by _get_components_data has:
+      - wrapper["summary"]: the native component dict (product_id, name,
+        quantity, uom_name, mo_cost, real_cost, …)
+      - wrapper["categ_id"], wrapper["categ_name"], wrapper["categ_ancestors"]:
+        injected by our Python override to avoid polluting MoOverviewLine's
+        strict OWL prop-shape validation on "summary".
+      - wrapper["replenishments"]: list of replenishment dicts, where those
+        with summary.model == "mrp.production" are sub-MOs carrying their own
+        "components" list.
+
+    The resulting flat entries are keyed with "_parent_name" so the sheet
+    can show which MO consumed each component.
+    """
+    for wrapper in comp_wrappers:
+        summary = wrapper.get("summary") or {}
+        entry = dict(summary)
+        # categ fields live on the wrapper, not on the summary
+        entry["categ_id"] = wrapper["categ_id"] if "categ_id" in wrapper else entry.get("categ_id", 0)
+        entry["categ_name"] = wrapper.get("categ_name") or entry.get("categ_name", "Uncategorized")
+        entry["categ_ancestors"] = wrapper.get("categ_ancestors") or entry.get("categ_ancestors") or []
+        entry["_parent_name"] = parent_name
+        out.append(entry)
+
+        # Recurse into sub-MO replenishments (each carries its own components list).
+        for rep in (wrapper.get("replenishments") or []):
+            rep_sum = rep.get("summary") or {}
+            if rep_sum.get("model") == "mrp.production":
+                sub_comps = rep.get("components") or []
+                sub_name = rep_sum.get("name") or parent_name
+                _collect_component_entries(sub_comps, sub_name, out)
+
+
+def _build_category_map(flat_entries):
+    """Aggregate a flat component entry list into {categ_id: {...}}."""
     category_map = {}
-    for comp in components:
-        cat_id = comp.get("categ_id", 0)
-        cat_name = comp.get("categ_name", "Uncategorized")
-        ancestors = comp.get("categ_ancestors") or [{"id": cat_id, "name": cat_name}]
+    for entry in flat_entries:
+        cat_id = entry.get("categ_id") or 0
+        cat_name = entry.get("categ_name") or "Uncategorized"
+        ancestors = entry.get("categ_ancestors") or [{"id": cat_id, "name": cat_name}]
+
         if cat_id not in category_map:
             category_map[cat_id] = {
                 "id": cat_id,
@@ -105,11 +141,13 @@ def _build_category_map(components, parent_name):
                 "products": {},
             }
         cat = category_map[cat_id]
-        cat["mo_cost"] += comp.get("mo_cost", 0.0)
-        cat["real_cost"] += comp.get("real_cost", 0.0)
+        mo_cost = float(entry.get("mo_cost") or 0)
+        real_cost = float(entry.get("real_cost") or 0)
+        cat["mo_cost"] += mo_cost
+        cat["real_cost"] += real_cost
 
-        prod_id = comp.get("product_id") or comp.get("id", 0)
-        prod_name = comp.get("name", "")
+        prod_id = entry.get("product_id") or entry.get("id") or 0
+        prod_name = entry.get("name") or ""
         if prod_id not in cat["products"]:
             cat["products"][prod_id] = {
                 "name": prod_name,
@@ -118,35 +156,32 @@ def _build_category_map(components, parent_name):
                 "usages": [],
             }
         prod = cat["products"][prod_id]
-        prod["mo_cost"] += comp.get("mo_cost", 0.0)
-        prod["real_cost"] += comp.get("real_cost", 0.0)
+        prod["mo_cost"] += mo_cost
+        prod["real_cost"] += real_cost
         prod["usages"].append({
-            "parent_name": parent_name,
-            "quantity": comp.get("quantity", 0.0),
-            "uom_name": comp.get("uom_name", ""),
-            "mo_cost": comp.get("mo_cost", 0.0),
-            "real_cost": comp.get("real_cost", 0.0),
+            "parent_name": entry.get("_parent_name") or "",
+            "quantity": float(entry.get("quantity") or 0),
+            "uom_name": entry.get("uom_name") or "",
+            "mo_cost": mo_cost,
+            "real_cost": real_cost,
         })
     return category_map
 
 
 def _write_components_sheet(ws, data, currency_name):
     """Write Sheet 1: Components by Category."""
-    parent_name = data.get("name", "")
-    components = [c.get("summary", c) for c in data.get("components", [])]
-    category_map = _build_category_map(components, parent_name)
+    # data["summary"] holds the MO-level summary; fall back to data["name"].
+    parent_name = (data.get("summary") or {}).get("name") or data.get("name", "")
+    flat_entries = []
+    _collect_component_entries(data.get("components") or [], parent_name, flat_entries)
+    category_map = _build_category_map(flat_entries)
 
     headers = ["Type", "Name", "Qty", "UoM",
                "MO Cost (%s)" % currency_name,
                "Real Cost (%s)" % currency_name,
                "Deviation"]
-    col_count = len(headers)
     _write_header(ws, 1, headers, _C["header_bg"])
-
-    # Freeze header
     ws.freeze_panes = "A2"
-
-    # Column widths
     ws.column_dimensions["A"].width = 14
     ws.column_dimensions["B"].width = 42
     ws.column_dimensions["C"].width = 10
@@ -160,15 +195,10 @@ def _write_components_sheet(ws, data, currency_name):
     total_real = 0.0
 
     for cat in sorted(category_map.values(), key=lambda x: -x["mo_cost"]):
-        # Category row
         dev = _flt(cat["real_cost"] - cat["mo_cost"]) if cat["mo_cost"] else ""
         _write_row(ws, row, [
-            "Category",
-            cat["name"],
-            "", "",
-            _flt(cat["mo_cost"]),
-            _flt(cat["real_cost"]),
-            dev,
+            "Category", cat["name"], "", "",
+            _flt(cat["mo_cost"]), _flt(cat["real_cost"]), dev,
         ], _C["cat_0"], bold=True, outline_level=0)
         row += 1
         total_mo += cat["mo_cost"]
@@ -177,17 +207,12 @@ def _write_components_sheet(ws, data, currency_name):
         for prod in sorted(cat["products"].values(), key=lambda p: -p["mo_cost"]):
             dev_p = _flt(prod["real_cost"] - prod["mo_cost"]) if prod["mo_cost"] else ""
             _write_row(ws, row, [
-                "Product",
-                "  " + prod["name"],
-                "", "",
-                _flt(prod["mo_cost"]),
-                _flt(prod["real_cost"]),
-                dev_p,
+                "Product", "  " + prod["name"], "", "",
+                _flt(prod["mo_cost"]), _flt(prod["real_cost"]), dev_p,
             ], _C["product"], bold=False, outline_level=1)
             row += 1
 
             for usage in prod["usages"]:
-                qty_str = "%g %s" % (usage["quantity"], usage["uom_name"]) if usage.get("quantity") else ""
                 _write_row(ws, row, [
                     "Usage",
                     "    " + usage["parent_name"],
@@ -199,24 +224,51 @@ def _write_components_sheet(ws, data, currency_name):
                 ], _C["usage"], bold=False, outline_level=2)
                 row += 1
 
-    # Grand Total
     _write_row(ws, row, [
         "TOTAL", "", "", "",
-        _flt(total_mo),
-        _flt(total_real),
+        _flt(total_mo), _flt(total_real),
         _flt(total_real - total_mo) if total_mo else "",
     ], _C["total"], bold=True)
 
 
 # ── Sheet 2: Operations by Work Center ───────────────────────────────────────
 
+def _collect_operation_entries(comp_wrappers, out):
+    """Recursively collect operation entries from sub-MO replenishments.
+
+    For each component wrapper, inspect its replenishments for sub-MOs and
+    collect their workorders using the operations_workcenter_map stored at
+    the replenishment level (our Python override moves it there from inside
+    operations to avoid OWL prop-shape violations in MoOverviewComponentsBlock).
+
+    Recurses into each sub-MO's own components to collect deeper levels.
+    """
+    for wrapper in comp_wrappers:
+        summary = wrapper.get("summary") or {}
+        for rep in (wrapper.get("replenishments") or []):
+            rep_sum = rep.get("summary") or {}
+            if rep_sum.get("model") != "mrp.production":
+                continue
+            ops_details = (rep.get("operations") or {}).get("details") or []
+            # workcenter_map is at the replenishment level, not inside operations
+            wc_map_rep = rep.get("operations_workcenter_map") or {}
+            for op in ops_details:
+                wc_info = wc_map_rep.get(op.get("id")) or {}
+                out.append({
+                    "name": op.get("name") or "",
+                    "quantity": float(op.get("quantity") or 0),
+                    "mo_cost": float(op.get("mo_cost") or 0),
+                    "real_cost": float(op.get("real_cost") or 0),
+                    "workcenter_id": wc_info.get("workcenter_id") or 0,
+                    "workcenter_name": wc_info.get("workcenter_name") or "Unknown",
+                })
+            # Recurse into this sub-MO's own component wrappers for deeper levels.
+            _collect_operation_entries(rep.get("components") or [], out)
+
+
 def _write_operations_sheet(ws, data, currency_name):
     """Write Sheet 2: Operations by Work Center."""
-    operations_data = data.get("operations", {})
-    details = operations_data.get("details", [])
-
-    headers = ["Type", "Name",
-               "Duration (min)",
+    headers = ["Type", "Name", "Duration (min)",
                "MO Cost (%s)" % currency_name,
                "Real Cost (%s)" % currency_name,
                "Deviation"]
@@ -229,23 +281,43 @@ def _write_operations_sheet(ws, data, currency_name):
     ws.column_dimensions["E"].width = 18
     ws.column_dimensions["F"].width = 14
 
-    # Group by workcenter
+    # ── Top-level operations ──────────────────────────────────────────────────
+    # operations_workcenter_info is indexed in the same order as operations.details
+    # (our _get_report_data override moves workcenter_map to this sibling key).
+    top_details = (data.get("operations") or {}).get("details") or []
+    top_wc_info = data.get("operations_workcenter_info") or []
+    top_ops = []
+    for i, op in enumerate(top_details):
+        extra = top_wc_info[i] if i < len(top_wc_info) else {}
+        top_ops.append({
+            "name": op.get("name") or "",
+            "quantity": float(op.get("quantity") or 0),
+            "mo_cost": float(op.get("mo_cost") or 0),
+            "real_cost": float(op.get("real_cost") or 0),
+            "workcenter_id": extra.get("workcenter_id") or 0,
+            "workcenter_name": extra.get("workcenter_name") or "Unknown",
+        })
+
+    # ── Sub-MO operations ─────────────────────────────────────────────────────
+    sub_ops = []
+    _collect_operation_entries(data.get("components") or [], sub_ops)
+
+    # ── Group all operations by workcenter ────────────────────────────────────
     wc_map = {}
-    for op in details:
-        wc_id = op.get("workcenter_id", 0)
-        wc_name = op.get("workcenter_name", "Unknown")
+    for op in top_ops + sub_ops:
+        wc_id = op["workcenter_id"]
         if wc_id not in wc_map:
             wc_map[wc_id] = {
-                "name": wc_name,
+                "name": op["workcenter_name"],
                 "mo_cost": 0.0,
                 "real_cost": 0.0,
                 "duration": 0.0,
                 "items": [],
             }
         wc = wc_map[wc_id]
-        wc["mo_cost"] += op.get("mo_cost", 0.0)
-        wc["real_cost"] += op.get("real_cost", 0.0)
-        wc["duration"] += op.get("quantity", 0.0)
+        wc["mo_cost"] += op["mo_cost"]
+        wc["real_cost"] += op["real_cost"]
+        wc["duration"] += op["quantity"]
         wc["items"].append(op)
 
     row = 2
@@ -254,11 +326,8 @@ def _write_operations_sheet(ws, data, currency_name):
 
     for wc in sorted(wc_map.values(), key=lambda x: -x["mo_cost"]):
         _write_row(ws, row, [
-            "Work Center",
-            wc["name"],
-            _flt(wc["duration"]),
-            _flt(wc["mo_cost"]),
-            _flt(wc["real_cost"]),
+            "Work Center", wc["name"], _flt(wc["duration"]),
+            _flt(wc["mo_cost"]), _flt(wc["real_cost"]),
             _flt(wc["real_cost"] - wc["mo_cost"]) if wc["mo_cost"] else "",
         ], _C["wc"], bold=True, outline_level=0)
         row += 1
@@ -267,22 +336,16 @@ def _write_operations_sheet(ws, data, currency_name):
 
         for op in wc["items"]:
             _write_row(ws, row, [
-                "Operation",
-                "  " + op.get("name", ""),
-                _flt(op.get("quantity", 0.0)),
-                _flt(op.get("mo_cost", 0.0)),
-                _flt(op.get("real_cost", 0.0)),
-                _flt(op.get("real_cost", 0.0) - op.get("mo_cost", 0.0)) if op.get("mo_cost") else "",
+                "Operation", "  " + op["name"], _flt(op["quantity"]),
+                _flt(op["mo_cost"]), _flt(op["real_cost"]),
+                _flt(op["real_cost"] - op["mo_cost"]) if op["mo_cost"] else "",
             ], _C["op"], bold=False, outline_level=1)
             row += 1
 
-    # Grand Total
     if wc_map:
         _write_row(ws, row, [
-            "TOTAL", "",
-            "",
-            _flt(total_mo),
-            _flt(total_real),
+            "TOTAL", "", "",
+            _flt(total_mo), _flt(total_real),
             _flt(total_real - total_mo) if total_mo else "",
         ], _C["total"], bold=True)
 
