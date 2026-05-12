@@ -49,6 +49,33 @@ class ReportMoOverview(models.AbstractModel):
             comp_wrapper['categ_ancestors'] = self._get_categ_ancestors(categ)
         return components
 
+    def _get_byproducts_data(self, production, current_mo_cost, current_real_cost,
+                             level=0, current_index=False):
+        """Inject categ_id, categ_name and categ_ancestors on each byproduct detail.
+
+        The category fields are added directly to each byproduct dict so the
+        JS utils can group byproducts by category (same approach as components).
+        """
+        remaining, byproducts = super()._get_byproducts_data(
+            production, current_mo_cost, current_real_cost,
+            level=level, current_index=current_index,
+        )
+        categ_by_product = {
+            move.product_id.id: move.product_id.categ_id
+            for move in production.move_byproduct_ids
+        }
+        for bp in byproducts.get('details', []):
+            categ = categ_by_product.get(bp.get('id'))
+            if not categ:
+                bp['categ_id'] = 0
+                bp['categ_name'] = _("Uncategorized")
+                bp['categ_ancestors'] = []
+                continue
+            bp['categ_id'] = categ.id
+            bp['categ_name'] = categ.name or _("Uncategorized")
+            bp['categ_ancestors'] = self._get_categ_ancestors(categ)
+        return remaining, byproducts
+
     def _get_operations_data(self, production, level=0, current_index=False):
         result = super()._get_operations_data(
             production, level=level, current_index=current_index

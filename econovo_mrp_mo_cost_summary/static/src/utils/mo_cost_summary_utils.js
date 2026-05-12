@@ -421,7 +421,61 @@ export function collectMoCosts(data) {
         }
     }
 
-    return { categoryMap, workcenterMap };
+    // ---- Byproducts ----
+    // data.byproducts.details[] is the flat list of byproduct moves for the
+    // top-level MO.  Each item carries categ_id / categ_name / categ_ancestors
+    // injected by our Python override of _get_byproducts_data.
+    const byproductMap = {};
+    const parentName = data.summary ? data.summary.name : "";
+    const parentProductId = data.summary ? data.summary.product_id : 0;
+    const byproductDetails = (data.byproducts && data.byproducts.details) || [];
+    for (const bp of byproductDetails) {
+        const catId = bp.categ_id !== undefined ? bp.categ_id : 0;
+        const catName = bp.categ_name || _t("Uncategorized");
+        const catAncestors = bp.categ_ancestors || [{ id: catId, name: catName }];
+        const moCost = bp.mo_cost || 0;
+        const realCost = bp.real_cost || 0;
+
+        if (!byproductMap[catId]) {
+            byproductMap[catId] = {
+                id: catId,
+                name: catName,
+                total: 0,
+                prod_cost_total: 0,
+                products: {},
+                ancestors: catAncestors,
+            };
+        }
+        const cat = byproductMap[catId];
+        cat.total += moCost;
+        cat.prod_cost_total += realCost;
+
+        const prodId = bp.id;
+        if (!cat.products[prodId]) {
+            cat.products[prodId] = {
+                product_id: prodId,
+                name: bp.name,
+                link_id: prodId,
+                link_model: bp.model || "product.product",
+                total: 0,
+                prod_cost_total: 0,
+                usages: [],
+            };
+        }
+        const prod = cat.products[prodId];
+        prod.total += moCost;
+        prod.prod_cost_total += realCost;
+        prod.usages.push({
+            parent_product_id: parentProductId,
+            parent_name: parentName,
+            quantity: bp.quantity || 0,
+            uom_name: bp.uom_name || "",
+            total: moCost,
+            prod_cost: realCost,
+        });
+    }
+
+    return { categoryMap, workcenterMap, byproductMap };
 }
 
 /**
@@ -445,15 +499,16 @@ export function computeMoCostSummary(data) {
         return false;
     }
 
-    const { categoryMap, workcenterMap } = collectMoCosts(data);
+    const { categoryMap, workcenterMap, byproductMap } = collectMoCosts(data);
 
     // Build the category tree (same algorithm as BOM module)
     const categories = buildCategoryTree(categoryMap);
+    const byproductCategories = buildCategoryTree(byproductMap);
     const workcenters = Object.values(workcenterMap).sort(
         (a, b) => b.total - a.total,
     );
 
-    if (!categories.length && !workcenters.length) {
+    if (!categories.length && !workcenters.length && !byproductCategories.length) {
         return false;
     }
 
@@ -492,11 +547,19 @@ export function computeMoCostSummary(data) {
         totalDuration += wc.total_duration;
     }
 
+    let totalMoCostByproducts = 0;
+    let totalRealCostByproducts = 0;
+    for (const root of byproductCategories) {
+        totalMoCostByproducts += root.total;
+        totalRealCostByproducts += root.prod_cost_total;
+    }
+
     const grandTotalMoCost = totalMoCostComponents + totalMoCostOperations;
     const grandTotalRealCost = totalRealCostComponents + totalRealCostOperations;
 
     // Enrich category tree with percentages (no secondary currency for MO initially)
     enrichCategoryTree(categories, 0, totalMoCostComponents);
+    enrichCategoryTree(byproductCategories, 0, totalMoCostByproducts);
 
     // Enrich workcenter entries with percentages
     for (const wc of workcenters) {
@@ -513,7 +576,7 @@ export function computeMoCostSummary(data) {
     return {
         categories,
         workcenters,
-        byproductCategories: [],   // MO: no byproduct cost breakdown
+        byproductCategories,
         subcontracting: [],        // MO: subcontracting deferred to a future extension
         totals: {
             components: totalMoCostComponents,
@@ -528,9 +591,9 @@ export function computeMoCostSummary(data) {
             subcontracting_usd: false,
             subcontracting_prod_cost: 0,
             subcontracting_prod_cost_usd: false,
-            byproducts: 0,
+            byproducts: totalMoCostByproducts,
             byproducts_usd: false,
-            byproducts_prod_cost: 0,
+            byproducts_prod_cost: totalRealCostByproducts,
             byproducts_prod_cost_usd: false,
             // Grand total col1 = total mo_cost (components + operations)
             total: grandTotalMoCost,
@@ -538,10 +601,10 @@ export function computeMoCostSummary(data) {
             // Grand total col2 = total real_cost (components + operations)
             total_prod: grandTotalRealCost,
             total_prod_usd: false,
-            // net = gross (no byproducts to deduct in MO mode)
-            net_bom: grandTotalMoCost,
+            // net = gross minus byproducts cost allocation
+            net_bom: grandTotalMoCost - totalMoCostByproducts,
             net_bom_usd: false,
-            net_prod: grandTotalRealCost,
+            net_prod: grandTotalRealCost - totalRealCostByproducts,
             net_prod_usd: false,
         },
         currency_id: data.summary.currency_id || null,

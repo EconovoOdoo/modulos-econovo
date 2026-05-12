@@ -2,7 +2,7 @@
 
 import { _t } from "@web/core/l10n/translation";
 import { patch } from "@web/core/utils/patch";
-import { EventBus, useSubEnv } from "@odoo/owl";
+import { useSubEnv } from "@odoo/owl";
 import { MoOverview } from "@mrp/components/mo_overview/mrp_mo_overview";
 import { BomCostSummarySection } from
     "@econovo_mrp_bom_cost_summary/components/bom_cost_summary_section/bom_cost_summary_section";
@@ -29,11 +29,14 @@ patch(MoOverview.prototype, {
         Object.assign(this.state, {
             costSummary: false,
         });
-        // Provide the bus and callbacks expected by the XML template patch.
-        // BomCostSummarySection listens to this bus for fold-all / unfold-all.
-        const bus = new EventBus();
+        // Extend the env with our extra flags without replacing the native
+        // overviewBus that super.setup() already created.  Replacing it would
+        // break MoOverview's own "update-folded" subscriptions, which are
+        // registered against the bus that was active at useBus() call time.
+        // BomCostSummarySection listens to env.overviewBus for fold-all /
+        // unfold-all; since native components only subscribe to "unfold-all",
+        // triggering "fold-all" on the shared bus only affects our section.
         useSubEnv({
-            overviewBus: bus,
             overviewHasFoldButton: true,
             overviewXlsxExport: () => this._onMoExportXlsx(),
         });

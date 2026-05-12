@@ -53,6 +53,12 @@ _C = {
     "sc_vendor":        "E8D5F5",   # vendor group rows (purple)
     "sc_item":          "F5EEF8",   # subcontracting item rows (lighter purple)
     "sc_total":         "D7BDE2",   # subcontracting grand total row
+    # Byproducts sheet (green tones — value recovered from the process)
+    "bp_cat_0":         "C6E0B4",   # byproduct category depth 0
+    "bp_cat_1":         "D9EAD3",   # byproduct category depth 1
+    "bp_cat_deep":      "EAF4E7",   # byproduct category depth 2+
+    "bp_product":       "F3FAF1",   # byproduct product rows
+    "bp_total":         "A9D18E",   # byproducts grand total row
 }
 
 
@@ -720,6 +726,153 @@ def _write_operations_sheet(ws, data, currency_name):
         ], _C["total"], bold=True)
 
 
+# ── Sheet 4: Byproducts by Category ──────────────────────────────────────────
+
+def _collect_byproduct_entries(data, parent_name, out):
+    """Collect byproduct entries from the MO report data tree.
+
+    Reads ``data["byproducts"]["details"]`` for the current level and then
+    recurses into sub-MO replenishments so that byproducts at every
+    manufacturing level are included.
+
+    Each entry dict contains the byproduct fields (name, quantity, uom_name,
+    mo_cost, real_cost, categ_id, categ_name, categ_ancestors) plus a
+    ``_parent_name`` key indicating which MO produced it.
+    """
+    for bp in (data.get("byproducts") or {}).get("details") or []:
+        entry = dict(bp)
+        entry["_parent_name"] = parent_name
+        out.append(entry)
+
+    # Recurse into sub-MO replenishments embedded in component wrappers.
+    for wrapper in (data.get("components") or []):
+        for rep in (wrapper.get("replenishments") or []):
+            rep_sum = rep.get("summary") or {}
+            if rep_sum.get("model") == "mrp.production":
+                sub_name = rep_sum.get("name") or parent_name
+                _collect_byproduct_entries(rep, sub_name, out)
+
+
+def _build_byproduct_category_map(flat_entries):
+    """Aggregate flat byproduct entries into {categ_id: {...}}."""
+    category_map = {}
+    for entry in flat_entries:
+        cat_id = entry.get("categ_id") or 0
+        cat_name = entry.get("categ_name") or "Uncategorized"
+        ancestors = entry.get("categ_ancestors") or [{"id": cat_id, "name": cat_name}]
+
+        if cat_id not in category_map:
+            category_map[cat_id] = {
+                "id": cat_id,
+                "name": cat_name,
+                "ancestors": ancestors,
+                "mo_cost": 0.0,
+                "real_cost": 0.0,
+                "products": {},
+            }
+        cat = category_map[cat_id]
+        mo_cost = float(entry.get("mo_cost") or 0)
+        real_cost = float(entry.get("real_cost") or 0)
+        cat["mo_cost"] += mo_cost
+        cat["real_cost"] += real_cost
+
+        prod_id = entry.get("id") or 0
+        prod_name = entry.get("name") or ""
+        if prod_id not in cat["products"]:
+            cat["products"][prod_id] = {
+                "name": prod_name,
+                "mo_cost": 0.0,
+                "real_cost": 0.0,
+                "usages": [],
+            }
+        prod = cat["products"][prod_id]
+        prod["mo_cost"] += mo_cost
+        prod["real_cost"] += real_cost
+        prod["usages"].append({
+            "parent_name": entry.get("_parent_name") or "",
+            "quantity": float(entry.get("quantity") or 0),
+            "uom_name": entry.get("uom_name") or "",
+            "mo_cost": mo_cost,
+            "real_cost": real_cost,
+        })
+    return category_map
+
+
+def _write_byproducts_sheet(ws, data, currency_name):
+    """Write the Byproducts by Category sheet.
+
+    Returns True when at least one byproduct was written, False otherwise.
+    """
+    parent_name = (data.get("summary") or {}).get("name") or data.get("name", "")
+    flat_entries = []
+    _collect_byproduct_entries(data, parent_name, flat_entries)
+    if not flat_entries:
+        return False
+
+    category_map = _build_byproduct_category_map(flat_entries)
+
+    cur = currency_name
+    headers = ["Type", "Name", "Qty", "UoM",
+               "MO Cost (%s)" % cur,
+               "Real Cost (%s)" % cur,
+               "Deviation"]
+    _write_header(ws, 1, headers, _C["header_bg"])
+    ws.freeze_panes = "A2"
+    ws.column_dimensions["A"].width = 14
+    ws.column_dimensions["B"].width = 42
+    ws.column_dimensions["C"].width = 10
+    ws.column_dimensions["D"].width = 10
+    ws.column_dimensions["E"].width = 18
+    ws.column_dimensions["F"].width = 18
+    ws.column_dimensions["G"].width = 14
+
+    cat_colors = [_C["bp_cat_0"], _C["bp_cat_1"], _C["bp_cat_deep"]]
+
+    row = 2
+    total_mo = 0.0
+    total_real = 0.0
+
+    for cat in sorted(category_map.values(), key=lambda x: -x["mo_cost"]):
+        cat_color = cat_colors[0]
+        dev = _flt(cat["real_cost"] - cat["mo_cost"]) if cat["mo_cost"] else ""
+        _write_row(ws, row, [
+            "BP Category", cat["name"], "", "",
+            _flt(cat["mo_cost"]), _flt(cat["real_cost"]), dev,
+        ], cat_color, bold=True, outline_level=0)
+        row += 1
+        total_mo += cat["mo_cost"]
+        total_real += cat["real_cost"]
+
+        for prod in sorted(cat["products"].values(), key=lambda p: -p["mo_cost"]):
+            dev_p = _flt(prod["real_cost"] - prod["mo_cost"]) if prod["mo_cost"] else ""
+            _write_row(ws, row, [
+                "BP Product", "  " + prod["name"], "", "",
+                _flt(prod["mo_cost"]), _flt(prod["real_cost"]), dev_p,
+            ], _C["bp_product"], bold=False, outline_level=1)
+            row += 1
+
+            for usage in prod["usages"]:
+                dev_u = _flt(usage["real_cost"] - usage["mo_cost"]) if usage["mo_cost"] else ""
+                _write_row(ws, row, [
+                    "BP Usage",
+                    "    " + usage["parent_name"],
+                    _flt(usage["quantity"]),
+                    usage["uom_name"],
+                    _flt(usage["mo_cost"]),
+                    _flt(usage["real_cost"]),
+                    dev_u,
+                ], _C["usage"], bold=False, outline_level=2)
+                row += 1
+
+    _write_row(ws, row, [
+        "TOTAL", "", "", "",
+        _flt(total_mo), _flt(total_real),
+        _flt(total_real - total_mo) if total_mo else "",
+    ], _C["bp_total"], bold=True)
+
+    return True
+
+
 # ── Controller ────────────────────────────────────────────────────────────────
 
 class MoCostSummaryXlsx(http.Controller):
@@ -798,6 +951,11 @@ class MoCostSummaryXlsx(http.Controller):
         if subcontractor_map:
             ws4 = wb.create_sheet("Subcontracting by Vendor")
             _write_subcontracting_sheet(ws4, data, currency_name, subcontractor_map)
+
+        # Sheet 5: Byproducts by Category (only when byproducts exist)
+        ws_bp = wb.create_sheet("Byproducts by Category")
+        if not _write_byproducts_sheet(ws_bp, data, currency_name):
+            wb.remove(ws_bp)
 
         # Stream as .xlsx download
         buf = io.BytesIO()
