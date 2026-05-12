@@ -327,9 +327,10 @@ class MoCostSummaryXlsx(http.Controller):
         result = report.get_report_values(prod_id)
         data = result["data"]
 
-        # Determine currency name
+        # Determine currency name (mrp.production has no direct currency_id;
+        # the currency comes from the production order's company).
         production = env["mrp.production"].browse(prod_id)
-        currency_name = production.currency_id.name or "ARS"
+        currency_name = production.company_id.currency_id.name or "ARS"
 
         # Build workbook
         wb = Workbook()
