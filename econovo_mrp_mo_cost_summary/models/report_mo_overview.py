@@ -145,6 +145,27 @@ class ReportMoOverview(models.AbstractModel):
                     summary['subcontractor_name'] = mo.subcontractor_id.display_name
         return replenishments
 
+    @staticmethod
+    def _clean_mo_data_extra_keys(data):
+        """Recursively remove extra keys from strict-shape OWL prop dicts.
+
+        MoOverviewComponentsBlock validates its 'byproducts' prop shape as
+        {summary, details} only.  Our overrides temporarily attach 'categ_map'
+        inside the byproducts dict (convenient return channel from
+        _get_byproducts_data).  Before the data reaches OWL, every 'categ_map'
+        must be moved out of 'byproducts' and stored as a sibling
+        'byproducts_categ_map' at the same dict level.
+
+        The same problem exists for all sub-MO replenishments nested anywhere
+        in the component tree — this recursive walk handles them all.
+        """
+        if 'byproducts' in data:
+            categ_map = (data['byproducts'] or {}).pop('categ_map', {})
+            data['byproducts_categ_map'] = categ_map
+        for comp in data.get('components') or []:
+            for rep in comp.get('replenishments') or []:
+                ReportMoOverview._clean_mo_data_extra_keys(rep)
+
     def _get_report_data(self, production_id):
         """Inject 'operations_workcenter_info' as a top-level sibling of 'operations'.
 
@@ -153,18 +174,16 @@ class ReportMoOverview(models.AbstractModel):
         'workcenter_map' added by _get_operations_data must be removed from the
         top-level operations dict here; for sub-MO replenishments it is already
         moved to 'operations_workcenter_map' by _get_replenishment_lines above.
-        The top-level workcenter info is instead provided via the separate
-        'operations_workcenter_info' list (used by our JS utility by index).
+        'categ_map' added by _get_byproducts_data is removed recursively from
+        all levels by _clean_mo_data_extra_keys and promoted to a sibling key.
         """
         result = super()._get_report_data(production_id)
         # Remove workcenter_map injected by _get_operations_data so it does not
         # reach MoOverviewComponentsBlock as an invalid prop key.
         result.get('operations', {}).pop('workcenter_map', None)
-        # Remove categ_map injected by _get_byproducts_data — same reason.
-        # Promote it to a top-level sibling 'byproducts_categ_map' so that
-        # the byproducts dict keeps shape {summary, details} only.
-        bp_categ_map = (result.get('byproducts') or {}).pop('categ_map', {})
-        result['byproducts_categ_map'] = bp_categ_map
+        # Recursively clean categ_map from all byproducts dicts in the tree
+        # (top-level MO and every sub-MO replenishment).
+        self._clean_mo_data_extra_keys(result)
         production = self.env['mrp.production'].browse(production_id)
         result['operations_workcenter_info'] = [
             {
