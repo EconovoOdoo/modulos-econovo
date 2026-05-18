@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <!-- Fix wkhtmltopdf UTF-8 encoding on Windows: old versions of wkhtmltopdf
+         (0.12.x) ignore <meta charset="utf-8"> and read the HTML as Latin-1,
+         causing Spanish characters (ñ, ó, etc.) to appear as garbled Ã sequences.
+         Adding the legacy http-equiv Content-Type meta forces correct encoding. -->
+    <template id="report_remito_charset_fix" inherit_id="web.report_layout" name="Remito Digital: UTF-8 charset fix">
+        <xpath expr="//meta[@charset='utf-8']" position="after">
+            <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        </xpath>
+    </template>
+
     <record id="paperformat_remito_digital" model="report.paperformat">
         <field name="name">Remito Digital A4</field>
         <field name="default" eval="False"/>
