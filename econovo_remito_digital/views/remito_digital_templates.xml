@@ -11,10 +11,18 @@
         <t t-foreach="pages" t-as="page_lines">
             <t t-set="page_num" t-value="page_lines_index + 1"/>
             <t t-set="page_total" t-value="len(pages)"/>
-            <div class="page remito-page article"
-                 t-att-data-oe-model="o._name"
-                 t-att-data-oe-id="o.id"
-                 t-att-data-oe-lang="o.env.context.get('lang')">
+            <!-- Full-height table: row1=header / row2=content(flex) / row3=footer -->
+            <table class="remito-page-table"
+                   t-att-style="'' if page_lines_last else 'page-break-after: always;'"
+                   t-att-data-oe-model="o._name"
+                   t-att-data-oe-id="o.id"
+                   t-att-data-oe-lang="o.env.context.get('lang')">
+
+                <!-- ============================================================ -->
+                <!-- ROW 1: HEADER                                                 -->
+                <!-- ============================================================ -->
+                <tr class="remito-header-row">
+                <td class="remito-header-td">
 
                 <!-- ============================================================ -->
                 <!-- HEADER                                                        -->
@@ -195,9 +203,15 @@
                     </tr>
                 </table>
 
+                </td>
+                </tr><!-- end remito-header-row -->
+
                 <!-- ============================================================ -->
-                <!-- CÓDIGO DE BARRAS OPERACIÓN (para Odoo Barcode app)           -->
+                <!-- ROW 2: CONTENT — expands to fill remaining space             -->
                 <!-- ============================================================ -->
+                <tr class="remito-content-row">
+                <td class="remito-content-td">
+
                 <!-- ============================================================ -->
                 <!-- TABLA DE PRODUCTOS                                            -->
                 <!-- ============================================================ -->
@@ -222,25 +236,27 @@
                             <td class="col-detail" t-out="line['product'].name or ''"/>
                             <td class="col-lots" t-if="has_lots" t-raw="line['lots_text']"/>
                         </tr>
-                        <!-- Fill empty rows to maintain page height when few lines -->
-                        <t t-foreach="range(25 - len(page_lines))" t-as="empty_row">
-                            <tr class="remito-empty-row">
-                                <td></td><td></td><td></td>
-                                <td t-if="has_lots"></td>
-                            </tr>
-                        </t>
                     </tbody>
                 </table>
 
                 <!-- ============================================================ -->
-                <!-- OBSERVATIONS (from stock_ux)                                 -->
+                <!-- OBSERVATIONS (solo en última página)                         -->
                 <!-- ============================================================ -->
-                <t t-if="o._has_remito_observations()">
+                <t t-if="page_lines_last and o._has_remito_observations()">
                     <div class="remito-observations">
                         <div class="remito-observations-header">Observaciones</div>
                         <div class="remito-observations-body" t-raw="o.observations"/>
                     </div>
                 </t>
+
+                </td>
+                </tr><!-- end remito-content-row -->
+
+                <!-- ============================================================ -->
+                <!-- ROW 3: FOOTER — always at bottom of page                     -->
+                <!-- ============================================================ -->
+                <tr class="remito-footer-row">
+                <td class="remito-footer-td">
 
                 <!-- ============================================================ -->
                 <!-- FOOTER: TRASLADO + FIRMA                                      -->
@@ -350,7 +366,11 @@
                     </tr>
                 </table>
 
-            </div><!-- .page -->
+                </td>
+                </tr><!-- end remito-footer-row -->
+
+            </table><!-- end remito-page-table -->
+
         </t><!-- foreach page -->
     </t><!-- foreach doc -->
     </t><!-- web.html_container -->
