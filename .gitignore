@@ -5,6 +5,7 @@ report_xlsx/
 mrp_bom_structure_xlsx/
 econovo_partner_ledger_batch/
 base_advanced_report_templates/
+purchase_request/
 
 
 econovo_dymo_labels/__pycache__/
