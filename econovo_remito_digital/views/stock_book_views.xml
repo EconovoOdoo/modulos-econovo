@@ -20,7 +20,6 @@
                         </group>
                     </group>
                     <group>
-                        <field name="print_date"/>
                         <field name="copies_desc"/>
                         <field name="logo" widget="image" class="oe_avatar"/>
                     </group>
@@ -38,7 +37,6 @@
                 <field name="name"/>
                 <field name="legal_name"/>
                 <field name="vat"/>
-                <field name="print_date"/>
             </tree>
         </field>
     </record>
@@ -86,6 +84,7 @@
                        widget="boolean_toggle"
                        invisible="not is_digital"/>
                 <field name="printer_id" invisible="not is_digital"/>
+                <field name="print_date" invisible="not is_digital"/>
             </field>
         </field>
     </record>

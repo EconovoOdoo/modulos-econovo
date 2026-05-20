@@ -342,7 +342,7 @@
                                         </div>
                                         <div class="imprenta-line2">
                                             <t t-if="p.hab_mun">Inscripta Reg. Fiscal de Imprenta - Hab. Mun. Nº <t t-out="p.hab_mun"/></t>
-                                            <t t-if="p.print_date"> - Imp.: <t t-out="format_date(env, p.print_date, date_format='dd MMMM yyyy')"/></t>
+                                            <t t-if="book.print_date"> - Imp.: <t t-out="format_date(env, book.print_date, date_format='dd MMMM yyyy')"/></t>
                                             <t t-if="book.sequence_start and book.sequence_end">
                                                 - Del Nº <t t-out="book.sequence_start"/> al <t t-out="book.sequence_end"/>
                                             </t>
