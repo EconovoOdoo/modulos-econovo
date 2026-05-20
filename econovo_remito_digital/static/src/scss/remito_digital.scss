@@ -411,7 +411,7 @@ $remito-label-font-size: 9pt;
     width: 100%;
     border-collapse: collapse;
     border: $remito-border;
-    border-top: 0;
+    // border-top: 0;
 }
 
 .remito-footer-table td {
@@ -446,6 +446,13 @@ $remito-label-font-size: 9pt;
 }
 
 /* A7: Fecha + Firma side-by-side at the bottom of the conformidad cell */
+.remito-firma-table,
+.remito-firma-table tbody,
+.remito-firma-table tr,
+.remito-firma-table td {
+    border: 0 none !important;
+}
+
 .remito-firma-table {
     width: 100%;
     border-collapse: collapse;
@@ -456,7 +463,6 @@ $remito-label-font-size: 9pt;
     vertical-align: bottom;
     padding: 0;
     text-align: center;
-    border: 0;
     height: auto;
 }
 
