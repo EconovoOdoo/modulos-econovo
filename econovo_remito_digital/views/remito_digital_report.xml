@@ -30,9 +30,6 @@
         <field name="margin_right">5</field>
         <field name="header_line" eval="False"/>
         <field name="header_spacing">3</field>
-        <!-- footer_spacing: distance between body bottom and footer top.
-             0 means footer sits flush at the start of the bottom margin area. -->
-        <field name="footer_spacing">0</field>
         <field name="dpi">96</field>
     </record>
 
