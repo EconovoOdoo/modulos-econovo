@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="picking_form_view_inherit_remito_digital_sign" model="ir.ui.view">
+        <field name="name">stock.picking.view.form.inherit.econovo_remito_digital.sign</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//widget[@name='signature'][last()]" position="after">
+                <!-- Signature button for internal transfers (traslados entre sucursales, etc.)
+                     The native signature widget is limited to outgoing pickings; this adds
+                     the same functionality for internal operations that use a remito book. -->
+                <widget name="signature" string="Firmar" highlight="1"
+                        invisible="not id or picking_type_code != 'internal' or state != 'done'"
+                        full_name="partner_id" groups="stock.group_stock_sign_delivery"/>
+                <widget name="signature" string="Firmar"
+                        invisible="not id or picking_type_code != 'internal' or state == 'done'"
+                        full_name="partner_id" groups="stock.group_stock_sign_delivery"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

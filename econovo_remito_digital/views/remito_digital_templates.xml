@@ -298,21 +298,46 @@
                                 </div>
                             </t>
                         </td>
-                        <td class="remito-firma-cell">
-                            <div class="remito-conformidad">Conforme Recepción</div>
-                            <table class="remito-firma-table">
-                                <tr>
-                                    <td class="remito-firma-fecha-col">
-                                        <div class="remito-firma-line">___________________</div>
-                                        <div class="remito-firma-label">Fecha</div>
-                                    </td>
-                                    <td class="remito-firma-sello-col">
-                                        <div class="remito-firma-line">___________________________________</div>
-                                        <div class="remito-firma-label">Firma y Sello del Destinatario</div>
-                                    </td>
-                                </tr>
-                            </table>
-                        </td>
+                        <t t-if="o.signature">
+                            <!-- Digital signature captured via the Sign button -->
+                            <td class="remito-firma-cell">
+                                <div class="remito-conformidad">Conforme Recepción</div>
+                                <table class="remito-firma-table">
+                                    <tr>
+                                        <td class="remito-firma-fecha-col">
+                                            <div class="remito-firma-line" t-out="o.signature_date_display or ''"/>
+                                            <div class="remito-firma-label">Fecha</div>
+                                        </td>
+                                        <td class="remito-firma-sello-col" style="text-align:center;">
+                                            <img t-att-src="image_data_uri(o.signature)"
+                                                 style="max-height:18mm; max-width:50mm; display:block; margin:0 auto;"/>
+                                            <t t-if="o.partner_id">
+                                                <div style="font-size:7pt; text-align:center;" t-out="o.partner_id.name"/>
+                                            </t>
+                                            <div class="remito-firma-label">Firma y Sello del Destinatario</div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </t>
+                        <t t-else="">
+                            <!-- Blank lines for manual signing when no digital signature exists -->
+                            <td class="remito-firma-cell">
+                                <div class="remito-conformidad">Conforme Recepción</div>
+                                <table class="remito-firma-table">
+                                    <tr>
+                                        <td class="remito-firma-fecha-col">
+                                            <div class="remito-firma-line">___________________</div>
+                                            <div class="remito-firma-label">Fecha</div>
+                                        </td>
+                                        <td class="remito-firma-sello-col">
+                                            <div class="remito-firma-line">___________________________________</div>
+                                            <div class="remito-firma-label">Firma y Sello del Destinatario</div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </t>
                     </tr>
                 </table>
 

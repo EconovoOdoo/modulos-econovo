@@ -5,13 +5,52 @@
 import math
 from collections import defaultdict
 
-from odoo import _, fields, models
+from odoo import _, api, fields, models
 from odoo.exceptions import UserError
-from odoo.tools import is_html_empty
+from odoo.tools import format_date, is_html_empty
 
 
 class StockPicking(models.Model):
     _inherit = 'stock.picking'
+
+    signature_date = fields.Datetime('Signature Date', copy=False)
+    signature_date_display = fields.Char(compute='_compute_signature_date_display')
+
+    @api.depends('signature_date')
+    def _compute_signature_date_display(self):
+        for picking in self:
+            if picking.signature_date:
+                picking.signature_date_display = format_date(
+                    self.env, picking.signature_date, date_format='dd MMMM yyyy'
+                )
+            else:
+                picking.signature_date_display = ''
+
+    def write(self, vals):
+        """Set signature_date automatically when a signature is captured."""
+        if vals.get('signature') and 'signature_date' not in vals:
+            vals['signature_date'] = fields.Datetime.now()
+        return super().write(vals)
+
+    def _attach_sign(self):
+        """Override: for digital-book pickings, attach the remito instead of
+        the native delivery slip."""
+        self.ensure_one()
+        if not (self.book_id and self.book_id.is_digital):
+            return super()._attach_sign()
+        report = self.env['ir.actions.report']._render_qweb_pdf(
+            'econovo_remito_digital.action_report_remito_digital', self.id
+        )
+        filename = '%s_remito_firmado' % self.name
+        if self.partner_id:
+            message = _('Remito firmado por %s', self.partner_id.name)
+        else:
+            message = _('Remito firmado')
+        self.message_post(
+            attachments=[('%s.pdf' % filename, report[0])],
+            body=message,
+        )
+        return True
 
     def _has_remito_observations(self):
         """Return True when observations HTML has meaningful content."""
