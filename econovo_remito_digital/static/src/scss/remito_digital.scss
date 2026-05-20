@@ -4,8 +4,8 @@
 
 $remito-border: 1px solid #333;
 $remito-green: #2e7d32;
-$remito-font-size: 8pt;
-$remito-label-font-size: 7.5pt;
+$remito-font-size: 9.5pt;
+$remito-label-font-size: 9pt;
 
 /* ---- Page blocks (Odoo native footer pattern) ----
    The footer is in <div class="footer"> which Odoo extracts and passes to
@@ -175,7 +175,7 @@ $remito-label-font-size: 7.5pt;
 .remito-th-green {
     background-color: $remito-green;
     color: #fff;
-    font-size: 9pt;
+    font-size: 12pt;
     font-weight: bold;
     letter-spacing: 0.5pt;
 }
@@ -207,15 +207,24 @@ $remito-label-font-size: 7.5pt;
     font-size: 8pt;
 }
 
+.remito-fiscal-table,
+.remito-fiscal-table thead,
+.remito-fiscal-table tbody,
+.remito-fiscal-table tfoot,
+.remito-fiscal-table tr,
+.remito-fiscal-table th,
+.remito-fiscal-table td {
+    border: 0 none !important;
+    border-collapse: collapse;
+}
+
 .remito-fiscal-table {
     width: 100%;
-    border-collapse: collapse;
     font-size: 7pt;
 }
 
 .remito-fiscal-table td {
     padding: 0.5mm 1mm;
-    border: $remito-border;
 }
 
 /* ============================================================
@@ -287,6 +296,17 @@ $remito-label-font-size: 7.5pt;
 .remito-transport-full-cell { width: 100%; }
 
 /* ============================================================
+   BARCODE QUIET ZONE (A5)
+   White padding around any Code128 barcode so scanners have the
+   minimum margin (~10x module width) on left and right.
+   ============================================================ */
+.remito-barcode-quiet-zone {
+    background-color: #fff;
+    padding: 1mm 4mm;
+    display: block;
+}
+
+/* ============================================================
    PICKING OPERATION BARCODE (inside footer traslado cell)
    ============================================================ */
 .remito-picking-barcode-cell {
@@ -329,7 +349,7 @@ $remito-label-font-size: 7.5pt;
     font-size: 8pt;
     font-weight: bold;
     padding: 1.5mm 2mm;
-    border-right: 1px solid #4caf50;
+    border-right: 1px solid rgba(255, 255, 255, 0.35);
     text-align: left;
 }
 
@@ -350,7 +370,7 @@ $remito-label-font-size: 7.5pt;
 }
 
 .col-code   { width: 12%; }
-.col-qty    { width: 13%; text-align: right; }
+.col-qty    { width: 13%; text-align: left; }
 .col-detail { width: 46%; }
 .col-lots   { width: 29%; font-size: 7pt; vertical-align: top; }
 
@@ -415,8 +435,9 @@ $remito-label-font-size: 7.5pt;
 .remito-firma-cell {
     width: 60%;
     font-size: 8pt;
-    line-height: 1.8;
-    vertical-align: bottom;
+    line-height: 1.4;
+    vertical-align: top;
+    position: relative;
 }
 
 .remito-conformidad {
@@ -424,12 +445,39 @@ $remito-label-font-size: 7.5pt;
     margin-bottom: 1mm;
 }
 
-.remito-fecha-firma {
-    margin-bottom: 8mm;
+/* A7: Fecha + Firma side-by-side at the bottom of the conformidad cell */
+.remito-firma-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10mm;
 }
 
-.remito-firma-sello {
-    margin-bottom: 2mm;
+.remito-firma-table td {
+    vertical-align: bottom;
+    padding: 0;
+    text-align: center;
+    border: 0;
+    height: auto;
+}
+
+.remito-firma-fecha-col {
+    width: 30%;
+    padding-right: 3mm !important;
+}
+
+.remito-firma-sello-col {
+    width: 70%;
+}
+
+.remito-firma-line {
+    font-size: 8pt;
+    color: #222;
+    letter-spacing: 0;
+}
+
+.remito-firma-label {
+    font-size: 7.5pt;
+    margin-top: 0.5mm;
 }
 
 /* ============================================================

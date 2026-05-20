@@ -31,10 +31,6 @@ class StockBookPrinter(models.Model):
         string='Hab. Municipal',
         help='Número de habilitación municipal',
     )
-    print_date = fields.Date(
-        string='Fecha de Impresión',
-        help='Fecha en la que se imprimió el talonario físico',
-    )
     copies_desc = fields.Char(
         string='Descripción de Copias',
         default='ORIGINAL(Blanco) DUPLICADO(Color) TRIPLICADO(Color)',
@@ -46,6 +42,11 @@ class StockBookPrinter(models.Model):
 class StockBook(models.Model):
     _inherit = 'stock.book'
 
+    active = fields.Boolean(
+        default=True,
+        help='Talonarios archivados (CAI vencido o secuencias agotadas) se '
+             'ocultan al asignar libro a un picking.',
+    )
     is_digital = fields.Boolean(
         string='Remito Digital',
         help='Activar para usar el template digital A4 al imprimir este talonario. '
@@ -69,6 +70,12 @@ class StockBook(models.Model):
         string='Imprenta',
         help='Datos de la imprenta autorizada que imprimió el talonario físico.',
         ondelete='restrict',
+    )
+    print_date = fields.Date(
+        string='Fecha de Impresión',
+        help='Fecha en la que la imprenta imprimió este talonario físico. '
+             'Es propiedad del talonario porque una misma imprenta puede '
+             'imprimir distintos talonarios en fechas distintas.',
     )
 
     @api.onchange('is_digital')

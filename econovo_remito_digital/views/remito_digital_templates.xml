@@ -8,6 +8,7 @@
         <t t-set="partner" t-value="o.partner_id"/>
         <t t-set="pages" t-value="o._get_remito_digital_grouped_pages()"/>
         <t t-set="has_lots" t-value="any(bool(line['lots_text']) for page in pages for line in page)"/>
+        <t t-set="remito_primary_color" t-value="company.primary_color or '#2e7d32'"/>
         <t t-foreach="pages" t-as="page_lines">
             <t t-set="page_num" t-value="page_lines_index + 1"/>
             <t t-set="page_total" t-value="len(pages)"/>
@@ -64,6 +65,21 @@
                             <div class="remito-iva-type">
                                 I.V.A. RESPONSABLE INSCRIPTO
                             </div>
+
+                            <!-- Fiscal company data (moved from right cell — issue A2) -->
+                            <table class="remito-fiscal-table">
+                                <tr>
+                                    <td>C.U.I.T.: <strong t-out="company.vat or ''"/></td>
+                                    <td>Ing. Brutos C.M. <t t-out="company.l10n_ar_gross_income_number or ''"/></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2">
+                                        Inicio Actividad
+                                        <t t-if="company.l10n_ar_afip_start_date"
+                                           t-out="company.l10n_ar_afip_start_date.strftime('%d/%m/%Y')"/>
+                                    </td>
+                                </tr>
+                            </table>
                         </td>
 
                         <!-- Center: R badge + number block -->
@@ -82,31 +98,20 @@
                         <td class="remito-number-cell">
                             <table class="remito-date-table">
                                 <tr>
-                                    <th class="remito-th-green remito-th-full">
+                                    <th class="remito-th-green remito-th-full"
+                                        t-attf-style="background-color: {{remito_primary_color}};">
                                         REMITO Nº <t t-out="o.voucher_ids and o.voucher_ids[0].name or '_______________'"/>
                                     </th>
                                 </tr>
                                 <tr>
                                     <td class="remito-td-barcode-full">
-                                        <div t-field="o.name"
-                                             t-options="{'widget': 'barcode', 'width': 600, 'height': 75, 'img_style': 'display:block;margin:0 auto;max-width:95%;height:9mm;'}">
-                                            <div t-out="o.name"/>
+                                        <div class="remito-barcode-quiet-zone">
+                                            <div t-field="o.name"
+                                                 t-options="{'widget': 'barcode', 'width': 600, 'height': 75, 'img_style': 'display:block;margin:0 auto;max-width:100%;height:9mm;'}">
+                                                <div t-out="o.name"/>
+                                            </div>
                                         </div>
                                         <div class="remito-picking-name-under-barcode" t-out="o.name"/>
-                                    </td>
-                                </tr>
-                            </table>
-                            <!-- Fiscal company data below REMITO/FECHA -->
-                            <table class="remito-fiscal-table">
-                                <tr>
-                                    <td>C.U.I.T.: <strong t-out="company.vat or ''"/></td>
-                                    <td>Ing. Brutos C.M. <t t-out="company.l10n_ar_gross_income_number or ''"/></td>
-                                </tr>
-                                <tr>
-                                    <td colspan="2">
-                                        Inicio Actividad
-                                        <t t-if="company.l10n_ar_afip_start_date"
-                                           t-out="company.l10n_ar_afip_start_date.strftime('%d/%m/%Y')"/>
                                     </td>
                                 </tr>
                             </table>
@@ -221,11 +226,11 @@
                 <!-- ============================================================ -->
                 <table class="remito-products-table">
                     <thead>
-                        <tr>
-                            <th class="col-code">CÓDIGO</th>
-                            <th class="col-qty">CANTIDAD</th>
-                            <th class="col-detail">DETALLE</th>
-                            <th class="col-lots" t-if="has_lots">Serie/Lote</th>
+                        <tr t-attf-style="background-color: {{remito_primary_color}};">
+                            <th class="col-code" t-attf-style="background-color: {{remito_primary_color}};">CÓDIGO</th>
+                            <th class="col-qty" t-attf-style="background-color: {{remito_primary_color}};">CANTIDAD</th>
+                            <th class="col-detail" t-attf-style="background-color: {{remito_primary_color}};">DETALLE</th>
+                            <th class="col-lots" t-if="has_lots" t-attf-style="background-color: {{remito_primary_color}};">SERIE/LOTE</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -248,7 +253,8 @@
                 <!-- ============================================================ -->
                 <t t-if="page_lines_last and o._has_remito_observations()">
                     <div class="remito-observations">
-                        <div class="remito-observations-header">Observaciones</div>
+                        <div class="remito-observations-header"
+                             t-attf-style="background-color: {{remito_primary_color}};">Observaciones</div>
                         <div class="remito-observations-body" t-raw="o.observations"/>
                     </div>
                 </t>
@@ -268,6 +274,7 @@
                 <!-- ============================================================ -->
                 <t t-set="dest_picking_ids" t-value="o.move_ids.mapped('move_dest_ids').mapped('picking_id')"/>
                 <t t-set="dest_picking" t-value="dest_picking_ids[0] if dest_picking_ids else False"/>
+                <t t-set="show_dest_barcode" t-value="book.is_interwarehouse_company_transfer and dest_picking"/>
                 <table class="remito-footer-table">
                     <tr>
                         <td class="remito-traslado-cell">
@@ -276,39 +283,35 @@
                                     TRASLADO DE MERCADERIA ENTRE SUCURSALES
                                 </div>
                             </t>
-                            <!-- Footer barcode:
-                                 - Interwarehouse: barcode of the DESTINATION picking
-                                   (the one the other branch scans to receive from transit)
-                                 - Otherwise: barcode of the current picking (o.name) -->
-                            <t t-if="book.is_interwarehouse_company_transfer and dest_picking">
+                            <!-- Footer barcode only when there is an actual destination
+                                 picking from an interwarehouse transfer (issue A6). -->
+                            <t t-if="show_dest_barcode">
                                 <div class="remito-picking-barcode-cell">
                                     <div class="remito-picking-barcode-label">Recepción en destino:</div>
-                                    <div t-field="dest_picking.name"
-                                         t-options="{'widget': 'barcode', 'width': 600, 'height': 75, 'img_style': 'display:block;margin:0 auto;max-width:90%;height:9mm;'}">
-                                        <div class="remito-picking-barcode-fallback" t-out="dest_picking.name"/>
+                                    <div class="remito-barcode-quiet-zone">
+                                        <div t-field="dest_picking.name"
+                                             t-options="{'widget': 'barcode', 'width': 600, 'height': 75, 'img_style': 'display:block;margin:0 auto;max-width:100%;height:9mm;'}">
+                                            <div class="remito-picking-barcode-fallback" t-out="dest_picking.name"/>
+                                        </div>
                                     </div>
                                     <div class="remito-picking-barcode-text" t-out="dest_picking.name"/>
-                                </div>
-                            </t>
-                            <t t-else="">
-                                <div class="remito-picking-barcode-cell">
-                                    <div t-field="o.name"
-                                         t-options="{'widget': 'barcode', 'width': 600, 'height': 75, 'img_style': 'display:block;margin:0 auto;max-width:90%;height:9mm;'}">
-                                        <div class="remito-picking-barcode-fallback" t-out="o.name"/>
-                                    </div>
-                                    <div class="remito-picking-barcode-text" t-out="o.name"/>
                                 </div>
                             </t>
                         </td>
                         <td class="remito-firma-cell">
                             <div class="remito-conformidad">Conforme Recepción</div>
-                            <div class="remito-fecha-firma">
-                                Fecha ___________________________
-                            </div>
-                            <div class="remito-firma-sello">
-                                ___________________________________<br/>
-                                Firma y Sello del Destinatario
-                            </div>
+                            <table class="remito-firma-table">
+                                <tr>
+                                    <td class="remito-firma-fecha-col">
+                                        <div class="remito-firma-line">___________________</div>
+                                        <div class="remito-firma-label">Fecha</div>
+                                    </td>
+                                    <td class="remito-firma-sello-col">
+                                        <div class="remito-firma-line">___________________________________</div>
+                                        <div class="remito-firma-label">Firma y Sello del Destinatario</div>
+                                    </td>
+                                </tr>
+                            </table>
                         </td>
                     </tr>
                 </table>
@@ -339,7 +342,7 @@
                                         </div>
                                         <div class="imprenta-line2">
                                             <t t-if="p.hab_mun">Inscripta Reg. Fiscal de Imprenta - Hab. Mun. Nº <t t-out="p.hab_mun"/></t>
-                                            <t t-if="p.print_date"> - Imp.: <t t-out="p.print_date.strftime('%d %B %Y')"/></t>
+                                            <t t-if="book.print_date"> - Imp.: <t t-out="format_date(env, book.print_date, date_format='dd MMMM yyyy')"/></t>
                                             <t t-if="book.sequence_start and book.sequence_end">
                                                 - Del Nº <t t-out="book.sequence_start"/> al <t t-out="book.sequence_end"/>
                                             </t>
