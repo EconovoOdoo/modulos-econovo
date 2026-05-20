@@ -215,7 +215,7 @@ $remito-label-font-size: 7.5pt;
 
 .remito-fiscal-table td {
     padding: 0.5mm 1mm;
-    border: $remito-border;
+    border: 0;
 }
 
 /* ============================================================
@@ -340,7 +340,7 @@ $remito-label-font-size: 7.5pt;
     font-size: 8pt;
     font-weight: bold;
     padding: 1.5mm 2mm;
-    border-right: 1px solid #4caf50;
+    border-right: 1px solid rgba(255, 255, 255, 0.35);
     text-align: left;
 }
 
