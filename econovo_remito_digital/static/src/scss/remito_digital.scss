@@ -168,16 +168,16 @@ $remito-label-font-size: 9pt;
 .remito-date-table th,
 .remito-date-table td {
     border: $remito-border;
-    padding: 1mm 2mm;
+    padding: 2mm 2mm;
     text-align: center;
 }
 
 .remito-th-green {
     background-color: $remito-green;
     color: #fff;
-    font-size: 12pt;
+    font-size: 15pt;
     font-weight: bold;
-    letter-spacing: 0.5pt;
+    letter-spacing: 1pt;
 }
 
 .remito-th-full {
