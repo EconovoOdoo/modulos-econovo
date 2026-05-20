@@ -69,28 +69,47 @@
             </sheet>
             <!-- Digital toggle after autoprinted -->
             <field name="autoprinted" position="after">
-                <field name="is_digital" widget="boolean_toggle"/>
+                <field name="is_digital" widget="boolean_toggle" readonly="not active"/>
             </field>
-            <!-- Make autoprinted readonly when is_digital is True -->
+            <!-- Make autoprinted readonly when is_digital is True or when archived -->
             <field name="autoprinted" position="attributes">
-                <attribute name="readonly">is_digital</attribute>
+                <attribute name="readonly">is_digital or not active</attribute>
             </field>
             <!-- Override CAI visibility: show when autoprinted OR is_digital -->
             <xpath expr="//field[@name='l10n_ar_cai']" position="attributes">
                 <attribute name="invisible">not autoprinted and not is_digital</attribute>
+                <attribute name="readonly">not active</attribute>
             </xpath>
             <xpath expr="//field[@name='l10n_ar_cai_due']" position="attributes">
                 <attribute name="invisible">not autoprinted and not is_digital</attribute>
+                <attribute name="readonly">not active</attribute>
             </xpath>
+            <!-- Lock core fields when archived -->
+            <field name="name" position="attributes">
+                <attribute name="readonly">not active</attribute>
+            </field>
+            <field name="sequence_id" position="attributes">
+                <attribute name="readonly">not active</attribute>
+            </field>
+            <field name="next_number" position="attributes">
+                <attribute name="readonly">not active</attribute>
+            </field>
+            <field name="document_type_id" position="attributes">
+                <attribute name="readonly">not active</attribute>
+            </field>
+            <field name="company_id" position="attributes">
+                <attribute name="readonly">not active</attribute>
+            </field>
             <!-- Sequence range and other digital fields after l10n_ar_cai_due -->
             <field name="l10n_ar_cai_due" position="after">
-                <field name="sequence_start" invisible="not is_digital"/>
-                <field name="sequence_end" invisible="not is_digital"/>
+                <field name="sequence_start" invisible="not is_digital" readonly="not active"/>
+                <field name="sequence_end" invisible="not is_digital" readonly="not active"/>
                 <field name="is_interwarehouse_company_transfer"
                        widget="boolean_toggle"
-                       invisible="not is_digital"/>
-                <field name="printer_id" invisible="not is_digital"/>
-                <field name="print_date" invisible="not is_digital"/>
+                       invisible="not is_digital"
+                       readonly="not active"/>
+                <field name="printer_id" invisible="not is_digital" readonly="not active"/>
+                <field name="print_date" invisible="not is_digital" readonly="not active"/>
             </field>
         </field>
     </record>
