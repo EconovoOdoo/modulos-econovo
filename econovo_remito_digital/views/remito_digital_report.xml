@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <!-- Fix wkhtmltopdf UTF-8 encoding on Windows: old versions of wkhtmltopdf
+         (0.12.x) ignore <meta charset="utf-8"> and read the HTML as Latin-1,
+         causing Spanish characters (ñ, ó, etc.) to appear as garbled Ã sequences.
+         Adding the legacy http-equiv Content-Type meta forces correct encoding. -->
+    <template id="report_remito_charset_fix" inherit_id="web.report_layout" name="Remito Digital: UTF-8 charset fix">
+        <xpath expr="//meta[@charset='utf-8']" position="after">
+            <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        </xpath>
+    </template>
+
     <record id="paperformat_remito_digital" model="report.paperformat">
         <field name="name">Remito Digital A4</field>
         <field name="default" eval="False"/>
@@ -8,11 +18,21 @@
         <field name="page_width">0</field>
         <field name="orientation">Portrait</field>
         <field name="margin_top">5</field>
-        <field name="margin_bottom">5</field>
+        <!-- margin_bottom reserves the space where wkhtmltopdf renders the
+             footer-html block (Odoo extracts div.footer and passes it via
+             the wkhtmltopdf footer-html flag). Total footer content height:
+             barcode block ~17mm, firma cell ~17mm (max of the two columns),
+             imprenta table ~12mm, plus internal padding ~5mm = ~35mm.
+             We set 55mm to leave a safety buffer; wkhtmltopdf silently drops
+             footer content that exceeds margin_bottom. -->
+        <field name="margin_bottom">55</field>
         <field name="margin_left">5</field>
         <field name="margin_right">5</field>
         <field name="header_line" eval="False"/>
         <field name="header_spacing">3</field>
+        <!-- footer_spacing: distance between body bottom and footer top.
+             0 means footer sits flush at the start of the bottom margin area. -->
+        <field name="footer_spacing">0</field>
         <field name="dpi">96</field>
     </record>
 

@@ -2,6 +2,7 @@
 # For copyright and license notices, see __manifest__.py file in module root
 # directory
 ##############################################################################
+import math
 from collections import defaultdict
 
 from odoo import _, fields, models
@@ -101,11 +102,52 @@ class StockPicking(models.Model):
 
         return list(grouped.values())
 
-    def _get_remito_digital_grouped_pages(self, max_lines=25):
-        """Paginate grouped lines for multi-page rendering."""
+    # Calibration constants for A4 at 8pt/96dpi with 4mm inner padding
+    _REMITO_AVAILABLE_HEIGHT_MM = 118.0   # product rows area per page
+    _REMITO_LINE_HEIGHT_MM = 5.5          # base row height (normal line)
+    _REMITO_LOT_ENTRY_HEIGHT_MM = 3.5     # each extra lot entry beyond the first
+    _REMITO_DETAIL_WRAP_CHARS = 50        # chars before product name wraps
+
+    def _remito_line_visual_weight(self, group):
+        """Estimate rendered height in mm for one product group row.
+
+        Takes into account multiple lot entries and long product names
+        that wrap to a second line.
+        """
+        base = self._REMITO_LINE_HEIGHT_MM
+        # Extra height from lot entries beyond the first
+        lot_count = len(group['lots'])
+        if lot_count > 1:
+            base += (lot_count - 1) * self._REMITO_LOT_ENTRY_HEIGHT_MM
+        # Extra height if product name is long enough to wrap
+        name_len = len(group['product'].name or '') if group['product'] else 0
+        if name_len > self._REMITO_DETAIL_WRAP_CHARS:
+            wrap_lines = math.ceil(name_len / self._REMITO_DETAIL_WRAP_CHARS)
+            base = max(base, self._REMITO_LINE_HEIGHT_MM * wrap_lines)
+        return base
+
+    def _get_remito_digital_grouped_pages(self):
+        """Paginate grouped lines using estimated visual height per row.
+
+        Accumulates rows until the available height for the content area
+        would be exceeded, then starts a new page.
+        """
         self.ensure_one()
         lines = self._get_remito_digital_grouped_lines()
+        if not lines:
+            return [[]]
         pages = []
-        for i in range(0, max(len(lines), 1), max_lines):
-            pages.append(lines[i:i + max_lines])
+        current_page = []
+        current_height = 0.0
+        for group in lines:
+            weight = self._remito_line_visual_weight(group)
+            if current_page and current_height + weight > self._REMITO_AVAILABLE_HEIGHT_MM:
+                pages.append(current_page)
+                current_page = [group]
+                current_height = weight
+            else:
+                current_page.append(group)
+                current_height += weight
+        if current_page:
+            pages.append(current_page)
         return pages

@@ -7,14 +7,33 @@ $remito-green: #2e7d32;
 $remito-font-size: 8pt;
 $remito-label-font-size: 7.5pt;
 
-/* ---- Page wrapper ---- */
-.remito-page {
+/* ---- Page blocks (Odoo native footer pattern) ----
+   The footer is in <div class="footer"> which Odoo extracts and passes to
+   wkhtmltopdf as --footer-html. wkhtmltopdf renders it inside the bottom
+   margin (margin_bottom in paper format, currently 35mm). No CSS positioning
+   needed here — wkhtmltopdf does it automatically.
+*/
+.remito-header-block,
+.remito-content-block {
+    padding: 0 4mm;
     font-family: Arial, sans-serif;
     font-size: $remito-font-size;
     color: #222;
-    padding: 4mm;
-    box-sizing: border-box;
-    width: 100%;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+.remito-header-block {
+    padding-top: 4mm;
+}
+
+// Footer block rendered by --footer-html. No padding-top/bottom from us;
+// wkhtmltopdf controls vertical positioning via paper format margins.
+.remito-page-footer {
+    padding: 0 4mm;
+    font-family: Arial, sans-serif;
+    font-size: $remito-font-size;
+    color: #222;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
 }

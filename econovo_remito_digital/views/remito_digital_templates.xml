@@ -11,10 +11,24 @@
         <t t-foreach="pages" t-as="page_lines">
             <t t-set="page_num" t-value="page_lines_index + 1"/>
             <t t-set="page_total" t-value="len(pages)"/>
-            <div class="page remito-page article"
+            <!-- Odoo official footer pattern:
+                 * div.article is extracted by _prepare_html() into per-page bodies
+                 * div.footer is extracted and passed to wkhtmltopdf as the footer-html
+                   CLI flag, which renders it within the bottom margin of EVERY page.
+                 * The paper format reserves the footer height via margin_bottom (~35mm).
+                 This is THE Odoo way to pin a footer to the bottom; CSS positioning is
+                 unreliable in wkhtmltopdf 0.12.x because body style overflow:hidden
+                 in minimal_layout clips position:fixed/absolute elements. -->
+            <div class="article"
+                 t-att-style="'' if page_lines_last else 'page-break-after: always;'"
                  t-att-data-oe-model="o._name"
                  t-att-data-oe-id="o.id"
                  t-att-data-oe-lang="o.env.context.get('lang')">
+
+                <!-- ============================================================ -->
+                <!-- HEADER BLOCK                                                  -->
+                <!-- ============================================================ -->
+                <div class="remito-header-block">
 
                 <!-- ============================================================ -->
                 <!-- HEADER                                                        -->
@@ -195,9 +209,13 @@
                     </tr>
                 </table>
 
+                </div><!-- end remito-header-block -->
+
                 <!-- ============================================================ -->
-                <!-- CÓDIGO DE BARRAS OPERACIÓN (para Odoo Barcode app)           -->
+                <!-- PRODUCTS BLOCK                                                -->
                 <!-- ============================================================ -->
+                <div class="remito-content-block">
+
                 <!-- ============================================================ -->
                 <!-- TABLA DE PRODUCTOS                                            -->
                 <!-- ============================================================ -->
@@ -222,25 +240,28 @@
                             <td class="col-detail" t-out="line['product'].name or ''"/>
                             <td class="col-lots" t-if="has_lots" t-raw="line['lots_text']"/>
                         </tr>
-                        <!-- Fill empty rows to maintain page height when few lines -->
-                        <t t-foreach="range(25 - len(page_lines))" t-as="empty_row">
-                            <tr class="remito-empty-row">
-                                <td></td><td></td><td></td>
-                                <td t-if="has_lots"></td>
-                            </tr>
-                        </t>
                     </tbody>
                 </table>
 
                 <!-- ============================================================ -->
-                <!-- OBSERVATIONS (from stock_ux)                                 -->
+                <!-- OBSERVATIONS (solo en última página)                         -->
                 <!-- ============================================================ -->
-                <t t-if="o._has_remito_observations()">
+                <t t-if="page_lines_last and o._has_remito_observations()">
                     <div class="remito-observations">
                         <div class="remito-observations-header">Observaciones</div>
                         <div class="remito-observations-body" t-raw="o.observations"/>
                     </div>
                 </t>
+
+                </div><!-- end remito-content-block -->
+
+            </div><!-- end article -->
+
+            <!-- ============================================================ -->
+            <!-- FOOTER — extracted by Odoo, rendered by wkhtmltopdf at page bottom -->
+            <!-- ============================================================ -->
+            <div class="footer">
+                <div class="remito-page-footer">
 
                 <!-- ============================================================ -->
                 <!-- FOOTER: TRASLADO + FIRMA                                      -->
@@ -350,7 +371,9 @@
                     </tr>
                 </table>
 
-            </div><!-- .page -->
+                </div><!-- end remito-page-footer -->
+            </div><!-- end footer -->
+
         </t><!-- foreach page -->
     </t><!-- foreach doc -->
     </t><!-- web.html_container -->
