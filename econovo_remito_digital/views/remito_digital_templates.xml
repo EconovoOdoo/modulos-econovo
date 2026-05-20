@@ -11,18 +11,24 @@
         <t t-foreach="pages" t-as="page_lines">
             <t t-set="page_num" t-value="page_lines_index + 1"/>
             <t t-set="page_total" t-value="len(pages)"/>
-            <!-- Full-height table: row1=header / row2=content(flex) / row3=footer -->
-            <table class="remito-page-table"
-                   t-att-style="'' if page_lines_last else 'page-break-after: always;'"
-                   t-att-data-oe-model="o._name"
-                   t-att-data-oe-id="o.id"
-                   t-att-data-oe-lang="o.env.context.get('lang')">
+            <!-- Odoo official footer pattern:
+                 * div.article is extracted by _prepare_html() into per-page bodies
+                 * div.footer is extracted and passed to wkhtmltopdf as the footer-html
+                   CLI flag, which renders it within the bottom margin of EVERY page.
+                 * The paper format reserves the footer height via margin_bottom (~35mm).
+                 This is THE Odoo way to pin a footer to the bottom; CSS positioning is
+                 unreliable in wkhtmltopdf 0.12.x because body style overflow:hidden
+                 in minimal_layout clips position:fixed/absolute elements. -->
+            <div class="article"
+                 t-att-style="'' if page_lines_last else 'page-break-after: always;'"
+                 t-att-data-oe-model="o._name"
+                 t-att-data-oe-id="o.id"
+                 t-att-data-oe-lang="o.env.context.get('lang')">
 
                 <!-- ============================================================ -->
-                <!-- ROW 1: HEADER                                                 -->
+                <!-- HEADER BLOCK                                                  -->
                 <!-- ============================================================ -->
-                <tr class="remito-header-row">
-                <td class="remito-header-td">
+                <div class="remito-header-block">
 
                 <!-- ============================================================ -->
                 <!-- HEADER                                                        -->
@@ -203,14 +209,12 @@
                     </tr>
                 </table>
 
-                </td>
-                </tr><!-- end remito-header-row -->
+                </div><!-- end remito-header-block -->
 
                 <!-- ============================================================ -->
-                <!-- ROW 2: CONTENT — expands to fill remaining space             -->
+                <!-- PRODUCTS BLOCK                                                -->
                 <!-- ============================================================ -->
-                <tr class="remito-content-row">
-                <td class="remito-content-td">
+                <div class="remito-content-block">
 
                 <!-- ============================================================ -->
                 <!-- TABLA DE PRODUCTOS                                            -->
@@ -249,14 +253,15 @@
                     </div>
                 </t>
 
-                </td>
-                </tr><!-- end remito-content-row -->
+                </div><!-- end remito-content-block -->
 
-                <!-- ============================================================ -->
-                <!-- ROW 3: FOOTER — always at bottom of page                     -->
-                <!-- ============================================================ -->
-                <tr class="remito-footer-row">
-                <td class="remito-footer-td">
+            </div><!-- end article -->
+
+            <!-- ============================================================ -->
+            <!-- FOOTER — extracted by Odoo, rendered by wkhtmltopdf at page bottom -->
+            <!-- ============================================================ -->
+            <div class="footer">
+                <div class="remito-page-footer">
 
                 <!-- ============================================================ -->
                 <!-- FOOTER: TRASLADO + FIRMA                                      -->
@@ -366,10 +371,8 @@
                     </tr>
                 </table>
 
-                </td>
-                </tr><!-- end remito-footer-row -->
-
-            </table><!-- end remito-page-table -->
+                </div><!-- end remito-page-footer -->
+            </div><!-- end footer -->
 
         </t><!-- foreach page -->
     </t><!-- foreach doc -->

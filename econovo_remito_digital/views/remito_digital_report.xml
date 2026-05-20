@@ -18,11 +18,21 @@
         <field name="page_width">0</field>
         <field name="orientation">Portrait</field>
         <field name="margin_top">5</field>
-        <field name="margin_bottom">5</field>
+        <!-- margin_bottom reserves the space where wkhtmltopdf renders the
+             footer-html block (Odoo extracts div.footer and passes it via
+             the wkhtmltopdf footer-html flag). Total footer content height:
+             barcode block ~17mm, firma cell ~17mm (max of the two columns),
+             imprenta table ~12mm, plus internal padding ~5mm = ~35mm.
+             We set 55mm to leave a safety buffer; wkhtmltopdf silently drops
+             footer content that exceeds margin_bottom. -->
+        <field name="margin_bottom">55</field>
         <field name="margin_left">5</field>
         <field name="margin_right">5</field>
         <field name="header_line" eval="False"/>
         <field name="header_spacing">3</field>
+        <!-- footer_spacing: distance between body bottom and footer top.
+             0 means footer sits flush at the start of the bottom margin area. -->
+        <field name="footer_spacing">0</field>
         <field name="dpi">96</field>
     </record>
 
