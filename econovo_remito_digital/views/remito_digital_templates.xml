@@ -146,7 +146,7 @@
                         <!-- Right column -->
                         <td class="remito-recipient-right">
                             <div class="remito-field-row">
-                                <span class="remito-label">Cuenta Nº:</span>
+                                <span class="remito-label">CUENTA Nº:</span>
                                 <span class="remito-value" t-out="partner.ref or ''"/>
                             </div>
                             <div class="remito-field-row">
@@ -154,12 +154,12 @@
                                 <span class="remito-value" t-out="partner.vat or ''"/>
                             </div>
                             <div class="remito-field-row">
-                                <span class="remito-label">Condición:</span>
+                                <span class="remito-label">CONDICIÓN:</span>
                                 <span class="remito-value"
                                       t-out="partner.l10n_ar_afip_responsibility_type_id.name or ''"/>
                             </div>
                             <div class="remito-field-row">
-                                <span class="remito-label">Ing. Brutos:</span>
+                                <span class="remito-label">ING. BRUTOS:</span>
                                 <span class="remito-value"
                                       t-out="partner.l10n_ar_gross_income_number or ''"/>
                             </div>

@@ -243,12 +243,12 @@ $remito-label-font-size: 9pt;
 }
 
 .remito-recipient-left {
-    width: 55%;
     border-right: $remito-border;
 }
 
 .remito-recipient-right {
-    width: 45%;
+    width: 1%;
+    white-space: nowrap;
 }
 
 .remito-field-row {
