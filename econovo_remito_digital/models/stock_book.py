@@ -3,6 +3,7 @@
 # directory
 ##############################################################################
 from odoo import api, fields, models
+from odoo.tools import format_date
 
 
 class StockBookPrinter(models.Model):
@@ -77,6 +78,18 @@ class StockBook(models.Model):
              'Es propiedad del talonario porque una misma imprenta puede '
              'imprimir distintos talonarios en fechas distintas.',
     )
+    print_date_display = fields.Char(
+        string='Fecha de Impresión (texto)',
+        compute='_compute_print_date_display',
+    )
+
+    @api.depends('print_date')
+    def _compute_print_date_display(self):
+        for record in self:
+            record.print_date_display = (
+                format_date(self.env, record.print_date, date_format='dd MMMM yyyy')
+                if record.print_date else ''
+            )
 
     @api.onchange('is_digital')
     def _onchange_is_digital(self):
