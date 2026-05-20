@@ -230,7 +230,7 @@
                             <th class="col-code" t-attf-style="background-color: {{remito_primary_color}};">CÓDIGO</th>
                             <th class="col-qty" t-attf-style="background-color: {{remito_primary_color}};">CANTIDAD</th>
                             <th class="col-detail" t-attf-style="background-color: {{remito_primary_color}};">DETALLE</th>
-                            <th class="col-lots" t-if="has_lots" t-attf-style="background-color: {{remito_primary_color}};">Serie/Lote</th>
+                            <th class="col-lots" t-if="has_lots" t-attf-style="background-color: {{remito_primary_color}};">SERIE/LOTE</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -342,7 +342,7 @@
                                         </div>
                                         <div class="imprenta-line2">
                                             <t t-if="p.hab_mun">Inscripta Reg. Fiscal de Imprenta - Hab. Mun. Nº <t t-out="p.hab_mun"/></t>
-                                            <t t-if="p.print_date"> - Imp.: <t t-out="p.print_date.strftime('%d %B %Y')"/></t>
+                                            <t t-if="p.print_date"> - Imp.: <t t-out="format_date(env, p.print_date, date_format='dd MMMM yyyy')"/></t>
                                             <t t-if="book.sequence_start and book.sequence_end">
                                                 - Del Nº <t t-out="book.sequence_start"/> al <t t-out="book.sequence_end"/>
                                             </t>
