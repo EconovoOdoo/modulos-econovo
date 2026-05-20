@@ -102,9 +102,11 @@ class ReportEconovoBomCostSummary(models.AbstractModel):
         category_map = {}
         workcenter_map = {}
         byproduct_category_map = {}
+        subcontracting_map = {}
         self._collect_costs(
             data, category_map, workcenter_map,
             byproduct_category_map=byproduct_category_map,
+            subcontracting_map=subcontracting_map,
         )
 
         rate = secondary_currency.get("rate", 0) if secondary_currency else 0
@@ -114,8 +116,11 @@ class ReportEconovoBomCostSummary(models.AbstractModel):
             workcenter_map.values(), key=lambda w: w["total"], reverse=True
         )
         byproduct_categories = self._build_category_tree(byproduct_category_map)
+        subcontracting = sorted(
+            subcontracting_map.values(), key=lambda v: v["total"], reverse=True
+        )
 
-        if not categories and not workcenters and not byproduct_categories:
+        if not categories and not workcenters and not byproduct_categories and not subcontracting:
             return False
 
         total_components = sum(c["total"] for c in categories)
@@ -126,8 +131,12 @@ class ReportEconovoBomCostSummary(models.AbstractModel):
         total_byproducts_prod_cost = sum(
             c["prod_cost_total"] for c in byproduct_categories
         )
-        # Gross BoM = all costs before byproduct deduction (mirrors JS totals.total).
-        total_bom = total_components + total_operations
+        total_subcontracting = sum(v["total"] for v in subcontracting)
+        total_subcontracting_prod_cost = sum(
+            v["prod_cost_total"] for v in subcontracting
+        )
+        # Gross BoM = all costs before byproduct deduction.
+        total_bom = total_components + total_operations + total_subcontracting
         net_bom = total_bom - total_byproducts
         total_prod = total_prod_cost + total_operations
         net_prod = total_prod - total_byproducts_prod_cost
@@ -151,10 +160,28 @@ class ReportEconovoBomCostSummary(models.AbstractModel):
                 )
                 item["total_usd"] = item["total"] * rate if rate else False
 
+        for vendor in subcontracting:
+            vendor["percentage"] = (
+                vendor["total"] / total_subcontracting * 100
+                if total_subcontracting else 0
+            )
+            vendor["total_usd"] = vendor["total"] * rate if rate else False
+            vendor["prod_cost_total_usd"] = (
+                vendor["prod_cost_total"] * rate if rate else False
+            )
+            for item in vendor["items"]:
+                item["percentage"] = (
+                    item["total"] / total_subcontracting * 100
+                    if total_subcontracting else 0
+                )
+                item["total_usd"] = item["total"] * rate if rate else False
+                item["prod_cost_usd"] = item["prod_cost"] * rate if rate else False
+
         return {
             "categories": categories,
             "workcenters": workcenters,
             "byproduct_categories": byproduct_categories,
+            "subcontracting": subcontracting,
             "totals": {
                 "components": total_components,
                 "components_usd": total_components * rate if rate else False,
@@ -163,6 +190,12 @@ class ReportEconovoBomCostSummary(models.AbstractModel):
                 "operations": total_operations,
                 "operations_usd": total_operations * rate if rate else False,
                 "operations_duration": total_duration,
+                "subcontracting": total_subcontracting,
+                "subcontracting_usd": total_subcontracting * rate if rate else False,
+                "subcontracting_prod_cost": total_subcontracting_prod_cost,
+                "subcontracting_prod_cost_usd": (
+                    total_subcontracting_prod_cost * rate if rate else False
+                ),
                 "byproducts": total_byproducts,
                 "byproducts_usd": total_byproducts * rate if rate else False,
                 "byproducts_prod_cost": total_byproducts_prod_cost,
@@ -184,11 +217,12 @@ class ReportEconovoBomCostSummary(models.AbstractModel):
     @api.model
     def _collect_costs(
         self, node, category_map, workcenter_map, ancestor_cost_share=1.0,
-        byproduct_category_map=None,
+        byproduct_category_map=None, subcontracting_map=None,
     ):
         """
         Recursively walk the BOM tree collecting leaf component, operation,
-        and byproduct costs.  Mirrors ``collectCosts`` in bom_cost_summary_utils.js.
+        byproduct, and subcontracting costs.
+        Mirrors ``collectCosts`` in bom_cost_summary_utils.js.
         """
         parent_name = node.get("name", "")
         parent_product_id = node.get("product_id")
@@ -236,6 +270,36 @@ class ReportEconovoBomCostSummary(models.AbstractModel):
                     "parent_qty": node.get("quantity") or 1,
                 }
             )
+
+        # Collect subcontracting cost for this BOM level.
+        # node['subcontracting'] is injected by mrp_subcontracting when
+        # bom.type == 'subcontract'.  Keys: name (vendor), partner_id,
+        # quantity, uom, bom_cost, prod_cost, level.
+        if subcontracting_map is not None and node.get("subcontracting"):
+            sc = node["subcontracting"]
+            vendor_id = sc.get("partner_id") or 0
+            vendor_name = sc.get("name") or _("Unknown Vendor")
+            if vendor_id not in subcontracting_map:
+                subcontracting_map[vendor_id] = {
+                    "id": vendor_id,
+                    "name": vendor_name,
+                    "total": 0.0,
+                    "prod_cost_total": 0.0,
+                    "items": [],
+                }
+            sc_cost = (sc.get("bom_cost") or 0.0)
+            sc_prod_cost = (sc.get("prod_cost") or 0.0)
+            subcontracting_map[vendor_id]["total"] += sc_cost
+            subcontracting_map[vendor_id]["prod_cost_total"] += sc_prod_cost
+            subcontracting_map[vendor_id]["items"].append({
+                "product_id": node.get("product_id"),
+                "product_name": node.get("name", ""),
+                "quantity": sc.get("quantity") or 0.0,
+                "uom_name": sc.get("uom") or node.get("uom_name", ""),
+                "total": sc_cost,
+                "prod_cost": sc_prod_cost,
+                "partner_id": vendor_id,
+            })
 
         # Process byproducts at this BOM level.
         # Scaled only by ancestor_cost_share (not effective_cost_share) because
@@ -310,6 +374,7 @@ class ReportEconovoBomCostSummary(models.AbstractModel):
                 self._collect_costs(
                     comp, category_map, workcenter_map, effective_cost_share,
                     byproduct_category_map=byproduct_category_map,
+                    subcontracting_map=subcontracting_map,
                 )
             else:
                 # Leaf component

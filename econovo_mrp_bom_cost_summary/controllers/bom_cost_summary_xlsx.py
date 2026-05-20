@@ -34,6 +34,10 @@ _C = {
     "op":        "F4F9F5",  # operation rows
     "subtotal":  "FFF2CC",  # subtotal rows
     "total":     "FFE082",  # grand total row
+    # Subcontracting section colours (purple tones)
+    "sc_vendor":   "E8D5F5",  # subcontracting vendor group row
+    "sc_item":     "F5EEF8",  # subcontracting item row
+    "sc_subtotal": "D7BDE2",  # subcontracting section subtotal row
     # Byproduct section colours (green tones — value recovered from the process)
     "bp_cat_0":    "C6E0B4",  # byproduct category depth 0
     "bp_cat_1":    "D9EAD3",  # byproduct category depth 1
@@ -49,6 +53,7 @@ _C = {
     "tree_op":      "F4F9F5",  # individual operation rows
     "tree_bp":      "A9D18E",  # byproducts group header
     "tree_bp_item": "D9EAD3",  # individual byproduct rows
+    "tree_sc":      "E8D5F5",  # subcontracting row
 }
 
 
@@ -168,7 +173,7 @@ def _cell_comment(ws, row, col, text, author="Econovo"):
 
 def _write_subtotal(ws, row_idx, label, col_count, ci,
                     bom_cost, bom_cost_usd, prod_cost, prod_cost_usd,
-                    show_costs, has_usd, cur, usd):
+                    show_costs, has_usd, cur, usd, color=None):
     """Write a subtotal row."""
     vals = [""] * col_count
     vals[ci["Type"] - 1] = "Subtotal"
@@ -181,7 +186,7 @@ def _write_subtotal(ws, row_idx, label, col_count, ci,
             vals[ci["Product Cost (%s)" % cur] - 1] = _flt(prod_cost)
         if prod_cost_usd is not None and has_usd and "Product Cost (%s)" % usd in ci:
             vals[ci["Product Cost (%s)" % usd] - 1] = _flt(prod_cost_usd)
-    _write_row(ws, row_idx, vals, _C["subtotal"], bold=True, outline_level=0)
+    _write_row(ws, row_idx, vals, color or _C["subtotal"], bold=True, outline_level=0)
     return row_idx + 1
 
 
@@ -554,6 +559,28 @@ def _write_tree_node(ws, row, node, ci, cur, usd, rate,
                 _tw_row(ws, row, op_vals, _C["tree_op"],
                         outline=child_outline + 1)
                 row += 1
+
+    # ── Subcontracting row for this BOM level ────────────────────────────────
+    sc = node.get("subcontracting")
+    if sc:
+        sc_vals = [""] * col_count
+        sc_vals[ci["Name"] - 1] = (
+            "    " * child_outline
+            + "\u25b6 Subcontracting: " + _str(sc.get("name", ""))
+        )
+        sc_vals[ci["Qty"] - 1] = _flt(sc.get("quantity"))
+        sc_vals[ci["UoM"] - 1] = _str(sc.get("uom", ""))
+        if show_costs and "BOM Cost (%s)" % cur in ci:
+            sc_vals[ci["BOM Cost (%s)" % cur] - 1] = _flt(sc.get("bom_cost"))
+            if has_usd and "BOM Cost (%s)" % usd in ci and rate:
+                sc_cost = sc.get("bom_cost") or 0
+                sc_vals[ci["BOM Cost (%s)" % usd] - 1] = (
+                    _flt(sc_cost * rate) if sc_cost else ""
+                )
+            if "Product Cost (%s)" % cur in ci:
+                sc_vals[ci["Product Cost (%s)" % cur] - 1] = _flt(sc.get("prod_cost"))
+        _tw_row(ws, row, sc_vals, _C["tree_sc"], outline=child_outline, bold=True)
+        row += 1
 
     # ── Byproducts group for this BOM level ──────────────────────────────────
     bps = node.get("byproducts", [])
@@ -963,6 +990,60 @@ def _build_summary_sheet(ws, cs, cur, usd,
             )
         row += 1  # blank separator
 
+    # ── Subcontracting by Vendor section ────────────────────────────────────
+    sc_vendors = cs.get("subcontracting", [])
+    if sc_vendors:
+        _write_section_header(ws, row, "▶  Subcontracting by Vendor", col_count)
+        row += 1
+
+        for vendor in sc_vendors:
+            # Vendor group row (outline_level 0)
+            vals = [""] * col_count
+            vals[ci["Type"] - 1] = "Vendor"
+            vals[ci["Name"] - 1] = vendor["name"]
+            vals[ci["%"] - 1] = _pct(vendor.get("percentage"))
+            if show_costs:
+                vals[ci["BOM Cost (%s)" % cur] - 1] = _flt(vendor.get("total"))
+                if has_usd and "BOM Cost (%s)" % usd in ci:
+                    vals[ci["BOM Cost (%s)" % usd] - 1] = _flt(vendor.get("total_usd"))
+                if "Product Cost (%s)" % cur in ci:
+                    vals[ci["Product Cost (%s)" % cur] - 1] = _flt(vendor.get("prod_cost_total"))
+                if has_usd and "Product Cost (%s)" % usd in ci:
+                    vals[ci["Product Cost (%s)" % usd] - 1] = _flt(vendor.get("prod_cost_total_usd"))
+            _write_row(ws, row, vals, _C["sc_vendor"], bold=True, outline_level=0)
+            row += 1
+
+            for sc_item in vendor.get("items", []):
+                vals = [""] * col_count
+                vals[ci["Level"] - 1] = 1
+                vals[ci["Type"] - 1] = "Subcontracting"
+                vals[ci["Name"] - 1] = "        " + _str(sc_item.get("product_name"))
+                vals[ci["Qty / Duration"] - 1] = _flt(sc_item.get("quantity"))
+                vals[ci["%"] - 1] = _pct(sc_item.get("percentage"))
+                if show_costs:
+                    vals[ci["BOM Cost (%s)" % cur] - 1] = _flt(sc_item.get("total"))
+                    if has_usd and "BOM Cost (%s)" % usd in ci:
+                        vals[ci["BOM Cost (%s)" % usd] - 1] = _flt(sc_item.get("total_usd"))
+                    if "Product Cost (%s)" % cur in ci:
+                        vals[ci["Product Cost (%s)" % cur] - 1] = _flt(sc_item.get("prod_cost"))
+                    if has_usd and "Product Cost (%s)" % usd in ci:
+                        vals[ci["Product Cost (%s)" % usd] - 1] = _flt(sc_item.get("prod_cost_usd"))
+                _write_row(ws, row, vals, _C["sc_item"], outline_level=1)
+                row += 1
+
+        # Subtotal Subcontracting
+        _sub_sc_row = row
+        row = _write_subtotal(
+            ws, row, "Subtotal Subcontracting", col_count, ci,
+            bom_cost=cs["totals"]["subcontracting"],
+            bom_cost_usd=cs["totals"].get("subcontracting_usd"),
+            prod_cost=cs["totals"].get("subcontracting_prod_cost"),
+            prod_cost_usd=cs["totals"].get("subcontracting_prod_cost_usd"),
+            show_costs=show_costs, has_usd=has_usd, cur=cur, usd=usd,
+            color=_C["sc_subtotal"],
+        )
+        row += 1  # blank separator
+
     # ── Byproducts by Category section ──────────────────────────────────────
     bp_categories = cs.get("byproduct_categories", [])
     if bp_categories:
@@ -1021,7 +1102,7 @@ def _build_summary_sheet(ws, cs, cur, usd,
     # Row 1: TOTAL (Gross — Components + Operations) — BoM Cost and Prod Cost together.
     vals = [""] * col_count
     vals[ci["Type"] - 1] = "TOTAL"
-    vals[ci["Name"] - 1] = "Total  (Components + Operations)"
+    vals[ci["Name"] - 1] = "Total  (Components + Operations + Subcontracting)"
     if show_costs:
         vals[ci["BOM Cost (%s)" % cur] - 1] = _flt(cs["totals"]["total"])
         if has_usd and "BOM Cost (%s)" % usd in ci:

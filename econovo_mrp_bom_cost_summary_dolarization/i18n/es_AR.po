@@ -1,0 +1,254 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* econovo_mrp_bom_cost_summary_dolarization
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 17.0+e-20250501\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-05-07 15:38+0000\n"
+"PO-Revision-Date: 2026-05-07 15:38+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: econovo_mrp_bom_cost_summary_dolarization
+#. odoo-javascript
+#: code:addons/econovo_mrp_bom_cost_summary_dolarization/static/src/bom_cost_dolarization.js:0
+#, python-format
+msgid "= (Duration in hours) × workcenter.costs_hour_usd"
+msgstr ""
+
+#. module: econovo_mrp_bom_cost_summary_dolarization
+#. odoo-javascript
+#: code:addons/econovo_mrp_bom_cost_summary_dolarization/static/src/bom_cost_dolarization.js:0
+#, python-format
+msgid "= BoM Cost (ARS) × (standard_price_usd ÷ standard_price_ars)"
+msgstr ""
+
+#. module: econovo_mrp_bom_cost_summary_dolarization
+#. odoo-javascript
+#: code:addons/econovo_mrp_bom_cost_summary_dolarization/static/src/bom_cost_dolarization.js:0
+#, python-format
+msgid "= BoM Cost (ARS) × company exchange rate"
+msgstr ""
+
+#. module: econovo_mrp_bom_cost_summary_dolarization
+#. odoo-javascript
+#: code:addons/econovo_mrp_bom_cost_summary_dolarization/static/src/bom_cost_dolarization.js:0
+#, python-format
+msgid "= Product Cost (ARS) × company exchange rate"
+msgstr ""
+
+#. module: econovo_mrp_bom_cost_summary_dolarization
+#. odoo-javascript
+#: code:addons/econovo_mrp_bom_cost_summary_dolarization/static/src/bom_cost_dolarization.js:0
+#, python-format
+msgid "= Quantity × product.standard_price_usd"
+msgstr ""
+
+#. module: econovo_mrp_bom_cost_summary_dolarization
+#. odoo-javascript
+#: code:addons/econovo_mrp_bom_cost_summary_dolarization/static/src/bom_cost_dolarization.js:0
+#, python-format
+msgid ""
+"Auto-updated from costs_hour (ARS) × exchange rate when costs_hour changes"
+msgstr ""
+
+#. module: econovo_mrp_bom_cost_summary_dolarization
+#: model:ir.model,name:econovo_mrp_bom_cost_summary_dolarization.model_report_mrp_report_bom_structure
+msgid "BOM Overview Report"
+msgstr "Reporte de resumen de la lista de materiales"
+
+#. module: econovo_mrp_bom_cost_summary_dolarization
+#. odoo-javascript
+#: code:addons/econovo_mrp_bom_cost_summary_dolarization/static/src/bom_cost_dolarization.xml:0
+#: code:addons/econovo_mrp_bom_cost_summary_dolarization/static/src/bom_cost_dolarization.xml:0
+#: code:addons/econovo_mrp_bom_cost_summary_dolarization/static/src/bom_cost_dolarization.xml:0
+#: code:addons/econovo_mrp_bom_cost_summary_dolarization/static/src/bom_cost_dolarization.xml:0
+#, python-format
+msgid "BoM Cost"
+msgstr "Costo LdM"
+
+#. module: econovo_mrp_bom_cost_summary_dolarization
+#. odoo-javascript
+#: code:addons/econovo_mrp_bom_cost_summary_dolarization/static/src/bom_cost_dolarization.js:0
+#, python-format
+msgid "BoM Cost USD (direct price)"
+msgstr "Costo LdM USD (precio directo)"
+
+#. module: econovo_mrp_bom_cost_summary_dolarization
+#. odoo-javascript
+#: code:addons/econovo_mrp_bom_cost_summary_dolarization/static/src/bom_cost_dolarization.js:0
+#, python-format
+msgid "BoM Cost USD (exchange rate)"
+msgstr "Costo LdM USD (tipo de cambio)"
+
+#. module: econovo_mrp_bom_cost_summary_dolarization
+#. odoo-javascript
+#: code:addons/econovo_mrp_bom_cost_summary_dolarization/static/src/bom_cost_dolarization.js:0
+#, python-format
+msgid "Calculated using product.standard_price_usd"
+msgstr ""
+
+#. module: econovo_mrp_bom_cost_summary_dolarization
+#. odoo-javascript
+#: code:addons/econovo_mrp_bom_cost_summary_dolarization/static/src/bom_cost_dolarization.js:0
+#, python-format
+msgid "Can be overridden manually on the work center form"
+msgstr ""
+
+#. module: econovo_mrp_bom_cost_summary_dolarization
+#. odoo-javascript
+#: code:addons/econovo_mrp_bom_cost_summary_dolarization/static/src/bom_cost_dolarization.js:0
+#, python-format
+msgid "Catalogue USD price stored directly on the product"
+msgstr ""
+
+#. module: econovo_mrp_bom_cost_summary_dolarization
+#: model:ir.model.fields,field_description:econovo_mrp_bom_cost_summary_dolarization.field_mrp_workcenter__costs_hour_usd
+msgid "Cost per hour (USD)"
+msgstr ""
+
+#. module: econovo_mrp_bom_cost_summary_dolarization
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_bom_cost_summary_dolarization.mrp_workcenter_view_list_usd
+msgid "Cost/h (USD)"
+msgstr ""
+
+#. module: econovo_mrp_bom_cost_summary_dolarization
+#. odoo-javascript
+#: code:addons/econovo_mrp_bom_cost_summary_dolarization/static/src/bom_cost_dolarization.js:0
+#: code:addons/econovo_mrp_bom_cost_summary_dolarization/static/src/bom_cost_dolarization.js:0
+#, python-format
+msgid "Derived from the company currency conversion rate"
+msgstr ""
+
+#. module: econovo_mrp_bom_cost_summary_dolarization
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_bom_cost_summary_dolarization.mrp_workcenter_view_form_employee_usd
+msgid ""
+"Direct USD employee hourly rate. Auto-set from the exchange rate when "
+"'Employee Cost per Hour' is saved; can be overridden manually."
+msgstr ""
+
+#. module: econovo_mrp_bom_cost_summary_dolarization
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_bom_cost_summary_dolarization.mrp_workcenter_view_form_usd
+msgid ""
+"Direct USD hourly rate. Auto-set from the exchange rate when 'Cost per Hour'"
+" is saved; can be overridden manually."
+msgstr ""
+
+#. module: econovo_mrp_bom_cost_summary_dolarization
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_bom_cost_summary_dolarization.mrp_workcenter_view_list_usd
+msgid "Empl. Cost/h (USD)"
+msgstr ""
+
+#. module: econovo_mrp_bom_cost_summary_dolarization
+#: model:ir.model.fields,field_description:econovo_mrp_bom_cost_summary_dolarization.field_mrp_workcenter__employee_costs_hour_usd
+msgid "Employee cost per hour (USD)"
+msgstr ""
+
+#. module: econovo_mrp_bom_cost_summary_dolarization
+#: model:ir.model.fields,help:econovo_mrp_bom_cost_summary_dolarization.field_mrp_workcenter__employee_costs_hour_usd
+msgid ""
+"Employee hourly cost in USD (direct price).\n"
+"\n"
+"Mirrors employee_costs_hour (ARS, defined by mrp_workorder).\n"
+"\n"
+"Auto-updated from the company exchange rate whenever 'Employee Cost per Hour' (ARS) is saved.  Can be manually overridden.\n"
+"\n"
+"Combined with costs_hour_usd (× employee_ratio) when computing bom_cost_usd_direct for operations in the BOM Cost Summary."
+msgstr ""
+
+#. module: econovo_mrp_bom_cost_summary_dolarization
+#: model:ir.model.fields,help:econovo_mrp_bom_cost_summary_dolarization.field_mrp_workcenter__costs_hour_usd
+msgid ""
+"Hourly processing cost in USD (direct price).\n"
+"\n"
+"Auto-updated from the company exchange rate whenever 'Cost per Hour' (ARS) is saved.  Can be manually overridden when the USD labour rate was negotiated independently of the exchange rate.\n"
+"\n"
+"Used by the BOM Cost Summary to populate the 'BoM Cost USD (direct)' column for operations, independently of the company exchange rate."
+msgstr ""
+
+#. module: econovo_mrp_bom_cost_summary_dolarization
+#. odoo-javascript
+#: code:addons/econovo_mrp_bom_cost_summary_dolarization/static/src/bom_cost_dolarization.js:0
+#, python-format
+msgid "Independent of the company exchange rate"
+msgstr ""
+
+#. module: econovo_mrp_bom_cost_summary_dolarization
+#. odoo-javascript
+#: code:addons/econovo_mrp_bom_cost_summary_dolarization/static/src/bom_cost_dolarization.js:0
+#, python-format
+msgid "May differ from standard_price_usd if rate is not current"
+msgstr ""
+
+#. module: econovo_mrp_bom_cost_summary_dolarization
+#. odoo-javascript
+#: code:addons/econovo_mrp_bom_cost_summary_dolarization/static/src/bom_cost_dolarization.js:0
+#: code:addons/econovo_mrp_bom_cost_summary_dolarization/static/src/bom_cost_dolarization.js:0
+#, python-format
+msgid "Only visible in developer mode"
+msgstr ""
+
+#. module: econovo_mrp_bom_cost_summary_dolarization
+#. odoo-javascript
+#: code:addons/econovo_mrp_bom_cost_summary_dolarization/static/src/bom_cost_dolarization.js:0
+#, python-format
+msgid "Operations Cost USD (direct price)"
+msgstr "Costo de Operaciones USD (precio directo)"
+
+#. module: econovo_mrp_bom_cost_summary_dolarization
+#. odoo-javascript
+#: code:addons/econovo_mrp_bom_cost_summary_dolarization/static/src/bom_cost_dolarization.xml:0
+#: code:addons/econovo_mrp_bom_cost_summary_dolarization/static/src/bom_cost_dolarization.xml:0
+#: code:addons/econovo_mrp_bom_cost_summary_dolarization/static/src/bom_cost_dolarization.xml:0
+#, python-format
+msgid "Product Cost"
+msgstr "Costo de Producto"
+
+#. module: econovo_mrp_bom_cost_summary_dolarization
+#. odoo-javascript
+#: code:addons/econovo_mrp_bom_cost_summary_dolarization/static/src/bom_cost_dolarization.js:0
+#, python-format
+msgid "Product Cost USD (direct price)"
+msgstr "Costo de Producto USD (precio directo)"
+
+#. module: econovo_mrp_bom_cost_summary_dolarization
+#. odoo-javascript
+#: code:addons/econovo_mrp_bom_cost_summary_dolarization/static/src/bom_cost_dolarization.js:0
+#, python-format
+msgid "Product Cost USD (exchange rate)"
+msgstr "Costo de Producto USD (tipo de cambio)"
+
+#. module: econovo_mrp_bom_cost_summary_dolarization
+#. odoo-javascript
+#: code:addons/econovo_mrp_bom_cost_summary_dolarization/static/src/bom_cost_dolarization.js:0
+#, python-format
+msgid "Reflects the USD catalogue price on the product, not the exchange rate"
+msgstr ""
+
+#. module: econovo_mrp_bom_cost_summary_dolarization
+#: model:ir.model,name:econovo_mrp_bom_cost_summary_dolarization.model_mrp_workcenter
+msgid "Work Center"
+msgstr "Centro de trabajo"
+
+#. module: econovo_mrp_bom_cost_summary_dolarization
+#. odoo-javascript
+#: code:addons/econovo_mrp_bom_cost_summary_dolarization/static/src/bom_cost_dolarization.js:0
+#, python-format
+msgid "costs_hour_usd is stored on each work center"
+msgstr ""
+
+#. module: econovo_mrp_bom_cost_summary_dolarization
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_bom_cost_summary_dolarization.mrp_workcenter_view_form_employee_usd
+msgid "per employee (USD)"
+msgstr ""
+
+#. module: econovo_mrp_bom_cost_summary_dolarization
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_bom_cost_summary_dolarization.mrp_workcenter_view_form_usd
+msgid "per workcenter (USD)"
+msgstr ""

@@ -9,8 +9,10 @@ Adds a **collapsible cost summary section** at the bottom of the BOM Overview
   Category → Component Product → Parent product usages
 - **Operation costs grouped by work center** — with inline parent product
   traceability
+- **Subcontracting costs grouped by vendor** — collapsible vendor rows with
+  per-item drill-down and percentage breakdown
 - **Dual currency** — All amounts shown in ARS (company currency) and USD
-- **Grand total** — Combined components + operations cost
+- **Grand total** — Combined components + operations + subcontracting cost
 
 ## Dependencies
 

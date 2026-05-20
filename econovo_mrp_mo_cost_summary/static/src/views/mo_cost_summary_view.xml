@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="econovo_mrp_mo_cost_summary.MoCostSummaryView">
+        <div class="o_action o_econovo_mo_cost_summary_view">
+            <Layout display="{ controlPanel: {} }">
+
+                <!-- Control panel action buttons -->
+                <t t-set-slot="control-panel-create-button">
+                    <div class="d-flex gap-1">
+                        <button class="btn btn-secondary" t-on-click="onClickUnfoldAll">
+                            Unfold
+                        </button>
+                        <button class="btn btn-secondary" t-on-click="onClickFoldAll">
+                            Fold
+                        </button>
+                        <button class="btn btn-secondary" t-on-click="onExportXlsx">
+                            <i class="fa fa-file-excel-o me-1"/>Excel
+                        </button>
+                    </div>
+                </t>
+
+                <!-- Product / MO header banner -->
+                <div t-if="state.moName"
+                     class="d-flex justify-content-between align-items-start
+                            px-4 py-3 bg-white border-bottom">
+                    <div>
+                        <h4 class="mb-0" t-esc="state.moName"/>
+                        <small class="text-muted" t-esc="state.moState"/>
+                    </div>
+                </div>
+
+                <!-- Cost summary table -->
+                <div class="o_econovo_cost_summary__content px-3 pt-3 bg-white">
+
+                    <BomCostSummarySection
+                        t-if="state.costSummary"
+                        data="state.costSummary"
+                        showOptions="showOptions"
+                        precision="2"
+                        columnLabels="columnLabels"/>
+
+                    <div t-if="!state.costSummary and state.moName"
+                         class="alert alert-info mt-3">
+                        No cost data available for this manufacturing order.
+                        Make sure components have a cost and work centers
+                        have an hourly cost configured.
+                    </div>
+
+                </div>
+
+            </Layout>
+        </div>
+    </t>
+
+</templates>

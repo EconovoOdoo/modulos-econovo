@@ -43,6 +43,9 @@ export class BomCostSummarySection extends Component {
                 foldState[`op_${wc.id}_${i}`] = true;
             }
         }
+        for (const vendor of (this.props.data.subcontracting || [])) {
+            foldState[`sc_${vendor.id}`] = true;
+        }
         this.state = useState(foldState);
 
         // When the data tree is replaced (e.g. qty / warehouse / variant change),
@@ -76,6 +79,9 @@ export class BomCostSummarySection extends Component {
                     for (let i = 0; i < wc.items.length; i++) {
                         newKeys.add(`op_${wc.id}_${i}`);
                     }
+                }
+                for (const vendor of (nextProps.data.subcontracting || [])) {
+                    newKeys.add(`sc_${vendor.id}`);
                 }
                 // Remove stale keys (items no longer in the tree)
                 for (const key of Object.keys(this.state)) {
@@ -124,9 +130,58 @@ export class BomCostSummarySection extends Component {
         this.state[key] = !this.state[key];
     }
 
+    toggleSubMo(categId, productId, moId) {
+        const key = `submo_${categId}_${productId}_${moId}`;
+        this.state[key] = !this.state[key];
+    }
+
+    /**
+     * Opens the native Odoo replenishment wizard for a to_order component.
+     * Mirrors the native MoOverviewLine.openReplenish() behaviour.
+     *
+     * @param {number} productId  - product.product ID to replenish
+     * @param {number} quantity   - Suggested quantity
+     */
+    /**
+     * Returns the total quantity to replenish for a product (sum of all
+     * to_order_replenishments).  Used by the product-row Reabastecer button.
+     *
+     * @param {Object} prod - product entry from categoryMap
+     * @returns {number}
+     */
+    _toOrderTotalQty(prod) {
+        return (prod.to_order_replenishments || []).reduce((sum, r) => sum + r.quantity, 0);
+    }
+
+    openReplenish(productId, quantity) {
+        this.actionService.doAction("stock.action_product_replenish", {
+            additionalContext: {
+                default_product_id: productId,
+                default_quantity: quantity,
+            },
+            onClose: (closeInfo) => {
+                if (closeInfo && closeInfo.done) {
+                    const bus = this.env.overviewBus;
+                    if (bus) {
+                        bus.trigger("reload");
+                    }
+                }
+            },
+        });
+    }
+
     toggleWorkcenter(wcId) {
         const key = `wc_${wcId}`;
         this.state[key] = !this.state[key];
+    }
+
+    toggleSubcontractingVendor(vendorId) {
+        const key = `sc_${vendorId}`;
+        this.state[key] = !this.state[key];
+    }
+
+    isSubcontractingVendorFolded(vendorId) {
+        return this.state[`sc_${vendorId}`];
     }
 
     toggleByproductCategory(categId) {
@@ -200,6 +255,14 @@ export class BomCostSummarySection extends Component {
         return this.props.showOptions.costs;
     }
 
+    get col1Label() {
+        return (this.props.columnLabels && this.props.columnLabels.col1) || _t("BoM Cost");
+    }
+
+    get col2Label() {
+        return (this.props.columnLabels && this.props.columnLabels.col2) || _t("Product Cost");
+    }
+
     get showCostsUsd() {
         return this.hasSecondary && this.showCosts;
     }
@@ -235,8 +298,24 @@ export class BomCostSummarySection extends Component {
         }
     }
 
+    /**
+     * Returns the Bootstrap text-color class for a receipt object.
+     *
+     * @param {Object|null} receipt - receipt dict with optional `decorator` key
+     * @returns {string}
+     */
+    receiptClass(receipt) {
+        if (!receipt || !receipt.decorator) return "text-muted";
+        const map = { success: "text-success", warning: "text-warning", danger: "text-danger" };
+        return map[receipt.decorator] || "text-muted";
+    }
+
     get showUom() {
         return this.props.showOptions.uom;
+    }
+
+    get showState() {
+        return !!this.props.showOptions.state;
     }
 
     isCategoryFolded(categId) {
@@ -278,6 +357,39 @@ export class BomCostSummarySection extends Component {
                         rows.push({ type: 'product', node, prod, depth: node.depth + 1,
                             rowKey: `prod_${node.id}_${prod.product_id}` });
                         if (!this.isProductFolded(node.id, prod.product_id)) {
+                            // Sub-MO replenishments (mrp.production): each renders
+                            // as a named badge row followed by its own usage row.
+                            for (const rep of (prod.mo_replenishments || [])) {
+                                rows.push({ type: 'sub_mo', node, prod, rep,
+                                    depth: node.depth + 2,
+                                    rowKey: `sub_mo_${node.id}_${prod.product_id}_${rep.mo_id}` });
+                                if (!this.isSubMoFolded(node.id, prod.product_id, rep.mo_id)) {
+                                    rows.push({ type: 'sub_mo_usage', node, prod, rep,
+                                        depth: node.depth + 2,
+                                        rowKey: `sub_mo_usage_${node.id}_${prod.product_id}_${rep.mo_id}` });
+                                }
+                            }
+                            // to_order replenishments: each gets a dedicated row
+                            // with a "Reabastecer" button and the "Por ordenar" badge.
+                            for (const toOrderRep of (prod.to_order_replenishments || [])) {
+                                rows.push({ type: 'to_order', node, prod, toOrderRep,
+                                    depth: node.depth + 1,
+                                    rowKey: `to_order_${node.id}_${prod.product_id}_${toOrderRep.parent_product_id}` });
+                            }
+                            // in_transit replenishments: goods already shipped, not yet received.
+                            for (const inTransitRep of (prod.in_transit_replenishments || [])) {
+                                rows.push({ type: 'in_transit', node, prod, inTransitRep,
+                                    depth: node.depth + 1,
+                                    rowKey: `in_transit_${node.id}_${prod.product_id}_${inTransitRep.parent_product_id}` });
+                            }
+                            // Supply replenishments (POs, RFQs): individual rows with state badge.
+                            for (let si = 0; si < (prod.supply_replenishments || []).length; si++) {
+                                const supplyRep = prod.supply_replenishments[si];
+                                rows.push({ type: 'supply_rep', node, prod, supplyRep,
+                                    depth: node.depth + 1,
+                                    rowKey: `supply_${node.id}_${prod.product_id}_${si}` });
+                            }
+                            // Standard usages (plain stock draws without a supply document).
                             for (const usage of prod.usages) {
                                 rows.push({ type: 'usage', node, prod, usage,
                                     depth: node.depth + 1,
@@ -328,8 +440,18 @@ export class BomCostSummarySection extends Component {
         return this.state[`prod_${categId}_${productId}`];
     }
 
+    isSubMoFolded(categId, productId, moId) {
+        const key = `submo_${categId}_${productId}_${moId}`;
+        // Default to expanded (false) — usage row visible by default.
+        return key in this.state ? this.state[key] : false;
+    }
+
     isWorkcenterFolded(wcId) {
         return this.state[`wc_${wcId}`];
+    }
+
+    get showSubcontracting() {
+        return (this.data.subcontracting || []).length > 0;
     }
 
     toggleOperation(wcId, opIdx) {
@@ -435,15 +557,22 @@ export class BomCostSummarySection extends Component {
      * @returns {{quantity: number, uom_name: string}|false}
      */
     productQuantity(prod) {
-        if (!prod.usages.length) {
+        // Combine standard usages, sub-MO replenishments, to_order and in_transit replenishments.
+        const allEntries = [
+            ...(prod.usages || []).map((u) => ({ quantity: u.quantity, uom_name: u.uom_name })),
+            ...(prod.mo_replenishments || []).map((r) => ({ quantity: r.usage_quantity, uom_name: r.usage_uom_name })),
+            ...(prod.to_order_replenishments || []).map((r) => ({ quantity: r.quantity, uom_name: r.uom_name })),
+            ...(prod.in_transit_replenishments || []).map((r) => ({ quantity: r.quantity, uom_name: r.uom_name })),
+        ];
+        if (!allEntries.length) {
             return false;
         }
-        const firstUom = prod.usages[0].uom_name;
-        const allSame = prod.usages.every((u) => u.uom_name === firstUom);
+        const firstUom = allEntries[0].uom_name;
+        const allSame = allEntries.every((u) => u.uom_name === firstUom);
         if (!allSame) {
             return false;
         }
-        const total = prod.usages.reduce((s, u) => s + (u.quantity || 0), 0);
+        const total = allEntries.reduce((s, u) => s + (u.quantity || 0), 0);
         return { quantity: total, uom_name: firstUom };
     }
 
@@ -531,11 +660,19 @@ export class BomCostSummarySection extends Component {
                 ],
             },
             "availability": {
-                title: T("Availability status vs. required qty"),
+                title: T("Reservado"),
                 lines: [
-                    T("Available: Free to Use \u2265 required quantity"),
-                    T("Partial: some stock, but insufficient"),
-                    T("Not Available: no usable stock"),
+                    T("Quantity currently reserved for existing demand (manufacturing orders, sales orders, etc.)"),
+                    T("Source: stock.quant"),
+                ],
+            },
+            "receipt": {
+                title: T("Recepci\u00f3n esperada"),
+                lines: [
+                    T("Available: sufficient free stock to cover the required quantity"),
+                    T("Estimated DD/MM/YYYY: delivery date estimated from a replenishment rule"),
+                    T("Expected DD/MM/YYYY: scheduled receipt date from a confirmed purchase/MO"),
+                    T("Not Available: no scheduled receipt and insufficient stock"),
                 ],
             },
             "lead_time": {
@@ -768,4 +905,10 @@ BomCostSummarySection.props = {
     showOptions: Object,
     precision: Number,
     secondaryCurrency: { type: [Object, Boolean], optional: true },
+    /**
+     * Optional column header labels for the two cost columns.
+     * Defaults to BoM Cost / Product Cost when omitted.
+     * Shape: { col1: String (optional), col2: String (optional) }
+     */
+    columnLabels: { type: Object, optional: true },
 };

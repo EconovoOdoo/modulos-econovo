@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from odoo import api, models
+from odoo import api, fields, models
 
 
 class ReportBomStructure(models.AbstractModel):
@@ -127,4 +127,35 @@ class ReportBomStructure(models.AbstractModel):
             else:
                 op_data['bom_cost_usd_direct'] = 0.0
         return operations
+
+    @api.model
+    def _get_subcontracting_line(self, bom, seller, level, bom_quantity):
+        """Inject ``bom_cost_usd_direct`` / ``prod_cost_usd_direct`` into the
+        subcontracting node.
+
+        The direct USD cost is always derived from the vendor's actual price
+        converted to USD using Odoo's standard currency conversion.  When the
+        vendor already prices in USD the conversion is 1:1 (no rounding loss).
+        When the vendor prices in ARS or any other currency the exchange rate
+        is applied, which is the most honest representation of what the
+        subcontracted item costs in USD.
+        """
+        res = super()._get_subcontracting_line(bom, seller, level, bom_quantity)
+        usd_currency = self.env.ref('base.USD', raise_if_not_found=False)
+        if not usd_currency:
+            res['bom_cost_usd_direct'] = 0.0
+            res['prod_cost_usd_direct'] = 0.0
+            return res
+        ratio_uom_seller = seller.product_uom.ratio / bom.product_uom_id.ratio
+        price_in_seller_currency = seller.price / ratio_uom_seller * bom_quantity
+        company = bom.company_id or self.env.company
+        bom_cost_usd_direct = seller.currency_id._convert(
+            price_in_seller_currency,
+            usd_currency,
+            company,
+            fields.Date.today(),
+        )
+        res['bom_cost_usd_direct'] = bom_cost_usd_direct
+        res['prod_cost_usd_direct'] = bom_cost_usd_direct
+        return res
 
