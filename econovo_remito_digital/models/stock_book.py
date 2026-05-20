@@ -42,6 +42,11 @@ class StockBookPrinter(models.Model):
 class StockBook(models.Model):
     _inherit = 'stock.book'
 
+    active = fields.Boolean(
+        default=True,
+        help='Talonarios archivados (CAI vencido o secuencias agotadas) se '
+             'ocultan al asignar libro a un picking.',
+    )
     is_digital = fields.Boolean(
         string='Remito Digital',
         help='Activar para usar el template digital A4 al imprimir este talonario. '

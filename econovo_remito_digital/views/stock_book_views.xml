@@ -61,6 +61,12 @@
         <field name="model">stock.book</field>
         <field name="inherit_id" ref="stock_voucher_ux.view_stock_book_form_ux"/>
         <field name="arch" type="xml">
+            <!-- Archived ribbon -->
+            <sheet position="inside">
+                <widget name="web_ribbon" title="Archivado" bg_color="text-bg-danger"
+                        invisible="active"/>
+                <field name="active" invisible="1"/>
+            </sheet>
             <!-- Digital toggle after autoprinted -->
             <field name="autoprinted" position="after">
                 <field name="is_digital" widget="boolean_toggle"/>

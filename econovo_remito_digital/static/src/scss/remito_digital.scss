@@ -210,9 +210,11 @@ $remito-label-font-size: 9pt;
 .remito-fiscal-table {
     width: 100%;
     border-collapse: collapse;
+    border: 0;
     font-size: 7pt;
 }
 
+.remito-fiscal-table tr,
 .remito-fiscal-table td {
     padding: 0.5mm 1mm;
     border: 0;
