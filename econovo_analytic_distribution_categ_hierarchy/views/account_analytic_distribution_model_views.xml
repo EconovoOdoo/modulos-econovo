@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Form view: add checkbox below Product Category, hidden when no category is set -->
+    <record id="account_analytic_distribution_model_form_categ_hierarchy" model="ir.ui.view">
+        <field name="name">account.analytic.distribution.model.form.inherit.categ.hierarchy</field>
+        <field name="model">account.analytic.distribution.model</field>
+        <field name="inherit_id" ref="account.account_analytic_distribution_model_form_inherit"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='product_categ_id']" position="after">
+                <field name="product_categ_hierarchy"
+                       invisible="not product_categ_id"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- List view: add optional column after Product Category -->
+    <record id="account_analytic_distribution_model_tree_categ_hierarchy" model="ir.ui.view">
+        <field name="name">account.analytic.distribution.model.tree.inherit.categ.hierarchy</field>
+        <field name="model">account.analytic.distribution.model</field>
+        <field name="inherit_id" ref="account.account_analytic_distribution_model_tree_inherit"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='product_categ_id']" position="after">
+                <field name="product_categ_hierarchy" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
