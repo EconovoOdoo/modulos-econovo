@@ -6,7 +6,7 @@ class AccountAnalyticDistributionModel(models.Model):
     _inherit = 'account.analytic.distribution.model'
 
     product_categ_hierarchy = fields.Boolean(
-        string='Include Subcategories',
+        string='Include Product from Subcategories?',
         default=False,
         help='When enabled, this distribution model also applies to products '
              'in subcategories of the configured Product Category.\n\n'

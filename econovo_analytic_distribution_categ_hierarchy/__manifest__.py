@@ -6,7 +6,7 @@
 Analytic Distribution - Category Hierarchy
 ===========================================
 Extends ``account.analytic.distribution.model`` with a per-rule opt-in flag
-**Include Subcategories**.
+**Include Product Subcategories?**.
 
 When enabled on a rule:
 
@@ -18,7 +18,7 @@ When enabled on a rule:
 
 Example
 -------
-Rule: ``Product Category = Materials``, ``Include Subcategories = True``
+Rule: ``Product Category = Materials``, ``Include Product Subcategories? = True``
 
 Applies to products in: *Materials*, *Materials / Metals*,
 *Materials / Metals / Steel*, etc.
