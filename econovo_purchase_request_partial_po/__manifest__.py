@@ -6,7 +6,7 @@
         "Allow satisfying a Purchase Request with more than one supplier, "
         "even when POs become Locked or were generated from stock rules."
     ),
-    "version": "17.0.1.0.0",
+    "version": "17.0.1.0.1",
     "category": "Purchases",
     "author": "Jose D. Leonett",
     "website": "https://github.com/josedleonett",
