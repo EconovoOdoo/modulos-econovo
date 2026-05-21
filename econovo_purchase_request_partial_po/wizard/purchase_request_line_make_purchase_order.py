@@ -29,7 +29,9 @@ class PurchaseRequestLineMakePurchaseOrder(models.TransientModel):
         PRLine = self.env["purchase.request.line"]
         picking_type = False
         company_id = False
-        allowed_states = ("approved", "done")
+        # ``in_progress`` is added by an Econovo customization layer that
+        # extends the OCA selection; we accept it just like ``approved``.
+        allowed_states = ("approved", "in_progress", "done")
 
         for line in PRLine.browse(request_line_ids):
             pending = line._get_pending_qty_to_purchase()
