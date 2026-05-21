@@ -303,7 +303,7 @@ $remito-label-font-size: 9pt;
    ============================================================ */
 .remito-barcode-quiet-zone {
     background-color: #fff;
-    padding: 1mm 4mm;
+    padding: 1mm 2mm;
     display: block;
 }
 
@@ -370,10 +370,10 @@ $remito-label-font-size: 9pt;
     border-right: 0;
 }
 
-.col-code   { width: 12%; }
-.col-qty    { width: 13%; text-align: left; }
-.col-detail { width: 46%; }
-.col-lots   { width: 29%; font-size: 7pt; vertical-align: top; }
+.col-code   { width: 1%; white-space: nowrap; }
+.col-qty    { width: 1%; white-space: nowrap; text-align: left; }
+.col-detail { }
+.col-lots   { width: 25%; font-size: 7pt; vertical-align: top; }
 
 .remito-empty-row td {
     height: 5.5mm;
