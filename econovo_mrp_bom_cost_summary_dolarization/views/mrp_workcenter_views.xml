@@ -9,21 +9,17 @@
         <field name="model">mrp.workcenter</field>
         <field name="inherit_id" ref="mrp.mrp_workcenter_view"/>
         <field name="arch" type="xml">
-            <!--
-                The native form wraps costs_hour in:
-                  <label for="costs_hour"/>
-                  <div id="costs_hour"><field name="costs_hour" .../> per workcenter</div>
-                We insert a matching label+div pair immediately after that div
-                so it appears as a proper row in the "Costing Information" group.
-            -->
-            <xpath expr="//div[@id='costs_hour']" position="after">
-                <label for="costs_hour_usd"/>
-                <div>
+            <xpath expr="//div[@id='costs_hour']" position="replace">
+                <div id="costs_hour" class="o_row">
+                    <field name="costs_hour" widget="monetary" class="oe_inline"/>
+                    <span class="text-muted ms-2">ARS / per workcenter</span>
+                    <span class="text-muted ms-3">|</span>
                     <field name="costs_hour_usd"
                            widget="monetary"
                            options="{'hideSymbol': True}"
-                           class="oe_inline"
-                           help="Direct USD hourly rate. Auto-set from the exchange rate when 'Cost per Hour' is saved; can be overridden manually."/> per workcenter (USD)
+                           class="oe_inline ms-3"
+                           help="Direct USD hourly rate. Auto-set from the exchange rate when 'Cost per Hour' is saved; can be overridden manually."/>
+                    <span class="text-muted ms-2">USD direct / per workcenter</span>
                 </div>
             </xpath>
         </field>
@@ -39,14 +35,18 @@
         <field name="model">mrp.workcenter</field>
         <field name="inherit_id" ref="mrp.mrp_workcenter_view"/>
         <field name="arch" type="xml">
-            <!-- Insert employee_costs_hour_usd after the div wrapping
-                 employee_costs_hour (added by mrp_workorder). -->
-            <xpath expr="//div[field[@name='employee_costs_hour']]" position="after">
-                <label for="employee_costs_hour_usd" string=""/>
-                <div>
+            <xpath expr="//label[@for='employee_costs_hour']" position="replace">
+                <label for="employee_costs_hour" string="Employee Cost per Hour"/>
+            </xpath>
+            <xpath expr="//div[field[@name='employee_costs_hour']]" position="replace">
+                <div class="o_row">
+                    <field name="employee_costs_hour" class="oe_inline"/>
+                    <span class="text-muted ms-2">ARS / per employee</span>
+                    <span class="text-muted ms-3">|</span>
                     <field name="employee_costs_hour_usd"
-                           class="oe_inline"
-                           help="Direct USD employee hourly rate. Auto-set from the exchange rate when 'Employee Cost per Hour' is saved; can be overridden manually."/> per employee (USD)
+                           class="oe_inline ms-3"
+                           help="Direct USD employee hourly rate. Auto-set from the exchange rate when 'Employee Cost per Hour' is saved; can be overridden manually."/>
+                    <span class="text-muted ms-2">USD direct / per employee</span>
                 </div>
             </xpath>
         </field>
