@@ -32,6 +32,48 @@ class StockPicking(models.Model):
             vals['signature_date'] = fields.Datetime.now()
         return super().write(vals)
 
+    @api.onchange('book_id')
+    def _onchange_book_id_cai_alert(self):
+        """Show a non-blocking toast when the assigned book is low on
+        sequences or has a CAI near expiry."""
+        if not self.book_id:
+            return
+        book = self.book_id
+        alerts = []
+
+        # Remaining sequences (sequence_end is a Char like '00000200')
+        if book.sequence_end and book.next_number is not None:
+            try:
+                remaining = int(book.sequence_end) - book.next_number + 1
+                if remaining <= 10:
+                    alerts.append(_('Solo quedan %d secuencia(s) disponible(s).', remaining))
+            except (ValueError, TypeError):
+                pass
+
+        # CAI expiry
+        if book.l10n_ar_cai_due:
+            days_left = (book.l10n_ar_cai_due - fields.Date.today()).days
+            if days_left < 0:
+                alerts.append(_(
+                    'El CAI está VENCIDO (venció hace %d día(s)).',
+                    abs(days_left),
+                ))
+            elif days_left <= 10:
+                alerts.append(_(
+                    'El CAI vence en %d día(s) (%s).',
+                    days_left,
+                    format_date(self.env, book.l10n_ar_cai_due, date_format='dd MMMM yyyy'),
+                ))
+
+        if alerts:
+            return {
+                'warning': {
+                    'title': _('⚠ Alerta de Talonario: %s', book.name),
+                    'message': '\n'.join(alerts),
+                    'type': 'notification',
+                }
+            }
+
     def _attach_sign(self):
         """Override: for digital-book pickings, attach the remito instead of
         the native delivery slip."""
