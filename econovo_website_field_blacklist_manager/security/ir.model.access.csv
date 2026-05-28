@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_econovo_website_form_field_whitelist_manager,econovo.website.form.field.whitelist manager,model_econovo_website_form_field_whitelist,base.group_system,1,1,1,1
+access_econovo_website_form_field_whitelist_user,econovo.website.form.field.whitelist user,model_econovo_website_form_field_whitelist,base.group_user,1,0,0,0

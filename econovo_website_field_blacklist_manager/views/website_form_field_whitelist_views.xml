@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Tree view -->
+    <record id="website_form_field_whitelist_view_tree" model="ir.ui.view">
+        <field name="name">econovo.website.form.field.whitelist.view.tree</field>
+        <field name="model">econovo.website.form.field.whitelist</field>
+        <field name="arch" type="xml">
+            <tree string="Website Form Field Whitelist">
+                <field name="display_name"/>
+                <field name="model_name"/>
+                <field name="field_name"/>
+                <field name="note" optional="show"/>
+                <field name="active" widget="boolean_toggle"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form view -->
+    <record id="website_form_field_whitelist_view_form" model="ir.ui.view">
+        <field name="name">econovo.website.form.field.whitelist.view.form</field>
+        <field name="model">econovo.website.form.field.whitelist</field>
+        <field name="arch" type="xml">
+            <form string="Form Builder Field Whitelist">
+                <header>
+                    <button name="action_reapply"
+                            type="object"
+                            string="Re-apply"
+                            class="btn-secondary"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="bg-danger"
+                            invisible="active"/>
+                    <group>
+                        <group>
+                            <field name="model_id"
+                                   options="{'no_create': True, 'no_open': True}"/>
+                            <field name="field_id"
+                                   options="{'no_create': True, 'no_open': True}"/>
+                        </group>
+                        <group>
+                            <field name="active" invisible="1"/>
+                            <field name="model_name" readonly="1"/>
+                            <field name="field_name" readonly="1"/>
+                        </group>
+                    </group>
+                    <group string="Notes">
+                        <field name="note" nolabel="1"
+                               placeholder="Why this field is being whitelisted..."/>
+                    </group>
+                    <div class="alert alert-info" role="alert">
+                        Activating this record makes the field available in the
+                        Website Form Builder (Edit page &#8594; Form &#8594; Field
+                        &#8594; Existing Field). Deactivating or deleting the
+                        record restores the original block.
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search view -->
+    <record id="website_form_field_whitelist_view_search" model="ir.ui.view">
+        <field name="name">econovo.website.form.field.whitelist.view.search</field>
+        <field name="model">econovo.website.form.field.whitelist</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="model_name"/>
+                <field name="field_name"/>
+                <field name="note"/>
+                <filter name="active" string="Active" domain="[('active','=',True)]"/>
+                <filter name="inactive" string="Archived" domain="[('active','=',False)]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_by_model" string="Model"
+                            context="{'group_by': 'model_name'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="website_form_field_whitelist_action" model="ir.actions.act_window">
+        <field name="name">Form Builder Fields (Whitelist)</field>
+        <field name="res_model">econovo.website.form.field.whitelist</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="website_form_field_whitelist_view_search"/>
+        <field name="context">{'search_default_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No field whitelisted yet</p>
+            <p>
+                Add an entry to expose a field in the Website Form Builder
+                (drag &amp; drop "Existing Field").
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu under Website > Configuration -->
+    <menuitem id="website_form_field_whitelist_menu"
+              name="Form Builder Whitelist"
+              parent="website.menu_website_configuration"
+              action="website_form_field_whitelist_action"
+              sequence="90"
+              groups="base.group_system"/>
+
+</odoo>
