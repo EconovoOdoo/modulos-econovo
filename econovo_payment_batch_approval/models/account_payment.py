@@ -1,8 +1,19 @@
-from odoo import models
+from odoo import fields, models
 
 
 class AccountPayment(models.Model):
     _inherit = 'account.payment'
+
+    payment_priority = fields.Selection(
+        selection=[
+            ('low', 'Not a priority'),
+            ('normal', 'Normal'),
+            ('urgent', 'Urgent'),
+        ],
+        string='Payment Priority',
+        default='normal',
+        help="Urgency level used to prioritize payment processing.",
+    )
 
     def action_post_and_new(self):
         """Override to pre-assign the batch before action_post is intercepted by Studio Approval.
