@@ -1,6 +1,6 @@
 # Payment Batch Approval
 
-**Version:** 17.0.1.1.0 | **License:** AGPL-3 | **Odoo:** 17.0
+**Version:** 17.0.1.2.0 | **License:** AGPL-3 | **Odoo:** 17.0
 
 Bridges **Odoo Studio Approval Rules** on `account.payment.action_post` with
 the **Sumitec payment batch module** (`account_payment_batch_st`), and adds a
@@ -37,6 +37,21 @@ one-click bulk-approval action to batch payment forms.
 
 - **Approval group:** Installs the `Payment Batch Approvers` security group that
   controls visibility of the Approve Batch button.
+
+- **Payment priority field:** Adds a `payment_priority` selection field to both
+  `account.payment` and `account.move`, rendered with Odoo's star **priority**
+  widget (`Not a priority` / `Normal` / `Urgent`). The column is added as a
+  hidden-by-default optional column on the payment and journal entry tree views
+  so treasurers can flag and sort pending documents by urgency.
+
+- **Approval reset on un-post (configuration):** The Econovo environment ships
+  two `base.automation` records (one on `account.payment`, one on
+  `account.move`) that clear the persisted `studio.approval.entry` records when
+  a document returns to **Draft**. This forces a fresh approval cycle on
+  re-confirmation instead of silently reusing the previous approval, and posts
+  a chatter audit note listing the approvals that were reset. These automations
+  are environment data (not shipped in the module); see
+  [docs/ECONOVO.md](docs/ECONOVO.md).
 
 ---
 

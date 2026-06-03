@@ -264,7 +264,117 @@ DB: `econovo-180326-29905628`
 
 ### Production (`econovo.odoo.com`)
 
-> To be completed after production deployment.
+DB: `econovoodoo-econovo1-econovo-15882591`
+
+**Models:**
+
+| Model | `ir.model` ID |
+|-------|---------------|
+| `account.payment` | 546 |
+| `account.move` | 542 |
+
+**Payment rules (`account.payment.action_post`):**
+
+| Record | Model | ID | Group | Responsible |
+|--------|-------|----|-------|-------------|
+| Aprobación Pagos Mayores ≥ $1M | `studio.approval.rule` | 40 | 254 (Mayores) | 9 (Filoni) |
+| Aprobación Pagos Menores < $1M | `studio.approval.rule` | 41 | 255 (Menores) | 372 (Massola) |
+| Pagos Buenos Aires *(consolidated)* | `studio.approval.rule` | 42 | 256 (Buenos Aires) | 372 (Massola) |
+| Aprobación Pagos Exterior (FX) | `studio.approval.rule` | 43 | 257 (Exterior) | — |
+| Pagos Agrovial Comex | `studio.approval.rule` | 48 | 254 (Mayores) | 9 (Filoni) |
+
+**Journal entry rules (`account.move.action_post`):**
+
+| Record | Model | ID |
+|--------|-------|----|
+| Aprobación Asientos Mayores ≥ $1M | `studio.approval.rule` | 44 |
+| Aprobación Asientos Menores < $1M | `studio.approval.rule` | 45 |
+| Aprobación Asientos Exterior (FX) | `studio.approval.rule` | 46 |
+
+**Groups:**
+
+| Record | Model | ID |
+|--------|-------|----|
+| Aprobadores — Pagos Mayores | `res.groups` | 254 |
+| Aprobadores — Pagos Menores | `res.groups` | 255 |
+| Aprobadores — Buenos Aires | `res.groups` | 256 |
+| Aprobadores — Pagos Exterior | `res.groups` | 257 |
+| Payment Batch Approvers | `res.groups` | 253 |
+
+**Reset-approval automations (`base.automation` + `ir.actions.server`):**
+
+| Record | Model targeted | base.automation ID | Server action ID |
+|--------|----------------|--------------------|------------------|
+| Reset approvals on un-post (payments) | `account.payment` (546) | 38 | 1989 |
+| Reset approvals on un-post (entries) | `account.move` (542) | 39 | 1990 |
+
+**Relevant users:** Filoni = 9, Massola = 372, Beltramo = 373, Villarreal = 380,
+Lourdes Varela = 482, Gastón Barisone = 370, Gaspar Monastra = 470.
+**Companies:** 1 = Econovo Agrovial, 2 = Oscar Scorza, 3 = Hidro (Buenos Aires logic).
+
+---
+
+## Production-Specific Adjustments (A1–A6 + Consolidation)
+
+The following adjustments were applied to production via XML-RPC on top of the
+base four-tier setup. They are environment data and are documented here for
+traceability.
+
+### A1 — Reset approvals when a document returns to Draft
+
+Two `base.automation` records (IDs 38 on `account.payment`, 39 on
+`account.move`) fire on `on_create_or_write` with
+`filter_pre_domain = [('state','!=','draft')]` and
+`filter_domain = [('state','=','draft')]` (i.e. on the transition *posted/other
+→ draft*). Their server actions (1989 / 1990, `usage='base_automation'`):
+
+1. Post a chatter audit note listing the approvals that existed before the
+   reset (who approved, when).
+2. `unlink()` the matching `studio.approval.entry` records for the document.
+
+This guarantees that re-confirming a previously-approved document **re-requests
+approval** instead of silently reusing the old `studio.approval.entry`. The
+action is idempotent — a no-op when there are no entries to clear.
+
+### A2 — Amount thresholds
+
+High-value vs standard split at **$1,000,000 ARS** (rules 40/44 ≥ 1M,
+rules 41/45 < 1M), as documented in the Authorisation Tiers tables above.
+
+### A4 — Payment priority field
+
+Module field `payment_priority` (star **priority** widget) added to
+`account.payment` and `account.move`, surfaced as a hidden optional tree column.
+Shipped in module version **17.0.1.2.0** (commit `4f32f46` on branch `17.0`).
+
+### A5 / A6 — Routing adjustments and consolidation
+
+- **Rule 42 — "Pagos Buenos Aires"** (group 256, responsible 372 / Massola).
+  Consolidated rule that absorbs the former *Lourdes Varela → Nacho* routing
+  (previously a separate rule 47, now **deleted**). Domain:
+
+  ```python
+  ['|',
+   ('journal_id.company_id', '=', 3),
+   ('create_uid', '=', 482),
+   ('is_internal_transfer', '=', False),
+   ('payment_type', '=', 'outbound')]
+  ```
+
+- **Rule 48 — "Pagos Agrovial Comex"** (group 254 / Mayores, responsible 9 /
+  Filoni). Routes outbound payments created by the Comex users
+  (Gastón Barisone 370, Gaspar Monastra 470) in company 1 to the Mayores tier:
+
+  ```python
+  [('company_id', '=', 1),
+   ('create_uid', 'in', [370, 470]),
+   ('payment_type', '=', 'outbound'),
+   ('is_internal_transfer', '=', False)]
+  ```
+
+- **Exclusions on rules 40 / 41:** both retain `('create_uid', '!=', 482)` so
+  that Lourdes Varela's payments are routed exclusively through the consolidated
+  rule 42 and do not double-trigger the Mayores/Menores tiers.
 
 ---
 
