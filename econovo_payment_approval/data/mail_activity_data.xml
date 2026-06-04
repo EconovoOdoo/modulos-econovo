@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <!--
-        Activity type: Revisar Pago
+        Activity type: Aprobar Pago
         Created for approvers (Fabricio / Nacho) to review outbound payments.
     -->
     <record id="mail_activity_type_revisar_pago" model="mail.activity.type">
-        <field name="name">Revisar Pago</field>
+        <field name="name">Aprobar Pago</field>
         <field name="icon">fa-money</field>
         <field name="decoration_type">warning</field>
         <field name="delay_count">0</field>

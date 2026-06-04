@@ -114,7 +114,7 @@ class AccountPayment(models.Model):
 
                 target.activity_schedule(
                     activity_type_id=activity_type.id,
-                    summary=_('Revisar Pago: %s', payment.name),
+                    summary=_('Aprobar Pago: %s', payment.name),
                     date_deadline=fields.Date.today(),
                     user_id=rule.user_id.id,
                 )
