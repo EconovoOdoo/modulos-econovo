@@ -9,6 +9,7 @@
     -->
     <record id="view_account_payment_form_inherit_approval" model="ir.ui.view">
         <field name="name">account.payment.form.inherit.econovo_payment_approval</field>
+        <field name="model">account.payment</field>
         <field name="inherit_id" ref="account.view_account_payment_form"/>
         <field name="arch" type="xml">
             <!-- Add the Reject button just before the state statusbar widget -->
