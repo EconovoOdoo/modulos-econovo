@@ -50,25 +50,20 @@
                             <field name="active"/>
                         </group>
                     </group>
-                    <group string="Dominio de Aplicación"
-                           col="1"
-                           invisible="target_model != 'account.payment'">
-                        <field name="domain"
-                               widget="domain"
-                               options="{'model': 'account.payment'}"
-                               nolabel="1"/>
-                    </group>
-                    <group string="Dominio de Aplicación"
-                           col="1"
-                           invisible="target_model != 'account.move'">
-                        <field name="domain"
-                               widget="domain"
-                               options="{'model': 'account.move'}"
-                               nolabel="1"/>
-                    </group>
-                    <group string="Notas Internas">
-                        <field name="note" nolabel="1"/>
-                    </group>
+                    <separator string="Dominio de Aplicación"
+                               invisible="not target_model"/>
+                    <field name="domain"
+                           widget="domain"
+                           options="{'model': 'account.payment'}"
+                           nolabel="1"
+                           invisible="target_model != 'account.payment'"/>
+                    <field name="domain"
+                           widget="domain"
+                           options="{'model': 'account.move'}"
+                           nolabel="1"
+                           invisible="target_model != 'account.move'"/>
+                    <separator string="Notas Internas"/>
+                    <field name="note" nolabel="1"/>
                 </sheet>
             </form>
         </field>
