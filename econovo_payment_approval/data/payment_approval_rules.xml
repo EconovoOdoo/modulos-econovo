@@ -28,7 +28,7 @@
         <field name="name">Aprobacion Pagos Mayores &gt;= $1M (ARS)</field>
         <field name="sequence">10</field>
         <field name="domain">[('create_uid', '!=', 482), '|', ('company_id', '!=', 1), ('create_uid', 'not in', [370, 470]), ('is_internal_transfer', '=', False), ('amount', '&gt;', 1000000), ('journal_id.company_id', '!=', 3), ('currency_id.name', '=', 'ARS'), ('payment_type', '=', 'outbound')]</field>
-        <field name="user_id" eval="env['res.users'].search([('login', '=', 'contaduria@econovo.com.ar')], limit=1).id"/>
+        <field name="user_id" eval="9"/>  <!-- Fabricio Filoni (contaduria@econovo.com.ar) -->
         <field name="note">Fabricio aprueba todos los pagos ARS mayores a $1.000.000 que no sean de BA ni creados por Lourdes ni Agrovial Comex.</field>
     </record>
 
@@ -37,7 +37,7 @@
         <field name="name">Aprobacion Pagos Menores &lt; $1M (ARS)</field>
         <field name="sequence">20</field>
         <field name="domain">[('create_uid', '!=', 482), '|', ('company_id', '!=', 1), ('create_uid', 'not in', [370, 470]), ('is_internal_transfer', '=', False), ('amount', '&lt;=', 1000000), ('journal_id.company_id', '!=', 3), ('currency_id.name', '=', 'ARS'), ('payment_type', '=', 'outbound')]</field>
-        <field name="user_id" eval="env['res.users'].search([('login', '=', 'imassola@econovo.com.ar')], limit=1).id"/>
+        <field name="user_id" eval="372"/>  <!-- Nacho Massola (imassola@econovo.com.ar) -->
         <field name="note">Nacho aprueba todos los pagos ARS menores o iguales a $1.000.000 que no sean de BA ni creados por Lourdes ni Agrovial Comex.</field>
     </record>
 
@@ -46,7 +46,7 @@
         <field name="name">Pagos Buenos Aires</field>
         <field name="sequence">30</field>
         <field name="domain">['|', ('journal_id.company_id', '=', 3), ('create_uid', '=', 482), ('is_internal_transfer', '=', False), ('payment_type', '=', 'outbound')]</field>
-        <field name="user_id" eval="env['res.users'].search([('login', '=', 'imassola@econovo.com.ar')], limit=1).id"/>
+        <field name="user_id" eval="372"/>  <!-- Nacho Massola (imassola@econovo.com.ar) -->
         <field name="note">Nacho aprueba los pagos de la empresa BA y los pagos creados por Lourdes.</field>
     </record>
 
@@ -55,7 +55,7 @@
         <field name="name">Aprobacion Pagos Exterior (FX)</field>
         <field name="sequence">40</field>
         <field name="domain">[('is_internal_transfer', '=', False), ('currency_id.name', '!=', 'ARS'), ('payment_type', '=', 'outbound')]</field>
-        <field name="user_id" eval="env['res.users'].search([('login', '=', 'contaduria@econovo.com.ar')], limit=1).id"/>
+        <field name="user_id" eval="9"/>  <!-- Fabricio Filoni (contaduria@econovo.com.ar) -->
         <field name="note">Fabricio aprueba todos los pagos en moneda extranjera.</field>
     </record>
 
@@ -64,7 +64,7 @@
         <field name="name">Pagos Agrovial Comex</field>
         <field name="sequence">50</field>
         <field name="domain">[('company_id', '=', 1), ('create_uid', 'in', [370, 470]), ('payment_type', '=', 'outbound'), ('is_internal_transfer', '=', False)]</field>
-        <field name="user_id" eval="env['res.users'].search([('login', '=', 'contaduria@econovo.com.ar')], limit=1).id"/>
+        <field name="user_id" eval="9"/>  <!-- Fabricio Filoni (contaduria@econovo.com.ar) -->
         <field name="note">Fabricio aprueba los pagos de Econovo principal creados por Barisone o Monastra (operaciones Agrovial Comex).</field>
     </record>
 
