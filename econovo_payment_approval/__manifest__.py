@@ -2,7 +2,7 @@
     'name': 'Econovo Payment Approval',
     'version': '17.0.1.0.0',
     'category': 'Accounting/Payment',
-    'summary': 'Activity-based approval workflow for outbound payments',
+    'summary': 'Activity-based approval workflow for outbound payments and journal entries',
     'description': """
 Replaces Studio Approval Rules for account.payment with a lightweight,
 pure-Python approval workflow using mail.activity.
@@ -28,8 +28,10 @@ Features:
         'security/ir.model.access.csv',
         'data/mail_activity_data.xml',
         'data/payment_approval_rules.xml',
+        'data/move_approval_rules.xml',
         'wizard/econovo_payment_reject_wizard_views.xml',
         'views/econovo_payment_approval_rule_views.xml',
+        'views/econovo_move_approval_rule_views.xml',
         'views/account_payment_views.xml',
     ],
     'installable': True,

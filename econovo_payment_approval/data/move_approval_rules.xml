@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Pre-loaded approval routing rules for account.move (journal entries).
+        These mirror the former Studio Approval Rules on account.move.action_post.
+
+        Monitored account codes (33 accounts): loans, municipal taxes, IIBB, VAT,
+        payroll, union dues, installment plans. See docs/ECONOVO.md for full list.
+
+        User IDs (same in staging and production):
+          - uid 9  = Fabricio Filoni (contaduria@econovo.com.ar)
+          - uid 372 = Nacho Massola (imassola@econovo.com.ar)
+    -->
+
+    <!-- Rule 10: High-value ARS entries >= $1,000,000 -->
+    <record id="move_approval_rule_mayores" model="econovo.move.approval.rule">
+        <field name="name">Asientos Mayores ≥ $1M ARS</field>
+        <field name="sequence">10</field>
+        <field name="active">True</field>
+        <field name="user_id" eval="9"/>
+        <field name="domain">[('move_type', '=', 'entry'), ('currency_id.name', '=', 'ARS'), ('amount_total', '&gt;=', 1000000), ('line_ids.account_id.code', 'in', ['2.1.1.01.025', '2.1.2.02.001', '2.1.2.02.002', '2.1.2.02.003', '2.1.2.02.004', '2.1.2.02.005', '2.1.2.02.006', '2.1.2.02.017', '2.1.2.02.018', '2.1.2.02.019', '2.1.3.01.001', '2.1.3.01.002', '2.1.3.01.003', '2.1.3.01.010', '2.1.3.01.020', '2.1.3.02.010', '2.1.3.02.020', '2.1.3.02.021', '2.1.3.02.520', '2.1.3.03.020', '2.1.3.04.010', '2.1.4.01.010', '2.1.4.01.020', '2.1.4.01.030', '2.1.4.01.040', '2.1.4.01.051', '2.1.4.01.052', '2.1.4.01.053', '2.1.4.01.054', '2.1.4.01.056', '2.1.4.01.057', '2.1.4.01.060', '2.1.5.01.001'])]</field>
+        <field name="note">Asientos manuales en ARS con monto total ≥ $1.000.000 que tocan cuentas de préstamos, sueldos, impuestos u otras cuentas monitoreadas.</field>
+    </record>
+
+    <!-- Rule 20: Standard ARS entries < $1,000,000 -->
+    <record id="move_approval_rule_menores" model="econovo.move.approval.rule">
+        <field name="name">Asientos Menores &lt; $1M ARS</field>
+        <field name="sequence">20</field>
+        <field name="active">True</field>
+        <field name="user_id" eval="372"/>
+        <field name="domain">[('move_type', '=', 'entry'), ('currency_id.name', '=', 'ARS'), ('amount_total', '&lt;', 1000000), ('line_ids.account_id.code', 'in', ['2.1.1.01.025', '2.1.2.02.001', '2.1.2.02.002', '2.1.2.02.003', '2.1.2.02.004', '2.1.2.02.005', '2.1.2.02.006', '2.1.2.02.017', '2.1.2.02.018', '2.1.2.02.019', '2.1.3.01.001', '2.1.3.01.002', '2.1.3.01.003', '2.1.3.01.010', '2.1.3.01.020', '2.1.3.02.010', '2.1.3.02.020', '2.1.3.02.021', '2.1.3.02.520', '2.1.3.03.020', '2.1.3.04.010', '2.1.4.01.010', '2.1.4.01.020', '2.1.4.01.030', '2.1.4.01.040', '2.1.4.01.051', '2.1.4.01.052', '2.1.4.01.053', '2.1.4.01.054', '2.1.4.01.056', '2.1.4.01.057', '2.1.4.01.060', '2.1.5.01.001'])]</field>
+        <field name="note">Asientos manuales en ARS con monto total &lt; $1.000.000 que tocan cuentas monitoreadas.</field>
+    </record>
+
+    <!-- Rule 30: Foreign currency (FX) entries -->
+    <record id="move_approval_rule_fx" model="econovo.move.approval.rule">
+        <field name="name">Asientos Exterior (FX)</field>
+        <field name="sequence">30</field>
+        <field name="active">True</field>
+        <field name="user_id" eval="9"/>
+        <field name="domain">[('move_type', '=', 'entry'), ('currency_id.name', '!=', 'ARS'), ('line_ids.account_id.code', 'in', ['2.1.1.01.025', '2.1.2.02.001', '2.1.2.02.002', '2.1.2.02.003', '2.1.2.02.004', '2.1.2.02.005', '2.1.2.02.006', '2.1.2.02.017', '2.1.2.02.018', '2.1.2.02.019', '2.1.3.01.001', '2.1.3.01.002', '2.1.3.01.003', '2.1.3.01.010', '2.1.3.01.020', '2.1.3.02.010', '2.1.3.02.020', '2.1.3.02.021', '2.1.3.02.520', '2.1.3.03.020', '2.1.3.04.010', '2.1.4.01.010', '2.1.4.01.020', '2.1.4.01.030', '2.1.4.01.040', '2.1.4.01.051', '2.1.4.01.052', '2.1.4.01.053', '2.1.4.01.054', '2.1.4.01.056', '2.1.4.01.057', '2.1.4.01.060', '2.1.5.01.001'])]</field>
+        <field name="note">Asientos manuales en moneda extranjera (distinta de ARS) que tocan cuentas monitoreadas.</field>
+    </record>
+</odoo>

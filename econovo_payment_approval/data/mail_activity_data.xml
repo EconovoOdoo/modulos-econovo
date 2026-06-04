@@ -27,4 +27,19 @@
         <field name="res_model">account.payment</field>
         <field name="category">default</field>
     </record>
+
+    <!--
+        Activity type: Aprobar Asiento
+        Created for approvers (Fabricio / Nacho) to review journal entries
+        that touch monitored liability/payable accounts.
+    -->
+    <record id="mail_activity_type_aprobar_asiento" model="mail.activity.type">
+        <field name="name">Aprobar Asiento</field>
+        <field name="icon">fa-file-text</field>
+        <field name="decoration_type">warning</field>
+        <field name="delay_count">0</field>
+        <field name="delay_unit">days</field>
+        <field name="res_model">account.move</field>
+        <field name="category">default</field>
+    </record>
 </odoo>
