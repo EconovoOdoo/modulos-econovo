@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ================================================================
+         Menu: Contabilidad > Configuración > Reglas de Aprobación de Pagos
+         ================================================================ -->
+    <record id="action_econovo_payment_approval_rule" model="ir.actions.act_window">
+        <field name="name">Reglas de Aprobación de Pagos</field>
+        <field name="res_model">econovo.payment.approval.rule</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No hay reglas de aprobación configuradas.
+            </p>
+            <p>
+                Crea reglas para enrutar pagos al aprobador correcto según
+                dominio, monto, empresa o moneda.
+            </p>
+        </field>
+    </record>
+
+    <record id="view_econovo_payment_approval_rule_list" model="ir.ui.view">
+        <field name="name">econovo.payment.approval.rule.list</field>
+        <field name="model">econovo.payment.approval.rule</field>
+        <field name="arch" type="xml">
+            <list string="Reglas de Aprobación">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="user_id"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_econovo_payment_approval_rule_form" model="ir.ui.view">
+        <field name="name">econovo.payment.approval.rule.form</field>
+        <field name="model">econovo.payment.approval.rule</field>
+        <field name="arch" type="xml">
+            <form string="Regla de Aprobación de Pago">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="user_id"/>
+                            <field name="sequence"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <group string="Dominio de Aplicación">
+                        <field name="domain"
+                               widget="domain"
+                               options="{'model': 'account.payment'}"
+                               nolabel="1"/>
+                    </group>
+                    <group string="Notas Internas">
+                        <field name="note" nolabel="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <menuitem id="menu_econovo_payment_approval_rule"
+              name="Reglas de Aprobación de Pagos"
+              parent="account.menu_finance_configuration"
+              action="action_econovo_payment_approval_rule"
+              groups="base.group_system"
+              sequence="99"/>
+</odoo>

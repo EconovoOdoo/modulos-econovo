@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Add "Rechazar Pago" button to the account.payment form view.
+        Visible only when:
+          - Payment is in posted state
+          - There is at least one pending "Revisar Pago" activity
+          - The current user belongs to the Aprobadores de Pagos group
+    -->
+    <record id="view_account_payment_form_inherit_approval" model="ir.ui.view">
+        <field name="name">account.payment.form.inherit.econovo_payment_approval</field>
+        <field name="inherit_id" ref="account.view_account_payment_form"/>
+        <field name="arch" type="xml">
+            <!-- Add the Reject button just before the state statusbar widget -->
+            <xpath expr="//header/field[@name='state']" position="before">
+                <button name="action_open_reject_wizard"
+                        string="Rechazar Pago"
+                        type="object"
+                        class="btn-danger"
+                        groups="econovo_payment_approval.grp_aprobadores_pago"
+                        invisible="state != 'posted' or not has_pending_approval_activity"/>
+            </xpath>
+            <!-- Declare the computed field so it is included in the form load -->
+            <xpath expr="//sheet/group[1]" position="before">
+                <field name="has_pending_approval_activity" invisible="1"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

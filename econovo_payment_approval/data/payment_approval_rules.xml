@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Payment approval routing rules.
+
+    These rules replicate the five Studio Approval Rules previously used in
+    production (rule IDs 40, 41, 42, 43, 48). Domains are evaluated at
+    runtime against account.payment records; user IDs in the domain expressions
+    are stable across Odoo.sh staging/production branches because staging is
+    a copy of production.
+
+    Approver assignment:
+      - Pagos Mayores >= $1M ARS  → Fabricio Filoni  (contaduria@econovo.com.ar)
+      - Pagos Menores < $1M ARS   → Nacho Massola    (imassola@econovo.com.ar)
+      - Buenos Aires / Lourdes    → Nacho Massola    (imassola@econovo.com.ar)
+      - Pagos Exterior (FX)       → Fabricio Filoni  (contaduria@econovo.com.ar)
+      - Agrovial Comex (Barisone/Monastra) → Fabricio Filoni
+
+    Routing note — create_uid references:
+      482  = VARELA LOURDES       (lvarela@econovo.com.ar)
+      370  = BARISONE LUCAS       (gbarisone@econovoagrovial.com.ar)
+      470  = MONASTRA GASPAR      (gmonastra@econovo.com.ar)
+    Company ID 1 = Econovo principal; Company ID 3 = Buenos Aires branch.
+-->
+<odoo noupdate="1">
+
+    <!-- Rule 1: Pagos Mayores >= $1M ARS (excl. BA, excl. Lourdes, excl. Agrovial Comex) -->
+    <record id="rule_pagos_mayores" model="econovo.payment.approval.rule">
+        <field name="name">Aprobacion Pagos Mayores &gt;= $1M (ARS)</field>
+        <field name="sequence">10</field>
+        <field name="domain">[('create_uid', '!=', 482), '|', ('company_id', '!=', 1), ('create_uid', 'not in', [370, 470]), ('is_internal_transfer', '=', False), ('amount', '&gt;', 1000000), ('journal_id.company_id', '!=', 3), ('currency_id.name', '=', 'ARS'), ('payment_type', '=', 'outbound')]</field>
+        <field name="user_id" eval="env['res.users'].search([('login', '=', 'contaduria@econovo.com.ar')], limit=1).id"/>
+        <field name="note">Fabricio aprueba todos los pagos ARS mayores a $1.000.000 que no sean de BA ni creados por Lourdes ni Agrovial Comex.</field>
+    </record>
+
+    <!-- Rule 2: Pagos Menores < $1M ARS (excl. BA, excl. Lourdes, excl. Agrovial Comex) -->
+    <record id="rule_pagos_menores" model="econovo.payment.approval.rule">
+        <field name="name">Aprobacion Pagos Menores &lt; $1M (ARS)</field>
+        <field name="sequence">20</field>
+        <field name="domain">[('create_uid', '!=', 482), '|', ('company_id', '!=', 1), ('create_uid', 'not in', [370, 470]), ('is_internal_transfer', '=', False), ('amount', '&lt;=', 1000000), ('journal_id.company_id', '!=', 3), ('currency_id.name', '=', 'ARS'), ('payment_type', '=', 'outbound')]</field>
+        <field name="user_id" eval="env['res.users'].search([('login', '=', 'imassola@econovo.com.ar')], limit=1).id"/>
+        <field name="note">Nacho aprueba todos los pagos ARS menores o iguales a $1.000.000 que no sean de BA ni creados por Lourdes ni Agrovial Comex.</field>
+    </record>
+
+    <!-- Rule 3: Pagos Buenos Aires / Lourdes -->
+    <record id="rule_pagos_ba" model="econovo.payment.approval.rule">
+        <field name="name">Pagos Buenos Aires</field>
+        <field name="sequence">30</field>
+        <field name="domain">['|', ('journal_id.company_id', '=', 3), ('create_uid', '=', 482), ('is_internal_transfer', '=', False), ('payment_type', '=', 'outbound')]</field>
+        <field name="user_id" eval="env['res.users'].search([('login', '=', 'imassola@econovo.com.ar')], limit=1).id"/>
+        <field name="note">Nacho aprueba los pagos de la empresa BA y los pagos creados por Lourdes.</field>
+    </record>
+
+    <!-- Rule 4: Pagos Exterior / FX (moneda distinta de ARS) -->
+    <record id="rule_pagos_fx" model="econovo.payment.approval.rule">
+        <field name="name">Aprobacion Pagos Exterior (FX)</field>
+        <field name="sequence">40</field>
+        <field name="domain">[('is_internal_transfer', '=', False), ('currency_id.name', '!=', 'ARS'), ('payment_type', '=', 'outbound')]</field>
+        <field name="user_id" eval="env['res.users'].search([('login', '=', 'contaduria@econovo.com.ar')], limit=1).id"/>
+        <field name="note">Fabricio aprueba todos los pagos en moneda extranjera.</field>
+    </record>
+
+    <!-- Rule 5: Agrovial Comex — pagos creados por Barisone o Monastra -->
+    <record id="rule_pagos_agrovial_comex" model="econovo.payment.approval.rule">
+        <field name="name">Pagos Agrovial Comex</field>
+        <field name="sequence">50</field>
+        <field name="domain">[('company_id', '=', 1), ('create_uid', 'in', [370, 470]), ('payment_type', '=', 'outbound'), ('is_internal_transfer', '=', False)]</field>
+        <field name="user_id" eval="env['res.users'].search([('login', '=', 'contaduria@econovo.com.ar')], limit=1).id"/>
+        <field name="note">Fabricio aprueba los pagos de Econovo principal creados por Barisone o Monastra (operaciones Agrovial Comex).</field>
+    </record>
+
+</odoo>

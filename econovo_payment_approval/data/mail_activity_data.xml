@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Activity type: Revisar Pago
+        Created for approvers (Fabricio / Nacho) to review outbound payments.
+    -->
+    <record id="mail_activity_type_revisar_pago" model="mail.activity.type">
+        <field name="name">Revisar Pago</field>
+        <field name="icon">fa-money</field>
+        <field name="decoration_type">warning</field>
+        <field name="delay_count">0</field>
+        <field name="delay_unit">days</field>
+        <field name="res_model">account.payment</field>
+        <field name="category">upload</field>
+    </record>
+
+    <!--
+        Activity type: Pago Rechazado
+        Created for the tesorero when an approver rejects a payment.
+    -->
+    <record id="mail_activity_type_pago_rechazado" model="mail.activity.type">
+        <field name="name">Pago Rechazado</field>
+        <field name="icon">fa-times-circle</field>
+        <field name="decoration_type">danger</field>
+        <field name="delay_count">0</field>
+        <field name="delay_unit">days</field>
+        <field name="res_model">account.payment</field>
+        <field name="category">upload</field>
+    </record>
+</odoo>

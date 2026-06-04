@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Security group: Aprobadores de Pagos
+        Members see the "Rechazar Pago" button and can manage approval activities.
+        Add Fabricio Filoni and Nacho Massola as members from the UI or via
+        the res.groups record below.
+    -->
+    <record id="grp_aprobadores_pago" model="res.groups">
+        <field name="name">Aprobadores de Pagos</field>
+        <field name="category_id" ref="base.module_category_technical"/>
+        <field name="comment">Members of this group can approve or reject outbound payments.</field>
+    </record>
+</odoo>
