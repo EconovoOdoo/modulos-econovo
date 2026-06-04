@@ -11,7 +11,7 @@
         <field name="delay_count">0</field>
         <field name="delay_unit">days</field>
         <field name="res_model">account.payment</field>
-        <field name="category">upload</field>
+        <field name="category">default</field>
     </record>
 
     <!--
@@ -25,6 +25,6 @@
         <field name="delay_count">0</field>
         <field name="delay_unit">days</field>
         <field name="res_model">account.payment</field>
-        <field name="category">upload</field>
+        <field name="category">default</field>
     </record>
 </odoo>
