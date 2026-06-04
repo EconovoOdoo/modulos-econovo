@@ -51,6 +51,7 @@
                         </group>
                     </group>
                     <group string="Dominio de Aplicación"
+                           col="1"
                            invisible="target_model != 'account.payment'">
                         <field name="domain"
                                widget="domain"
@@ -58,6 +59,7 @@
                                nolabel="1"/>
                     </group>
                     <group string="Dominio de Aplicación"
+                           col="1"
                            invisible="target_model != 'account.move'">
                         <field name="domain"
                                widget="domain"
