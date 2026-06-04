@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Approval routing rules — payments and journal entries.
+
+    Approver assignment (UIDs stable across staging/production):
+      uid 9   = Fabricio Filoni  (contaduria@econovo.com.ar)
+      uid 372 = Nacho Massola    (imassola@econovo.com.ar)
+
+    Other create_uid references used in payment domains:
+      482  = Varela Lourdes     (lvarela@econovo.com.ar)
+      370  = Barisone Lucas     (gbarisone@econovoagrovial.com.ar)
+      470  = Monastra Gaspar    (gmonastra@econovo.com.ar)
+    Company ID 1 = Econovo principal; Company ID 3 = Buenos Aires branch.
+-->
+<odoo noupdate="1">
+
+    <!-- ============================================================
+         PAGOS (account.payment)
+         ============================================================ -->
+
+    <!-- Rule 10: Pagos Mayores >= $1M ARS -->
+    <record id="rule_pagos_mayores" model="econovo.approval.rule">
+        <field name="name">Aprobacion Pagos Mayores &gt;= $1M (ARS)</field>
+        <field name="sequence">10</field>
+        <field name="target_model">account.payment</field>
+        <field name="domain">[('create_uid', '!=', 482), '|', ('company_id', '!=', 1), ('create_uid', 'not in', [370, 470]), ('is_internal_transfer', '=', False), ('amount', '&gt;', 1000000), ('journal_id.company_id', '!=', 3), ('currency_id.name', '=', 'ARS'), ('payment_type', '=', 'outbound')]</field>
+        <field name="user_id" eval="9"/>
+        <field name="note">Fabricio aprueba todos los pagos ARS mayores a $1.000.000 que no sean de BA ni creados por Lourdes ni Agrovial Comex.</field>
+    </record>
+
+    <!-- Rule 20: Pagos Menores <= $1M ARS -->
+    <record id="rule_pagos_menores" model="econovo.approval.rule">
+        <field name="name">Aprobacion Pagos Menores &lt;= $1M (ARS)</field>
+        <field name="sequence">20</field>
+        <field name="target_model">account.payment</field>
+        <field name="domain">[('create_uid', '!=', 482), '|', ('company_id', '!=', 1), ('create_uid', 'not in', [370, 470]), ('is_internal_transfer', '=', False), ('amount', '&lt;=', 1000000), ('journal_id.company_id', '!=', 3), ('currency_id.name', '=', 'ARS'), ('payment_type', '=', 'outbound')]</field>
+        <field name="user_id" eval="372"/>
+        <field name="note">Nacho aprueba todos los pagos ARS menores o iguales a $1.000.000 que no sean de BA ni creados por Lourdes ni Agrovial Comex.</field>
+    </record>
+
+    <!-- Rule 30: Pagos Buenos Aires / Lourdes -->
+    <record id="rule_pagos_ba" model="econovo.approval.rule">
+        <field name="name">Pagos Buenos Aires</field>
+        <field name="sequence">30</field>
+        <field name="target_model">account.payment</field>
+        <field name="domain">['|', ('journal_id.company_id', '=', 3), ('create_uid', '=', 482), ('is_internal_transfer', '=', False), ('payment_type', '=', 'outbound')]</field>
+        <field name="user_id" eval="372"/>
+        <field name="note">Nacho aprueba los pagos de la empresa BA y los pagos creados por Lourdes.</field>
+    </record>
+
+    <!-- Rule 40: Pagos Exterior / FX -->
+    <record id="rule_pagos_fx" model="econovo.approval.rule">
+        <field name="name">Aprobacion Pagos Exterior (FX)</field>
+        <field name="sequence">40</field>
+        <field name="target_model">account.payment</field>
+        <field name="domain">[('is_internal_transfer', '=', False), ('currency_id.name', '!=', 'ARS'), ('payment_type', '=', 'outbound')]</field>
+        <field name="user_id" eval="9"/>
+        <field name="note">Fabricio aprueba todos los pagos en moneda extranjera.</field>
+    </record>
+
+    <!-- Rule 50: Pagos Agrovial Comex -->
+    <record id="rule_pagos_agrovial_comex" model="econovo.approval.rule">
+        <field name="name">Pagos Agrovial Comex</field>
+        <field name="sequence">50</field>
+        <field name="target_model">account.payment</field>
+        <field name="domain">[('company_id', '=', 1), ('create_uid', 'in', [370, 470]), ('payment_type', '=', 'outbound'), ('is_internal_transfer', '=', False)]</field>
+        <field name="user_id" eval="9"/>
+        <field name="note">Fabricio aprueba los pagos de Econovo principal creados por Barisone o Monastra (Agrovial Comex).</field>
+    </record>
+
+    <!-- ============================================================
+         ASIENTOS (account.move — move_type='entry')
+         Monitored account codes: loans, municipal taxes, IIBB, VAT,
+         payroll, union dues, installment plans (33 accounts total).
+         ============================================================ -->
+
+    <!-- Rule 60: Asientos ARS >= $1M -->
+    <record id="rule_asientos_mayores" model="econovo.approval.rule">
+        <field name="name">Asientos Mayores &gt;= $1M ARS</field>
+        <field name="sequence">60</field>
+        <field name="target_model">account.move</field>
+        <field name="user_id" eval="9"/>
+        <field name="domain">[('move_type', '=', 'entry'), ('currency_id.name', '=', 'ARS'), ('amount_total', '&gt;=', 1000000), ('line_ids.account_id.code', 'in', ['2.1.1.01.025', '2.1.2.02.001', '2.1.2.02.002', '2.1.2.02.003', '2.1.2.02.004', '2.1.2.02.005', '2.1.2.02.006', '2.1.2.02.017', '2.1.2.02.018', '2.1.2.02.019', '2.1.3.01.001', '2.1.3.01.002', '2.1.3.01.003', '2.1.3.01.010', '2.1.3.01.020', '2.1.3.02.010', '2.1.3.02.020', '2.1.3.02.021', '2.1.3.02.520', '2.1.3.03.020', '2.1.3.04.010', '2.1.4.01.010', '2.1.4.01.020', '2.1.4.01.030', '2.1.4.01.040', '2.1.4.01.051', '2.1.4.01.052', '2.1.4.01.053', '2.1.4.01.054', '2.1.4.01.056', '2.1.4.01.057', '2.1.4.01.060', '2.1.5.01.001'])]</field>
+        <field name="note">Asientos manuales en ARS con monto total >= $1.000.000 que tocan cuentas monitoreadas.</field>
+    </record>
+
+    <!-- Rule 70: Asientos ARS < $1M -->
+    <record id="rule_asientos_menores" model="econovo.approval.rule">
+        <field name="name">Asientos Menores &lt; $1M ARS</field>
+        <field name="sequence">70</field>
+        <field name="target_model">account.move</field>
+        <field name="user_id" eval="372"/>
+        <field name="domain">[('move_type', '=', 'entry'), ('currency_id.name', '=', 'ARS'), ('amount_total', '&lt;', 1000000), ('line_ids.account_id.code', 'in', ['2.1.1.01.025', '2.1.2.02.001', '2.1.2.02.002', '2.1.2.02.003', '2.1.2.02.004', '2.1.2.02.005', '2.1.2.02.006', '2.1.2.02.017', '2.1.2.02.018', '2.1.2.02.019', '2.1.3.01.001', '2.1.3.01.002', '2.1.3.01.003', '2.1.3.01.010', '2.1.3.01.020', '2.1.3.02.010', '2.1.3.02.020', '2.1.3.02.021', '2.1.3.02.520', '2.1.3.03.020', '2.1.3.04.010', '2.1.4.01.010', '2.1.4.01.020', '2.1.4.01.030', '2.1.4.01.040', '2.1.4.01.051', '2.1.4.01.052', '2.1.4.01.053', '2.1.4.01.054', '2.1.4.01.056', '2.1.4.01.057', '2.1.4.01.060', '2.1.5.01.001'])]</field>
+        <field name="note">Asientos manuales en ARS con monto total &lt; $1.000.000 que tocan cuentas monitoreadas.</field>
+    </record>
+
+    <!-- Rule 80: Asientos FX (moneda distinta de ARS) -->
+    <record id="rule_asientos_fx" model="econovo.approval.rule">
+        <field name="name">Asientos Exterior (FX)</field>
+        <field name="sequence">80</field>
+        <field name="target_model">account.move</field>
+        <field name="user_id" eval="9"/>
+        <field name="domain">[('move_type', '=', 'entry'), ('currency_id.name', '!=', 'ARS'), ('line_ids.account_id.code', 'in', ['2.1.1.01.025', '2.1.2.02.001', '2.1.2.02.002', '2.1.2.02.003', '2.1.2.02.004', '2.1.2.02.005', '2.1.2.02.006', '2.1.2.02.017', '2.1.2.02.018', '2.1.2.02.019', '2.1.3.01.001', '2.1.3.01.002', '2.1.3.01.003', '2.1.3.01.010', '2.1.3.01.020', '2.1.3.02.010', '2.1.3.02.020', '2.1.3.02.021', '2.1.3.02.520', '2.1.3.03.020', '2.1.3.04.010', '2.1.4.01.010', '2.1.4.01.020', '2.1.4.01.030', '2.1.4.01.040', '2.1.4.01.051', '2.1.4.01.052', '2.1.4.01.053', '2.1.4.01.054', '2.1.4.01.056', '2.1.4.01.057', '2.1.4.01.060', '2.1.5.01.001'])]</field>
+        <field name="note">Asientos manuales en moneda extranjera que tocan cuentas monitoreadas.</field>
+    </record>
+
+</odoo>

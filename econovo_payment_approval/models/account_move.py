@@ -68,8 +68,9 @@ class AccountMove(models.Model):
         if not activity_type:
             return
 
-        rules = self.env['econovo.move.approval.rule'].search(
-            [('active', '=', True)], order='sequence'
+        rules = self.env['econovo.approval.rule'].search(
+            [('active', '=', True), ('target_model', '=', 'account.move')],
+            order='sequence',
         )
         if not rules:
             return

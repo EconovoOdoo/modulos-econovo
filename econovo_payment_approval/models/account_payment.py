@@ -82,8 +82,9 @@ class AccountPayment(models.Model):
         if not activity_type:
             return
 
-        rules = self.env['econovo.payment.approval.rule'].search(
-            [('active', '=', True)], order='sequence'
+        rules = self.env['econovo.approval.rule'].search(
+            [('active', '=', True), ('target_model', '=', 'account.payment')],
+            order='sequence',
         )
         if not rules:
             return
