@@ -50,10 +50,18 @@
                             <field name="active"/>
                         </group>
                     </group>
-                    <group string="Dominio de Aplicación">
+                    <group string="Dominio de Aplicación"
+                           invisible="target_model != 'account.payment'">
                         <field name="domain"
                                widget="domain"
-                               options="{'model_field': 'target_model'}"
+                               options="{'model': 'account.payment'}"
+                               nolabel="1"/>
+                    </group>
+                    <group string="Dominio de Aplicación"
+                           invisible="target_model != 'account.move'">
+                        <field name="domain"
+                               widget="domain"
+                               options="{'model': 'account.move'}"
                                nolabel="1"/>
                     </group>
                     <group string="Notas Internas">
