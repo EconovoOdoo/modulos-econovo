@@ -1,9 +1,37 @@
 from odoo import _, api, fields, models
+from odoo.exceptions import UserError
 from odoo.tools.safe_eval import safe_eval
+
+APPROVAL_PRIORITIES = [
+    ('0', 'Normal'),
+    ('1', 'Alta'),
+    ('2', 'Muy Alta'),
+    ('3', 'Urgente'),
+]
 
 
 class AccountMove(models.Model):
     _inherit = 'account.move'
+
+    # ------------------------------------------------------------------
+    # Fields
+    # ------------------------------------------------------------------
+
+    priority = fields.Selection(
+        APPROVAL_PRIORITIES,
+        string='Prioridad',
+        default='0',
+        index=True,
+        help='Urgency level used to flag journal entries that require faster approval.',
+    )
+
+    approved_by_id = fields.Many2one(
+        'res.users',
+        string='Aprobado por',
+        readonly=True,
+        copy=False,
+        help='Last user who approved this journal entry.',
+    )
 
     # ------------------------------------------------------------------
     # Computed fields for view visibility
@@ -47,8 +75,9 @@ class AccountMove(models.Model):
         return res
 
     def button_draft(self):
-        """Reset to draft and cancel any pending approval activities."""
-        self._cancel_approval_activities()
+        """Reset to draft: cancel all approval/rejection activities and clear approver."""
+        self._cancel_all_approval_activities()
+        self.filtered(lambda m: m.approved_by_id).write({'approved_by_id': False})
         return super().button_draft()
 
     # ------------------------------------------------------------------
@@ -103,6 +132,42 @@ class AccountMove(models.Model):
 
     def _cancel_approval_activities(self):
         """Remove pending 'Aprobar Asiento' activities from these entries."""
+        self._cancel_activities_by_ref(
+            'econovo_payment_approval.mail_activity_type_aprobar_asiento'
+        )
+
+    def _cancel_all_approval_activities(self):
+        """Remove both approval and rejection activities (used on draft/cancel)."""
+        self._cancel_activities_by_ref(
+            'econovo_payment_approval.mail_activity_type_aprobar_asiento'
+        )
+        self._cancel_activities_by_ref(
+            'econovo_payment_approval.mail_activity_type_asiento_rechazado'
+        )
+
+    def _cancel_activities_by_ref(self, xml_id):
+        """Cancel all activities of the given type on these moves."""
+        activity_type = self.env.ref(xml_id, raise_if_not_found=False)
+        if not activity_type:
+            return
+        for move in self:
+            self.env['mail.activity'].sudo().search([
+                ('res_model', '=', 'account.move'),
+                ('res_id', '=', move.id),
+                ('activity_type_id', '=', activity_type.id),
+            ]).unlink()
+
+    # ------------------------------------------------------------------
+    # Approve / Reject actions
+    # ------------------------------------------------------------------
+
+    def action_approve(self):
+        """Approve: mark the current user's pending approval activity as done.
+
+        Works for single records (form button) and multiple records (mass action
+        from the list view). In mass mode, records where the current user has no
+        pending activity are silently skipped.
+        """
         activity_type = self.env.ref(
             'econovo_payment_approval.mail_activity_type_aprobar_asiento',
             raise_if_not_found=False,
@@ -110,10 +175,58 @@ class AccountMove(models.Model):
         if not activity_type:
             return
 
+        approved_count = 0
         for move in self:
             activities = self.env['mail.activity'].sudo().search([
                 ('res_model', '=', 'account.move'),
                 ('res_id', '=', move.id),
                 ('activity_type_id', '=', activity_type.id),
+                ('user_id', '=', self.env.uid),
             ])
-            activities.unlink()
+            if not activities:
+                if len(self) == 1:
+                    raise UserError(
+                        _('No tiene actividades de aprobación pendientes asignadas para este asiento.')
+                    )
+                continue
+            activities.sudo().unlink()
+            move.write({'approved_by_id': self.env.uid})
+            move.message_post(
+                body=_(
+                    '<strong>✅ Asiento aprobado por %s</strong>',
+                    self.env.user.name,
+                ),
+                message_type='comment',
+                subtype_xmlid='mail.mt_note',
+            )
+            approved_count += 1
+
+        if len(self) > 1:
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': _('Aprobación masiva'),
+                    'message': _('%s asiento(s) aprobado(s).', approved_count),
+                    'type': 'success',
+                    'sticky': False,
+                },
+            }
+
+    def action_open_reject_wizard_entry(self):
+        """Open the rejection wizard for this journal entry."""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Rechazar Asiento'),
+            'res_model': 'econovo.move.reject.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_move_id': self.id,
+            },
+        }
+
+    # ------------------------------------------------------------------
+    # Internal helpers (kept for backward compat)
+    # ------------------------------------------------------------------

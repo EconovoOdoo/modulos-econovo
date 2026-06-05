@@ -1,50 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <!--
-        Extend account.payment form view with:
-          1. "Aprobar Pago" + "Rechazar Pago" buttons (approvers group, posted + pending).
+        Extend account.move form view (journal entries only) with:
+          1. "Aprobar Asiento" + "Rechazar Asiento" buttons
+             (approvers group, posted, move_type='entry', pending activity).
           2. Priority stars (0=Normal … 3=Urgente).
           3. "Aprobado por" read-only field.
     -->
-    <record id="view_account_payment_form_inherit_approval" model="ir.ui.view">
-        <field name="name">account.payment.form.inherit.econovo_payment_approval</field>
-        <field name="model">account.payment</field>
-        <field name="inherit_id" ref="account.view_account_payment_form"/>
+    <record id="view_account_move_form_inherit_approval" model="ir.ui.view">
+        <field name="name">account.move.form.inherit.econovo_payment_approval</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
         <field name="arch" type="xml">
             <!-- Approve / Reject buttons before the state statusbar -->
             <xpath expr="//header/field[@name='state']" position="before">
                 <button name="action_approve"
-                        string="Aprobar Pago"
+                        string="Aprobar Asiento"
                         type="object"
                         class="btn-success"
                         groups="econovo_payment_approval.grp_aprobadores_pago"
-                        invisible="state != 'posted' or not has_pending_approval_activity"/>
-                <button name="action_open_reject_wizard"
-                        string="Rechazar Pago"
+                        invisible="state != 'posted' or move_type != 'entry' or not has_pending_approval_activity"/>
+                <button name="action_open_reject_wizard_entry"
+                        string="Rechazar Asiento"
                         type="object"
                         class="btn-danger"
                         groups="econovo_payment_approval.grp_aprobadores_pago"
-                        invisible="state != 'posted' or not has_pending_approval_activity"/>
+                        invisible="state != 'posted' or move_type != 'entry' or not has_pending_approval_activity"/>
             </xpath>
             <!-- Priority stars + hidden computed field before first group -->
             <xpath expr="//sheet/group[1]" position="before">
                 <field name="has_pending_approval_activity" invisible="1"/>
-                <field name="priority" widget="priority"/>
+                <field name="priority"
+                       widget="priority"
+                       invisible="move_type != 'entry'"/>
             </xpath>
             <!-- Aprobado por — appended inside the second column of the first group -->
             <xpath expr="//sheet/group[1]/group[2]" position="inside">
-                <field name="approved_by_id" readonly="1"/>
+                <field name="approved_by_id"
+                       readonly="1"
+                       invisible="move_type != 'entry'"/>
             </xpath>
         </field>
     </record>
 
     <!--
-        Extend account.payment list view to show priority and approved_by_id columns.
+        Extend account.move list view to add priority and approved_by_id columns.
     -->
-    <record id="view_account_payment_tree_inherit_approval" model="ir.ui.view">
-        <field name="name">account.payment.tree.inherit.econovo_payment_approval</field>
-        <field name="model">account.payment</field>
-        <field name="inherit_id" ref="account.view_account_payment_list"/>
+    <record id="view_account_move_tree_inherit_approval" model="ir.ui.view">
+        <field name="name">account.move.tree.inherit.econovo_payment_approval</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_tree"/>
         <field name="arch" type="xml">
             <xpath expr="//list/field[@name='name']" position="before">
                 <field name="priority" widget="priority" optional="show"/>
@@ -56,13 +61,13 @@
     </record>
 
     <!--
-        Server action: Aprobar Pago (mass action in list view).
+        Server action: Aprobar Asiento (mass action in list view).
         Restricted to grp_aprobadores_pago members.
     -->
-    <record id="action_approve_payments_server" model="ir.actions.server">
-        <field name="name">Aprobar Pago</field>
-        <field name="model_id" ref="account.model_account_payment"/>
-        <field name="binding_model_id" ref="account.model_account_payment"/>
+    <record id="action_approve_moves_server" model="ir.actions.server">
+        <field name="name">Aprobar Asiento</field>
+        <field name="model_id" ref="account.model_account_move"/>
+        <field name="binding_model_id" ref="account.model_account_move"/>
         <field name="binding_view_types">list</field>
         <field name="groups_id" eval="[(4, ref('econovo_payment_approval.grp_aprobadores_pago'))]"/>
         <field name="state">code</field>

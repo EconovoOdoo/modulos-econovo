@@ -23,4 +23,28 @@
             </form>
         </field>
     </record>
+
+    <record id="view_econovo_move_reject_wizard_form" model="ir.ui.view">
+        <field name="name">econovo.move.reject.wizard.form</field>
+        <field name="model">econovo.move.reject.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Rechazar Asiento">
+                <field name="move_id" invisible="1"/>
+                <group>
+                    <field name="reason"
+                           placeholder="Describe el motivo del rechazo. Esta nota quedará registrada en el chatter del asiento."
+                           widget="text"
+                           nolabel="1"
+                           style="min-height: 100px;"/>
+                </group>
+                <footer>
+                    <button name="action_confirm_rejection"
+                            string="Confirmar Rechazo"
+                            type="object"
+                            class="btn-danger"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
 </odoo>

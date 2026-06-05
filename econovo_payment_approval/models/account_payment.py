@@ -1,9 +1,37 @@
 from odoo import _, api, fields, models
+from odoo.exceptions import UserError
 from odoo.tools.safe_eval import safe_eval
+
+APPROVAL_PRIORITIES = [
+    ('0', 'Normal'),
+    ('1', 'Alta'),
+    ('2', 'Muy Alta'),
+    ('3', 'Urgente'),
+]
 
 
 class AccountPayment(models.Model):
     _inherit = 'account.payment'
+
+    # ------------------------------------------------------------------
+    # Fields
+    # ------------------------------------------------------------------
+
+    priority = fields.Selection(
+        APPROVAL_PRIORITIES,
+        string='Prioridad',
+        default='0',
+        index=True,
+        help='Urgency level used to flag payments that require faster approval.',
+    )
+
+    approved_by_id = fields.Many2one(
+        'res.users',
+        string='Aprobado por',
+        readonly=True,
+        copy=False,
+        help='Last user who approved this payment.',
+    )
 
     # ------------------------------------------------------------------
     # Computed fields for view visibility
@@ -45,13 +73,15 @@ class AccountPayment(models.Model):
         return res
 
     def action_draft(self):
-        """Reset to draft and cancel any pending approval activities."""
-        self._cancel_approval_activities()
+        """Reset to draft: cancel all approval/rejection activities and clear approver."""
+        self._cancel_all_approval_activities()
+        self.filtered(lambda p: p.approved_by_id).write({'approved_by_id': False})
         return super().action_draft()
 
     def action_cancel(self):
-        """Cancel and remove pending approval activities."""
-        self._cancel_approval_activities()
+        """Cancel: remove all approval/rejection activities and clear approver."""
+        self._cancel_all_approval_activities()
+        self.filtered(lambda p: p.approved_by_id).write({'approved_by_id': False})
         return super().action_cancel()
 
     # ------------------------------------------------------------------
@@ -121,14 +151,25 @@ class AccountPayment(models.Model):
                 )
 
     def _cancel_approval_activities(self):
-        """Remove pending 'Revisar Pago' activities from payment or its batch."""
-        activity_type = self.env.ref(
-            'econovo_payment_approval.mail_activity_type_revisar_pago',
-            raise_if_not_found=False,
+        """Remove pending 'Aprobar Pago' activities from payment or its batch."""
+        self._cancel_activities_by_ref(
+            'econovo_payment_approval.mail_activity_type_revisar_pago'
         )
+
+    def _cancel_all_approval_activities(self):
+        """Remove both approval and rejection activities (used on draft/cancel)."""
+        self._cancel_activities_by_ref(
+            'econovo_payment_approval.mail_activity_type_revisar_pago'
+        )
+        self._cancel_activities_by_ref(
+            'econovo_payment_approval.mail_activity_type_pago_rechazado'
+        )
+
+    def _cancel_activities_by_ref(self, xml_id):
+        """Cancel all activities of the given type on the payment target."""
+        activity_type = self.env.ref(xml_id, raise_if_not_found=False)
         if not activity_type:
             return
-
         targets_seen = set()
         for payment in self:
             target = payment._get_approval_activity_target()
@@ -136,14 +177,70 @@ class AccountPayment(models.Model):
             if key in targets_seen:
                 continue
             targets_seen.add(key)
+            self.env['mail.activity'].sudo().search([
+                ('res_model', '=', target._name),
+                ('res_id', '=', target.id),
+                ('activity_type_id', '=', activity_type.id),
+            ]).unlink()
 
+    # ------------------------------------------------------------------
+    # Approve / Reject actions
+    # ------------------------------------------------------------------
+
+    def action_approve(self):
+        """Approve: mark the current user's pending approval activity as done.
+
+        Works for single records (form button) and multiple records (mass action
+        from the list view). In mass mode, records where the current user has no
+        pending activity are silently skipped.
+        """
+        activity_type = self.env.ref(
+            'econovo_payment_approval.mail_activity_type_revisar_pago',
+            raise_if_not_found=False,
+        )
+        if not activity_type:
+            return
+
+        approved_count = 0
+        for payment in self:
+            target = payment._get_approval_activity_target()
             activities = self.env['mail.activity'].sudo().search([
                 ('res_model', '=', target._name),
                 ('res_id', '=', target.id),
                 ('activity_type_id', '=', activity_type.id),
+                ('user_id', '=', self.env.uid),
             ])
-            # unlink instead of action_feedback so no done message is posted.
-            activities.unlink()
+            if not activities:
+                if len(self) == 1:
+                    raise UserError(
+                        _('No tiene actividades de aprobación pendientes asignadas para este pago.')
+                    )
+                continue
+            # Mark each matching activity as done (no feedback popup needed).
+            activities.sudo().write({'active': False})
+            activities.sudo().unlink()
+            payment.write({'approved_by_id': self.env.uid})
+            payment.message_post(
+                body=_(
+                    '<strong>✅ Pago aprobado por %s</strong>',
+                    self.env.user.name,
+                ),
+                message_type='comment',
+                subtype_xmlid='mail.mt_note',
+            )
+            approved_count += 1
+
+        if len(self) > 1:
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': _('Aprobación masiva'),
+                    'message': _('%s pago(s) aprobado(s).', approved_count),
+                    'type': 'success',
+                    'sticky': False,
+                },
+            }
 
     # ------------------------------------------------------------------
     # Wizard launcher
