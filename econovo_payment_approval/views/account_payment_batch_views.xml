@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Extend account.payment.batch.st form view with:
+          - "Aprobar Lote" + "Rechazar Lote" buttons (approvers group, pending activity)
+          - "Aprobado por" read-only field
+    -->
+    <record id="view_payment_batch_st_form_inherit_approval" model="ir.ui.view">
+        <field name="name">account.payment.batch.st.form.inherit.econovo_payment_approval</field>
+        <field name="model">account.payment.batch.st</field>
+        <field name="inherit_id" ref="account_payment_batch_st.view_batch_payment_form"/>
+        <field name="arch" type="xml">
+            <!-- Approve / Reject buttons in the header -->
+            <xpath expr="//header" position="inside">
+                <button name="action_approve"
+                        string="Aprobar Lote"
+                        type="object"
+                        class="btn-success"
+                        groups="econovo_payment_approval.grp_aprobadores_pago"
+                        invisible="not has_pending_approval_activity"/>
+                <button name="action_open_reject_wizard_batch"
+                        string="Rechazar Lote"
+                        type="object"
+                        class="btn-danger"
+                        groups="econovo_payment_approval.grp_aprobadores_pago"
+                        invisible="not has_pending_approval_activity"/>
+            </xpath>
+            <!-- Hidden computed field + Aprobado por in the first group -->
+            <xpath expr="//sheet/group[1]" position="before">
+                <field name="has_pending_approval_activity" invisible="1"/>
+            </xpath>
+            <xpath expr="//sheet/group[1]" position="inside">
+                <field name="approved_by_id" readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

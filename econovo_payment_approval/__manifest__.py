@@ -47,6 +47,7 @@ Accounting → Configuration → Reglas de Aprobación
     'depends': [
         'account',
         'mail',
+        'account_payment_batch_st',
     ],
     'data': [
         'security/econovo_payment_approval_groups.xml',
@@ -57,6 +58,7 @@ Accounting → Configuration → Reglas de Aprobación
         'views/econovo_approval_rule_views.xml',
         'views/account_payment_views.xml',
         'views/account_move_views.xml',
+        'views/account_payment_batch_views.xml',
     ],
     'installable': True,
     'application': False,

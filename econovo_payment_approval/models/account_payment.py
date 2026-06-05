@@ -53,13 +53,25 @@ class AccountPayment(models.Model):
             raise_if_not_found=False,
         )
         for payment in self:
-            if activity_type:
+            if not activity_type:
+                payment.has_pending_approval_activity = False
+                continue
+            target = payment._get_approval_activity_target()
+            if target._name == payment._name and target.id == payment.id:
+                # No batch: check the payment's own activities.
                 payment.has_pending_approval_activity = any(
                     a.activity_type_id == activity_type
                     for a in payment.activity_ids
                 )
             else:
-                payment.has_pending_approval_activity = False
+                # Payment belongs to a batch: activity is on the batch record.
+                payment.has_pending_approval_activity = bool(
+                    self.env['mail.activity'].sudo().search_count([
+                        ('res_model', '=', target._name),
+                        ('res_id', '=', target.id),
+                        ('activity_type_id', '=', activity_type.id),
+                    ])
+                )
 
     # ------------------------------------------------------------------
     # Lifecycle overrides
