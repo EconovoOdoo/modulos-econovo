@@ -43,9 +43,52 @@ class AccountPayment(models.Model):
         help='True when at least one "Revisar Pago" activity is pending on this payment.',
     )
 
+    effective_approval_amount = fields.Float(
+        string='Monto Efectivo de Aprobación',
+        compute='_compute_effective_approval_amount',
+        help=(
+            'Amount used when evaluating approval routing rules. '
+            'If the payment belongs to a batch, returns the sum of all non-cancelled '
+            'payments in that batch so that per-batch thresholds are applied even '
+            'when an individual payment is below the limit. '
+            'Falls back to the payment own amount when no batch is assigned.'
+        ),
+    )
+
     # ------------------------------------------------------------------
     # Computed
     # ------------------------------------------------------------------
+
+    @api.depends(
+        'amount',
+        'batch_payment_st_id',
+        'batch_payment_st_id.payment_ids.amount',
+        'batch_payment_st_id.payment_ids.state',
+    )
+    def _compute_effective_approval_amount(self):
+        """Return the batch total for batched payments, or the individual amount.
+
+        Sumitec always assigns a batch to every confirmed payment (even single
+        ones). When the user clicks "Confirmar y Nuevo" multiple times within
+        the same session all resulting payments share the same batch. Using the
+        batch total as the threshold basis prevents the edge case where each
+        individual payment is below the 1M limit but the combined batch exceeds
+        it, which would otherwise route some payments to Nacho and others to
+        Fabricio within the same batch.
+
+        Cancelled payments are excluded from the sum because a cancelled
+        payment in the batch no longer represents a real commitment.
+        """
+        for payment in self:
+            if payment.batch_payment_st_id:
+                active_in_batch = payment.batch_payment_st_id.payment_ids.filtered(
+                    lambda p: p.state != 'cancel'
+                )
+                payment.effective_approval_amount = sum(
+                    active_in_batch.mapped('amount')
+                )
+            else:
+                payment.effective_approval_amount = payment.amount
 
     @api.depends('activity_ids.activity_type_id')
     def _compute_has_pending_approval_activity(self):
@@ -103,9 +146,15 @@ class AccountPayment(models.Model):
     def _create_approval_activities(self):
         """Evaluate routing rules and create mail.activity for each match.
 
-        One activity per (rule, target) pair. When multiple payments in the same
-        batch are posted together the target deduplication logic ensures only one
-        activity is created per rule on the batch record.
+        One activity per (rule, payment) pair. Rule domains that reference
+        ``effective_approval_amount`` are automatically evaluated against the
+        batch total (sum of non-cancelled payments in the same batch) rather
+        than the individual payment amount, so batch-level thresholds apply
+        consistently across all payments in the same Sumitec batch.
+
+        Deduplication: if an activity with the same type and assigned user
+        already exists on the payment, it is skipped to avoid duplicates when
+        the payment is re-confirmed after a draft reset.
         """
         activity_type = self.env.ref(
             'econovo_payment_approval.mail_activity_type_revisar_pago',
