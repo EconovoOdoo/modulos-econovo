@@ -46,10 +46,10 @@
         <field name="model">account.payment</field>
         <field name="inherit_id" ref="account.view_account_payment_tree"/>
         <field name="arch" type="xml">
-            <xpath expr="//list/field[@name='name']" position="before">
+            <xpath expr="//tree/field[@name='name']" position="before">
                 <field name="priority" widget="priority" optional="show"/>
             </xpath>
-            <xpath expr="//list/field[@name='state']" position="after">
+            <xpath expr="//tree/field[@name='state']" position="after">
                 <field name="approved_by_id" optional="show" readonly="1"/>
             </xpath>
         </field>
