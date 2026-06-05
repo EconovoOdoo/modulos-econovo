@@ -6,7 +6,7 @@
         <field name="arch" type="xml">
             <form string="Rechazar Pago">
                 <field name="payment_id" invisible="1"/>
-                <group>
+                <group col="1">
                     <field name="reason"
                            placeholder="Describe el motivo del rechazo. Esta nota quedará registrada en el chatter del pago."
                            widget="text"
@@ -30,7 +30,7 @@
         <field name="arch" type="xml">
             <form string="Rechazar Asiento">
                 <field name="move_id" invisible="1"/>
-                <group>
+                <group col="1">
                     <field name="reason"
                            placeholder="Describe el motivo del rechazo. Esta nota quedará registrada en el chatter del asiento."
                            widget="text"
@@ -53,7 +53,7 @@
         <field name="arch" type="xml">
             <form string="Rechazar Lote de Pagos">
                 <field name="batch_id" invisible="1"/>
-                <group>
+                <group col="1">
                     <field name="reason"
                            placeholder="Describe el motivo del rechazo. Esta nota quedará registrada en el chatter del lote y se notificará a los responsables de cada pago."
                            widget="text"

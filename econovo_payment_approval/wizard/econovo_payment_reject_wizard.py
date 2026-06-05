@@ -1,3 +1,4 @@
+from markupsafe import Markup
 from odoo import _, fields, models
 
 
@@ -35,8 +36,7 @@ class EconovoPaymentRejectWizard(models.TransientModel):
 
         # 2. Post an auditable rejection note to the chatter.
         payment.message_post(
-            body=_(
-                '<strong>⛔ Pago rechazado por %(approver)s</strong><br/>%(reason)s',
+            body=Markup('<strong>\u26d4 Pago rechazado por {approver}</strong><br/>{reason}').format(
                 approver=self.env.user.name,
                 reason=self.reason,
             ),

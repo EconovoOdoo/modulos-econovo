@@ -1,3 +1,4 @@
+from markupsafe import Markup
 from odoo import _, fields, models
 from odoo.exceptions import UserError
 
@@ -57,10 +58,7 @@ class AccountPaymentBatchSt(models.Model):
         # Set approved_by_id on the batch once all payments are approved.
         self.write({'approved_by_id': self.env.uid})
         self.message_post(
-            body=_(
-                '<strong>✅ Lote aprobado por %s</strong>',
-                self.env.user.name,
-            ),
+            body=Markup('<strong>\u2705 Lote aprobado por %s</strong>') % self.env.user.name,
             message_type='comment',
             subtype_xmlid='mail.mt_note',
         )

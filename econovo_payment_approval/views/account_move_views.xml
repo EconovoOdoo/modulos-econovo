@@ -44,13 +44,30 @@
     </record>
 
     <!--
-        Extend account.move list view to add priority and approved_by_id columns.
+        Extend account.move list view to add priority, approved_by_id columns
+        and Aprobar/Rechazar buttons in the list header.
+        account.move's native tree has no <header>, so we inject one.
     -->
     <record id="view_account_move_tree_inherit_approval" model="ir.ui.view">
         <field name="name">account.move.tree.inherit.econovo_payment_approval</field>
         <field name="model">account.move</field>
         <field name="inherit_id" ref="account.view_move_tree"/>
         <field name="arch" type="xml">
+            <!-- Inject a header block with approve/reject buttons -->
+            <xpath expr="//tree" position="inside">
+                <header>
+                    <button name="action_approve"
+                            string="Aprobar Asiento"
+                            type="object"
+                            class="btn-success"
+                            groups="econovo_payment_approval.grp_aprobadores_pago"/>
+                    <button name="action_open_reject_wizard_entry"
+                            string="Rechazar Asiento"
+                            type="object"
+                            class="btn-danger"
+                            groups="econovo_payment_approval.grp_aprobadores_pago"/>
+                </header>
+            </xpath>
             <xpath expr="//tree/field[@name='name']" position="before">
                 <field name="priority" widget="priority" optional="show"/>
             </xpath>
@@ -61,8 +78,8 @@
     </record>
 
     <!--
-        Server action: Aprobar Asiento (mass action in list view).
-        Restricted to grp_aprobadores_pago members.
+        Server action kept for backward compatibility but hidden from UI.
+        The header buttons above are the primary UX entry point.
     -->
     <record id="action_approve_moves_server" model="ir.actions.server">
         <field name="name">Aprobar Asiento</field>

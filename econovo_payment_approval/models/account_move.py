@@ -1,3 +1,4 @@
+from markupsafe import Markup
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 from odoo.tools.safe_eval import safe_eval
@@ -192,10 +193,7 @@ class AccountMove(models.Model):
             activities.sudo().unlink()
             move.write({'approved_by_id': self.env.uid})
             move.message_post(
-                body=_(
-                    '<strong>✅ Asiento aprobado por %s</strong>',
-                    self.env.user.name,
-                ),
+                body=Markup('<strong>\u2705 Asiento aprobado por %s</strong>') % self.env.user.name,
                 message_type='comment',
                 subtype_xmlid='mail.mt_note',
             )
@@ -215,7 +213,8 @@ class AccountMove(models.Model):
 
     def action_open_reject_wizard_entry(self):
         """Open the rejection wizard for this journal entry."""
-        self.ensure_one()
+        if len(self) > 1:
+            raise UserError(_('Por favor seleccione un solo asiento para rechazar.'))
         return {
             'type': 'ir.actions.act_window',
             'name': _('Rechazar Asiento'),

@@ -1,3 +1,4 @@
+from markupsafe import Markup
 from odoo import _, fields, models
 
 
@@ -36,8 +37,7 @@ class EconovoBatchRejectWizard(models.TransientModel):
 
         # 2. Post rejection note on the batch chatter.
         batch.message_post(
-            body=_(
-                '<strong>⛔ Lote rechazado por %(approver)s</strong><br/>%(reason)s',
+            body=Markup('<strong>\u26d4 Lote rechazado por {approver}</strong><br/>{reason}').format(
                 approver=self.env.user.name,
                 reason=self.reason,
             ),

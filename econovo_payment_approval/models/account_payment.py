@@ -1,3 +1,4 @@
+from markupsafe import Markup
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 from odoo.tools.safe_eval import safe_eval
@@ -216,10 +217,7 @@ class AccountPayment(models.Model):
             activities.sudo().unlink()
             payment.write({'approved_by_id': self.env.uid})
             payment.message_post(
-                body=_(
-                    '<strong>✅ Pago aprobado por %s</strong>',
-                    self.env.user.name,
-                ),
+                body=Markup('<strong>\u2705 Pago aprobado por %s</strong>') % self.env.user.name,
                 message_type='comment',
                 subtype_xmlid='mail.mt_note',
             )
@@ -243,7 +241,8 @@ class AccountPayment(models.Model):
 
     def action_open_reject_wizard(self):
         """Open the rejection wizard for this payment."""
-        self.ensure_one()
+        if len(self) > 1:
+            raise UserError(_('Por favor seleccione un solo pago para rechazar.'))
         return {
             'type': 'ir.actions.act_window',
             'name': _('Rechazar Pago'),
