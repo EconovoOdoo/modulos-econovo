@@ -53,25 +53,13 @@ class AccountPayment(models.Model):
             raise_if_not_found=False,
         )
         for payment in self:
-            if not activity_type:
-                payment.has_pending_approval_activity = False
-                continue
-            target = payment._get_approval_activity_target()
-            if target._name == payment._name and target.id == payment.id:
-                # No batch: check the payment's own activities.
+            if activity_type:
                 payment.has_pending_approval_activity = any(
                     a.activity_type_id == activity_type
                     for a in payment.activity_ids
                 )
             else:
-                # Payment belongs to a batch: activity is on the batch record.
-                payment.has_pending_approval_activity = bool(
-                    self.env['mail.activity'].sudo().search_count([
-                        ('res_model', '=', target._name),
-                        ('res_id', '=', target.id),
-                        ('activity_type_id', '=', activity_type.id),
-                    ])
-                )
+                payment.has_pending_approval_activity = False
 
     # ------------------------------------------------------------------
     # Lifecycle overrides
@@ -101,13 +89,14 @@ class AccountPayment(models.Model):
     # ------------------------------------------------------------------
 
     def _get_approval_activity_target(self):
-        """Return the batch record if this payment belongs to a batch, else self.
+        """Return self: activities are always placed on the individual payment.
 
-        Uses hasattr so the module does not hard-depend on account_payment_batch_st.
+        Even when the payment belongs to a batch, we create the activity directly
+        on each account.payment so approvers can act from the payment form.
+        The batch form shows a derived has_pending_approval_activity that checks
+        its payments, but the source of truth is always the payment record.
         """
         self.ensure_one()
-        if hasattr(self, 'batch_payment_st_id') and self.batch_payment_st_id:
-            return self.batch_payment_st_id
         return self
 
     def _create_approval_activities(self):
@@ -178,20 +167,14 @@ class AccountPayment(models.Model):
         )
 
     def _cancel_activities_by_ref(self, xml_id):
-        """Cancel all activities of the given type on the payment target."""
+        """Cancel all activities of the given type on each payment."""
         activity_type = self.env.ref(xml_id, raise_if_not_found=False)
         if not activity_type:
             return
-        targets_seen = set()
         for payment in self:
-            target = payment._get_approval_activity_target()
-            key = (target._name, target.id)
-            if key in targets_seen:
-                continue
-            targets_seen.add(key)
             self.env['mail.activity'].sudo().search([
-                ('res_model', '=', target._name),
-                ('res_id', '=', target.id),
+                ('res_model', '=', payment._name),
+                ('res_id', '=', payment.id),
                 ('activity_type_id', '=', activity_type.id),
             ]).unlink()
 

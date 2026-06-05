@@ -26,21 +26,13 @@ class EconovoBatchRejectWizard(models.TransientModel):
     )
 
     def action_confirm_rejection(self):
-        """Cancel activities, post chatter note, notify each payment creator."""
+        """Cancel payment activities, post chatter note on batch, notify each payment creator."""
         self.ensure_one()
         batch = self.batch_id
 
-        # 1. Cancel pending approval activities on the batch.
-        activity_type = self.env.ref(
-            'econovo_payment_approval.mail_activity_type_revisar_pago',
-            raise_if_not_found=False,
-        )
-        if activity_type:
-            self.env['mail.activity'].sudo().search([
-                ('res_model', '=', batch._name),
-                ('res_id', '=', batch.id),
-                ('activity_type_id', '=', activity_type.id),
-            ]).unlink()
+        # 1. Cancel pending approval activities on each individual payment.
+        for payment in batch.payment_ids:
+            payment._cancel_approval_activities()
 
         # 2. Post rejection note on the batch chatter.
         batch.message_post(

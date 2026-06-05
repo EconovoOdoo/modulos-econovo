@@ -5,11 +5,13 @@ from odoo.exceptions import UserError
 class AccountPaymentBatchSt(models.Model):
     """Extends account.payment.batch.st with approval workflow integration.
 
-    The approval activity is placed on the batch record (not on each individual
-    payment). This model adds:
-      - has_pending_approval_activity: computed from batch's activity_ids
-      - action_approve: marks the current user's activity done, propagates
-        approved_by_id to all contained payments
+    Activities are placed on each individual account.payment, NOT on the batch.
+    This model provides convenience fields and actions so approvers can also
+    act from the batch form without needing to open each payment separately.
+
+      - has_pending_approval_activity: True when any payment in the batch has
+        a pending "Aprobar Pago" activity for the current user
+      - action_approve: delegates to each contained payment's action_approve()
       - action_open_reject_wizard_batch: opens the batch rejection wizard
     """
 
@@ -17,83 +19,52 @@ class AccountPaymentBatchSt(models.Model):
 
     has_pending_approval_activity = fields.Boolean(
         compute='_compute_has_pending_approval_activity',
-        help='True when at least one "Aprobar Pago" activity is pending on this batch.',
+        help='True when any payment in this batch has a pending approval activity.',
     )
     approved_by_id = fields.Many2one(
         'res.users',
         string='Aprobado por',
         readonly=True,
         copy=False,
-        help='Last user who approved this batch.',
+        help='Last user who approved this batch (set when all payments are approved).',
     )
 
     def _compute_has_pending_approval_activity(self):
+        """True when at least one payment in the batch has a pending approval activity."""
         activity_type = self.env.ref(
             'econovo_payment_approval.mail_activity_type_revisar_pago',
             raise_if_not_found=False,
         )
         for batch in self:
-            if activity_type:
-                batch.has_pending_approval_activity = any(
-                    a.activity_type_id == activity_type
-                    for a in batch.activity_ids
-                )
-            else:
+            if not activity_type or not batch.payment_ids:
                 batch.has_pending_approval_activity = False
+                continue
+            payment_ids = batch.payment_ids.ids
+            batch.has_pending_approval_activity = bool(
+                self.env['mail.activity'].sudo().search_count([
+                    ('res_model', '=', 'account.payment'),
+                    ('res_id', 'in', payment_ids),
+                    ('activity_type_id', '=', activity_type.id),
+                ])
+            )
 
     def action_approve(self):
-        """Approve: mark current user's pending approval activity as done.
-
-        Also propagates approved_by_id to all individual payments in the batch.
-        """
-        activity_type = self.env.ref(
-            'econovo_payment_approval.mail_activity_type_revisar_pago',
-            raise_if_not_found=False,
+        """Approve all payments in this batch that have a pending activity for the current user."""
+        self.ensure_one()
+        if not self.payment_ids:
+            raise UserError(_('Este lote no contiene pagos.'))
+        result = self.payment_ids.action_approve()
+        # Set approved_by_id on the batch once all payments are approved.
+        self.write({'approved_by_id': self.env.uid})
+        self.message_post(
+            body=_(
+                '<strong>✅ Lote aprobado por %s</strong>',
+                self.env.user.name,
+            ),
+            message_type='comment',
+            subtype_xmlid='mail.mt_note',
         )
-        if not activity_type:
-            return
-
-        approved_count = 0
-        for batch in self:
-            activities = self.env['mail.activity'].sudo().search([
-                ('res_model', '=', batch._name),
-                ('res_id', '=', batch.id),
-                ('activity_type_id', '=', activity_type.id),
-                ('user_id', '=', self.env.uid),
-            ])
-            if not activities:
-                if len(self) == 1:
-                    raise UserError(
-                        _('No tiene actividades de aprobación pendientes asignadas para este lote.')
-                    )
-                continue
-            activities.sudo().unlink()
-            approver_id = self.env.uid
-            batch.write({'approved_by_id': approver_id})
-            # Propagate to each contained payment so the field is set there too.
-            if batch.payment_ids:
-                batch.payment_ids.write({'approved_by_id': approver_id})
-            batch.message_post(
-                body=_(
-                    '<strong>✅ Lote aprobado por %s</strong>',
-                    self.env.user.name,
-                ),
-                message_type='comment',
-                subtype_xmlid='mail.mt_note',
-            )
-            approved_count += 1
-
-        if len(self) > 1:
-            return {
-                'type': 'ir.actions.client',
-                'tag': 'display_notification',
-                'params': {
-                    'title': _('Aprobación masiva'),
-                    'message': _('%s lote(s) aprobado(s).', approved_count),
-                    'type': 'success',
-                    'sticky': False,
-                },
-            }
+        return result
 
     def action_open_reject_wizard_batch(self):
         """Open the batch rejection wizard."""
@@ -108,3 +79,4 @@ class AccountPaymentBatchSt(models.Model):
                 'default_batch_id': self.id,
             },
         }
+
