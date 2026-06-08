@@ -100,16 +100,15 @@
                         <em>a partir de ahora</em>. Para reasignar actividades
                         pendientes ya existentes, use el botón de abajo.
                     </div>
-                </sheet>
 
-                <footer>
-                    <button name="action_reassign_pending_activities"
-                            string="Reasignar actividades pendientes"
-                            type="object"
-                            class="btn-secondary"
-                            confirm="¿Reasignar TODAS las actividades de aprobación pendientes del usuario ausente al sustituto configurado? Esta acción no se puede deshacer."
-                            invisible="not is_currently_active"/>
-                </footer>
+                    <div invisible="not is_currently_active">
+                        <button name="action_reassign_pending_activities"
+                                string="Reasignar actividades pendientes"
+                                type="object"
+                                class="btn-secondary"
+                                confirm="¿Reasignar TODAS las actividades de aprobación pendientes del usuario ausente al sustituto configurado? Esta acción no se puede deshacer."/>
+                    </div>
+                </sheet>
             </form>
         </field>
     </record>
