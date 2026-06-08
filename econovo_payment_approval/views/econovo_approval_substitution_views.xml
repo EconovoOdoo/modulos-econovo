@@ -106,7 +106,7 @@
                             string="Reasignar actividades pendientes"
                             type="object"
                             class="btn-secondary"
-                            confirm="¿Reasignar TODAS las actividades de aprobación pendientes de %(original_user_id)s a %(substitute_user_id)s? Esta acción no se puede deshacer."
+                            confirm="¿Reasignar TODAS las actividades de aprobación pendientes del usuario ausente al sustituto configurado? Esta acción no se puede deshacer."
                             invisible="not is_currently_active"/>
                 </footer>
             </form>
