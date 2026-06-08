@@ -114,6 +114,8 @@ class AccountPayment(models.Model):
         res = super().action_post()
         newly_posted = self.filtered(lambda p: p.state == 'posted')
         newly_posted._create_approval_activities()
+        # Re-evaluate siblings in case the updated batch total crosses a threshold
+        newly_posted._recheck_batch_siblings()
         return res
 
     def action_draft(self):
@@ -131,6 +133,32 @@ class AccountPayment(models.Model):
     # ------------------------------------------------------------------
     # Approval activity helpers
     # ------------------------------------------------------------------
+
+    def _recheck_batch_siblings(self):
+        """Re-evaluate routing for previously confirmed payments in the same batch.
+
+        When a new payment is added to a batch via "Confirmar y Nuevo", the batch
+        total grows. Payments confirmed earlier were routed against a smaller total
+        and may have been assigned to the wrong approver. This method cancels and
+        recreates pending approval activities for siblings whose routing may have
+        changed given the updated batch total.
+
+        Only payments with a still-pending (not yet approved) activity are
+        touched; approved payments are never disturbed.
+        """
+        for payment in self.filtered(lambda p: p.batch_payment_st_id):
+            pending_siblings = payment.batch_payment_st_id.payment_ids.filtered(
+                lambda p: (
+                    p.id != payment.id
+                    and p.state == 'posted'
+                    and p.has_pending_approval_activity
+                    and not p.approved_by_id
+                )
+            )
+            if not pending_siblings:
+                continue
+            pending_siblings._cancel_approval_activities()
+            pending_siblings._create_approval_activities()
 
     def _get_approval_activity_target(self):
         """Return self: activities are always placed on the individual payment.
