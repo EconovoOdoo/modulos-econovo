@@ -125,7 +125,7 @@
                 <field name="original_user_id"/>
                 <field name="substitute_user_id"/>
                 <filter name="active_only" string="Activas hoy"
-                        domain="[('is_currently_active', '=', True)]"/>
+                        domain="['|', ('trigger_mode', '=', 'hr_leave'), '&amp;', ('trigger_mode', 'in', ['manual', 'both']), '&amp;', ('date_start', '&lt;=', context_today().strftime('%Y-%m-%d')), '|', ('date_end', '=', False), ('date_end', '&gt;=', context_today().strftime('%Y-%m-%d'))]"/>
                 <filter name="manual" string="Manual"
                         domain="[('trigger_mode', 'in', ['manual', 'both'])]"/>
                 <filter name="hr_auto" string="HR Auto"
