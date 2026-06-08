@@ -50,6 +50,14 @@
         <field name="arch" type="xml">
             <form string="Sustitución de Aprobación">
                 <field name="is_currently_active" invisible="1"/>
+                <header>
+                    <button name="action_reassign_pending_activities"
+                            string="Reasignar actividades pendientes"
+                            type="object"
+                            class="btn-secondary"
+                            confirm="¿Reasignar TODAS las actividades de aprobación pendientes del usuario ausente al sustituto configurado? Esta acción no se puede deshacer."
+                            invisible="not is_currently_active"/>
+                </header>
                 <sheet>
                     <widget name="web_ribbon"
                             title="Activa ahora"
@@ -98,15 +106,7 @@
                         <strong>⚠️ Actividades ya creadas:</strong>
                         Esta sustitución solo afecta actividades creadas
                         <em>a partir de ahora</em>. Para reasignar actividades
-                        pendientes ya existentes, use el botón de abajo.
-                    </div>
-
-                    <div invisible="not is_currently_active">
-                        <button name="action_reassign_pending_activities"
-                                string="Reasignar actividades pendientes"
-                                type="object"
-                                class="btn-secondary"
-                                confirm="¿Reasignar TODAS las actividades de aprobación pendientes del usuario ausente al sustituto configurado? Esta acción no se puede deshacer."/>
+                        pendientes ya existentes, use el botón del encabezado.
                     </div>
                 </sheet>
             </form>
