@@ -6,6 +6,8 @@ mrp_bom_structure_xlsx/
 econovo_partner_ledger_batch/
 base_advanced_report_templates/
 purchase_request/
+# Deprecated: replaced by econovo_payment_approval
+econovo_payment_batch_approval/
 
 
 econovo_dymo_labels/__pycache__/
