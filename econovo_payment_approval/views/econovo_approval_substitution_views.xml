@@ -49,6 +49,7 @@
         <field name="model">econovo.approval.substitution</field>
         <field name="arch" type="xml">
             <form string="Sustitución de Aprobación">
+                <field name="is_currently_active" invisible="1"/>
                 <sheet>
                     <widget name="web_ribbon"
                             title="Activa ahora"
