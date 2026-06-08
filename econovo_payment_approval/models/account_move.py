@@ -114,12 +114,18 @@ class AccountMove(models.Model):
                 if domain and not move.filtered_domain(domain):
                     continue
 
+                # Resolve any active substitution for this rule's approver.
+                effective_uid = (
+                    self.env['econovo.approval.substitution']
+                    ._get_effective_approver(rule.user_id.id)
+                )
+
                 # Skip if a pending activity for this rule already exists.
                 existing = self.env['mail.activity'].sudo().search([
                     ('res_model', '=', 'account.move'),
                     ('res_id', '=', move.id),
                     ('activity_type_id', '=', activity_type.id),
-                    ('user_id', '=', rule.user_id.id),
+                    ('user_id', '=', effective_uid),
                 ], limit=1)
                 if existing:
                     continue
@@ -128,7 +134,7 @@ class AccountMove(models.Model):
                     activity_type_id=activity_type.id,
                     summary=_('Aprobar Asiento: %s', move.name),
                     date_deadline=fields.Date.today(),
-                    user_id=rule.user_id.id,
+                    user_id=effective_uid,
                 )
 
     def _cancel_approval_activities(self):

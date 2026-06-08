@@ -210,14 +210,21 @@ class AccountPayment(models.Model):
                 if domain and not payment.filtered_domain(domain):
                     continue
 
-                # Skip if this (rule.user_id, target) already has a pending
+                # Resolve any active substitution for this rule's approver
+                # (manual date-range or HR leave auto-detection).
+                effective_uid = (
+                    self.env['econovo.approval.substitution']
+                    ._get_effective_approver(rule.user_id.id)
+                )
+
+                # Skip if this (effective_uid, target) already has a pending
                 # approval activity — avoids duplicates when a batch posts
                 # multiple payments within the same transaction.
                 existing = self.env['mail.activity'].sudo().search([
                     ('res_model', '=', target._name),
                     ('res_id', '=', target.id),
                     ('activity_type_id', '=', activity_type.id),
-                    ('user_id', '=', rule.user_id.id),
+                    ('user_id', '=', effective_uid),
                 ], limit=1)
                 if existing:
                     continue
@@ -226,7 +233,7 @@ class AccountPayment(models.Model):
                     activity_type_id=activity_type.id,
                     summary=_('Aprobar Pago: %s', payment.name),
                     date_deadline=fields.Date.today(),
-                    user_id=rule.user_id.id,
+                    user_id=effective_uid,
                 )
 
     def _cancel_approval_activities(self):

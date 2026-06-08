@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ================================================================
+         Action
+         ================================================================ -->
+    <record id="action_econovo_approval_substitution" model="ir.actions.act_window">
+        <field name="name">Sustituciones de Aprobación</field>
+        <field name="res_model">econovo.approval.substitution</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{'search_default_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No hay sustituciones configuradas.
+            </p>
+            <p>
+                Configura quién cubre a cada aprobador durante sus ausencias.
+                La sustitución puede activarse manualmente por fechas o
+                automáticamente cuando HR registra una licencia aprobada.
+            </p>
+        </field>
+    </record>
+
+    <!-- ================================================================
+         List view
+         ================================================================ -->
+    <record id="view_econovo_approval_substitution_tree" model="ir.ui.view">
+        <field name="name">econovo.approval.substitution.tree</field>
+        <field name="model">econovo.approval.substitution</field>
+        <field name="arch" type="xml">
+            <tree string="Sustituciones de Aprobación"
+                  decoration-success="is_currently_active == True"
+                  decoration-muted="active == False">
+                <field name="original_user_id"/>
+                <field name="substitute_user_id"/>
+                <field name="trigger_mode"/>
+                <field name="date_start"/>
+                <field name="date_end"/>
+                <field name="is_currently_active" widget="boolean_favorite" string="Activa"/>
+                <field name="active" column_invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ================================================================
+         Form view
+         ================================================================ -->
+    <record id="view_econovo_approval_substitution_form" model="ir.ui.view">
+        <field name="name">econovo.approval.substitution.form</field>
+        <field name="model">econovo.approval.substitution</field>
+        <field name="arch" type="xml">
+            <form string="Sustitución de Aprobación">
+                <sheet>
+                    <widget name="web_ribbon"
+                            title="Activa ahora"
+                            bg_color="bg-success"
+                            invisible="not is_currently_active"/>
+                    <widget name="web_ribbon"
+                            title="Inactiva"
+                            bg_color="bg-secondary"
+                            invisible="is_currently_active or not active"/>
+                    <widget name="web_ribbon"
+                            title="Archivada"
+                            bg_color="bg-danger"
+                            invisible="active"/>
+
+                    <group>
+                        <group string="Usuarios">
+                            <field name="original_user_id"/>
+                            <field name="substitute_user_id"/>
+                        </group>
+                        <group string="Activación">
+                            <field name="trigger_mode"/>
+                            <field name="date_start"
+                                   invisible="trigger_mode == 'hr_leave'"
+                                   required="trigger_mode in ('manual', 'both')"/>
+                            <field name="date_end"
+                                   invisible="trigger_mode == 'hr_leave'"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+
+                    <group string="Notas">
+                        <field name="notes" nolabel="1"/>
+                    </group>
+
+                    <div class="alert alert-info" role="alert"
+                         invisible="trigger_mode == 'manual'">
+                        <strong>Modo HR Auto:</strong>
+                        Se requiere que el módulo <em>Empleados</em> esté instalado
+                        y que la licencia esté en estado <strong>Aprobado</strong>
+                        en el sistema de RRHH para que la sustitución se active
+                        automáticamente al crear una actividad de aprobación.
+                    </div>
+
+                    <div class="alert alert-warning" role="alert"
+                         invisible="not is_currently_active">
+                        <strong>⚠️ Actividades ya creadas:</strong>
+                        Esta sustitución solo afecta actividades creadas
+                        <em>a partir de ahora</em>. Para reasignar actividades
+                        pendientes ya existentes, use el botón de abajo.
+                    </div>
+                </sheet>
+
+                <footer>
+                    <button name="action_reassign_pending_activities"
+                            string="Reasignar actividades pendientes"
+                            type="object"
+                            class="btn-secondary"
+                            confirm="¿Reasignar TODAS las actividades de aprobación pendientes de %(original_user_id)s a %(substitute_user_id)s? Esta acción no se puede deshacer."
+                            invisible="not is_currently_active"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- ================================================================
+         Search view
+         ================================================================ -->
+    <record id="view_econovo_approval_substitution_search" model="ir.ui.view">
+        <field name="name">econovo.approval.substitution.search</field>
+        <field name="model">econovo.approval.substitution</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="original_user_id"/>
+                <field name="substitute_user_id"/>
+                <filter name="active_only" string="Activas hoy"
+                        domain="[('is_currently_active', '=', True)]"/>
+                <filter name="manual" string="Manual"
+                        domain="[('trigger_mode', 'in', ['manual', 'both'])]"/>
+                <filter name="hr_auto" string="HR Auto"
+                        domain="[('trigger_mode', 'in', ['hr_leave', 'both'])]"/>
+                <separator/>
+                <filter name="archived" string="Archivadas"
+                        domain="[('active', '=', False)]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter name="group_by_original" string="Usuario ausente"
+                            context="{'group_by': 'original_user_id'}"/>
+                    <filter name="group_by_mode" string="Modo"
+                            context="{'group_by': 'trigger_mode'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ================================================================
+         Menu item — Contabilidad > Configuración > Sustituciones
+         ================================================================ -->
+    <menuitem id="menu_econovo_approval_substitution"
+              name="Sustituciones de Aprobación"
+              parent="account.menu_finance_configuration"
+              action="action_econovo_approval_substitution"
+              groups="base.group_system"
+              sequence="100"/>
+</odoo>

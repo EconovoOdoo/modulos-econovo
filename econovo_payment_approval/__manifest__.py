@@ -1,6 +1,6 @@
 {
     'name': 'Econovo Payment Approval',
-    'version': '17.0.3.0.0',
+    'version': '17.0.4.0.0',
     'category': 'Accounting/Payment',
     'summary': 'Activity-based approval workflow for outbound payments and journal entries',
     'description': """
@@ -97,8 +97,10 @@ Rules 30–80 are ``noupdate="1"`` to protect manual UI edits.
         'security/ir.model.access.csv',
         'data/mail_activity_data.xml',
         'data/approval_rules.xml',
+        'data/cron_data.xml',
         'wizard/econovo_payment_reject_wizard_views.xml',
         'views/econovo_approval_rule_views.xml',
+        'views/econovo_approval_substitution_views.xml',
         'views/account_payment_views.xml',
         'views/account_move_views.xml',
         'views/account_payment_batch_views.xml',
