@@ -36,16 +36,14 @@
          ============================================================ -->
     <data noupdate="0">
 
-        <!-- Rule 10: Pagos Mayores > $1M ARS — routed to Fabricio.
-             Only applies to companies other than Agrovial (company_id != 1).
-             Agrovial ARS payments are fully handled by rule 25. -->
-        <record id="rule_pagos_mayores" model="econovo.approval.rule">
-            <field name="name">Aprobacion Pagos Mayores &gt;= $1M (ARS)</field>
-            <field name="sequence">10</field>
+        <!-- Rule 20: Pagos Menores — routed to Nacho (no amount limit, only excludes Barisone/Monastra creators) -->
+        <record id="rule_pagos_menores" model="econovo.approval.rule">
+            <field name="name">Aprobacion Pagos Menores</field>
+            <field name="sequence">20</field>
             <field name="target_model">account.payment</field>
-            <field name="domain">[('create_uid', '!=', 482), ('company_id', '!=', 1), ('is_internal_transfer', '=', False), ('effective_approval_amount', '&gt;', 1000000), ('journal_id.company_id', '!=', 3), ('currency_id.name', '=', 'ARS'), ('payment_type', '=', 'outbound')]</field>
-            <field name="user_id" eval="9"/>
-            <field name="note">Fabricio aprueba pagos ARS &gt; $1.000.000 de empresas distintas a Agrovial (company != 1), excepto BA.</field>
+            <field name="domain">[('create_uid', '!=', 482), ('company_id', '!=', 1), ('create_uid', 'not in', [370, 470]), ('is_internal_transfer', '=', False), ('journal_id.company_id', '!=', 3), ('currency_id.name', '=', 'ARS'), ('payment_type', '=', 'outbound')]</field>
+            <field name="user_id" eval="372"/>
+            <field name="note">Nacho aprueba todos los pagos ARS de Econovo Agrovial (company=1) cuyo creador NO sea Barisone (370) ni Monastra (470). Sin límite de monto.</field>
         </record>
 
         <!-- Rule 20: Pagos Menores <= $1M ARS — routed to Nacho.
