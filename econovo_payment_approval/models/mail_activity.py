@@ -43,13 +43,19 @@ class MailActivity(models.Model):
                 activity.activity_type_id.id in protected_type_ids
                 and activity.user_id.id != self.env.uid
             ):
-                raise UserError(
-                    _(
-                        'Solo el aprobador asignado (%s) puede completar '
-                        'esta actividad de aprobación.',
-                        activity.user_id.name,
-                    )
+                supervisor_ids = (
+                    self.env['econovo.approval.rule']
+                    .sudo()
+                    ._get_supervisors_for_activity(activity)
                 )
+                if self.env.uid not in supervisor_ids:
+                    raise UserError(
+                        _(
+                            'Solo el aprobador asignado (%s) puede completar '
+                            'esta actividad de aprobación.',
+                            activity.user_id.name,
+                        )
+                    )
 
         return super().action_feedback(
             feedback=feedback, attachment_ids=attachment_ids

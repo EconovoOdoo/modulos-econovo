@@ -284,24 +284,44 @@ class AccountPayment(models.Model):
         approved_count = 0
         for payment in self:
             target = payment._get_approval_activity_target()
-            activities = self.env['mail.activity'].sudo().search([
+            # Find all pending approval activities on this payment
+            all_activities = self.env['mail.activity'].sudo().search([
                 ('res_model', '=', target._name),
                 ('res_id', '=', target.id),
                 ('activity_type_id', '=', activity_type.id),
-                ('user_id', '=', self.env.uid),
             ])
-            if not activities:
+            # Keep only activities the current user can approve (assigned or supervisor)
+            approvable = self.env['mail.activity']
+            approval_rule = self.env['econovo.approval.rule'].sudo()
+            for act in all_activities:
+                if act.user_id.id == self.env.uid:
+                    approvable |= act
+                elif self.env.uid in approval_rule._get_supervisors_for_activity(act):
+                    approvable |= act
+
+            if not approvable:
                 if len(self) == 1:
                     raise UserError(
                         _('No tiene actividades de aprobación pendientes asignadas para este pago.')
                     )
                 continue
-            # Mark each matching activity as done (no feedback popup needed).
-            activities.sudo().write({'active': False})
-            activities.sudo().unlink()
+
+            # Build chatter body: indicate supervisor approval when applicable
+            supervised = approvable.filtered(lambda a: a.user_id.id != self.env.uid)
+            if supervised:
+                assigned_names = ', '.join(supervised.mapped('user_id.name'))
+                body = Markup(
+                    '<strong>\u2705 Pago aprobado por %s'
+                    ' (supervisor \u2014 aprobador asignado: %s)</strong>'
+                ) % (self.env.user.name, assigned_names)
+            else:
+                body = Markup('<strong>\u2705 Pago aprobado por %s</strong>') % self.env.user.name
+
+            approvable.sudo().write({'active': False})
+            approvable.sudo().unlink()
             payment.write({'approved_by_id': self.env.uid})
             payment.message_post(
-                body=Markup('<strong>\u2705 Pago aprobado por %s</strong>') % self.env.user.name,
+                body=body,
                 message_type='comment',
                 subtype_xmlid='mail.mt_note',
             )

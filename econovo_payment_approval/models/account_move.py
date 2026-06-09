@@ -184,22 +184,43 @@ class AccountMove(models.Model):
 
         approved_count = 0
         for move in self:
-            activities = self.env['mail.activity'].sudo().search([
+            # Find all pending approval activities on this entry
+            all_activities = self.env['mail.activity'].sudo().search([
                 ('res_model', '=', 'account.move'),
                 ('res_id', '=', move.id),
                 ('activity_type_id', '=', activity_type.id),
-                ('user_id', '=', self.env.uid),
             ])
-            if not activities:
+            # Keep only activities the current user can approve (assigned or supervisor)
+            approvable = self.env['mail.activity']
+            approval_rule = self.env['econovo.approval.rule'].sudo()
+            for act in all_activities:
+                if act.user_id.id == self.env.uid:
+                    approvable |= act
+                elif self.env.uid in approval_rule._get_supervisors_for_activity(act):
+                    approvable |= act
+
+            if not approvable:
                 if len(self) == 1:
                     raise UserError(
                         _('No tiene actividades de aprobación pendientes asignadas para este asiento.')
                     )
                 continue
-            activities.sudo().unlink()
+
+            # Build chatter body: indicate supervisor approval when applicable
+            supervised = approvable.filtered(lambda a: a.user_id.id != self.env.uid)
+            if supervised:
+                assigned_names = ', '.join(supervised.mapped('user_id.name'))
+                body = Markup(
+                    '<strong>\u2705 Asiento aprobado por %s'
+                    ' (supervisor \u2014 aprobador asignado: %s)</strong>'
+                ) % (self.env.user.name, assigned_names)
+            else:
+                body = Markup('<strong>\u2705 Asiento aprobado por %s</strong>') % self.env.user.name
+
+            approvable.sudo().unlink()
             move.write({'approved_by_id': self.env.uid})
             move.message_post(
-                body=Markup('<strong>\u2705 Asiento aprobado por %s</strong>') % self.env.user.name,
+                body=body,
                 message_type='comment',
                 subtype_xmlid='mail.mt_note',
             )

@@ -28,6 +28,7 @@
                 <field name="target_model"/>
                 <field name="name"/>
                 <field name="user_id"/>
+                <field name="supervisor_ids" widget="many2many_tags" optional="show"/>
                 <field name="active"/>
             </tree>
         </field>
@@ -49,6 +50,9 @@
                             <field name="sequence"/>
                             <field name="active"/>
                         </group>
+                    </group>
+                    <group>
+                        <field name="supervisor_ids" widget="many2many_tags"/>
                     </group>
                     <separator string="Dominio de Aplicación"
                                invisible="not target_model"/>
