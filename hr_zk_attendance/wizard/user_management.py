@@ -61,7 +61,7 @@ class ZkUserManagement(models.TransientModel):
                     'type': 'ir.actions.act_window',
                     'res_model': 'hr.employee',
                     'context': {'create': False},
-                    'view_mode': 'list,form',
+                    'view_mode': 'tree,form',
                     'domain': [('device_id', '=', int(self.env.context.get('active_id')))]
                 }
             elif self.manage_users == 'create_user':

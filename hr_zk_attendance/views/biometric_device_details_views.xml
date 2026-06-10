@@ -5,11 +5,11 @@
         <field name="name">biometric.device.details.view.tree</field>
         <field name="model">biometric.device.details</field>
         <field name="arch" type="xml">
-            <list>
+            <tree>
                 <field name="name"/>
                 <field name="device_ip"/>
                 <field name="port_number"/>
-            </list>
+            </tree>
         </field>
     </record>
     <!--Biometric device configuration tree view-->
@@ -88,6 +88,6 @@
     <record id="biometric_device_details_action" model="ir.actions.act_window">
         <field name="name">Biometric Device</field>
         <field name="res_model">biometric.device.details</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">tree,form</field>
     </record>
 </odoo>

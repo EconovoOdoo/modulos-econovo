@@ -5,14 +5,14 @@
         <field name="name">daily.attendance.view.tree</field>
         <field name="model">daily.attendance</field>
         <field name="arch" type="xml">
-            <list string="Attendance" create="false" delete="false">
+            <tree string="Attendance" create="false" delete="false">
                 <field name="punching_day"/>
                 <field name="employee_id"/>
                 <field name="punch_type"/>
                 <field name="attendance_type"/>
                 <field name="punching_time"/>
                 <field name="company_id"/>
-            </list>
+            </tree>
         </field>
     </record>
 
@@ -20,7 +20,7 @@
     <record id="daily_attendance_action" model="ir.actions.act_window">
         <field name="name">Attendance Analysis</field>
         <field name="res_model">daily.attendance</field>
-        <field name="view_mode">list</field>
+        <field name="view_mode">tree</field>
         <field name="context">{}</field>
     </record>
 </odoo>

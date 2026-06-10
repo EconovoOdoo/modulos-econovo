@@ -13,12 +13,12 @@
                     <field name="device_id_num" readonly="1"/>
                 <field name="device_id"/>
                 <field name="fingerprint_ids" invisible="not device_id" >
-                    <list editable="bottom" create="false">
+                    <tree editable="bottom" create="false">
                         <field name="employee_id" column_invisible="1"/>
                         <field name="filename" column_invisible="1"/>
                         <field name="finger_id" create="false" edit="false"/>
                         <field name="finger_template" create="false" widget="binary" filename="filename"/>
-                    </list>
+                    </tree>
                 </field>
                 </group>
 
