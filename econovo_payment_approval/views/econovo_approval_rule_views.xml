@@ -29,6 +29,7 @@
                 <field name="name"/>
                 <field name="user_id"/>
                 <field name="supervisor_ids" widget="many2many_tags" optional="show"/>
+                <field name="always_apply" optional="show"/>
                 <field name="active"/>
             </tree>
         </field>
@@ -49,6 +50,7 @@
                         <group>
                             <field name="sequence"/>
                             <field name="active"/>
+                            <field name="always_apply"/>
                         </group>
                     </group>
                     <group>

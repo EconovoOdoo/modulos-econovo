@@ -9,8 +9,11 @@ class EconovoApprovalRule(models.Model):
     One rule set covers both account.payment and account.move (move_type='entry').
     The target_model field determines which records the rule applies to.
 
-    Rules are evaluated in sequence order; ALL matching rules generate an activity
-    (multiple approvers can be required for the same document).
+    Rules are evaluated in ascending sequence order using exclusive priority routing:
+    the first matching rule that has ``always_apply=False`` (the default) wins and
+    blocks subsequent exclusive rules.  Rules with ``always_apply=True`` are always
+    evaluated regardless of whether an exclusive rule already matched, so they can
+    add a second required approver for specific conditions.
     """
 
     _name = 'econovo.approval.rule'
@@ -55,6 +58,18 @@ class EconovoApprovalRule(models.Model):
     note = fields.Text(
         string='Internal Notes',
         help='Optional explanation of the routing logic for this rule.',
+    )
+    always_apply = fields.Boolean(
+        string='Siempre Aplicar',
+        default=False,
+        help=(
+            'When enabled, this rule always creates an approval activity if its '
+            'domain matches, even if a higher-priority (lower sequence) exclusive '
+            'rule already matched the same record.  Use this to require a mandatory '
+            'second approver independently of the primary routing result.\n\n'
+            'When disabled (default), this rule is skipped once any other exclusive '
+            'rule has already matched (first-match-wins behaviour).'
+        ),
     )
 
     @api.constrains('domain')

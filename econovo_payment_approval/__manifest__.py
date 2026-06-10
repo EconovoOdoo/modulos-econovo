@@ -1,6 +1,6 @@
 {
     'name': 'Econovo Payment Approval',
-    'version': '17.0.5.3.0',
+    'version': '17.0.5.4.0',
     'category': 'Accounting/Payment',
     'summary': 'Activity-based approval workflow for outbound payments and journal entries',
     'description': """

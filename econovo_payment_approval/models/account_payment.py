@@ -172,17 +172,24 @@ class AccountPayment(models.Model):
         return self
 
     def _create_approval_activities(self):
-        """Evaluate routing rules and create mail.activity for each match.
+        """Evaluate routing rules and create approval activities.
 
-        One activity per (rule, payment) pair. Rule domains that reference
-        ``effective_approval_amount`` are automatically evaluated against the
-        batch total (sum of non-cancelled payments in the same batch) rather
-        than the individual payment amount, so batch-level thresholds apply
-        consistently across all payments in the same Sumitec batch.
+        Rules are evaluated in ascending sequence order using exclusive priority
+        routing:
 
-        Deduplication: if an activity with the same type and assigned user
-        already exists on the payment, it is skipped to avoid duplicates when
-        the payment is re-confirmed after a draft reset.
+        - ``always_apply=False`` (default / exclusive): the first matching rule
+          creates an activity and blocks all subsequent exclusive rules for that
+          payment.  ``always_apply=True`` rules are still evaluated after it.
+        - ``always_apply=True`` (inclusive): always creates an activity if the
+          domain matches, regardless of whether an exclusive rule already fired.
+          Useful for mandatory second-approver scenarios.
+
+        Rule domains that reference ``effective_approval_amount`` are evaluated
+        against the batch total (sum of non-cancelled payments in the same
+        batch) so batch-level thresholds apply consistently.
+
+        Deduplication: if a pending activity for the same (type, user) already
+        exists on the payment it is treated as already-handled for that rule.
         """
         activity_type = self.env.ref(
             'econovo_payment_approval.mail_activity_type_revisar_pago',
@@ -200,6 +207,7 @@ class AccountPayment(models.Model):
 
         for payment in self:
             target = payment._get_approval_activity_target()
+            exclusive_matched = False
 
             for rule in rules:
                 if not rule.user_id:
@@ -210,6 +218,10 @@ class AccountPayment(models.Model):
                 if domain and not payment.filtered_domain(domain):
                     continue
 
+                # Exclusive rule blocked by a prior exclusive match.
+                if not rule.always_apply and exclusive_matched:
+                    continue
+
                 # Resolve any active substitution for this rule's approver
                 # (manual date-range or HR leave auto-detection).
                 effective_uid = (
@@ -217,24 +229,24 @@ class AccountPayment(models.Model):
                     ._get_effective_approver(rule.user_id.id)
                 )
 
-                # Skip if this (effective_uid, target) already has a pending
-                # approval activity — avoids duplicates when a batch posts
-                # multiple payments within the same transaction.
+                # Deduplication: skip if this (type, user) activity already exists.
                 existing = self.env['mail.activity'].sudo().search([
                     ('res_model', '=', target._name),
                     ('res_id', '=', target.id),
                     ('activity_type_id', '=', activity_type.id),
                     ('user_id', '=', effective_uid),
                 ], limit=1)
-                if existing:
-                    continue
+                if not existing:
+                    target.activity_schedule(
+                        activity_type_id=activity_type.id,
+                        summary=_('Aprobar Pago: %s', payment.name),
+                        date_deadline=fields.Date.today(),
+                        user_id=effective_uid,
+                    )
 
-                target.activity_schedule(
-                    activity_type_id=activity_type.id,
-                    summary=_('Aprobar Pago: %s', payment.name),
-                    date_deadline=fields.Date.today(),
-                    user_id=effective_uid,
-                )
+                # Mark exclusive match so subsequent exclusive rules are skipped.
+                if not rule.always_apply:
+                    exclusive_matched = True
 
     def _cancel_approval_activities(self):
         """Remove pending 'Aprobar Pago' activities from payment or its batch."""

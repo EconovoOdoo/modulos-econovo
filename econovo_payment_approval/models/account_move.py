@@ -86,10 +86,13 @@ class AccountMove(models.Model):
     # ------------------------------------------------------------------
 
     def _create_approval_activities(self):
-        """Evaluate routing rules and create mail.activity for each match.
+        """Evaluate routing rules and create approval activities.
 
         Only called for move_type='entry' records (manual journal entries).
-        One activity per (rule, move) pair; deduplication avoids double creation.
+        Same exclusive priority / always_apply logic as account_payment:
+        - Exclusive rules (always_apply=False): first match wins.
+        - Inclusive rules (always_apply=True): always fire if domain matches.
+        Deduplication prevents double activities on re-confirmation.
         """
         activity_type = self.env.ref(
             'econovo_payment_approval.mail_activity_type_aprobar_asiento',
@@ -106,6 +109,8 @@ class AccountMove(models.Model):
             return
 
         for move in self:
+            exclusive_matched = False
+
             for rule in rules:
                 if not rule.user_id:
                     continue
@@ -114,28 +119,34 @@ class AccountMove(models.Model):
                 if domain and not move.filtered_domain(domain):
                     continue
 
+                # Exclusive rule blocked by a prior exclusive match.
+                if not rule.always_apply and exclusive_matched:
+                    continue
+
                 # Resolve any active substitution for this rule's approver.
                 effective_uid = (
                     self.env['econovo.approval.substitution']
                     ._get_effective_approver(rule.user_id.id)
                 )
 
-                # Skip if a pending activity for this rule already exists.
+                # Deduplication: skip if this (type, user) activity already exists.
                 existing = self.env['mail.activity'].sudo().search([
                     ('res_model', '=', 'account.move'),
                     ('res_id', '=', move.id),
                     ('activity_type_id', '=', activity_type.id),
                     ('user_id', '=', effective_uid),
                 ], limit=1)
-                if existing:
-                    continue
+                if not existing:
+                    move.activity_schedule(
+                        activity_type_id=activity_type.id,
+                        summary=_('Aprobar Asiento: %s', move.name),
+                        date_deadline=fields.Date.today(),
+                        user_id=effective_uid,
+                    )
 
-                move.activity_schedule(
-                    activity_type_id=activity_type.id,
-                    summary=_('Aprobar Asiento: %s', move.name),
-                    date_deadline=fields.Date.today(),
-                    user_id=effective_uid,
-                )
+                # Mark exclusive match so subsequent exclusive rules are skipped.
+                if not rule.always_apply:
+                    exclusive_matched = True
 
     def _cancel_approval_activities(self):
         """Remove pending 'Aprobar Asiento' activities from these entries."""
