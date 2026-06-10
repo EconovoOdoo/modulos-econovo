@@ -44,8 +44,13 @@ class StockMoveLine(models.Model):
     def _check_quantity_available(self):
         self.ensure_one()
         total_available = 0.0
+        is_storable = getattr(
+            self.product_id,
+            'is_storable',
+            self.product_id.detailed_type == 'product',
+        )
         if (
-            self.product_id.is_storable
+            is_storable
             and not self.env.context.get('trigger_assign')
             and not self.env.context.get('from_inverse_qty_done')
             and not self.env.context.get('sale_automation')

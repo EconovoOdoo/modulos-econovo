@@ -28,6 +28,12 @@ Behavior aligned with newer upstream branches:
 - stock availability check follows newer branch logic (`is_storable`,
   `picking_ids` context filtering).
 
+Compatibility note for Odoo 17:
+
+- Odoo 17 may not expose `product.product.is_storable` in all deployments.
+  This patch uses a safe fallback to `detailed_type == 'product'` so the
+  module remains installable and stable during 17.0 operations.
+
 ## Upstream reference
 
 Based on upstream evolution in `ingadhoc/stock` for `stock_ux`, including the
