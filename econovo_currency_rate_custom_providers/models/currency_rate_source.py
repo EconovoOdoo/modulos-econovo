@@ -134,6 +134,15 @@ class CurrencyRateSource(models.Model):
         string='Request Body',
         help='Request body for POST requests'
     )
+    http_ssl_verify = fields.Boolean(
+        string='Verify SSL Certificate',
+        default=True,
+        help='Verify the SSL/TLS certificate of the server. '
+             'Disable only for sources with certificates issued by CAs not trusted '
+             'by the system (e.g. Argentine government sites using ACRAIZ). '
+             'WARNING: disabling SSL verification exposes the connection to '
+             'man-in-the-middle attacks.'
+    )
 
     # === RESPONSE TYPE ===
     response_type = fields.Selection(
@@ -946,13 +955,15 @@ class CurrencyRateSource(models.Model):
                         self.url,
                         headers=headers,
                         data=self.http_body,
-                        timeout=self.http_timeout or 30
+                        timeout=self.http_timeout or 30,
+                        verify=self.http_ssl_verify,
                     )
                 else:
                     response = requests.get(
                         self.url,
                         headers=headers,
-                        timeout=self.http_timeout or 30
+                        timeout=self.http_timeout or 30,
+                        verify=self.http_ssl_verify,
                     )
                 response_time = time.time() - start_time
                 

@@ -105,6 +105,7 @@
                                     <field name="http_timeout"/>
                                     <field name="http_retries"/>
                                     <field name="http_user_agent"/>
+                                    <field name="http_ssl_verify"/>
                                 </group>
                                 <group string="Response Type">
                                     <field name="response_type"/>
