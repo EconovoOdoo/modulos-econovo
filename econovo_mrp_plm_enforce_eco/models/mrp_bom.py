@@ -1,9 +1,25 @@
 # -*- coding: utf-8 -*-
 from odoo import _, api, fields, models
+from odoo.exceptions import UserError
 
 
 class MrpBom(models.Model):
     _inherit = 'mrp.bom'
+
+    # Fields whose modification requires an ECO when the BoM is in production.
+    # Listed as a class attribute so inheriting modules can extend the set:
+    #   class MrpBom(models.Model):
+    #       _inherit = 'mrp.bom'
+    #       _BOM_LOCKED_FIELDS = MrpBom._BOM_LOCKED_FIELDS | {'extra_field'}
+    _BOM_LOCKED_FIELDS = frozenset({
+        # Group A — structural header fields
+        'type', 'product_tmpl_id', 'product_id',
+        'product_qty', 'product_uom_id', 'picking_type_id',
+        'consumption', 'ready_to_produce', 'company_id', 'code',
+        # Group B — One2many structural fields
+        # (each item added/updated/deleted changes the BoM structure)
+        'bom_line_ids', 'operation_ids', 'byproduct_ids',
+    })
 
     mo_count = fields.Integer(
         string='# Manufacturing Orders',
@@ -40,6 +56,59 @@ class MrpBom(models.Model):
         if operator == '=':
             return [('id', 'not in', used_ids)]
         return [('id', 'in', used_ids)]
+
+    # ------------------------------------------------------------------
+    # Computed field for view readonly expressions
+    # ------------------------------------------------------------------
+
+    bom_locked_for_editor = fields.Boolean(
+        string='BoM Locked for Current User',
+        compute='_compute_bom_locked_for_editor',
+        help='True when the current user must use an ECO to modify this BoM.',
+    )
+
+    def _compute_bom_locked_for_editor(self):
+        # Managers are never locked out; the flag is only True for controlled editors.
+        is_manager = self.env.user.has_group('mrp.group_mrp_manager')
+        for bom in self:
+            bom.bom_locked_for_editor = not is_manager and bom._is_bom_locked()
+
+    # ------------------------------------------------------------------
+    # Lock logic
+    # ------------------------------------------------------------------
+
+    def _is_bom_locked(self):
+        """Returns True when this BoM requires an ECO for structural modifications.
+
+        A BoM is considered locked when it is active (production-ready) and
+        has been referenced by at least one Manufacturing Order.  Revision BoMs
+        (active=False) are never locked — they are the intended edit target.
+        """
+        self.ensure_one()
+        return self.active and self.mo_count > 0
+
+    # ------------------------------------------------------------------
+    # Write protection for header and One2many fields
+    # ------------------------------------------------------------------
+
+    def write(self, vals):
+        if not self.env.su and not self.env.user.has_group('mrp.group_mrp_manager'):
+            changed = self._BOM_LOCKED_FIELDS & vals.keys()
+            if changed:
+                locked = self.filtered(lambda b: b._is_bom_locked())
+                if locked:
+                    raise UserError(_(
+                        'The following fields can only be modified through an '
+                        'Engineering Change Order (ECO):\n%(fields)s\n\n'
+                        'Affected Bills of Materials:\n%(boms)s',
+                        fields=', '.join(sorted(changed)),
+                        boms='\n'.join('- %s' % n for n in locked.mapped('display_name')),
+                    ))
+        return super().write(vals)
+
+    # ------------------------------------------------------------------
+    # PLM apply override
+    # ------------------------------------------------------------------
 
     def apply_new_version(self):
         # The PLM apply flow needs to set active=False on the previous BoM and
