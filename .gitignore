@@ -8,6 +8,8 @@ base_advanced_report_templates/
 purchase_request/
 # Deprecated: replaced by econovo_payment_approval
 econovo_payment_batch_approval/
+# Deprecated: replaced by econovo_mrp_plm_enforce_eco
+econovo_mrp_plm_controlled_editor/
 
 
 econovo_dymo_labels/__pycache__/

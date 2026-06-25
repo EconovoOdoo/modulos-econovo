@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_mrp_bom_plm_enforce_eco,mrp.bom plm enforce eco,mrp.model_mrp_bom,group_plm_controlled_editor,1,1,1,1
+access_mrp_bom_line_plm_enforce_eco,mrp.bom.line plm enforce eco,mrp.model_mrp_bom_line,group_plm_controlled_editor,1,1,1,1
+access_mrp_routing_workcenter_plm_enforce_eco,mrp.routing.workcenter plm enforce eco,mrp.model_mrp_routing_workcenter,group_plm_controlled_editor,1,1,1,1
+access_mrp_bom_byproduct_plm_enforce_eco,mrp.bom.byproduct plm enforce eco,mrp.model_mrp_bom_byproduct,group_plm_controlled_editor,1,1,1,1

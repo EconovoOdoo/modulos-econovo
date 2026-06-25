@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="group_plm_controlled_editor" model="res.groups">
+            <field name="name">PLM Controlled BoM Editor</field>
+            <field name="category_id" ref="base.module_category_manufacturing_manufacturing"/>
+            <field name="implied_ids" eval="[(4, ref('mrp.group_mrp_user')), (4, ref('mrp_plm.group_plm_user'))]"/>
+            <field name="comment">Read all BoMs. Create new BoMs freely (manual or Excel import). Modify or delete existing BoMs only while they are not used in any Manufacturing Order or while a related ECO is open. Apply ECOs they validated.</field>
+        </record>
+    </data>
+</odoo>
