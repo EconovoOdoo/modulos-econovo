@@ -26,8 +26,28 @@ class MrpRoutingWorkcenter(models.Model):
         raise_if_bom_locked(self.env, self.mapped('bom_id'))
 
     # ------------------------------------------------------------------
-    # "Copy existing operations" flow
+    # "Copy existing operations" flow — two interception points
     # ------------------------------------------------------------------
+
+    def copy_existing_operations(self):
+        """Block opening the 'Select Operations to Copy' popup on locked BoMs.
+
+        This is the earliest and most reliable interception point: the user
+        sees the error immediately when clicking the button, before any popup
+        or data change occurs.  ``copy_to_bom()`` is also overridden as
+        defence-in-depth in case the context reaches that method directly.
+        """
+        if not self.env.su and not self.env.user.has_group('mrp.group_mrp_manager'):
+            bom_id = self.env.context.get('bom_id')
+            if bom_id:
+                target_bom = self.env['mrp.bom'].browse(bom_id)
+                if target_bom._is_bom_locked():
+                    raise UserError(_(
+                        'Use an Engineering Change Order (ECO) to add '
+                        'operations to: %s',
+                        target_bom.display_name,
+                    ))
+        return super().copy_existing_operations()
 
     def copy_to_bom(self):
         """Override to block copying operations into a locked BoM.

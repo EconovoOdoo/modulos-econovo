@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'PLM Enforce ECO Workflow',
-    'version': '17.0.1.1.0',
+    'version': '17.0.1.2.0',
     'category': 'Manufacturing/Manufacturing',
     'summary': 'Force BoM modifications through the PLM Engineering Change Order workflow for controlled editors.',
     'description': """
