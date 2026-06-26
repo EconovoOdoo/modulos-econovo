@@ -1,7 +1,20 @@
 # -*- coding: utf-8 -*-
 from odoo import _, api, models
 from odoo.exceptions import UserError
-from .mixins import check_bom_locked_on_create, raise_if_bom_locked
+from .mixins import (
+    check_bom_locked_on_create,
+    raise_if_bom_locked,
+    raise_if_bom_locked_write,
+)
+
+# User-driven structural fields of an operation. Auto-computed/related fields
+# (time_cycle, company_id, etc.) are excluded to avoid tripping on form open.
+_OP_STRUCTURAL_FIELDS = frozenset({
+    'name', 'workcenter_id', 'time_mode', 'time_cycle_manual', 'sequence',
+    'worksheet_type', 'worksheet', 'worksheet_google_slide', 'note',
+    'blocked_by_operation_ids', 'bom_id',
+    'bom_product_template_attribute_value_ids',
+})
 
 
 class MrpRoutingWorkcenter(models.Model):
@@ -12,7 +25,7 @@ class MrpRoutingWorkcenter(models.Model):
     # ------------------------------------------------------------------
 
     def write(self, vals):
-        raise_if_bom_locked(self.env, self.mapped('bom_id'))
+        raise_if_bom_locked_write(self.env, self, vals, _OP_STRUCTURAL_FIELDS)
         return super().write(vals)
 
     @api.model_create_multi

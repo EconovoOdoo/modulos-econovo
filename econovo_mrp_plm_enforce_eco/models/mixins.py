@@ -14,10 +14,59 @@ from odoo import _
 from odoo.exceptions import UserError
 
 
+def _will_change(record, vals, structural_fields):
+    """Return True if *vals* changes the value of any structural field on *record*.
+
+    Mirrors the spirit of ``account.move._field_will_change``: a write that
+    re-sends the current value (or only touches non-structural / auto-computed
+    fields such as ``manual_consumption`` or ``product_uom_id`` recomputations)
+    must NOT be treated as a structural modification.
+    """
+    for fname in structural_fields:
+        if fname not in vals:
+            continue
+        field = record._fields[fname]
+        if field.type == 'many2one':
+            if record[fname].id != (vals[fname] or False):
+                return True
+        elif field.type in ('one2many', 'many2many'):
+            # x2many commands in vals always express intent to change.
+            if vals[fname]:
+                return True
+        else:
+            if record[fname] != vals[fname]:
+                return True
+    return False
+
+
+def raise_if_bom_locked_write(env, records, vals, structural_fields):
+    """Raise if a write changes a *structural* field on a record of a locked BoM.
+
+    Only structural user-driven fields are considered; technical or
+    auto-recomputed stored fields are ignored so that simply opening a form
+    (which may flush stored computes or re-send unchanged values) never trips
+    the guard.  Skips sudo sessions and MRP Administrators.
+    """
+    if env.su or env.user.has_group('mrp.group_mrp_manager'):
+        return
+    if not (set(structural_fields) & set(vals)):
+        return
+    locked = records.filtered(
+        lambda r: r.bom_id._is_bom_locked() and _will_change(r, vals, structural_fields)
+    )
+    if locked:
+        raise UserError(_(
+            'Use an Engineering Change Order (ECO) to modify '
+            'the structure of:\n%s',
+            '\n'.join('- %s' % name for name in locked.mapped('bom_id.display_name')),
+        ))
+
+
 def raise_if_bom_locked(env, bom_recordset):
     """Raise UserError if any BoM in *bom_recordset* is currently locked.
 
-    Skips the check for sudo sessions and MRP Administrators.
+    Used by ``unlink`` guards where the operation itself (deleting a child
+    record of a locked BoM) is always structural.
 
     :param env:           ``self.env`` of the calling model.
     :param bom_recordset: ``mrp.bom`` recordset (typically ``self.mapped('bom_id')``).
