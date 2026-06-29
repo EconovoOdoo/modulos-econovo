@@ -13,19 +13,17 @@ imported functions sidestep that limitation entirely.
 from odoo import _
 from odoo.exceptions import UserError
 
-# XML ID of the group that bypasses PLM lock restrictions.
-# Centralised here so every guard in the module references the same constant.
-# Changing this value must be accompanied by a matching change in groups.xml.
-_BYPASS_GROUP = 'econovo_mrp_plm_enforce_eco.group_plm_system_operator'
-
 
 def _is_plm_bypass(env):
-    """Return True when the current session should bypass PLM lock checks."""
-    return (
-        env.su
-        or env.user.has_group('mrp.group_mrp_manager')
-        or env.user.has_group(_BYPASS_GROUP)
-    )
+    """Return True when the current session should bypass PLM lock checks.
+
+    Only sudo sessions and MRP Administrators bypass the guard.  The
+    ``group_bom_actions_executor`` group does NOT bypass PLM: it only controls
+    which users can see and trigger specific maintenance server actions; the
+    bypass for those actions is achieved by the server action code itself
+    calling ``records.sudo()`` for its specific operations.
+    """
+    return env.su or env.user.has_group('mrp.group_mrp_manager')
 
 
 def _will_change(record, vals, structural_fields):
@@ -59,8 +57,7 @@ def raise_if_bom_locked_write(env, records, vals, structural_fields):
     Only structural user-driven fields are considered; technical or
     auto-recomputed stored fields are ignored so that simply opening a form
     (which may flush stored computes or re-send unchanged values) never trips
-    the guard.  Skips sudo sessions, MRP Administrators, and PLM System
-    Operators.
+    the guard.  Skips sudo sessions and MRP Administrators.
     """
     if _is_plm_bypass(env):
         return

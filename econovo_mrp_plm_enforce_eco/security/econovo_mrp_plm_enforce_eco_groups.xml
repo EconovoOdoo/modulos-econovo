@@ -8,11 +8,11 @@
             <field name="comment">Read all BoMs. Create new BoMs freely (manual or Excel import). Modify or delete existing BoMs only while they are not used in any Manufacturing Order or while a related ECO is open. Apply ECOs they validated.</field>
         </record>
 
-        <record id="group_plm_system_operator" model="res.groups">
-            <field name="name">PLM System Operator</field>
+        <record id="group_bom_actions_executor" model="res.groups">
+            <field name="name">BoM Actions Executor</field>
             <field name="category_id" ref="base.module_category_manufacturing_manufacturing"/>
             <field name="implied_ids" eval="[(4, ref('mrp.group_mrp_user'))]"/>
-            <field name="comment">Bypass PLM lock restrictions on Bills of Materials. Intended for users who run maintenance or system-level server actions (e.g. route synchronisation, dependency setup) on production BoMs without creating an ECO. WARNING: members can also edit locked BoMs directly from the form view; assign with care.</field>
+            <field name="comment">Controls which users can see and execute BoM maintenance server actions (e.g. route synchronisation, dependency setup). Does NOT bypass PLM flow: members still require an ECO to edit production BoMs directly. The server actions themselves use sudo() internally for their specific operations.</field>
         </record>
     </data>
 </odoo>
