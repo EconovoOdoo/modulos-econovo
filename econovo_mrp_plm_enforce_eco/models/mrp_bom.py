@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
+from .mixins import _BYPASS_GROUP, _is_plm_bypass
 
 
 class MrpBom(models.Model):
@@ -68,10 +69,13 @@ class MrpBom(models.Model):
     )
 
     def _compute_bom_locked_for_editor(self):
-        # Managers are never locked out; the flag is only True for controlled editors.
-        is_manager = self.env.user.has_group('mrp.group_mrp_manager')
+        # System operators and managers are never locked out in the UI.
+        is_unrestricted = (
+            self.env.user.has_group('mrp.group_mrp_manager')
+            or self.env.user.has_group(_BYPASS_GROUP)
+        )
         for bom in self:
-            bom.bom_locked_for_editor = not is_manager and bom._is_bom_locked()
+            bom.bom_locked_for_editor = not is_unrestricted and bom._is_bom_locked()
 
     # ------------------------------------------------------------------
     # Lock logic
@@ -92,7 +96,7 @@ class MrpBom(models.Model):
     # ------------------------------------------------------------------
 
     def write(self, vals):
-        if not self.env.su and not self.env.user.has_group('mrp.group_mrp_manager'):
+        if not _is_plm_bypass(self.env):
             changed = self._BOM_LOCKED_FIELDS & vals.keys()
             if changed:
                 locked = self.filtered(lambda b: b._is_bom_locked())

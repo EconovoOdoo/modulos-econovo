@@ -2,6 +2,7 @@
 from odoo import _, api, models
 from odoo.exceptions import UserError
 from .mixins import (
+    _is_plm_bypass,
     check_bom_locked_on_create,
     raise_if_bom_locked,
     raise_if_bom_locked_write,
@@ -50,7 +51,7 @@ class MrpRoutingWorkcenter(models.Model):
         or data change occurs.  ``copy_to_bom()`` is also overridden as
         defence-in-depth in case the context reaches that method directly.
         """
-        if not self.env.su and not self.env.user.has_group('mrp.group_mrp_manager'):
+        if not _is_plm_bypass(self.env):
             bom_id = self.env.context.get('bom_id')
             if bom_id:
                 target_bom = self.env['mrp.bom'].browse(bom_id)
@@ -70,7 +71,7 @@ class MrpRoutingWorkcenter(models.Model):
         the ORM ``copy()`` method.  Checking the target BoM lock here, at
         the action-method level, is the most reliable interception point.
         """
-        if not self.env.su and not self.env.user.has_group('mrp.group_mrp_manager'):
+        if not _is_plm_bypass(self.env):
             bom_id = self.env.context.get('bom_id')
             if bom_id:
                 target_bom = self.env['mrp.bom'].browse(bom_id)

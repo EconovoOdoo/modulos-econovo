@@ -13,6 +13,20 @@ imported functions sidestep that limitation entirely.
 from odoo import _
 from odoo.exceptions import UserError
 
+# XML ID of the group that bypasses PLM lock restrictions.
+# Centralised here so every guard in the module references the same constant.
+# Changing this value must be accompanied by a matching change in groups.xml.
+_BYPASS_GROUP = 'econovo_mrp_plm_enforce_eco.group_plm_system_operator'
+
+
+def _is_plm_bypass(env):
+    """Return True when the current session should bypass PLM lock checks."""
+    return (
+        env.su
+        or env.user.has_group('mrp.group_mrp_manager')
+        or env.user.has_group(_BYPASS_GROUP)
+    )
+
 
 def _will_change(record, vals, structural_fields):
     """Return True if *vals* changes the value of any structural field on *record*.
@@ -45,9 +59,10 @@ def raise_if_bom_locked_write(env, records, vals, structural_fields):
     Only structural user-driven fields are considered; technical or
     auto-recomputed stored fields are ignored so that simply opening a form
     (which may flush stored computes or re-send unchanged values) never trips
-    the guard.  Skips sudo sessions and MRP Administrators.
+    the guard.  Skips sudo sessions, MRP Administrators, and PLM System
+    Operators.
     """
-    if env.su or env.user.has_group('mrp.group_mrp_manager'):
+    if _is_plm_bypass(env):
         return
     if not (set(structural_fields) & set(vals)):
         return
@@ -71,7 +86,7 @@ def raise_if_bom_locked(env, bom_recordset):
     :param env:           ``self.env`` of the calling model.
     :param bom_recordset: ``mrp.bom`` recordset (typically ``self.mapped('bom_id')``).
     """
-    if env.su or env.user.has_group('mrp.group_mrp_manager'):
+    if _is_plm_bypass(env):
         return
     locked = bom_recordset.filtered(lambda b: b._is_bom_locked())
     if locked:
@@ -91,7 +106,7 @@ def check_bom_locked_on_create(env, vals_list):
     :param env:       ``self.env`` of the calling model.
     :param vals_list: list of dicts as received by ``create()``.
     """
-    if env.su or env.user.has_group('mrp.group_mrp_manager'):
+    if _is_plm_bypass(env):
         return
     bom_ids = {v['bom_id'] for v in vals_list if v.get('bom_id')}
     if not bom_ids:
