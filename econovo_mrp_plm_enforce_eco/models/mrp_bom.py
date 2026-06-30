@@ -118,6 +118,18 @@ class MrpBom(models.Model):
         # PLM flow complete after the user has already passed all approvals.
         return super(MrpBom, self.sudo()).apply_new_version()
 
+    def action_set_operation_dependencies(self):
+        """Allow the 'Set Dependencies by Sequence' server action to run on
+        production BoMs without an ECO.
+
+        Setting operation sequencing dependencies is an operational configuration
+        (controlling which operation must finish before the next one starts) and
+        is distinct from a structural BoM change.  The action is gated by the
+        ``group_bom_actions_executor`` group on the server action itself; the
+        sudo here only lifts the PLM write guard for this specific operation.
+        """
+        return super(MrpBom, self.sudo()).action_set_operation_dependencies()
+
     def action_create_eco(self):
         # Mass-action helper exposed in the BoM list view: open a draft ECO
         # of type "bom" for each selected production-ready Bill of Materials.

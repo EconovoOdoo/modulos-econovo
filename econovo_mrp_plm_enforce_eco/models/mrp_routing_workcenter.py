@@ -10,9 +10,11 @@ from .mixins import (
 
 # User-driven structural fields of an operation. Auto-computed/related fields
 # (time_cycle, company_id, etc.) are excluded to avoid tripping on form open.
+# ``note`` is intentionally excluded: it holds HTML instructions/links
+# (e.g. PDF buttons) and updating it does not affect manufacturing structure.
 _OP_STRUCTURAL_FIELDS = frozenset({
     'name', 'workcenter_id', 'time_mode', 'time_cycle_manual', 'sequence',
-    'worksheet_type', 'worksheet', 'worksheet_google_slide', 'note',
+    'worksheet_type', 'worksheet', 'worksheet_google_slide',
     'blocked_by_operation_ids', 'bom_id',
     'bom_product_template_attribute_value_ids',
 })
