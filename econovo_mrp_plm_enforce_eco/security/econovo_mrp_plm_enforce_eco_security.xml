@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <record id="mrp_bom_rule_write_plm_enforce_eco" model="ir.rule">
-        <field name="name">PLM Enforce ECO: write rule (inactive - protection delegated to Python guard in write())</field>
+        <field name="name">PLM Enforce ECO: write rule (inert - always-true domain; protection delegated to Python guard in write())</field>
         <field name="model_id" ref="mrp.model_mrp_bom"/>
         <field name="domain_force">[(1, '=', 1)]</field>
         <field name="groups" eval="[(4, ref('group_plm_controlled_editor'))]"/>
         <field name="perm_read" eval="False"/>
-        <field name="perm_write" eval="False"/>
+        <field name="perm_write" eval="True"/>
         <field name="perm_create" eval="False"/>
         <field name="perm_unlink" eval="False"/>
     </record>
