@@ -17,6 +17,8 @@ class MrpBom(models.Model):
         'type', 'product_tmpl_id', 'product_id',
         'product_qty', 'product_uom_id', 'picking_type_id',
         'consumption', 'ready_to_produce', 'company_id', 'code',
+        # 'active' guards against direct archival of production BoMs without ECO
+        'active',
         # Group B — One2many structural fields
         # (each item added/updated/deleted changes the BoM structure)
         'bom_line_ids', 'operation_ids', 'byproduct_ids',
