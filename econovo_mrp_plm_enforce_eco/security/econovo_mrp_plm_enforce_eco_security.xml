@@ -1,10 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <record id="mrp_bom_rule_write_plm_enforce_eco" model="ir.rule">
-        <field name="name">PLM Enforce ECO: write rule (inert - always-true domain; protection delegated to Python guard in write())</field>
+        <!-- This rule is intentionally INACTIVE. All write protection for structural
+             fields is enforced by the Python guard in mrp.bom.write() (see models/mrp_bom.py
+             and models/mixins.py). Keeping this rule active with a real restrictive domain
+             would make ir_actions.server.run()'s mandatory check_access_rule('write')
+             pre-check block server actions on locked BoMs even when the action's own code
+             never performs a disallowed write (e.g. it only opens a wizard).
+             active=False fully excludes this rule from ir.rule's SQL rule-selection query
+             (WHERE r.active AND r.perm_write) in both the read/write domain computation and
+             check_access_rule, without any of the side effects that an "always-true" domain
+             would have: an always-true domain would still actively PARTICIPATE in the
+             per-group domain OR-combination (since perm_write=True made it match the
+             _get_rules query), which could unintentionally neutralise OTHER groups'
+             restrictive write rules on mrp.bom (e.g. "MRP BoMs Subcontractor", group id 10)
+             for any user who happens to belong to both groups, via OR-with-True semantics.
+             Setting active=False avoids this risk entirely: the rule does not participate
+             in any domain computation at all. perm_write is kept True only to satisfy
+             ir.rule's own DB CHECK constraint (ir_rule_no_access_rights: at least one
+             perm_* must be True) -- it has no effect while the rule is inactive. -->
+        <field name="name">PLM Enforce ECO: write rule (INACTIVE - protection delegated to Python guard in write())</field>
         <field name="model_id" ref="mrp.model_mrp_bom"/>
-        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="domain_force">['|', '|', ('active', '=', False), ('eco_ids.state', 'in', ('confirmed', 'progress')), ('mo_count', '=', 0)]</field>
         <field name="groups" eval="[(4, ref('group_plm_controlled_editor'))]"/>
+        <field name="active" eval="False"/>
         <field name="perm_read" eval="False"/>
         <field name="perm_write" eval="True"/>
         <field name="perm_create" eval="False"/>
