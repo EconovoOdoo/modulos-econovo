@@ -18,7 +18,7 @@
              Setting active=False avoids this risk entirely: the rule does not participate
              in any domain computation at all. perm_write is kept True only to satisfy
              ir.rule's own DB CHECK constraint (ir_rule_no_access_rights: at least one
-             perm_* must be True) -- it has no effect while the rule is inactive. -->
+             perm_* must be True) it has no effect while the rule is inactive. -->
         <field name="name">PLM Enforce ECO: write rule (INACTIVE - protection delegated to Python guard in write())</field>
         <field name="model_id" ref="mrp.model_mrp_bom"/>
         <field name="domain_force">['|', '|', ('active', '=', False), ('eco_ids.state', 'in', ('confirmed', 'progress')), ('mo_count', '=', 0)]</field>
