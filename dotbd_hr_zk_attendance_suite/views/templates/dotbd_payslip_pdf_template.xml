@@ -1,0 +1,395 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         PAYSLIP PDF — QWeb Template
+         Design: Bank / Finance department style, single-page A4
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <template id="dotbd_payslip_pdf_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="slip">
+                <t t-call="web.external_layout">
+
+                    <!-- State colours resolved once -->
+                    <t t-set="s_bg"  t-value="{'draft':'#e9ecef','confirmed':'#dbeafe','partial':'#fff3cd','paid':'#d1fae5'}.get(slip.state,'#e9ecef')"/>
+                    <t t-set="s_col" t-value="{'draft':'#495057','confirmed':'#1d4ed8','partial':'#92400e','paid':'#065f46'}.get(slip.state,'#495057')"/>
+
+                    <div class="page" style="font-family: 'Arial', sans-serif; font-size: 8.5pt; color: #1e293b; line-height: 1.35;">
+
+                        <!-- ══════════════════════════════════════════════════
+                             TITLE BAR
+                        ══════════════════════════════════════════════════ -->
+                        <table style="width:100%; border-collapse:collapse; background:#1e3a5f; color:#fff; border-radius:5px 5px 0 0; margin-bottom:0;">
+                            <tr>
+                                <td style="padding:10px 14px; vertical-align:middle; width:60%;">
+                                    <div style="font-size:14pt; font-weight:700; letter-spacing:1.5px; text-transform:uppercase;">
+                                        Salary Payslip
+                                    </div>
+                                    <div style="font-size:8.5pt; opacity:0.75; margin-top:2px;">
+                                        <t t-esc="slip.month_label"/>
+                                        &#160;&#160;|&#160;&#160;
+                                        Period: <t t-esc="slip.date_from"/> &#8212; <t t-esc="slip.date_to"/>
+                                    </div>
+                                </td>
+                                <td style="padding:10px 14px; vertical-align:middle; text-align:right;">
+                                    <div style="font-size:7.5pt; opacity:0.65; text-transform:uppercase; letter-spacing:0.5px;">Reference</div>
+                                    <div style="font-size:10pt; font-weight:700; letter-spacing:0.5px;">
+                                        <t t-esc="slip.name"/>
+                                    </div>
+                                    <div style="margin-top:5px;">
+                                        <span t-attf-style="background:#{s_bg}; color:#{s_col}; padding:2px 9px; border-radius:10px; font-size:7.5pt; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">
+                                            <t t-esc="slip.state.upper()"/>
+                                        </span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- ══════════════════════════════════════════════════
+                             EMPLOYEE INFO STRIP
+                        ══════════════════════════════════════════════════ -->
+                        <table style="width:100%; border-collapse:collapse; background:#f0f4f8; border:1px solid #cbd5e1; border-top:none; margin-bottom:10px;">
+                            <tr>
+                                <td style="width:18%; padding:6px 10px; border-right:1px solid #cbd5e1;">
+                                    <div style="font-size:7pt; color:#64748b; text-transform:uppercase; letter-spacing:0.4px; font-weight:600;">Employee</div>
+                                    <div style="font-weight:700; font-size:9pt; margin-top:1px; color:#0f172a;">
+                                        <t t-esc="slip.employee_id.name"/>
+                                    </div>
+                                </td>
+                                <td style="width:20%; padding:6px 10px; border-right:1px solid #cbd5e1;">
+                                    <div style="font-size:7pt; color:#64748b; text-transform:uppercase; letter-spacing:0.4px; font-weight:600;">Department</div>
+                                    <div style="font-weight:600; margin-top:1px;">
+                                        <t t-esc="slip.department_id.name or '—'"/>
+                                    </div>
+                                </td>
+                                <td style="width:20%; padding:6px 10px; border-right:1px solid #cbd5e1;">
+                                    <div style="font-size:7pt; color:#64748b; text-transform:uppercase; letter-spacing:0.4px; font-weight:600;">Job Position</div>
+                                    <div style="font-weight:600; margin-top:1px;">
+                                        <t t-esc="slip.job_id.name or '—'"/>
+                                    </div>
+                                </td>
+                                <td style="width:22%; padding:6px 10px; border-right:1px solid #cbd5e1;">
+                                    <div style="font-size:7pt; color:#64748b; text-transform:uppercase; letter-spacing:0.4px; font-weight:600;">Employee Type</div>
+                                    <div style="font-weight:600; margin-top:1px;">
+                                        <t t-esc="dict(slip.fields_get(['employee_type'])['employee_type']['selection']).get(slip.employee_type or 'employee', slip.employee_type or '—')"/>
+                                    </div>
+                                </td>
+                                <td style="width:20%; padding:6px 10px;">
+                                    <div style="font-size:7pt; color:#64748b; text-transform:uppercase; letter-spacing:0.4px; font-weight:600;">Wage Type</div>
+                                    <div style="font-weight:600; margin-top:1px;">
+                                        <t t-esc="dict(slip.fields_get(['wage_type'])['wage_type']['selection']).get(slip.wage_type or 'monthly', slip.wage_type or '—')"/>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- ══════════════════════════════════════════════════
+                             EARNINGS  |  DEDUCTIONS  — side by side
+                        ══════════════════════════════════════════════════ -->
+                        <table style="width:100%; border-collapse:collapse; margin-bottom:0;">
+                            <tr style="vertical-align:top;">
+
+                                <!-- ── EARNINGS (left 50%) ── -->
+                                <td style="width:50%; padding-right:5px;">
+                                    <table style="width:100%; border-collapse:collapse; font-size:8.5pt;">
+                                        <thead>
+                                            <tr style="background:#166534; color:#fff;">
+                                                <th style="padding:5px 8px; text-align:left; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; font-size:7.5pt;">Earnings</th>
+                                                <th style="padding:5px 8px; text-align:right; width:90px; font-weight:600; font-size:7.5pt;">Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="slip.line_ids.filtered(lambda l: l.line_type == 'earning')" t-as="line">
+                                                <tr t-attf-style="background:#{'' if line_index % 2 else '#f8fafc'};">
+                                                    <td style="padding:4px 8px; border-bottom:1px solid #e2e8f0;">
+                                                        <t t-esc="line.name"/>
+                                                        <t t-if="line.note">
+                                                            <div style="color:#94a3b8; font-size:7pt; margin-top:1px;">
+                                                                <t t-esc="line.note"/>
+                                                            </div>
+                                                        </t>
+                                                    </td>
+                                                    <td style="padding:4px 8px; text-align:right; border-bottom:1px solid #e2e8f0; font-weight:500;">
+                                                        <t t-esc="slip.currency_id.symbol"/>&#160;<t t-esc="'{:,.2f}'.format(line.amount)"/>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                        <tfoot>
+                                            <tr style="background:#dcfce7; border-top:2px solid #166534;">
+                                                <td style="padding:5px 8px; font-weight:700; font-size:8.5pt; color:#14532d;">Gross Total</td>
+                                                <td style="padding:5px 8px; text-align:right; font-weight:700; font-size:9pt; color:#14532d;">
+                                                    <t t-esc="slip.currency_id.symbol"/>&#160;<t t-esc="'{:,.2f}'.format(slip.gross_amount)"/>
+                                                </td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </td>
+
+                                <!-- ── DEDUCTIONS (right 50%) ── -->
+                                <td style="width:50%; padding-left:5px;">
+                                    <table style="width:100%; border-collapse:collapse; font-size:8.5pt;">
+                                        <thead>
+                                            <tr style="background:#991b1b; color:#fff;">
+                                                <th style="padding:5px 8px; text-align:left; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; font-size:7.5pt;">Deductions</th>
+                                                <th style="padding:5px 8px; text-align:right; width:90px; font-weight:600; font-size:7.5pt;">Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="slip.line_ids.filtered(lambda l: l.line_type == 'deduction')" t-as="line">
+                                                <tr t-attf-style="background:#{'' if line_index % 2 else '#f8fafc'};">
+                                                    <td style="padding:4px 8px; border-bottom:1px solid #e2e8f0;">
+                                                        <t t-esc="line.name"/>
+                                                        <t t-if="line.note">
+                                                            <div style="color:#94a3b8; font-size:7pt; margin-top:1px;">
+                                                                <t t-esc="line.note"/>
+                                                            </div>
+                                                        </t>
+                                                    </td>
+                                                    <td style="padding:4px 8px; text-align:right; border-bottom:1px solid #e2e8f0; font-weight:500; color:#991b1b;">
+                                                        (<t t-esc="slip.currency_id.symbol"/>&#160;<t t-esc="'{:,.2f}'.format(abs(line.amount))"/>)
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                            <t t-if="not slip.line_ids.filtered(lambda l: l.line_type == 'deduction')">
+                                                <tr>
+                                                    <td colspan="2" style="padding:6px 8px; color:#94a3b8; font-style:italic; border-bottom:1px solid #e2e8f0;">
+                                                        No deductions this period
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                        <tfoot>
+                                            <tr style="background:#fee2e2; border-top:2px solid #991b1b;">
+                                                <td style="padding:5px 8px; font-weight:700; font-size:8.5pt; color:#7f1d1d;">Total Deductions</td>
+                                                <td style="padding:5px 8px; text-align:right; font-weight:700; font-size:9pt; color:#7f1d1d;">
+                                                    (<t t-esc="slip.currency_id.symbol"/>&#160;<t t-esc="'{:,.2f}'.format(slip.total_deductions)"/>)
+                                                </td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </td>
+
+                            </tr>
+                        </table>
+
+                        <!-- ══════════════════════════════════════════════════
+                             NET SALARY  — full-width prominent block
+                        ══════════════════════════════════════════════════ -->
+                        <table style="width:100%; border-collapse:collapse; background:#1e3a5f; color:#fff; margin-top:8px; margin-bottom:10px; border-radius:0 0 4px 4px;">
+                            <tr>
+                                <td style="padding:8px 14px; width:33%; text-align:center; border-right:1px solid rgba(255,255,255,0.15);">
+                                    <div style="font-size:7pt; opacity:0.65; text-transform:uppercase; letter-spacing:0.5px;">Gross Earnings</div>
+                                    <div style="font-size:10pt; font-weight:600; margin-top:2px;">
+                                        <t t-esc="slip.currency_id.symbol"/>&#160;<t t-esc="'{:,.2f}'.format(slip.gross_amount)"/>
+                                    </div>
+                                </td>
+                                <td style="padding:8px 14px; width:34%; text-align:center; border-right:1px solid rgba(255,255,255,0.15);">
+                                    <div style="font-size:7pt; opacity:0.65; text-transform:uppercase; letter-spacing:0.5px;">Total Deductions</div>
+                                    <div style="font-size:10pt; font-weight:600; margin-top:2px; color:#fca5a5;">
+                                        (<t t-esc="slip.currency_id.symbol"/>&#160;<t t-esc="'{:,.2f}'.format(slip.total_deductions)"/>)
+                                    </div>
+                                </td>
+                                <td style="padding:8px 14px; width:33%; text-align:center;">
+                                    <div style="font-size:7pt; opacity:0.65; text-transform:uppercase; letter-spacing:0.8px; font-weight:700;">&#9654; Net Payable</div>
+                                    <div style="font-size:14pt; font-weight:800; margin-top:2px; color:#86efac; letter-spacing:0.5px;">
+                                        <t t-esc="slip.currency_id.symbol"/>&#160;<t t-esc="'{:,.2f}'.format(slip.net_amount)"/>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- ══════════════════════════════════════════════════
+                             ATTENDANCE SUMMARY  |  PAYMENT HISTORY
+                        ══════════════════════════════════════════════════ -->
+                        <table style="width:100%; border-collapse:collapse; margin-bottom:10px;">
+                            <tr style="vertical-align:top;">
+
+                                <!-- ── ATTENDANCE SUMMARY ── -->
+                                <td style="width:58%; padding-right:5px;">
+                                    <table style="width:100%; border-collapse:collapse; font-size:8pt; border:1px solid #e2e8f0;">
+                                        <thead>
+                                            <tr style="background:#334155; color:#fff;">
+                                                <th colspan="4" style="padding:5px 10px; text-align:left; font-size:7.5pt; font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">
+                                                    Attendance Summary
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td style="width:25%; padding:4px 8px; border:1px solid #e2e8f0; background:#f8fafc; font-size:7pt; color:#64748b; text-transform:uppercase; font-weight:600; letter-spacing:0.3px;">Working Days</td>
+                                                <td style="width:25%; padding:4px 8px; border:1px solid #e2e8f0; font-weight:700; text-align:center;">
+                                                    <t t-esc="slip.total_working_days"/>
+                                                </td>
+                                                <td style="width:25%; padding:4px 8px; border:1px solid #e2e8f0; background:#f8fafc; font-size:7pt; color:#64748b; text-transform:uppercase; font-weight:600; letter-spacing:0.3px;">Present</td>
+                                                <td style="width:25%; padding:4px 8px; border:1px solid #e2e8f0; font-weight:700; text-align:center; color:#166534;">
+                                                    <t t-esc="slip.attendance_days"/>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding:4px 8px; border:1px solid #e2e8f0; background:#f8fafc; font-size:7pt; color:#64748b; text-transform:uppercase; font-weight:600; letter-spacing:0.3px;">Absent</td>
+                                                <td style="padding:4px 8px; border:1px solid #e2e8f0; font-weight:700; text-align:center; color:#991b1b;">
+                                                    <t t-esc="slip.absent_days"/>
+                                                </td>
+                                                <td style="padding:4px 8px; border:1px solid #e2e8f0; background:#f8fafc; font-size:7pt; color:#64748b; text-transform:uppercase; font-weight:600; letter-spacing:0.3px;">Time Off</td>
+                                                <td style="padding:4px 8px; border:1px solid #e2e8f0; font-weight:700; text-align:center; color:#1d4ed8;">
+                                                    <t t-esc="slip.time_off_days"/>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding:4px 8px; border:1px solid #e2e8f0; background:#f8fafc; font-size:7pt; color:#64748b; text-transform:uppercase; font-weight:600; letter-spacing:0.3px;">Late Arrivals</td>
+                                                <td style="padding:4px 8px; border:1px solid #e2e8f0; font-weight:700; text-align:center; color:#c2410c;">
+                                                    <t t-esc="slip.late_count"/>
+                                                    <t t-if="slip.total_late_minutes">
+                                                        <span style="font-size:7pt; color:#94a3b8; font-weight:400;">
+                                                            &#160;(<t t-esc="slip.total_late_minutes"/> min)
+                                                        </span>
+                                                    </t>
+                                                </td>
+                                                <td style="padding:4px 8px; border:1px solid #e2e8f0; background:#f8fafc; font-size:7pt; color:#64748b; text-transform:uppercase; font-weight:600; letter-spacing:0.3px;">Public Holidays</td>
+                                                <td style="padding:4px 8px; border:1px solid #e2e8f0; font-weight:700; text-align:center;">
+                                                    <t t-esc="slip.public_holiday_count"/>
+                                                </td>
+                                            </tr>
+                                            <t t-if="(slip.wage_type or 'monthly') == 'hourly'">
+                                                <tr>
+                                                    <td colspan="2" style="padding:4px 8px; border:1px solid #e2e8f0; background:#f8fafc; font-size:7pt; color:#64748b; text-transform:uppercase; font-weight:600;">Worked Hours</td>
+                                                    <td colspan="2" style="padding:4px 8px; border:1px solid #e2e8f0; font-weight:700; text-align:center;">
+                                                        <t t-esc="'%.1f' % slip.worked_hours"/> hrs
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </td>
+
+                                <!-- ── PAYMENT HISTORY ── -->
+                                <td style="width:42%; padding-left:5px;">
+                                    <table style="width:100%; border-collapse:collapse; font-size:8pt; border:1px solid #e2e8f0;">
+                                        <thead>
+                                            <tr style="background:#334155; color:#fff;">
+                                                <th colspan="2" style="padding:5px 10px; text-align:left; font-size:7.5pt; font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">
+                                                    Payment Status
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-if="slip.payment_ids">
+                                                <t t-foreach="slip.payment_ids" t-as="pmt">
+                                                    <tr t-attf-style="background:#{'' if pmt_index % 2 else '#f8fafc'};">
+                                                        <td style="padding:4px 8px; border:1px solid #e2e8f0;">
+                                                            <div style="font-weight:600;">
+                                                                <t t-esc="pmt.payment_date"/>
+                                                            </div>
+                                                            <div style="font-size:7pt; color:#64748b;">
+                                                                <t t-esc="dict(pmt.fields_get(allfields=['payment_method'])['payment_method']['selection'])[pmt.payment_method]"/>
+                                                                <t t-if="pmt.reference">
+                                                                    &#160;·&#160;<t t-esc="pmt.reference"/>
+                                                                </t>
+                                                            </div>
+                                                        </td>
+                                                        <td style="padding:4px 8px; text-align:right; border:1px solid #e2e8f0; font-weight:600; color:#166534;">
+                                                            <t t-esc="slip.currency_id.symbol"/>&#160;<t t-esc="'{:,.2f}'.format(pmt.amount)"/>
+                                                        </td>
+                                                    </tr>
+                                                </t>
+                                                <tr style="background:#dcfce7; border-top:2px solid #166534;">
+                                                    <td style="padding:4px 8px; font-weight:700; font-size:7.5pt; color:#14532d;">Total Paid</td>
+                                                    <td style="padding:4px 8px; text-align:right; font-weight:700; color:#14532d;">
+                                                        <t t-esc="slip.currency_id.symbol"/>&#160;<t t-esc="'{:,.2f}'.format(slip.paid_amount)"/>
+                                                    </td>
+                                                </tr>
+                                                <t t-if="slip.remaining_amount > 0">
+                                                    <tr style="background:#fff7ed;">
+                                                        <td style="padding:4px 8px; font-weight:700; font-size:7.5pt; color:#c2410c;">Balance Due</td>
+                                                        <td style="padding:4px 8px; text-align:right; font-weight:700; color:#c2410c;">
+                                                            <t t-esc="slip.currency_id.symbol"/>&#160;<t t-esc="'{:,.2f}'.format(slip.remaining_amount)"/>
+                                                        </td>
+                                                    </tr>
+                                                </t>
+                                            </t>
+                                            <t t-else="">
+                                                <tr>
+                                                    <td colspan="2" style="padding:5px 8px; border:1px solid #e2e8f0; background:#f0f9ff;">
+                                                        <table style="width:100%; border-collapse:collapse;">
+                                                            <tr>
+                                                                <td style="font-size:7.5pt; color:#475569;">Net Payable</td>
+                                                                <td style="text-align:right; font-weight:700;">
+                                                                    <t t-esc="slip.currency_id.symbol"/>&#160;<t t-esc="'{:,.2f}'.format(slip.net_amount)"/>
+                                                                </td>
+                                                            </tr>
+                                                        </table>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td colspan="2" style="padding:4px 8px; border:1px solid #e2e8f0; color:#94a3b8; font-style:italic; font-size:7.5pt;">
+                                                        No payment recorded yet
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </td>
+
+                            </tr>
+                        </table>
+
+                        <!-- ══════════════════════════════════════════════════
+                             SIGNATURES
+                        ══════════════════════════════════════════════════ -->
+                        <table style="width:100%; border-collapse:collapse; margin-top:18px;">
+                            <tr>
+                                <td style="width:30%; text-align:center;">
+                                    <div style="border-top:1px solid #334155; padding-top:4px; font-size:7.5pt; color:#64748b; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">
+                                        Employee Signature
+                                    </div>
+                                    <div style="font-size:8pt; font-weight:600; margin-top:2px; color:#1e293b;">
+                                        <t t-esc="slip.employee_id.name"/>
+                                    </div>
+                                </td>
+                                <td style="width:40%; text-align:center;">
+                                    <div style="font-size:7pt; color:#94a3b8; font-style:italic;">
+                                        This is a computer-generated payslip and does not require a physical stamp.
+                                    </div>
+                                </td>
+                                <td style="width:30%; text-align:center;">
+                                    <div style="border-top:1px solid #334155; padding-top:4px; font-size:7.5pt; color:#64748b; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">
+                                        Authorized Signature
+                                    </div>
+                                    <div style="font-size:8pt; font-weight:600; margin-top:2px; color:#1e293b;">&#160;</div>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- ══════════════════════════════════════════════════
+                             CONFIDENTIAL FOOTER BAR
+                        ══════════════════════════════════════════════════ -->
+                        <div style="margin-top:10px; border-top:2px solid #1e3a5f; padding-top:5px; text-align:center; font-size:7pt; color:#94a3b8; letter-spacing:0.3px;">
+                            CONFIDENTIAL — FOR AUTHORISED RECIPIENTS ONLY
+                            &#160;&#160;|&#160;&#160;
+                            Generated: <t t-esc="context_timestamp(datetime.datetime.now()).strftime('%d %b %Y, %I:%M %p')"/>
+                        </div>
+
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         PAYSLIP PDF — Report Action  (A4, tight margins for single-page fit)
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <record id="action_report_dotbd_payslip_pdf" model="ir.actions.report">
+        <field name="name">Payslip</field>
+        <field name="model">dotbd.payslip</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">dotbd_hr_zk_attendance_suite.dotbd_payslip_pdf_template</field>
+        <field name="report_file">dotbd_hr_zk_attendance_suite.dotbd_payslip_pdf_template</field>
+        <field name="binding_model_id" ref="model_dotbd_payslip"/>
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+        <field name="print_report_name">
+            'Payslip - %s - %s' % (object.employee_id.name, object.month_label)
+        </field>
+    </record>
+
+</odoo>

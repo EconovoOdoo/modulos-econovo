@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         PAYROLL — STANDALONE TOP-LEVEL APP MENU
+         Appears as its own app in the Odoo launcher, separate from Attendances.
+    ═══════════════════════════════════════════════════════════════════ -->
+
+    <!-- ── Root App Menu ─────────────────────────────────────────────── -->
+    <menuitem id="menu_dotbd_payroll_app_root"
+              name="DotBD Payroll"
+              sequence="95"
+              action="action_dotbd_payroll_dashboard"
+              web_icon="dotbd_hr_zk_attendance_suite,static/description/payroll_icon.png"
+              groups="dotbd_hr_zk_attendance_suite.group_dotbd_payroll_visible"/>
+
+    <!-- Dashboard -->
+    <menuitem id="menu_dotbd_payroll_dashboard"
+              name="Dashboard"
+              parent="menu_dotbd_payroll_app_root"
+              action="action_dotbd_payroll_dashboard"
+              sequence="1"
+              groups="dotbd_hr_zk_attendance_suite.group_dotbd_payroll_visible"/>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         PAYSLIPS SECTION
+    ═══════════════════════════════════════════════════════════════════ -->
+    <menuitem id="menu_dotbd_payroll_payslips"
+              name="Payslips"
+              parent="menu_dotbd_payroll_app_root"
+              sequence="10"
+              groups="dotbd_hr_zk_attendance_suite.group_dotbd_payroll_visible"/>
+
+    <!-- Generate Payslips wizard -->
+    <menuitem id="menu_dotbd_generate_payslips"
+              name="Generate Payslips"
+              parent="menu_dotbd_payroll_payslips"
+              action="action_dotbd_payslip_generator_wizard"
+              sequence="5"
+              groups="dotbd_hr_zk_attendance_suite.group_dotbd_payroll_visible"/>
+
+    <!-- Payslip Batches -->
+    <menuitem id="menu_dotbd_payslip_batches"
+              name="Payslip Batches"
+              parent="menu_dotbd_payroll_payslips"
+              action="action_dotbd_payslip_batch"
+              sequence="10"
+              groups="dotbd_hr_zk_attendance_suite.group_dotbd_payroll_visible"/>
+
+    <!-- All Payslips -->
+    <menuitem id="menu_dotbd_payslips"
+              name="All Payslips"
+              parent="menu_dotbd_payroll_payslips"
+              action="action_dotbd_payslip"
+              sequence="20"
+              groups="dotbd_hr_zk_attendance_suite.group_dotbd_payroll_visible"/>
+
+    <!-- Salary Certificates -->
+    <menuitem id="menu_dotbd_salary_certificates"
+              name="Salary Certificates"
+              parent="menu_dotbd_payroll_payslips"
+              action="action_dotbd_salary_certificate"
+              sequence="30"
+              groups="dotbd_hr_zk_attendance_suite.group_dotbd_payroll_visible"/>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         SALARY SECTION
+    ═══════════════════════════════════════════════════════════════════ -->
+    <menuitem id="menu_dotbd_payroll_salary"
+              name="Salary"
+              parent="menu_dotbd_payroll_app_root"
+              sequence="20"
+              groups="dotbd_hr_zk_attendance_suite.group_dotbd_payroll_visible"/>
+
+    <!-- Salary Assignments -->
+    <menuitem id="menu_dotbd_salary_assignments"
+              name="Salary Assignments"
+              parent="menu_dotbd_payroll_salary"
+              action="action_dotbd_employee_salary"
+              sequence="10"
+              groups="dotbd_hr_zk_attendance_suite.group_dotbd_payroll_visible"/>
+
+    <!-- Bulk Salary Assignment wizard -->
+    <menuitem id="menu_dotbd_bulk_salary_assign"
+              name="Bulk Salary Assignment"
+              parent="menu_dotbd_payroll_salary"
+              action="action_dotbd_contract_wizard"
+              sequence="20"
+              groups="dotbd_hr_zk_attendance_suite.group_dotbd_payroll_visible"/>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         CONFIGURATION SECTION
+    ═══════════════════════════════════════════════════════════════════ -->
+    <menuitem id="menu_dotbd_payroll_config"
+              name="Configuration"
+              parent="menu_dotbd_payroll_app_root"
+              sequence="90"
+              groups="dotbd_hr_zk_attendance_suite.group_dotbd_payroll_visible"/>
+
+    <!-- Salary Templates -->
+    <menuitem id="menu_dotbd_salary_templates"
+              name="Salary Templates"
+              parent="menu_dotbd_payroll_config"
+              action="action_dotbd_salary_template"
+              sequence="10"
+              groups="dotbd_hr_zk_attendance_suite.group_dotbd_payroll_visible"/>
+
+    <!-- Festive Bonus -->
+    <menuitem id="menu_dotbd_festive_bonus"
+              name="Festive Bonus"
+              parent="menu_dotbd_payroll_config"
+              action="action_dotbd_festive_bonus"
+              sequence="25"
+              groups="dotbd_hr_zk_attendance_suite.group_dotbd_payroll_visible"/>
+
+</odoo>

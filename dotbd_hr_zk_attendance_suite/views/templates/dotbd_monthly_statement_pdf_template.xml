@@ -1,0 +1,694 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!--
+        Monthly Employee Statement — PDF Template
+        ONE PAGE PER EMPLOYEE — compact layout, A4 portrait.
+
+        Columns: Department | Name | Date | Time In | Time Out | Hours | Late (min) | Time Off
+        Totals row: Total Hours | Late (min) total | Time Off days | Absent days
+        Summary box: required hours / actual hours / advance / deductions / housing / transport / bonus / total due
+
+        Language: d['print_in_arabic']  False=English  True=Arabic (full RTL)
+        ALL sections respect is_ar: title, table headers, totals, summary box, signatures, payslip page.
+    -->
+    <template id="dotbd_monthly_statement_pdf_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="wizard">
+                <t t-set="all_data" t-value="wizard.get_all_employees_data()"/>
+
+                <t t-foreach="all_data" t-as="d">
+                    <t t-set="is_ar" t-value="d['print_in_arabic']"/>
+
+                    <t t-call="web.external_layout">
+                        <div class="page"
+                             t-att-style="'font-family: Arial, sans-serif; font-size: 9px; direction: %s; page-break-after: always;' % ('rtl' if is_ar else 'ltr')">
+
+                            <!-- ══ Title + Employee Info ═══════════════════════ -->
+                            <table style="width:100%; border-collapse:collapse; margin-bottom:3px; font-size:9px;">
+                                <tr>
+                                    <td style="width:55%; font-size:11px; font-weight:bold; padding:1px 0;">
+                                        <t t-if="is_ar">كشف الحضور الشهري — <t t-esc="d['month_name_ar']"/></t>
+                                        <t t-else="">Monthly Attendance Statement — <t t-esc="d['month_name_en']"/></t>
+                                        <t t-esc="d['year']"/>
+                                    </td>
+                                    <td style="width:45%; text-align:right; padding:1px 0; font-size:9px;">
+                                        <t t-if="is_ar"><strong>الموظف:</strong></t>
+                                        <t t-else=""><strong>Employee:</strong></t>
+                                        <t t-esc="d['employee_name']"/>
+                                        <t t-if="d['employee_code']">
+                                            <span style="color:#555; font-size:8px;">
+                                                (<t t-if="is_ar">رقم الجهاز:</t><t t-else="">ID:</t>
+                                                <t t-esc="d['employee_code']"/>)
+                                            </span>
+                                        </t>
+                                        <t t-if="d['department']">
+                                            |
+                                            <t t-if="is_ar"><strong>القسم:</strong></t>
+                                            <t t-else=""><strong>Dept:</strong></t>
+                                            <t t-esc="d['department']"/>
+                                        </t>
+                                        <t t-if="d['job_title']">
+                                            |
+                                            <t t-if="is_ar"><strong>الوظيفة:</strong></t>
+                                            <t t-else=""><strong>Job:</strong></t>
+                                            <t t-esc="d['job_title']"/>
+                                        </t>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- ══ Daily Attendance Table ══════════════════════
+                                 8 columns, compact font (8px), tight padding (1-2px)
+                                 Column widths tuned for A4 portrait (≈180mm usable)
+                            -->
+                            <table style="width:100%; border-collapse:collapse; font-size:8px; margin-bottom:4px; line-height:1.15;">
+                                <thead>
+                                    <tr style="background-color:#d8d8d8; font-weight:bold;">
+                                        <th style="border:1px solid #555; padding:2px 3px; text-align:center; width:11%;">
+                                            <t t-if="is_ar">القسم</t><t t-else="">Dept</t>
+                                        </th>
+                                        <th style="border:1px solid #555; padding:2px 3px; text-align:center; width:16%;">
+                                            <t t-if="is_ar">الاسم</t><t t-else="">Name</t>
+                                        </th>
+                                        <th style="border:1px solid #555; padding:2px 3px; text-align:center; width:14%;">
+                                            <t t-if="is_ar">تاريخ</t><t t-else="">Date</t>
+                                        </th>
+                                        <th style="border:1px solid #555; padding:2px 3px; text-align:center; width:10%;">
+                                            <t t-if="is_ar">دخول</t><t t-else="">In</t>
+                                        </th>
+                                        <th style="border:1px solid #555; padding:2px 3px; text-align:center; width:10%;">
+                                            <t t-if="is_ar">خروج</t><t t-else="">Out</t>
+                                        </th>
+                                        <th style="border:1px solid #555; padding:2px 3px; text-align:center; width:9%;">
+                                            <t t-if="is_ar">ساعة</t><t t-else="">Hours</t>
+                                        </th>
+                                        <th style="border:1px solid #555; padding:2px 3px; text-align:center; width:9%;">
+                                            <t t-if="is_ar">تأخير (د)</t><t t-else="">Late (m)</t>
+                                        </th>
+                                        <th style="border:1px solid #555; padding:2px 3px; text-align:center; width:21%;">
+                                            <t t-if="is_ar">نوع الإجازة</t><t t-else="">Time Off</t>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="d['rows']" t-as="row">
+                                        <!-- Weekend rows: light grey background, no data expected -->
+                                        <t t-set="row_bg"
+                                           t-value="'background-color:#f5f5f5;' if row['is_weekend'] else (
+                                                    'background-color:#e8f4ea;' if row['time_off'] else '')"/>
+                                        <tr t-att-style="row_bg">
+                                            <td style="border:1px solid #bbb; padding:1px 3px; text-align:center;">
+                                                <t t-esc="d['department']"/>
+                                            </td>
+                                            <td style="border:1px solid #bbb; padding:1px 3px; text-align:center;">
+                                                <t t-esc="d['employee_name']"/>
+                                            </td>
+                                            <td style="border:1px solid #bbb; padding:1px 3px; text-align:center;">
+                                                <t t-esc="row['date']"/>
+                                            </td>
+                                            <td style="border:1px solid #bbb; padding:1px 3px; text-align:center;">
+                                                <t t-esc="row['check_in']"/>
+                                            </td>
+                                            <td style="border:1px solid #bbb; padding:1px 3px; text-align:center;">
+                                                <t t-esc="row['check_out']"/>
+                                            </td>
+                                            <td style="border:1px solid #bbb; padding:1px 3px; text-align:right;">
+                                                <t t-esc="row['hours']"/>
+                                            </td>
+                                            <!-- Late minutes (from tolerance_late_time) -->
+                                            <td t-att-style="'border:1px solid #bbb; padding:1px 3px; text-align:right;' + ('color:#c00000; font-weight:bold;' if row['late_minutes'] else '')">
+                                                <t t-esc="row['late_minutes']"/>
+                                            </td>
+                                            <!-- Time off type -->
+                                            <td t-att-style="'border:1px solid #bbb; padding:1px 3px; text-align:center;' + ('color:#1f5c9e; font-style:italic;' if row['time_off'] else '')">
+                                                <t t-esc="row['time_off']"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+
+                                    <!-- ── Totals row ───────────────────────── -->
+                                    <tr style="background-color:#e8e8e8; font-weight:bold; font-size:8px;">
+                                        <!-- Hours total -->
+                                        <td colspan="5"
+                                            style="border:1px solid #555; padding:2px 3px; text-align:right;">
+                                            <t t-if="is_ar">مجموع الساعات</t>
+                                            <t t-else="">Total Hours</t>
+                                        </td>
+                                        <td style="border:1px solid #555; padding:2px 3px; text-align:right;">
+                                            <t t-esc="d['total_actual_hours']"/>
+                                        </td>
+                                        <!-- Late total -->
+                                        <td style="border:1px solid #555; padding:2px 3px; text-align:right; color:#c00000;">
+                                            <t t-esc="d['total_late_minutes']"/>
+                                        </td>
+                                        <!-- Time off + absent summary in last cell -->
+                                        <td style="border:1px solid #555; padding:2px 3px; text-align:center; font-size:7px; line-height:1.3;">
+                                            <t t-if="is_ar">
+                                                إجازة: <t t-esc="d['total_time_off_days']"/> | غياب: <t t-esc="d['total_absent_days']"/>
+                                            </t>
+                                            <t t-else="">
+                                                Off: <t t-esc="d['total_time_off_days']"/> | Absent: <t t-esc="d['total_absent_days']"/>
+                                            </t>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <!-- ══ Attendance Statistics Strip ═══════════════ -->
+                            <table style="width:100%; border-collapse:collapse; font-size:8px; margin-bottom:4px;">
+                                <thead>
+                                    <tr style="background-color:#334155; color:#fff; font-weight:bold;">
+                                        <th style="padding:2px 4px; text-align:center; width:25%;">
+                                            <t t-if="is_ar">تأخير (بعد السماح)</t><t t-else="">Late w/ Tolerance</t>
+                                        </th>
+                                        <th style="padding:2px 4px; text-align:center; width:25%;">
+                                            <t t-if="is_ar">تأخير (بدون سماح)</t><t t-else="">Late w/o Tolerance</t>
+                                        </th>
+                                        <th style="padding:2px 4px; text-align:center; width:25%;">
+                                            <t t-if="is_ar">دقائق تأخير (بعد السماح)</t><t t-else="">Late Min w/ Tol</t>
+                                        </th>
+                                        <th style="padding:2px 4px; text-align:center; width:25%;">
+                                            <t t-if="is_ar">دقائق تأخير (بدون سماح)</t><t t-else="">Late Min w/o Tol</t>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr style="background-color:#f8fafc;">
+                                        <td style="border:1px solid #bbb; padding:2px 4px; text-align:center; color:#c00000; font-weight:bold;">
+                                            <t t-esc="d['late_count_with_tolerance']"/>
+                                            <span style="color:#888; font-weight:normal;">
+                                                &#160;<t t-if="is_ar">يوم</t><t t-else="">days</t>
+                                            </span>
+                                        </td>
+                                        <td style="border:1px solid #bbb; padding:2px 4px; text-align:center; color:#c05000;">
+                                            <t t-esc="d['late_count_without_tolerance']"/>
+                                            <span style="color:#888; font-weight:normal;">
+                                                &#160;<t t-if="is_ar">يوم</t><t t-else="">days</t>
+                                            </span>
+                                        </td>
+                                        <td style="border:1px solid #bbb; padding:2px 4px; text-align:center; color:#c00000; font-weight:bold;">
+                                            <t t-esc="d['total_late_minutes_with_tolerance']"/>
+                                            <span style="color:#888; font-weight:normal;">
+                                                &#160;<t t-if="is_ar">د</t><t t-else="">min</t>
+                                            </span>
+                                        </td>
+                                        <td style="border:1px solid #bbb; padding:2px 4px; text-align:center; color:#c05000;">
+                                            <t t-esc="d['total_late_minutes_without_tolerance']"/>
+                                            <span style="color:#888; font-weight:normal;">
+                                                &#160;<t t-if="is_ar">د</t><t t-else="">min</t>
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <!-- ══ Absent strip ══════════════════════════════ -->
+                            <table style="width:100%; border-collapse:collapse; font-size:8px; margin-bottom:4px;">
+                                <tr>
+                                    <td style="border:1px solid #bbb; padding:2px 6px; background-color:#fff3cd; font-weight:bold; width:50%;">
+                                        <t t-if="is_ar">إجمالي الغياب (بدون احتساب الإجازات والعطل الرسمية)</t>
+                                        <t t-else="">Total Absent (excl. approved leave &amp; public holidays)</t>
+                                    </td>
+                                    <td style="border:1px solid #bbb; padding:2px 6px; background-color:#fff3cd; text-align:center; font-weight:bold; color:#92400e; width:20%;">
+                                        <t t-esc="d['total_absent_days']"/>
+                                        <span style="color:#888; font-weight:normal;">
+                                            &#160;<t t-if="is_ar">يوم</t><t t-else="">days</t>
+                                        </span>
+                                    </td>
+                                    <td style="border:1px solid #bbb; padding:2px 6px; background-color:#f8fafc; width:30%; font-size:7px; color:#64748b; text-align:center;">
+                                        <t t-if="is_ar">إجازة: <t t-esc="d['total_time_off_days']"/> يوم</t>
+                                        <t t-else="">Time Off: <t t-esc="d['total_time_off_days']"/> days</t>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- ══ Summary Box + Signature (side by side) ════ -->
+                            <table style="width:100%; border-collapse:collapse; font-size:9px;">
+                                <tr>
+                                    <!-- ── Summary box (left 50%) — language follows is_ar ── -->
+                                    <td style="width:50%; vertical-align:top; padding-right:6px;">
+                                        <table t-att-style="'width:100%; border-collapse:collapse; font-size:9px;' + (' direction:rtl;' if is_ar else '')">
+
+                                            <!-- Month name header -->
+                                            <tr style="background-color:#d0d0d0;">
+                                                <td colspan="3"
+                                                    style="border:1px solid #555; padding:2px 6px;
+                                                           text-align:center; font-weight:bold; font-size:11px;">
+                                                    <t t-if="is_ar"><t t-esc="d['month_name_ar']"/></t>
+                                                    <t t-else=""><t t-esc="d['month_name_en']"/>&#160;<t t-esc="d['year']"/></t>
+                                                </td>
+                                            </tr>
+
+                                            <!-- Payslip state badge (native payroll only) -->
+                                            <t t-if="d.get('use_native_payroll') and d.get('payslip_state') != 'none'">
+                                                <t t-set="state_color" t-value="'#155724' if d.get('payslip_state') in ('done','paid') else ('#856404' if d.get('payslip_state') == 'waiting' else '#495057')"/>
+                                                <t t-set="state_bg" t-value="'#d4edda' if d.get('payslip_state') in ('done','paid') else ('#fff3cd' if d.get('payslip_state') == 'waiting' else '#e2e3e5')"/>
+                                                <tr>
+                                                    <td colspan="3" t-attf-style="border:1px solid #ccc; padding:2px 6px; text-align:center; background:#{state_bg}; color:#{state_color}; font-size:7px;">
+                                                        Payslip: <strong><t t-esc="d.get('payslip_state_label','')"/></strong>
+                                                    </td>
+                                                </tr>
+                                            </t>
+
+                                            <!-- Required hours (auto) -->
+                                            <tr>
+                                                <td style="border:1px solid #aaa; padding:2px 5px; width:58%;">
+                                                    <t t-if="is_ar">عدد الساعات المطلوبة في الشهر</t>
+                                                    <t t-else="">Required Hours / Month</t>
+                                                </td>
+                                                <td style="border:1px solid #aaa; padding:2px 5px; text-align:center; width:28%;">
+                                                    <t t-esc="d['required_hours']"/>
+                                                </td>
+                                                <td style="border:1px solid #aaa; padding:2px 5px; text-align:center; width:14%;"></td>
+                                            </tr>
+
+                                            <!-- Actual hours (auto) -->
+                                            <tr>
+                                                <td style="border:1px solid #aaa; padding:2px 5px;">
+                                                    <t t-if="is_ar">عدد الساعات الفعلي</t>
+                                                    <t t-else="">Actual Hours</t>
+                                                </td>
+                                                <td style="border:1px solid #aaa; padding:2px 5px; text-align:center;">
+                                                    <t t-esc="d['total_actual_hours']"/>
+                                                </td>
+                                                <td style="border:1px solid #aaa; padding:2px 5px; text-align:center;"></td>
+                                            </tr>
+
+                                            <!-- ═══ NATIVE PAYROLL MODE: show salary rule lines grouped by category ═══ -->
+                                            <t t-if="False">
+                                                <!-- Earnings section header -->
+                                                <tr style="background-color:#1c3a5e; color:#fff;">
+                                                    <td colspan="3" style="border:1px solid #1c3a5e; padding:2px 5px; font-weight:bold; font-size:8px;">
+                                                        <t t-if="is_ar">الاستحقاقات</t><t t-else="">Earnings</t>
+                                                    </td>
+                                                </tr>
+                                                <t t-set="earn_total" t-value="0.0"/>
+                                                <t t-foreach="d['rule_lines']" t-as="rl">
+                                                    <t t-if="rl['category_code'] in ('BASIC', 'ALW', 'GROSS')">
+                                                        <!-- Accumulate total for BASIC and ALW only.
+                                                             GROSS (Taxable Salary) is already the SUM of BASIC+ALW —
+                                                             adding it again would double-count. Display it but skip from total. -->
+                                                        <t t-if="rl['category_code'] in ('BASIC', 'ALW')">
+                                                            <t t-set="earn_total" t-value="earn_total + rl['total']"/>
+                                                        </t>
+                                                        <tr t-attf-style="background:#{rl_index % 2 == 0 and '#f5f9ff' or 'white'}">
+                                                            <td style="border:1px solid #ccc; padding:2px 5px;">
+                                                                <t t-esc="rl['rule_name']"/>
+                                                                <span style="color:#888; font-size:7px; margin-left:3px;">(<t t-esc="rl['rule_code']"/>)</span>
+                                                            </td>
+                                                            <td style="border:1px solid #ccc; padding:2px 5px; text-align:center;">
+                                                                <t t-esc="'%.2f' % rl['total']"/>
+                                                            </td>
+                                                            <td style="border:1px solid #ccc; padding:2px 5px; text-align:center; color:#155724;">+</td>
+                                                        </tr>
+                                                    </t>
+                                                </t>
+                                                <!-- Earnings subtotal -->
+                                                <tr style="background-color:#e8f5e9; font-weight:bold;">
+                                                    <td style="border:1px solid #aaa; padding:2px 5px;">
+                                                        <t t-if="is_ar">مجموع الاستحقاقات</t><t t-else="">Total Earnings</t>
+                                                    </td>
+                                                    <td style="border:1px solid #aaa; padding:2px 5px; text-align:center; color:#155724;">
+                                                        <t t-esc="'%.2f' % earn_total"/>
+                                                    </td>
+                                                    <td style="border:1px solid #aaa; padding:2px 5px; text-align:center;">=</td>
+                                                </tr>
+
+                                                <!-- Deductions section header -->
+                                                <tr style="background-color:#7f1d1d; color:#fff;">
+                                                    <td colspan="3" style="border:1px solid #7f1d1d; padding:2px 5px; font-weight:bold; font-size:8px;">
+                                                        <t t-if="is_ar">الخصومات</t><t t-else="">Deductions</t>
+                                                    </td>
+                                                </tr>
+                                                <t t-set="ded_total" t-value="0.0"/>
+                                                <t t-foreach="d['rule_lines']" t-as="rl">
+                                                    <t t-if="rl['category_code'] == 'DED' and rl['total'] != 0">
+                                                        <t t-set="ded_total" t-value="ded_total + abs(rl['total'])"/>
+                                                        <tr t-attf-style="background:#{rl_index % 2 == 0 and '#fff5f5' or 'white'}">
+                                                            <td style="border:1px solid #ccc; padding:2px 5px;">
+                                                                <t t-esc="rl['rule_name']"/>
+                                                                <span style="color:#888; font-size:7px; margin-left:3px;">(<t t-esc="rl['rule_code']"/>)</span>
+                                                            </td>
+                                                            <td style="border:1px solid #ccc; padding:2px 5px; text-align:center; color:#721c24;">
+                                                                (<t t-esc="'%.2f' % abs(rl['total'])"/>)
+                                                            </td>
+                                                            <td style="border:1px solid #ccc; padding:2px 5px; text-align:center; color:#721c24;">−</td>
+                                                        </tr>
+                                                    </t>
+                                                </t>
+                                                <!-- Deductions subtotal -->
+                                                <tr style="background-color:#fce4e4; font-weight:bold;">
+                                                    <td style="border:1px solid #aaa; padding:2px 5px;">
+                                                        <t t-if="is_ar">مجموع الخصومات</t><t t-else="">Total Deductions</t>
+                                                    </td>
+                                                    <td style="border:1px solid #aaa; padding:2px 5px; text-align:center; color:#721c24;">
+                                                        (<t t-esc="'%.2f' % ded_total"/>)
+                                                    </td>
+                                                    <td style="border:1px solid #aaa; padding:2px 5px; text-align:center;">−</td>
+                                                </tr>
+
+                                                <!-- Net salary from payslip -->
+                                                <t t-set="net_native" t-value="0.0"/>
+                                                <t t-foreach="d['rule_lines']" t-as="rl">
+                                                    <t t-if="rl['category_code'] == 'NET'">
+                                                        <t t-set="net_native" t-value="rl['total']"/>
+                                                    </t>
+                                                </t>
+                                                <tr style="font-weight:bold; background-color:#ebebeb;">
+                                                    <td style="border:1px solid #555; padding:2px 5px;">
+                                                        <t t-if="is_ar">صافي الراتب</t><t t-else="">Net Salary</t>
+                                                    </td>
+                                                    <td style="border:1px solid #555; padding:2px 5px; text-align:center; color:#1a5c2a;">
+                                                        <t t-esc="'%.2f' % (net_native if net_native else (earn_total - ded_total))"/>
+                                                    </td>
+                                                    <td style="border:1px solid #555; padding:2px 5px; text-align:center;">=</td>
+                                                </tr>
+                                            </t>
+
+                                            <!-- ═══ DEFAULT MODE: fixed rows (Wage, Advance, Deductions, Housing, Transport, Bonus) ═══ -->
+                                            <t t-else="">
+                                                <!-- Wage / Basic Salary -->
+                                                <tr style="background-color:#f0f8ff;">
+                                                    <td style="border:1px solid #aaa; padding:2px 5px; font-weight:bold;">
+                                                        <t t-if="is_ar">الراتب الأساسي</t><t t-else="">Wage</t>
+                                                    </td>
+                                                    <td style="border:1px solid #aaa; padding:2px 5px; text-align:center; font-weight:bold;">
+                                                        <t t-if="d['wage']" t-esc="'%.2f' % d['wage']"/>
+                                                        <t t-else="">0.00</t>
+                                                    </td>
+                                                    <td style="border:1px solid #aaa; padding:2px 5px; text-align:center;"></td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="border:1px solid #aaa; padding:2px 5px;">
+                                                        <t t-if="is_ar">ساحب</t><t t-else="">Advance</t>
+                                                    </td>
+                                                    <td style="border:1px solid #aaa; padding:2px 5px; text-align:center;">
+                                                        <t t-esc="'%.2f' % d['advance_amount']"/>
+                                                    </td>
+                                                    <td style="border:1px solid #aaa; padding:2px 5px; text-align:center;">−</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="border:1px solid #aaa; padding:2px 5px;">
+                                                        <t t-if="is_ar">خصومات</t><t t-else="">Deductions</t>
+                                                    </td>
+                                                    <td style="border:1px solid #aaa; padding:2px 5px; text-align:center;">
+                                                        <t t-esc="'%.2f' % d['deduction_amount']"/>
+                                                    </td>
+                                                    <td style="border:1px solid #aaa; padding:2px 5px; text-align:center;">−</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="border:1px solid #aaa; padding:2px 5px;">
+                                                        <t t-if="is_ar">سكن</t><t t-else="">Housing</t>
+                                                    </td>
+                                                    <td style="border:1px solid #aaa; padding:2px 5px; text-align:center;">
+                                                        <t t-esc="'%.2f' % d['housing_deduction']"/>
+                                                    </td>
+                                                    <td style="border:1px solid #aaa; padding:2px 5px; text-align:center;">−</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="border:1px solid #aaa; padding:2px 5px;">
+                                                        <t t-if="is_ar">مواصلات</t><t t-else="">Transport</t>
+                                                    </td>
+                                                    <td style="border:1px solid #aaa; padding:2px 5px; text-align:center;">
+                                                        <t t-esc="'%.2f' % d['transport_allowance']"/>
+                                                    </td>
+                                                    <td style="border:1px solid #aaa; padding:2px 5px; text-align:center;">+</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="border:1px solid #aaa; padding:2px 5px;">
+                                                        <t t-if="is_ar">يونيس</t><t t-else="">Bonus</t>
+                                                    </td>
+                                                    <td style="border:1px solid #aaa; padding:2px 5px; text-align:center;">
+                                                        <t t-esc="'%.2f' % d['bonus_amount']"/>
+                                                    </td>
+                                                    <td style="border:1px solid #aaa; padding:2px 5px; text-align:center;">+</td>
+                                                </tr>
+                                                <!-- Net Due -->
+                                                <tr style="font-weight:bold; background-color:#ebebeb;">
+                                                    <td style="border:1px solid #555; padding:2px 5px;">
+                                                        <t t-if="is_ar">واصل له</t><t t-else="">Net Due</t>
+                                                    </td>
+                                                    <td style="border:1px solid #555; padding:2px 5px; text-align:center; min-width:50px; color:#1a5c2a;">
+                                                        <t t-esc="'%.2f' % d['net_due']"/>
+                                                    </td>
+                                                    <td style="border:1px solid #555; padding:2px 5px; text-align:center;">=</td>
+                                                </tr>
+                                            </t>
+                                        </table>
+                                    </td>
+
+                                    <!-- ── Signature block (right 50%) ──────── -->
+                                    <td style="width:50%; vertical-align:bottom; padding-left:6px;">
+                                        <table style="width:100%; font-size:9px;">
+                                            <tr>
+                                                <td style="width:46%; text-align:center; padding-top:36px;">
+                                                    <div style="border-top:1px solid #000; padding-top:3px;">
+                                                        <t t-if="is_ar">توقيع الموظف</t>
+                                                        <t t-else="">Employee Signature</t>
+                                                    </div>
+                                                    <div style="color:#888; font-size:8px; padding-top:2px;">
+                                                        <t t-esc="d['employee_name']"/>
+                                                    </div>
+                                                </td>
+                                                <td style="width:8%;"></td>
+                                                <td style="width:46%; text-align:center; padding-top:36px;">
+                                                    <div style="border-top:1px solid #000; padding-top:3px;">
+                                                        <t t-if="is_ar">توقيع المسؤول / المدير</t>
+                                                        <t t-else="">HR / Manager Signature</t>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+
+                        </div><!-- /page -->
+                    </t>
+
+                    <!-- ══ Optional Payslip Page ════════════════════════════ -->
+                    <t t-if="d.get('payslip')">
+                        <t t-call="web.external_layout">
+                            <div class="page"
+                                 style="font-family: Arial, sans-serif; font-size: 8.5pt; color: #1e293b; line-height: 1.35; page-break-after: always;">
+                                <t t-call="dotbd_hr_zk_attendance_suite.dotbd_monthly_statement_payslip_inline">
+                                    <t t-set="slip" t-value="d['payslip']"/>
+                                    <t t-set="is_ar" t-value="is_ar"/>
+                                </t>
+                            </div>
+                        </t>
+                    </t>
+
+                </t><!-- /foreach employee -->
+
+            </t>
+        </t>
+    </template>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         Inline payslip sub-template
+         Receives: slip (dotbd.payslip record), is_ar (Boolean)
+         Fully bilingual — all labels switch with is_ar
+    ══════════════════════════════════════════════════════════════════════ -->
+    <template id="dotbd_monthly_statement_payslip_inline">
+        <t t-set="s_bg"  t-value="{'draft':'#e9ecef','confirmed':'#dbeafe','partial':'#fff3cd','paid':'#d1fae5'}.get(slip.state,'#e9ecef')"/>
+        <t t-set="s_col" t-value="{'draft':'#495057','confirmed':'#1d4ed8','partial':'#92400e','paid':'#065f46'}.get(slip.state,'#495057')"/>
+        <!-- Precompute once (avoid repeated filtered() calls inside QWeb loops) -->
+        <t t-set="earning_lines" t-value="slip.line_ids.filtered(lambda l: l.line_type == 'earning')"/>
+        <t t-set="deduction_lines" t-value="slip.line_ids.filtered(lambda l: l.line_type == 'deduction')"/>
+
+        <div t-att-style="'direction:rtl;' if is_ar else ''">
+
+        <!-- TITLE BAR -->
+        <table style="width:100%; border-collapse:collapse; background:#1e3a5f; color:#fff; margin-bottom:0;">
+            <tr>
+                <td style="padding:8px 12px; vertical-align:middle; width:60%;">
+                    <div style="font-size:12pt; font-weight:700; letter-spacing:1px;">
+                        <t t-if="is_ar">كشف الراتب</t><t t-else="">SALARY PAYSLIP</t>
+                    </div>
+                    <div style="font-size:8pt; opacity:0.75; margin-top:2px;">
+                        <t t-esc="slip.month_label"/>&#160;|&#160;
+                        <t t-if="is_ar">الفترة:</t><t t-else="">Period:</t>
+                        <t t-esc="slip.date_from"/> &#8212; <t t-esc="slip.date_to"/>
+                    </div>
+                </td>
+                <td style="padding:8px 12px; vertical-align:middle; text-align:right;">
+                    <div style="font-size:8pt; font-weight:700;"><t t-esc="slip.name"/></div>
+                    <div style="margin-top:4px;">
+                        <span t-attf-style="background:#{s_bg}; color:#{s_col}; padding:2px 8px; border-radius:8px; font-size:7pt; font-weight:700; text-transform:uppercase;">
+                            <t t-esc="slip.state.upper()"/>
+                        </span>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <!-- EMPLOYEE INFO STRIP -->
+        <table style="width:100%; border-collapse:collapse; background:#f0f4f8; border:1px solid #cbd5e1; border-top:none; margin-bottom:8px; font-size:8pt;">
+            <tr>
+                <td style="padding:5px 8px; border-right:1px solid #cbd5e1; width:25%;">
+                    <div style="font-size:7pt; color:#64748b; font-weight:600;">
+                        <t t-if="is_ar">الموظف</t><t t-else="">EMPLOYEE</t>
+                    </div>
+                    <div style="font-weight:700; margin-top:1px;"><t t-esc="slip.employee_id.name"/></div>
+                </td>
+                <td style="padding:5px 8px; border-right:1px solid #cbd5e1; width:25%;">
+                    <div style="font-size:7pt; color:#64748b; font-weight:600;">
+                        <t t-if="is_ar">القسم</t><t t-else="">DEPARTMENT</t>
+                    </div>
+                    <div style="font-weight:600; margin-top:1px;"><t t-esc="slip.department_id.name or '—'"/></div>
+                </td>
+                <td style="padding:5px 8px; border-right:1px solid #cbd5e1; width:25%;">
+                    <div style="font-size:7pt; color:#64748b; font-weight:600;">
+                        <t t-if="is_ar">الوظيفة</t><t t-else="">JOB</t>
+                    </div>
+                    <div style="font-weight:600; margin-top:1px;"><t t-esc="slip.job_id.name or '—'"/></div>
+                </td>
+                <td style="padding:5px 8px; width:25%;">
+                    <div style="font-size:7pt; color:#64748b; font-weight:600;">
+                        <t t-if="is_ar">الفترة</t><t t-else="">PERIOD</t>
+                    </div>
+                    <div style="font-weight:600; margin-top:1px;"><t t-esc="slip.date_from"/> — <t t-esc="slip.date_to"/></div>
+                </td>
+            </tr>
+        </table>
+
+        <!-- EARNINGS | DEDUCTIONS side by side -->
+        <table style="width:100%; border-collapse:collapse; margin-bottom:0; font-size:8pt;">
+            <tr style="vertical-align:top;">
+                <!-- Earnings (left) -->
+                <td style="width:50%; padding-right:4px;">
+                    <table style="width:100%; border-collapse:collapse;">
+                        <thead>
+                            <tr style="background:#166534; color:#fff;">
+                                <th style="padding:4px 7px; text-align:left; font-size:7.5pt;">
+                                    <t t-if="is_ar">الإيرادات / المستحقات</t><t t-else="">Earnings</t>
+                                </th>
+                                <th style="padding:4px 7px; text-align:right; width:80px; font-size:7.5pt;">
+                                    <t t-if="is_ar">المبلغ</t><t t-else="">Amount</t>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="earning_lines" t-as="sl">
+                                <tr t-attf-style="background:#{'f8fafc' if sl_index % 2 == 0 else ''};">
+                                    <td style="padding:3px 7px; border-bottom:1px solid #e2e8f0;"><t t-esc="sl.name"/></td>
+                                    <td style="padding:3px 7px; text-align:right; border-bottom:1px solid #e2e8f0; font-weight:500;">
+                                        <t t-esc="slip.currency_id.symbol"/>&#160;<t t-esc="'{:,.2f}'.format(sl.amount)"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                        <tfoot>
+                            <tr style="background:#dcfce7; border-top:2px solid #166534;">
+                                <td style="padding:4px 7px; font-weight:700; color:#14532d;">
+                                    <t t-if="is_ar">إجمالي الراتب</t><t t-else="">Gross Total</t>
+                                </td>
+                                <td style="padding:4px 7px; text-align:right; font-weight:700; color:#14532d;">
+                                    <t t-esc="slip.currency_id.symbol"/>&#160;<t t-esc="'{:,.2f}'.format(slip.gross_amount)"/>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </td>
+                <!-- Deductions (right) -->
+                <td style="width:50%; padding-left:4px;">
+                    <table style="width:100%; border-collapse:collapse;">
+                        <thead>
+                            <tr style="background:#991b1b; color:#fff;">
+                                <th style="padding:4px 7px; text-align:left; font-size:7.5pt;">
+                                    <t t-if="is_ar">الخصومات</t><t t-else="">Deductions</t>
+                                </th>
+                                <th style="padding:4px 7px; text-align:right; width:80px; font-size:7.5pt;">
+                                    <t t-if="is_ar">المبلغ</t><t t-else="">Amount</t>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="deduction_lines" t-as="sl">
+                                <tr t-attf-style="background:#{'f8fafc' if sl_index % 2 == 0 else ''};">
+                                    <td style="padding:3px 7px; border-bottom:1px solid #e2e8f0;"><t t-esc="sl.name"/></td>
+                                    <td style="padding:3px 7px; text-align:right; border-bottom:1px solid #e2e8f0; font-weight:500; color:#991b1b;">
+                                        (<t t-esc="slip.currency_id.symbol"/>&#160;<t t-esc="'{:,.2f}'.format(abs(sl.amount))"/>)
+                                    </td>
+                                </tr>
+                            </t>
+                            <t t-if="not deduction_lines">
+                                <tr>
+                                    <td colspan="2" style="padding:5px 7px; color:#94a3b8; font-style:italic;">
+                                        <t t-if="is_ar">لا توجد خصومات</t><t t-else="">No deductions</t>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                        <tfoot>
+                            <tr style="background:#fee2e2; border-top:2px solid #991b1b;">
+                                <td style="padding:4px 7px; font-weight:700; color:#7f1d1d;">
+                                    <t t-if="is_ar">إجمالي الخصومات</t><t t-else="">Total Deductions</t>
+                                </td>
+                                <td style="padding:4px 7px; text-align:right; font-weight:700; color:#7f1d1d;">
+                                    (<t t-esc="slip.currency_id.symbol"/>&#160;<t t-esc="'{:,.2f}'.format(slip.total_deductions)"/>)
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </td>
+            </tr>
+        </table>
+
+        <!-- NET SALARY BAR -->
+        <table style="width:100%; border-collapse:collapse; background:#1e3a5f; color:#fff; margin-top:6px; margin-bottom:8px;">
+            <tr>
+                <td style="padding:6px 12px; width:33%; text-align:center; border-right:1px solid rgba(255,255,255,0.15);">
+                    <div style="font-size:7pt; opacity:0.65;">
+                        <t t-if="is_ar">الإجمالي</t><t t-else="">GROSS</t>
+                    </div>
+                    <div style="font-size:9pt; font-weight:600;">
+                        <t t-esc="slip.currency_id.symbol"/>&#160;<t t-esc="'{:,.2f}'.format(slip.gross_amount)"/>
+                    </div>
+                </td>
+                <td style="padding:6px 12px; width:34%; text-align:center; border-right:1px solid rgba(255,255,255,0.15);">
+                    <div style="font-size:7pt; opacity:0.65;">
+                        <t t-if="is_ar">الخصومات</t><t t-else="">DEDUCTIONS</t>
+                    </div>
+                    <div style="font-size:9pt; font-weight:600; color:#fca5a5;">
+                        (<t t-esc="slip.currency_id.symbol"/>&#160;<t t-esc="'{:,.2f}'.format(slip.total_deductions)"/>)
+                    </div>
+                </td>
+                <td style="padding:6px 12px; width:33%; text-align:center;">
+                    <div style="font-size:7pt; opacity:0.65; font-weight:700;">
+                        <t t-if="is_ar">&#9664; صافي المستحق</t><t t-else="">&#9654; NET PAYABLE</t>
+                    </div>
+                    <div style="font-size:12pt; font-weight:800; color:#86efac;">
+                        <t t-esc="slip.currency_id.symbol"/>&#160;<t t-esc="'{:,.2f}'.format(slip.net_amount)"/>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <!-- SIGNATURE -->
+        <table style="width:100%; border-collapse:collapse; margin-top:16px; font-size:8pt;">
+            <tr>
+                <td style="width:30%; text-align:center;">
+                    <div style="border-top:1px solid #334155; padding-top:4px; font-size:7.5pt; color:#64748b; font-weight:600;">
+                        <t t-if="is_ar">توقيع الموظف</t><t t-else="">EMPLOYEE SIGNATURE</t>
+                    </div>
+                    <div style="font-weight:600; margin-top:2px;"><t t-esc="slip.employee_id.name"/></div>
+                </td>
+                <td style="width:40%; text-align:center; font-size:7pt; color:#94a3b8; font-style:italic;">
+                    <t t-if="is_ar">هذا كشف راتب إلكتروني.</t>
+                    <t t-else="">This is a computer-generated payslip.</t>
+                </td>
+                <td style="width:30%; text-align:center;">
+                    <div style="border-top:1px solid #334155; padding-top:4px; font-size:7.5pt; color:#64748b; font-weight:600;">
+                        <t t-if="is_ar">توقيع المسؤول</t><t t-else="">AUTHORIZED SIGNATURE</t>
+                    </div>
+                    <div style="font-weight:600; margin-top:2px;">&#160;</div>
+                </td>
+            </tr>
+        </table>
+
+        </div><!-- /direction wrapper -->
+    </template>
+
+</odoo>

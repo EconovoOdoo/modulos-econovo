@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_adms_template_wizard_form" model="ir.ui.view">
+        <field name="name">adms.template.wizard.form</field>
+        <field name="model">adms.template.wizard</field>
+        <field name="arch" type="xml">
+            <form string="ADMS Biometric Templates">
+                <field name="state" invisible="1"/>
+                <field name="single_device_mode" invisible="1"/>
+
+                <!-- ── DOWNLOAD / RESULT STATE ── -->
+                <group invisible="state != 'download'">
+                    <div class="alert alert-success mb-3" role="alert">
+                        <i class="fa fa-check-circle me-1" title="Check circle" aria-label="Check circle"/>
+                        <strong>Done!</strong>
+                        <field name="summary" readonly="1" nolabel="1"/>
+                    </div>
+                    <group invisible="not file_data">
+                        <field name="file_name" invisible="1"/>
+                        <field name="file_data" readonly="1" filename="file_name"
+                               widget="binary" string="Save File to PC"/>
+                    </group>
+                </group>
+
+                <!-- ── UPLOAD STATE ── -->
+                <group invisible="state != 'upload'" string="Select File">
+                    <field name="file_name" invisible="1"/>
+                    <field name="file_data" filename="file_name" widget="binary"
+                           string="Biometric Template File (.json)"
+                           required="state == 'upload'"/>
+                </group>
+
+                <!-- Device selection: only shown in multi-device mode -->
+                <group invisible="state != 'upload' or single_device_mode"
+                       string="Sync to Devices After Import (Optional)">
+                    <field name="device_ids" widget="many2many_tags"
+                           string="Push to Devices"
+                           placeholder="Leave empty to only import into Odoo..."
+                           options="{'no_create': True}"/>
+                    <div class="text-muted" style="font-size:12px;">
+                        <i class="fa fa-clock-o" title="Clock o" aria-label="Clock o"/>
+                        ADMS sync is queued (~30 s delay per device poll).
+                    </div>
+                </group>
+
+                <footer>
+                    <button name="action_process_upload"
+                            string="Import"
+                            type="object"
+                            class="btn-primary"
+                            icon="fa-upload"
+                            invisible="state != 'upload'"/>
+                    <button string="Close" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Open wizard in Upload mode (multi-device, from menu) -->
+    <record id="action_upload_adms_json_templates" model="ir.actions.act_window">
+        <field name="name">Upload ADMS Biometric Templates</field>
+        <field name="res_model">adms.template.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'default_state': 'upload'}</field>
+    </record>
+
+    <!-- Open wizard in Download mode -->
+    <record id="action_download_adms_json_templates" model="ir.actions.act_window">
+        <field name="name">Download All ADMS Biometric Templates</field>
+        <field name="res_model">adms.template.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'default_state': 'download'}</field>
+    </record>
+
+    <!-- Server action: export selected templates from list view -->
+    <record id="action_export_adms_json_templates" model="ir.actions.server">
+        <field name="name">Export Selected as JSON Backup</field>
+        <field name="model_id" ref="model_biometric_fp_template"/>
+        <field name="binding_model_id" ref="model_biometric_fp_template"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+if records:
+    wizard = env['adms.template.wizard'].create({
+        'state': 'download',
+        'template_ids': [(6, 0, records.ids)],
+    })
+    action = wizard.action_download_json()
+        </field>
+    </record>
+</odoo>

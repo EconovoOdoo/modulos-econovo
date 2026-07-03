@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         BULK SALARY ASSIGNMENT WIZARD — Form View
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <record id="view_dotbd_contract_wizard_form" model="ir.ui.view">
+        <field name="name">dotbd.contract.wizard.form</field>
+        <field name="model">dotbd.contract.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Bulk Salary Assignment">
+                <group string="Employees">
+                    <field name="department_id"
+                           help="Select a department and click Add to fill the employee list automatically."/>
+                    <field name="employee_ids" widget="many2many_tags"/>
+                    <field name="employee_count" readonly="1" string="Selected"/>
+                </group>
+                <group string="Salary Package">
+                    <field name="template_id"/>
+                    <field name="basic_wage"/>
+                    <field name="currency_id" groups="base.group_multi_currency"/>
+                    <field name="effective_date"/>
+                </group>
+                <group string="HR Contract (Enterprise)" invisible="not also_create_contract">
+                    <field name="also_create_contract" invisible="1"/>
+                    <field name="create_hr_contract"/>
+                    <field name="contract_date_end"
+                           invisible="not create_hr_contract"/>
+                </group>
+                <footer>
+                    <button name="action_assign" string="Assign Salary"
+                            type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         BULK SALARY ASSIGNMENT WIZARD — Action
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <record id="action_dotbd_contract_wizard" model="ir.actions.act_window">
+        <field name="name">Bulk Salary Assignment</field>
+        <field name="res_model">dotbd.contract.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

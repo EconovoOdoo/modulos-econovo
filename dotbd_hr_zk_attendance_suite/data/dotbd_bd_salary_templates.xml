@@ -1,0 +1,561 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!--
+        ═══════════════════════════════════════════════════════════════════════
+        PRE-DEFINED BANGLADESH SALARY TEMPLATES
+        noupdate="1" — these are installed once and not overwritten on upgrade.
+        Administrators can freely modify these templates after installation.
+        ═══════════════════════════════════════════════════════════════════════
+
+        1. BD Private Sector — General
+        2. BD Garments (RMG) — 2023 Minimum Wage Structure
+        3. BD Government — National Pay Scale 2015
+        4. BD Banking Sector — Standard Package
+        -->
+
+        <!-- ───────────────────────────────────────────────────────────────
+             1. BD PRIVATE SECTOR — GENERAL
+             Commonly used in small and medium enterprises across Bangladesh.
+             Based on standard market practice: HRA 50%, Medical 10%,
+             Transport 5% of basic. Late fine BDT 5/min.
+        ─────────────────────────────────────────────────────────────────── -->
+        <record id="tmpl_bd_private_general" model="dotbd.salary.template">
+            <field name="name">BD Private Sector — General</field>
+            <field name="template_type">bd_private</field>
+            <field name="working_days_per_month">26</field>
+            <field name="note">
+Standard private sector template for Bangladesh SMEs.
+Basic wage is set per employee. Allowances are calculated as percentages.
+Festival bonus is typically paid separately (2 months basic per year — not included here).
+Unpaid leave is deducted at the per-working-day rate of basic wage.
+            </field>
+        </record>
+
+        <!-- Components -->
+        <record id="comp_bd_private_hra" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_bd_private_general"/>
+            <field name="sequence">10</field>
+            <field name="name">House Rent Allowance</field>
+            <field name="code">HRA</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">50</field>
+        </record>
+        <record id="comp_bd_private_medical" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_bd_private_general"/>
+            <field name="sequence">20</field>
+            <field name="name">Medical Allowance</field>
+            <field name="code">MED</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">10</field>
+        </record>
+        <record id="comp_bd_private_transport" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_bd_private_general"/>
+            <field name="sequence">30</field>
+            <field name="name">Transport Allowance</field>
+            <field name="code">TRN</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">5</field>
+        </record>
+
+        <!-- Fine rules -->
+        <record id="fine_bd_private_late" model="dotbd.fine.rule">
+            <field name="template_id" ref="tmpl_bd_private_general"/>
+            <field name="sequence">10</field>
+            <field name="name">Late Arrival Fine</field>
+            <field name="rule_type">per_minute_late</field>
+            <field name="amount">5</field>
+        </record>
+        <record id="fine_bd_private_absent" model="dotbd.fine.rule">
+            <field name="template_id" ref="tmpl_bd_private_general"/>
+            <field name="sequence">20</field>
+            <field name="name">Absent Deduction</field>
+            <field name="rule_type">per_day_absent</field>
+            <field name="amount">0</field>
+            <field name="active">False</field>
+        </record>
+
+        <!-- Leave rules -->
+        <record id="lvrule_bd_private_unpaid" model="dotbd.salary.leave.rule">
+            <field name="template_id" ref="tmpl_bd_private_general"/>
+            <field name="sequence">99</field>
+            <field name="name">Unpaid Leave Deduction</field>
+            <!-- No leave_type_id: catch-all for any unmatched leave -->
+            <field name="rule_action">deduct</field>
+            <field name="amount_type">per_day_basic</field>
+        </record>
+
+        <!-- ───────────────────────────────────────────────────────────────
+             2. BD GARMENTS (RMG) — 2023 MINIMUM WAGE STRUCTURE
+             Based on Bangladesh Gazette 2023 minimum wage notification.
+             Grade 7 (entry level): Basic BDT 12,500
+             HRA 50%, Medical BDT 750, Attendance Bonus BDT 450,
+             Meal BDT 900. Late fine per minute.
+        ─────────────────────────────────────────────────────────────────── -->
+        <record id="tmpl_bd_garments_rmg" model="dotbd.salary.template">
+            <field name="name">BD Garments (RMG) — 2023 Minimum Wage</field>
+            <field name="template_type">bd_garments</field>
+            <field name="working_days_per_month">26</field>
+            <field name="note">
+Based on Bangladesh Garment Workers (Minimum Wage) Gazette 2023.
+Grade 7 entry-level basic: BDT 12,500.
+Higher grades: adjust the basic wage on the employee salary assignment.
+Attendance Bonus and Meal Allowance are fixed monthly amounts per gazette.
+Festival bonus (2 months/year) paid separately — not included in this template.
+            </field>
+        </record>
+
+        <record id="comp_rmg_hra" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_bd_garments_rmg"/>
+            <field name="sequence">10</field>
+            <field name="name">House Rent Allowance</field>
+            <field name="code">HRA</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">50</field>
+        </record>
+        <record id="comp_rmg_medical" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_bd_garments_rmg"/>
+            <field name="sequence">20</field>
+            <field name="name">Medical Allowance</field>
+            <field name="code">MED</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">fixed</field>
+            <field name="fixed_amount">750</field>
+        </record>
+        <record id="comp_rmg_attendance_bonus" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_bd_garments_rmg"/>
+            <field name="sequence">30</field>
+            <field name="name">Attendance Bonus</field>
+            <field name="code">ATT_BON</field>
+            <field name="component_type">bonus</field>
+            <field name="calculation_type">fixed</field>
+            <field name="fixed_amount">450</field>
+        </record>
+        <record id="comp_rmg_meal" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_bd_garments_rmg"/>
+            <field name="sequence">40</field>
+            <field name="name">Food / Meal Allowance</field>
+            <field name="code">MEAL</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">fixed</field>
+            <field name="fixed_amount">900</field>
+        </record>
+
+        <record id="fine_rmg_late" model="dotbd.fine.rule">
+            <field name="template_id" ref="tmpl_bd_garments_rmg"/>
+            <field name="sequence">10</field>
+            <field name="name">Late Arrival Fine</field>
+            <field name="rule_type">per_minute_late</field>
+            <field name="amount">2</field>
+        </record>
+
+        <record id="lvrule_rmg_unpaid" model="dotbd.salary.leave.rule">
+            <field name="template_id" ref="tmpl_bd_garments_rmg"/>
+            <field name="sequence">99</field>
+            <field name="name">Unpaid / Absent Day Deduction</field>
+            <field name="rule_action">deduct</field>
+            <field name="amount_type">per_day_gross</field>
+        </record>
+
+        <!-- ───────────────────────────────────────────────────────────────
+             3. BD GOVERNMENT — NATIONAL PAY SCALE 2015
+             Based on Bangladesh National Pay Scale 2015 (8th Pay Commission).
+             HRA: 45% of basic, Medical: BDT 1,500 fixed,
+             Transport: BDT 3,000 fixed (mid-grade reference).
+             Adjust fixed allowances per actual pay grade.
+             Government employees have mostly paid leave (Casual, Earned, Medical).
+             Unauthorized/extraordinary leave is deducted.
+        ─────────────────────────────────────────────────────────────────── -->
+        <record id="tmpl_bd_government" model="dotbd.salary.template">
+            <field name="name">BD Government — National Pay Scale 2015</field>
+            <field name="template_type">bd_public</field>
+            <field name="working_days_per_month">25</field>
+            <field name="note">
+Based on Bangladesh National Pay Scale 2015 (8th Pay Commission).
+HRA is 45% of basic wage (for divisional city posting).
+Medical and Transport are fixed per gazette — adjust to match the employee's grade.
+Government employees get Casual Leave (15 days), Earned Leave (30 days), Medical Leave (14 days)
+as paid leave — set these to Ignore in leave rules.
+Unauthorized absence is deducted at per-working-day basic rate.
+            </field>
+        </record>
+
+        <record id="comp_gov_hra" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_bd_government"/>
+            <field name="sequence">10</field>
+            <field name="name">House Rent Allowance</field>
+            <field name="code">HRA</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">45</field>
+        </record>
+        <record id="comp_gov_medical" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_bd_government"/>
+            <field name="sequence">20</field>
+            <field name="name">Medical Allowance</field>
+            <field name="code">MED</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">fixed</field>
+            <field name="fixed_amount">1500</field>
+        </record>
+        <record id="comp_gov_transport" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_bd_government"/>
+            <field name="sequence">30</field>
+            <field name="name">Transport Allowance</field>
+            <field name="code">TRN</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">fixed</field>
+            <field name="fixed_amount">3000</field>
+        </record>
+
+        <!-- Leave rules: unauthorized absence deducted -->
+        <record id="lvrule_gov_unpaid" model="dotbd.salary.leave.rule">
+            <field name="template_id" ref="tmpl_bd_government"/>
+            <field name="sequence">99</field>
+            <field name="name">Unauthorized / Extraordinary Leave Deduction</field>
+            <field name="rule_action">deduct</field>
+            <field name="amount_type">per_day_basic</field>
+        </record>
+
+        <!-- ───────────────────────────────────────────────────────────────
+             4. BD BANKING SECTOR — STANDARD PACKAGE
+             Typical package for private commercial banks in Bangladesh.
+             HRA: 60%, Medical: 15%, Transport: 10% of basic.
+             Provident Fund: 10% of basic deducted monthly.
+             Festival Bonus: 2 months basic/year — provisioned monthly (16.67%).
+        ─────────────────────────────────────────────────────────────────── -->
+        <record id="tmpl_bd_banking" model="dotbd.salary.template">
+            <field name="name">BD Banking Sector — Standard Package</field>
+            <field name="template_type">bd_bank</field>
+            <field name="working_days_per_month">26</field>
+            <field name="note">
+Standard package for private commercial banks in Bangladesh.
+Festival Bonus is provisioned monthly at 16.67% (2 months basic / 12) and
+paid out in Eid months — include or exclude depending on your payroll practice.
+Provident Fund contribution (employee share 10%) is deducted monthly.
+Income tax deduction varies by income slab — add a custom deduction component.
+            </field>
+        </record>
+
+        <record id="comp_bank_hra" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_bd_banking"/>
+            <field name="sequence">10</field>
+            <field name="name">House Rent Allowance</field>
+            <field name="code">HRA</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">60</field>
+        </record>
+        <record id="comp_bank_medical" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_bd_banking"/>
+            <field name="sequence">20</field>
+            <field name="name">Medical Allowance</field>
+            <field name="code">MED</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">15</field>
+        </record>
+        <record id="comp_bank_transport" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_bd_banking"/>
+            <field name="sequence">30</field>
+            <field name="name">Transport Allowance</field>
+            <field name="code">TRN</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">10</field>
+        </record>
+        <record id="comp_bank_festival_bonus" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_bd_banking"/>
+            <field name="sequence">40</field>
+            <field name="name">Festival Bonus Provision</field>
+            <field name="code">FEST_BON</field>
+            <field name="component_type">bonus</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">16.67</field>
+        </record>
+        <!-- Provident Fund deduction (employee share) -->
+        <record id="comp_bank_pf_deduction" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_bd_banking"/>
+            <field name="sequence">50</field>
+            <field name="name">Provident Fund (Employee)</field>
+            <field name="code">PF_EMP</field>
+            <field name="component_type">deduction</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">10</field>
+        </record>
+
+        <record id="lvrule_bank_unpaid" model="dotbd.salary.leave.rule">
+            <field name="template_id" ref="tmpl_bd_banking"/>
+            <field name="sequence">99</field>
+            <field name="name">Unpaid Leave Deduction</field>
+            <field name="rule_action">deduct</field>
+            <field name="amount_type">per_day_gross</field>
+        </record>
+
+        <!-- ───────────────────────────────────────────────────────────────
+             5. BD NGO / DEVELOPMENT SECTOR
+             Common structure in international NGOs and development
+             organisations operating in Bangladesh.
+             Basic ~50%, HRA 40%, Medical fixed BDT 2,000,
+             Transport fixed BDT 2,500. Festival bonus 2x basic/year.
+             Leave policy is generous: annual, casual, sick all paid.
+        ─────────────────────────────────────────────────────────────────── -->
+        <record id="tmpl_bd_ngo" model="dotbd.salary.template">
+            <field name="name">BD NGO / Development Sector</field>
+            <field name="template_type">bd_ngo</field>
+            <field name="working_days_per_month">22</field>
+            <field name="note">
+Typical structure for international NGOs and development sector organisations in Bangladesh.
+5-day working week (22 working days/month).
+Festival bonus paid twice yearly (Eid-ul-Fitr and Eid-ul-Adha) — not provisioned monthly here.
+Provident Fund may be applicable in some organisations — add as custom deduction if needed.
+Annual, Casual and Sick leaves are fully paid — add Ignore rules in Leave Rules tab.
+            </field>
+        </record>
+
+        <record id="comp_ngo_hra" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_bd_ngo"/>
+            <field name="sequence">10</field>
+            <field name="name">House Rent Allowance</field>
+            <field name="code">HRA</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">40</field>
+        </record>
+        <record id="comp_ngo_medical" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_bd_ngo"/>
+            <field name="sequence">20</field>
+            <field name="name">Medical Allowance</field>
+            <field name="code">MED</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">fixed</field>
+            <field name="fixed_amount">2000</field>
+        </record>
+        <record id="comp_ngo_transport" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_bd_ngo"/>
+            <field name="sequence">30</field>
+            <field name="name">Transport Allowance</field>
+            <field name="code">TRN</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">fixed</field>
+            <field name="fixed_amount">2500</field>
+        </record>
+
+        <record id="lvrule_ngo_unpaid" model="dotbd.salary.leave.rule">
+            <field name="template_id" ref="tmpl_bd_ngo"/>
+            <field name="sequence">99</field>
+            <field name="name">Unpaid / Unauthorised Leave Deduction</field>
+            <field name="rule_action">deduct</field>
+            <field name="amount_type">per_day_basic</field>
+        </record>
+
+        <!-- ───────────────────────────────────────────────────────────────
+             6. BD IT / TECHNOLOGY SECTOR
+             Modern IT companies and software firms in Bangladesh.
+             5-day week (22 days), higher basic ratio, no attendance bonus.
+             Performance bonus typically paid annually — not included.
+             Many IT companies pay full month regardless of casual/sick leave.
+        ─────────────────────────────────────────────────────────────────── -->
+        <record id="tmpl_bd_it" model="dotbd.salary.template">
+            <field name="name">BD IT / Technology Sector</field>
+            <field name="template_type">bd_it</field>
+            <field name="working_days_per_month">22</field>
+            <field name="note">
+Typical structure for software firms and technology companies in Bangladesh.
+5-day working week (22 working days/month).
+Higher basic ratio than manufacturing sector.
+Internet allowance is common — add as fixed component if applicable.
+Performance/KPI bonus is usually annual — not included in monthly template.
+Festival bonus paid twice yearly.
+            </field>
+        </record>
+
+        <record id="comp_it_hra" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_bd_it"/>
+            <field name="sequence">10</field>
+            <field name="name">House Rent Allowance</field>
+            <field name="code">HRA</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">50</field>
+        </record>
+        <record id="comp_it_medical" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_bd_it"/>
+            <field name="sequence">20</field>
+            <field name="name">Medical Allowance</field>
+            <field name="code">MED</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">10</field>
+        </record>
+        <record id="comp_it_transport" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_bd_it"/>
+            <field name="sequence">30</field>
+            <field name="name">Transport Allowance</field>
+            <field name="code">TRN</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">8</field>
+        </record>
+        <record id="comp_it_internet" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_bd_it"/>
+            <field name="sequence">40</field>
+            <field name="name">Internet / Communication Allowance</field>
+            <field name="code">NET</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">fixed</field>
+            <field name="fixed_amount">1000</field>
+        </record>
+
+        <record id="lvrule_it_unpaid" model="dotbd.salary.leave.rule">
+            <field name="template_id" ref="tmpl_bd_it"/>
+            <field name="sequence">99</field>
+            <field name="name">Unpaid Leave Deduction</field>
+            <field name="rule_action">deduct</field>
+            <field name="amount_type">per_day_basic</field>
+        </record>
+
+        <!-- ───────────────────────────────────────────────────────────────
+             7. BD HEALTHCARE / HOSPITAL SECTOR
+             Private hospitals, clinics and diagnostic centres.
+             Includes night duty / shift allowance as a percentage.
+             Medical facilities may have 6-day week in some departments.
+        ─────────────────────────────────────────────────────────────────── -->
+        <record id="tmpl_bd_healthcare" model="dotbd.salary.template">
+            <field name="name">BD Healthcare / Hospital Sector</field>
+            <field name="template_type">bd_healthcare</field>
+            <field name="working_days_per_month">26</field>
+            <field name="note">
+For private hospitals, clinics and diagnostic centres in Bangladesh.
+Shift / Night Duty Allowance is included as 15% of basic — adjust per department policy.
+Doctors and senior staff typically receive higher basic ratios.
+Festival bonus: 2 months per year paid separately.
+Unpaid leave deducted at per-day gross rate.
+            </field>
+        </record>
+
+        <record id="comp_health_hra" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_bd_healthcare"/>
+            <field name="sequence">10</field>
+            <field name="name">House Rent Allowance</field>
+            <field name="code">HRA</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">50</field>
+        </record>
+        <record id="comp_health_medical" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_bd_healthcare"/>
+            <field name="sequence">20</field>
+            <field name="name">Medical Allowance</field>
+            <field name="code">MED</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">10</field>
+        </record>
+        <record id="comp_health_transport" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_bd_healthcare"/>
+            <field name="sequence">30</field>
+            <field name="name">Transport Allowance</field>
+            <field name="code">TRN</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">8</field>
+        </record>
+        <record id="comp_health_shift" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_bd_healthcare"/>
+            <field name="sequence">40</field>
+            <field name="name">Shift / Night Duty Allowance</field>
+            <field name="code">SHIFT</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">15</field>
+        </record>
+
+        <record id="fine_health_late" model="dotbd.fine.rule">
+            <field name="template_id" ref="tmpl_bd_healthcare"/>
+            <field name="sequence">10</field>
+            <field name="name">Late Arrival Fine</field>
+            <field name="rule_type">per_minute_late</field>
+            <field name="amount">5</field>
+        </record>
+
+        <record id="lvrule_health_unpaid" model="dotbd.salary.leave.rule">
+            <field name="template_id" ref="tmpl_bd_healthcare"/>
+            <field name="sequence">99</field>
+            <field name="name">Unpaid Leave Deduction</field>
+            <field name="rule_action">deduct</field>
+            <field name="amount_type">per_day_gross</field>
+        </record>
+
+        <!-- ───────────────────────────────────────────────────────────────
+             8. BD EDUCATION / SCHOOL SECTOR
+             Private schools, colleges and universities in Bangladesh.
+             Academic staff typically receive 2 Eid bonuses + 1 Puja bonus.
+             5-day or 6-day week depending on institution.
+             Many teachers receive phone/internet allowance.
+        ─────────────────────────────────────────────────────────────────── -->
+        <record id="tmpl_bd_education" model="dotbd.salary.template">
+            <field name="name">BD Education / School Sector</field>
+            <field name="template_type">bd_education</field>
+            <field name="working_days_per_month">22</field>
+            <field name="note">
+For private schools, colleges and universities in Bangladesh.
+Working days set to 22 (5-day academic week). Adjust for 6-day institutions.
+Research / Academic Allowance included at 10% of basic for university staff.
+Pension / Provident Fund is applicable in many institutions — add as deduction if needed.
+Summer and winter vacations are typically paid — set leave types to Ignore in Leave Rules.
+            </field>
+        </record>
+
+        <record id="comp_edu_hra" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_bd_education"/>
+            <field name="sequence">10</field>
+            <field name="name">House Rent Allowance</field>
+            <field name="code">HRA</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">45</field>
+        </record>
+        <record id="comp_edu_medical" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_bd_education"/>
+            <field name="sequence">20</field>
+            <field name="name">Medical Allowance</field>
+            <field name="code">MED</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">fixed</field>
+            <field name="fixed_amount">1500</field>
+        </record>
+        <record id="comp_edu_transport" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_bd_education"/>
+            <field name="sequence">30</field>
+            <field name="name">Transport Allowance</field>
+            <field name="code">TRN</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">fixed</field>
+            <field name="fixed_amount">2000</field>
+        </record>
+        <record id="comp_edu_research" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_bd_education"/>
+            <field name="sequence">40</field>
+            <field name="name">Research / Academic Allowance</field>
+            <field name="code">RES</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">10</field>
+        </record>
+
+        <record id="lvrule_edu_unpaid" model="dotbd.salary.leave.rule">
+            <field name="template_id" ref="tmpl_bd_education"/>
+            <field name="sequence">99</field>
+            <field name="name">Unpaid Leave Deduction</field>
+            <field name="rule_action">deduct</field>
+            <field name="amount_type">per_day_basic</field>
+        </record>
+
+    </data>
+</odoo>

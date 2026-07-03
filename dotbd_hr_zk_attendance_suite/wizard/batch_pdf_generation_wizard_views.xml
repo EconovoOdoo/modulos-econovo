@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- ==================== BATCH PDF GENERATION WIZARD ==================== -->
+    <record id="batch_pdf_generation_wizard_view_form" model="ir.ui.view">
+        <field name="name">batch.pdf.generation.wizard.view.form</field>
+        <field name="model">batch.pdf.generation.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Batch PDF Generation">
+                <header>
+                    <button name="action_start_generation"
+                            string="Start Batch Generation"
+                            type="object"
+                            class="oe_highlight"
+                            icon="fa-cogs"
+                            invisible="state != 'draft'"/>
+                    <button name="action_close"
+                            string="Close"
+                            type="object"
+                            class="btn-secondary"
+                            icon="fa-times"
+                            invisible="state == 'draft'"/>
+                </header>
+                <sheet>
+                    <!-- Configuration (shown in draft state) -->
+                    <div class="alert alert-info" role="alert" invisible="state != 'draft'">
+                        <strong>📄 Batch PDF Generation</strong><br/>
+                        Generate attendance sheets for 150+ employees in smaller batches to avoid memory issues.<br/>
+                        <small>Each batch creates a separate PDF file, all bundled in a ZIP download.</small>
+                    </div>
+
+                    <group invisible="state != 'draft'">
+                        <group string="Report Settings">
+                            <field name="month"/>
+                            <field name="year"/>
+                            <field name="sheet_type" widget="radio"/>
+                        </group>
+                        <group string="Batch Settings">
+                            <field name="batch_size" 
+                                   help="Recommended: 20-30 employees per batch for 150+ employees"/>
+                            <field name="employee_ids" widget="many2many_tags" 
+                                   placeholder="Leave empty for all employees"/>
+                        </group>
+                    </group>
+
+                    <!-- Progress (shown during generation) -->
+                    <group invisible="state not in ('generating', 'done', 'error')">
+                        <group>
+                            <field name="state" widget="badge"
+                                   decoration-info="state == 'generating'"
+                                   decoration-success="state == 'done'"
+                                   decoration-danger="state == 'error'"/>
+                            <field name="progress_percent" widget="progressbar"/>
+                            <field name="current_batch"/>
+                            <field name="total_batches"/>
+                            <field name="file_count" invisible="state == 'draft'"/>
+                        </group>
+                    </group>
+
+                    <!-- Log Viewer -->
+                    <group string="Generation Log" invisible="state == 'draft'">
+                        <field name="log_messages" nolabel="1" colspan="2"
+                               readonly="1"
+                               style="font-family: 'Courier New', monospace; font-size: 12px; background-color: #1e1e1e; color: #d4d4d4; padding: 15px; height: 300px; overflow-y: auto;"/>
+                    </group>
+
+                    <!-- Download Link (shown when done) -->
+                    <group invisible="state != 'done'">
+                        <div class="alert alert-success" role="alert">
+                            <strong>✅ Generation Complete!</strong><br/>
+                            <field name="zip_filename" class="oe_inline" readonly="1"/>
+                            (<field name="file_count" class="oe_inline" readonly="1"/> PDF files)<br/>
+                            <br/>
+                            <field name="zip_file" filename="zip_filename" widget="binary" string="Download ZIP"/>
+                        </div>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ==================== WIZARD ACTION ==================== -->
+    <record id="action_batch_pdf_generation_wizard" model="ir.actions.act_window">
+        <field name="name">Batch PDF Generation</field>
+        <field name="res_model">batch.pdf.generation.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

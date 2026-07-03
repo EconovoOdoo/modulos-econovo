@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_bulk_template_wizard_form" model="ir.ui.view">
+        <field name="name">bulk.template.wizard.form</field>
+        <field name="model">bulk.template.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Upload Fingerprints to Multiple Devices">
+                <group string="Select File">
+                    <field name="file_name" invisible="1"/>
+                    <field name="file_data" filename="file_name" widget="binary"
+                           string="Fingerprint File (.json)" required="1"/>
+                </group>
+                <group string="Select Target Devices">
+                    <field name="device_ids" widget="many2many_tags"
+                           string="Upload To"
+                           options="{'no_create': True}"/>
+                    <div class="text-muted" style="font-size:12px;">
+                        <i class="fa fa-clock-o" title="Clock o" aria-label="Clock o"/>
+                        30+ users run in background — check device Chatter for progress.
+                    </div>
+                </group>
+                <footer>
+                    <button name="action_process_upload"
+                            string="Upload to Selected Devices"
+                            type="object"
+                            class="btn-primary"
+                            icon="fa-upload"
+                            confirm="Push fingerprints to all selected devices?"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

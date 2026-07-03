@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- ═══════════════════════════════════════════════════════════════
+             Pre-populated International Festive Bonus records.
+             All are inactive by default — admin activates the ones they need.
+        ═══════════════════════════════════════════════════════════════ -->
+
+        <!-- UNIVERSAL / GLOBAL -->
+        <record id="festive_bonus_new_year_universal" model="dotbd.festive.bonus">
+            <field name="name">New Year Bonus</field>
+            <field name="religion">universal</field>
+            <field name="bonus_type">percentage_wages</field>
+            <field name="percentage">50</field>
+            <field name="active" eval="False"/>
+        </record>
+        <record id="festive_bonus_annual_perf_universal" model="dotbd.festive.bonus">
+            <field name="name">Annual Performance Bonus</field>
+            <field name="religion">universal</field>
+            <field name="bonus_type">percentage_wages</field>
+            <field name="percentage">100</field>
+            <field name="active" eval="False"/>
+        </record>
+        <record id="festive_bonus_mid_year_universal" model="dotbd.festive.bonus">
+            <field name="name">Mid-Year Bonus</field>
+            <field name="religion">universal</field>
+            <field name="bonus_type">percentage_wages</field>
+            <field name="percentage">50</field>
+            <field name="active" eval="False"/>
+        </record>
+        <record id="festive_bonus_christmas_universal" model="dotbd.festive.bonus">
+            <field name="name">Christmas Bonus</field>
+            <field name="religion">christian</field>
+            <field name="bonus_type">percentage_wages</field>
+            <field name="percentage">100</field>
+            <field name="active" eval="False"/>
+        </record>
+        <record id="festive_bonus_eid_ul_fitr_universal" model="dotbd.festive.bonus">
+            <field name="name">Eid ul-Fitr Bonus</field>
+            <field name="religion">islam</field>
+            <field name="bonus_type">percentage_wages</field>
+            <field name="percentage">100</field>
+            <field name="active" eval="False"/>
+        </record>
+        <record id="festive_bonus_eid_ul_adha_universal" model="dotbd.festive.bonus">
+            <field name="name">Eid ul-Adha Bonus</field>
+            <field name="religion">islam</field>
+            <field name="bonus_type">percentage_wages</field>
+            <field name="percentage">100</field>
+            <field name="active" eval="False"/>
+        </record>
+        <record id="festive_bonus_diwali_universal" model="dotbd.festive.bonus">
+            <field name="name">Diwali Bonus</field>
+            <field name="religion">hindu</field>
+            <field name="bonus_type">percentage_wages</field>
+            <field name="percentage">100</field>
+            <field name="active" eval="False"/>
+        </record>
+
+        <!-- BANGLADESH (Mandatory) -->
+        <record id="festive_bonus_eid_ul_fitr_bd" model="dotbd.festive.bonus">
+            <field name="name">Eid ul-Fitr Bonus</field>
+            <field name="country_id" ref="base.bd"/>
+            <field name="religion">islam</field>
+            <field name="bonus_type">percentage_wages</field>
+            <field name="percentage">100</field>
+            <field name="active" eval="False"/>
+        </record>
+        <record id="festive_bonus_eid_ul_adha_bd" model="dotbd.festive.bonus">
+            <field name="name">Eid ul-Adha Bonus</field>
+            <field name="country_id" ref="base.bd"/>
+            <field name="religion">islam</field>
+            <field name="bonus_type">percentage_wages</field>
+            <field name="percentage">100</field>
+            <field name="active" eval="False"/>
+        </record>
+        <record id="festive_bonus_durga_puja_bd" model="dotbd.festive.bonus">
+            <field name="name">Durga Puja Bonus</field>
+            <field name="country_id" ref="base.bd"/>
+            <field name="religion">hindu</field>
+            <field name="bonus_type">percentage_wages</field>
+            <field name="percentage">100</field>
+            <field name="active" eval="False"/>
+        </record>
+        <record id="festive_bonus_christmas_bd" model="dotbd.festive.bonus">
+            <field name="name">Christmas Bonus</field>
+            <field name="country_id" ref="base.bd"/>
+            <field name="religion">christian</field>
+            <field name="bonus_type">percentage_wages</field>
+            <field name="percentage">100</field>
+            <field name="active" eval="False"/>
+        </record>
+        <record id="festive_bonus_buddha_purnima_bd" model="dotbd.festive.bonus">
+            <field name="name">Buddha Purnima Bonus</field>
+            <field name="country_id" ref="base.bd"/>
+            <field name="religion">buddhist</field>
+            <field name="bonus_type">percentage_wages</field>
+            <field name="percentage">100</field>
+            <field name="active" eval="False"/>
+        </record>
+        <record id="festive_bonus_pohela_boishakh_bd" model="dotbd.festive.bonus">
+            <field name="name">Pohela Boishakh Bonus</field>
+            <field name="country_id" ref="base.bd"/>
+            <field name="religion">universal</field>
+            <field name="bonus_type">percentage_wages</field>
+            <field name="percentage">50</field>
+            <field name="active" eval="False"/>
+        </record>
+        <record id="festive_bonus_shab_e_barat_bd" model="dotbd.festive.bonus">
+            <field name="name">Shab-e-Barat Bonus</field>
+            <field name="country_id" ref="base.bd"/>
+            <field name="religion">islam</field>
+            <field name="bonus_type">percentage_wages</field>
+            <field name="percentage">50</field>
+            <field name="active" eval="False"/>
+        </record>
+
+        <!-- INDIA -->
+        <record id="festive_bonus_diwali_in" model="dotbd.festive.bonus">
+            <field name="name">Diwali Bonus</field>
+            <field name="country_id" ref="base.in"/>
+            <field name="religion">hindu</field>
+            <field name="bonus_type">percentage_wages</field>
+            <field name="percentage">100</field>
+            <field name="active" eval="False"/>
+        </record>
+        <record id="festive_bonus_holi_in" model="dotbd.festive.bonus">
+            <field name="name">Holi Bonus</field>
+            <field name="country_id" ref="base.in"/>
+            <field name="religion">hindu</field>
+            <field name="bonus_type">percentage_wages</field>
+            <field name="percentage">50</field>
+            <field name="active" eval="False"/>
+        </record>
+        <record id="festive_bonus_vaisakhi_in" model="dotbd.festive.bonus">
+            <field name="name">Vaisakhi Bonus</field>
+            <field name="country_id" ref="base.in"/>
+            <field name="religion">sikh</field>
+            <field name="bonus_type">percentage_wages</field>
+            <field name="percentage">50</field>
+            <field name="active" eval="False"/>
+        </record>
+
+        <!-- USA / CANADA -->
+        <record id="festive_bonus_thanksgiving_us" model="dotbd.festive.bonus">
+            <field name="name">Thanksgiving Bonus</field>
+            <field name="country_id" ref="base.us"/>
+            <field name="religion">cultural</field>
+            <field name="bonus_type">percentage_wages</field>
+            <field name="percentage">50</field>
+            <field name="active" eval="False"/>
+        </record>
+        <record id="festive_bonus_thanksgiving_ca" model="dotbd.festive.bonus">
+            <field name="name">Thanksgiving Bonus</field>
+            <field name="country_id" ref="base.ca"/>
+            <field name="religion">cultural</field>
+            <field name="bonus_type">percentage_wages</field>
+            <field name="percentage">50</field>
+            <field name="active" eval="False"/>
+        </record>
+
+        <!-- UK / EUROPE -->
+        <record id="festive_bonus_easter_uk" model="dotbd.festive.bonus">
+            <field name="name">Easter Bonus</field>
+            <field name="country_id" ref="base.uk"/>
+            <field name="religion">christian</field>
+            <field name="bonus_type">percentage_wages</field>
+            <field name="percentage">50</field>
+            <field name="active" eval="False"/>
+        </record>
+        <record id="festive_bonus_oktoberfest_de" model="dotbd.festive.bonus">
+            <field name="name">Oktoberfest Bonus</field>
+            <field name="country_id" ref="base.de"/>
+            <field name="religion">cultural</field>
+            <field name="bonus_type">percentage_wages</field>
+            <field name="percentage">50</field>
+            <field name="active" eval="False"/>
+        </record>
+
+        <!-- CHINA & EAST ASIA -->
+        <record id="festive_bonus_lunar_new_year_cn" model="dotbd.festive.bonus">
+            <field name="name">Lunar New Year Bonus</field>
+            <field name="country_id" ref="base.cn"/>
+            <field name="religion">cultural</field>
+            <field name="bonus_type">percentage_wages</field>
+            <field name="percentage">100</field>
+            <field name="active" eval="False"/>
+        </record>
+        <record id="festive_bonus_mid_autumn_cn" model="dotbd.festive.bonus">
+            <field name="name">Mid-Autumn Bonus</field>
+            <field name="country_id" ref="base.cn"/>
+            <field name="religion">cultural</field>
+            <field name="bonus_type">percentage_wages</field>
+            <field name="percentage">50</field>
+            <field name="active" eval="False"/>
+        </record>
+        <record id="festive_bonus_golden_week_jp" model="dotbd.festive.bonus">
+            <field name="name">Golden Week (Shogatsu) Bonus</field>
+            <field name="country_id" ref="base.jp"/>
+            <field name="religion">shinto</field>
+            <field name="bonus_type">percentage_wages</field>
+            <field name="percentage">100</field>
+            <field name="active" eval="False"/>
+        </record>
+        <record id="festive_bonus_chuseok_kr" model="dotbd.festive.bonus">
+            <field name="name">Chuseok Bonus</field>
+            <field name="country_id" ref="base.kr"/>
+            <field name="religion">cultural</field>
+            <field name="bonus_type">percentage_wages</field>
+            <field name="percentage">100</field>
+            <field name="active" eval="False"/>
+        </record>
+
+        <!-- SOUTHEAST ASIA -->
+        <record id="festive_bonus_tet_vn" model="dotbd.festive.bonus">
+            <field name="name">Tet Bonus</field>
+            <field name="country_id" ref="base.vn"/>
+            <field name="religion">cultural</field>
+            <field name="bonus_type">percentage_wages</field>
+            <field name="percentage">100</field>
+            <field name="active" eval="False"/>
+        </record>
+        <record id="festive_bonus_songkran_th" model="dotbd.festive.bonus">
+            <field name="name">Songkran Bonus</field>
+            <field name="country_id" ref="base.th"/>
+            <field name="religion">buddhist</field>
+            <field name="bonus_type">percentage_wages</field>
+            <field name="percentage">100</field>
+            <field name="active" eval="False"/>
+        </record>
+        <record id="festive_bonus_lebaran_id" model="dotbd.festive.bonus">
+            <field name="name">Lebaran (THR) Bonus</field>
+            <field name="country_id" ref="base.id"/>
+            <field name="religion">islam</field>
+            <field name="bonus_type">percentage_wages</field>
+            <field name="percentage">100</field>
+            <field name="active" eval="False"/>
+        </record>
+
+        <!-- MIDDLE EAST -->
+        <record id="festive_bonus_eid_ul_fitr_sa" model="dotbd.festive.bonus">
+            <field name="name">Eid ul-Fitr Bonus</field>
+            <field name="country_id" ref="base.sa"/>
+            <field name="religion">islam</field>
+            <field name="bonus_type">percentage_wages</field>
+            <field name="percentage">100</field>
+            <field name="active" eval="False"/>
+        </record>
+        <record id="festive_bonus_eid_ul_fitr_ae" model="dotbd.festive.bonus">
+            <field name="name">Eid ul-Fitr Bonus</field>
+            <field name="country_id" ref="base.ae"/>
+            <field name="religion">islam</field>
+            <field name="bonus_type">percentage_wages</field>
+            <field name="percentage">100</field>
+            <field name="active" eval="False"/>
+        </record>
+
+        <!-- LATIN AMERICA -->
+        <record id="festive_bonus_carnival_br" model="dotbd.festive.bonus">
+            <field name="name">Carnival Bonus</field>
+            <field name="country_id" ref="base.br"/>
+            <field name="religion">cultural</field>
+            <field name="bonus_type">percentage_wages</field>
+            <field name="percentage">50</field>
+            <field name="active" eval="False"/>
+        </record>
+        <record id="festive_bonus_aguinaldo_mx" model="dotbd.festive.bonus">
+            <field name="name">Aguinaldo (Christmas) Bonus</field>
+            <field name="country_id" ref="base.mx"/>
+            <field name="religion">christian</field>
+            <field name="bonus_type">percentage_wages</field>
+            <field name="percentage">100</field>
+            <field name="active" eval="False"/>
+        </record>
+
+        <!-- AFRICA -->
+        <record id="festive_bonus_christmas_ng" model="dotbd.festive.bonus">
+            <field name="name">Christmas Bonus</field>
+            <field name="country_id" ref="base.ng"/>
+            <field name="religion">christian</field>
+            <field name="bonus_type">percentage_wages</field>
+            <field name="percentage">100</field>
+            <field name="active" eval="False"/>
+        </record>
+        <record id="festive_bonus_heritage_za" model="dotbd.festive.bonus">
+            <field name="name">Heritage Day Bonus</field>
+            <field name="country_id" ref="base.za"/>
+            <field name="religion">cultural</field>
+            <field name="bonus_type">percentage_wages</field>
+            <field name="percentage">50</field>
+            <field name="active" eval="False"/>
+        </record>
+
+        <!-- JUDAISM -->
+        <record id="festive_bonus_passover_il" model="dotbd.festive.bonus">
+            <field name="name">Passover Bonus</field>
+            <field name="country_id" ref="base.il"/>
+            <field name="religion">jewish</field>
+            <field name="bonus_type">percentage_wages</field>
+            <field name="percentage">100</field>
+            <field name="active" eval="False"/>
+        </record>
+        <record id="festive_bonus_rosh_hashanah_il" model="dotbd.festive.bonus">
+            <field name="name">Rosh Hashanah Bonus</field>
+            <field name="country_id" ref="base.il"/>
+            <field name="religion">jewish</field>
+            <field name="bonus_type">percentage_wages</field>
+            <field name="percentage">100</field>
+            <field name="active" eval="False"/>
+        </record>
+
+    </data>
+</odoo>

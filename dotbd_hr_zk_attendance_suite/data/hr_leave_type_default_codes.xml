@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!--
+            Default Leave Type Short Codes
+            Initialize short codes for existing leave types based on common naming patterns
+            This function searches for leave types and assigns appropriate short codes
+            Only updates leave types that don't already have a short code
+        -->
+
+        <!-- Initialize default leave codes for existing leave types -->
+        <function model="hr.leave.type" name="_set_default_leave_codes"/>
+
+    </data>
+</odoo>

@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         SALARY CERTIFICATE — LIST VIEW
+    ═══════════════════════════════════════════════════════════════════ -->
+    <record id="dotbd_salary_certificate_view_list" model="ir.ui.view">
+        <field name="name">dotbd.salary.certificate.view.list</field>
+        <field name="model">dotbd.salary.certificate</field>
+        <field name="arch" type="xml">
+            <tree string="Salary Certificates"
+                  decoration-success="state == 'issued'"
+                  decoration-muted="state == 'draft'">
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="department" optional="show"/>
+                <field name="date"/>
+                <field name="purpose" widget="badge"
+                       decoration-info="purpose == 'bank_loan'"
+                       decoration-warning="purpose == 'visa'"
+                       decoration-success="purpose == 'personal'"/>
+                <field name="total_amount" string="Total Salary"/>
+                <field name="net_amount" string="Net Pay"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'issued'"
+                       decoration-muted="state == 'draft'"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         SALARY CERTIFICATE — FORM VIEW
+    ═══════════════════════════════════════════════════════════════════ -->
+    <record id="dotbd_salary_certificate_view_form" model="ir.ui.view">
+        <field name="name">dotbd.salary.certificate.view.form</field>
+        <field name="model">dotbd.salary.certificate</field>
+        <field name="arch" type="xml">
+            <form string="Salary Certificate">
+                <header>
+                    <button name="action_populate_from_system"
+                            string="Populate from System"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state != 'draft' or mode != 'auto'"
+                            help="Pulls salary components from the active salary assignment template."/>
+                    <button name="action_issue"
+                            string="Issue Certificate"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'draft'"
+                            confirm="Issue this certificate? It will be marked as Issued."/>
+                    <button name="action_print_certificate"
+                            string="Print PDF"
+                            type="object"
+                            icon="fa-print"/>
+                    <button name="action_reset_draft"
+                            string="Reset to Draft"
+                            type="object"
+                            invisible="state != 'issued'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,issued"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group string="Certificate Info">
+                            <field name="date"/>
+                            <field name="mode"
+                                   widget="radio"
+                                   options="{'horizontal': True}"/>
+                            <field name="purpose"/>
+                            <field name="purpose_other"
+                                   invisible="purpose != 'other'"
+                                   placeholder="Specify purpose..."/>
+                            <field name="company_id"
+                                   options="{'no_create': True}"
+                                   groups="base.group_multi_company"/>
+                            <field name="currency_id"
+                                   options="{'no_create': True}"/>
+                        </group>
+                        <group string="Employee">
+                            <field name="employee_id"
+                                   options="{'no_create': True}"/>
+                            <field name="employee_name"
+                                   placeholder="Full name as on certificate"/>
+                            <field name="employee_code"
+                                   placeholder="Employee ID / Badge No."/>
+                            <field name="designation"
+                                   placeholder="e.g. Software Engineer"/>
+                            <field name="department"
+                                   placeholder="e.g. IT Department"/>
+                            <field name="join_date"
+                                   string="Date of Joining"/>
+                            <field name="employee_type_label"
+                                   placeholder="e.g. Permanent"/>
+                        </group>
+                    </group>
+
+                    <!-- Salary Components -->
+                    <notebook>
+                        <page string="Salary Components" name="components">
+                            <field name="line_ids" widget="one2many">
+                                <tree editable="bottom" string="Components">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name" placeholder="e.g. House Rent Allowance"/>
+                                    <field name="amount" string="Amount"/>
+                                    <field name="currency_id" column_invisible="True"/>
+                                </tree>
+                            </field>
+                            <group>
+                                <group>
+                                    <field name="total_amount"
+                                           string="Total Salary"
+                                           widget="monetary"
+                                           readonly="1"/>
+                                    <field name="amount_in_words" readonly="1"/>
+                                </group>
+                                <group>
+                                    <field name="net_amount"
+                                           string="Net Pay Salary"
+                                           widget="monetary"
+                                           help="Defaults to total. Edit if net differs (e.g. deductions applied)."/>
+                                    <button name="action_sync_net"
+                                            string="Reset Net = Total"
+                                            type="object"
+                                            class="btn-link"
+                                            icon="fa-refresh"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page string="Signatory &amp; Notes" name="signatory">
+                            <group>
+                                <group string="Authorized Signatory">
+                                    <field name="signatory_name"
+                                           placeholder="e.g. Md. Mizanur Rahman"/>
+                                    <field name="signatory_designation"
+                                           placeholder="e.g. Manager (Accounts &amp; Finance)"/>
+                                </group>
+                            </group>
+                            <group string="Internal Notes">
+                                <field name="note"
+                                       nolabel="1"
+                                       placeholder="Internal notes — not printed on the certificate."/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         SALARY CERTIFICATE — SEARCH VIEW
+    ═══════════════════════════════════════════════════════════════════ -->
+    <record id="dotbd_salary_certificate_view_search" model="ir.ui.view">
+        <field name="name">dotbd.salary.certificate.view.search</field>
+        <field name="model">dotbd.salary.certificate</field>
+        <field name="arch" type="xml">
+            <search string="Search Salary Certificates">
+                <field name="employee_id"/>
+                <field name="name"/>
+                <filter string="Draft"
+                        name="draft"
+                        domain="[('state', '=', 'draft')]"/>
+                <filter string="Issued"
+                        name="issued"
+                        domain="[('state', '=', 'issued')]"/>
+                <separator/>
+                <filter string="Bank Loan"
+                        name="bank_loan"
+                        domain="[('purpose', '=', 'bank_loan')]"/>
+                <filter string="Visa"
+                        name="visa"
+                        domain="[('purpose', '=', 'visa')]"/>
+                <group>
+                    <filter string="Employee"
+                            name="group_employee"
+                            context="{'group_by': 'employee_id'}"/>
+                    <filter string="Purpose"
+                            name="group_purpose"
+                            context="{'group_by': 'purpose'}"/>
+                    <filter string="Status"
+                            name="group_state"
+                            context="{'group_by': 'state'}"/>
+                    <filter string="Issue Date"
+                            name="group_date"
+                            context="{'group_by': 'date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         SALARY CERTIFICATE — ACTION
+    ═══════════════════════════════════════════════════════════════════ -->
+    <record id="action_dotbd_salary_certificate" model="ir.actions.act_window">
+        <field name="name">Salary Certificates</field>
+        <field name="res_model">dotbd.salary.certificate</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_issued': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Issue your first salary certificate
+            </p>
+            <p>
+                Use <b>Auto</b> mode to populate salary components from the
+                employee's active salary template, or <b>Manual</b> mode to
+                enter everything yourself. Then print the formal PDF.
+            </p>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         EMPLOYEE FORM — SMART BUTTON (inherit hr.employee)
+    ═══════════════════════════════════════════════════════════════════ -->
+    <record id="hr_employee_view_form_inherit_salary_cert" model="ir.ui.view">
+        <field name="name">hr.employee.view.form.inherit.dotbd.salary.cert</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                <button class="oe_stat_button"
+                        name="%(action_dotbd_salary_certificate)d"
+                        type="action"
+                        icon="fa-certificate"
+                        context="{'default_employee_id': id, 'search_default_employee_id': id}">
+                    <span class="o_stat_text">Certificates</span>
+                </button>
+            </div>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         SALARY CERTIFICATE — REPORT ACTION
+    ═══════════════════════════════════════════════════════════════════ -->
+    <record id="action_report_salary_certificate" model="ir.actions.report">
+        <field name="name">Salary Certificate</field>
+        <field name="model">dotbd.salary.certificate</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">dotbd_hr_zk_attendance_suite.dotbd_salary_certificate_pdf_template</field>
+        <field name="report_file">dotbd_hr_zk_attendance_suite.dotbd_salary_certificate_pdf_template</field>
+        <field name="print_report_name">'Salary Certificate - ' + (object.employee_name or object.employee_id.name or 'Employee') + ' (' + (object.name or '') + ')'</field>
+        <field name="binding_model_id" ref="model_dotbd_salary_certificate"/>
+        <field name="binding_type">report</field>
+    </record>
+
+</odoo>

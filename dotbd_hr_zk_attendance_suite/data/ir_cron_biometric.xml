@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- ==================== EXISTING CRON JOB ==================== -->
+    <record id="ir_cron_biometric_download" model="ir.cron">
+        <field name="name">Biometric: Download Attendance</field>
+        <field name="model_id" ref="model_biometric_device_details"/>
+        <field name="state">code</field>
+        <field name="code">model.cron_download()</field>
+        <field name="interval_number">20</field>
+        <field name="interval_type">minutes</field>
+        <field name="active" eval="True"/>
+        <field name="priority">5</field>
+    </record>
+
+    <!-- ==================== AUTO-CLOSE STALE OPEN ATTENDANCE ==================== -->
+    <!-- Shift-aware sweeper: closes hr.attendance records whose shift has long
+         ended but employee never punched out. Respects each employee's
+         work schedule (night shifts, flexible hours, etc.). -->
+    <record id="ir_cron_auto_close_stale_attendance" model="ir.cron">
+        <field name="name">Biometric: Auto-Close Stale Open Attendance</field>
+        <field name="model_id" ref="model_biometric_device_details"/>
+        <field name="state">code</field>
+        <field name="code">model.cron_auto_close_stale_attendance()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">hours</field>
+        <field name="active" eval="True"/>
+        <field name="priority">8</field>
+    </record>
+
+    <!-- ==================== NEW CRON JOB - DEVICE HEALTH MONITORING ==================== -->
+    <record id="ir_cron_device_health_check" model="ir.cron">
+        <field name="name">Biometric: Device Health Check</field>
+        <field name="model_id" ref="model_biometric_device_details"/>
+        <field name="state">code</field>
+        <field name="code">model.cron_refresh_device_info()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="active" eval="True"/>
+        <field name="priority">10</field>
+        <field name="user_id" ref="base.user_root"/>
+    </record>
+
+    <!-- ============ ADMS STALE-COMMAND SWEEPER ============ -->
+    <!-- Re-queues commands stuck in 'sent' (device received them but never
+         acknowledged via /iclock/devicecmd, e.g. power/network loss) so they
+         get re-dispatched on the next getrequest poll. -->
+    <record id="ir_cron_adms_requeue_stale_commands" model="ir.cron">
+        <field name="name">Biometric: Re-queue Stale ADMS Commands</field>
+        <field name="model_id" ref="model_adms_device_command"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_requeue_stale_commands()</field>
+        <field name="interval_number">10</field>
+        <field name="interval_type">minutes</field>
+        <field name="active" eval="True"/>
+        <field name="priority">15</field>
+        <field name="user_id" ref="base.user_root"/>
+    </record>
+
+</odoo>

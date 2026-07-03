@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- ── Sequence: Employee Salary Assignment ───────────────────── -->
+        <record id="seq_dotbd_employee_salary" model="ir.sequence">
+            <field name="name">Employee Salary Assignment</field>
+            <field name="code">dotbd.employee.salary</field>
+            <field name="prefix">SAL</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!-- ── Sequence: Payslip ──────────────────────────────────────── -->
+        <record id="seq_dotbd_payslip" model="ir.sequence">
+            <field name="name">Payslip</field>
+            <field name="code">dotbd.payslip</field>
+            <field name="prefix">PAY</field>
+            <field name="padding">6</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!-- ── Cron: Auto Monthly Payslip Generation ─────────────────── -->
+        <!-- Disabled by default; enabled via Settings → Payroll tab. -->
+        <record id="ir_cron_dotbd_auto_payslip" model="ir.cron">
+            <field name="name">Auto Generate Monthly Payslips</field>
+            <field name="model_id" ref="model_dotbd_payslip"/>
+            <field name="code">model._cron_generate_monthly_payslips()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">months</field>
+            <field name="active">False</field>
+            <!-- Runs on the 1st of each month at 06:00 UTC (disabled by default) -->
+            <field name="nextcall">2026-04-01 06:00:00</field>
+        </record>
+
+    </data>
+</odoo>

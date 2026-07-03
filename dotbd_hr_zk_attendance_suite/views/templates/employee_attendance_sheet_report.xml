@@ -1,0 +1,366 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- PDF Report Template for Employee Attendance Sheet -->
+    <template id="employee_attendance_sheet_report_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="wizard">
+                <t t-set="report_data" t-value="wizard.get_pdf_report_data()"/>
+
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <!-- Report Header -->
+                        <div class="text-center">
+                            <h2>Employee Attendance Sheet</h2>
+                            <h3 t-esc="report_data['month_name']"/> <t t-esc="report_data['year_int']"/>
+                        </div>
+
+                        <br/>
+
+                        <!-- Combined Sheet -->
+                        <t t-if="report_data['sheet_type'] == 'combined'">
+                            <style>
+                                .attendance-table {
+                                    width: 100%;
+                                    border-collapse: collapse;
+                                    font-size: 8px;
+                                }
+                                .attendance-table th, .attendance-table td {
+                                    border: 1px solid #ddd;
+                                    padding: 2px;
+                                    text-align: center;
+                                }
+                                .attendance-table th {
+                                    background-color: #B4C7E7;
+                                    color: #000;
+                                    font-weight: bold;
+                                    font-size: 7px;
+                                }
+                                .attendance-table th.stats-header {
+                                    background-color: #4472C4;
+                                    color: white;
+                                    font-size: 7px;
+                                }
+                                .attendance-table th.weekend-header {
+                                    background-color: #D9E1F2;
+                                }
+                                .attendance-table td.employee-name {
+                                    text-align: left;
+                                    background-color: #E7E6E6;
+                                    font-weight: bold;
+                                    font-size: 8px;
+                                }
+                                .attendance-table td.day-cell {
+                                    width: 20px;
+                                    font-size: 8px;
+                                }
+                                .present {
+                                    background-color: #C6EFCE;
+                                    color: #006100;
+                                    font-weight: bold;
+                                }
+                                .absent {
+                                    background-color: #FFC7CE;
+                                    color: #9C0006;
+                                    font-weight: bold;
+                                }
+                                .late {
+                                    background-color: #FFEB9C;
+                                    color: #9C6500;
+                                    font-weight: bold;
+                                }
+                                .weekend {
+                                    background-color: #F2F2F2;
+                                }
+                                .leave {
+                                    background-color: #BDD7EE;
+                                    color: #1F4E78;
+                                    font-weight: bold;
+                                }
+                                .public_holiday {
+                                    background-color: #FFF2CC;
+                                    color: #7F6000;
+                                    font-weight: bold;
+                                }
+                                .mandatory_day {
+                                    background-color: #E6B8FF;
+                                    color: #003366;
+                                    font-weight: bold;
+                                }
+                                .summary-cell {
+                                    background-color: #FFF2CC;
+                                    font-weight: bold;
+                                    font-size: 8px;
+                                }
+                                .rank-top {
+                                    background-color: #C6EFCE;
+                                    font-weight: bold;
+                                }
+                                .rank-middle {
+                                    background-color: #FFEB9C;
+                                    font-weight: bold;
+                                }
+                                .rank-bottom {
+                                    background-color: #FFC7CE;
+                                    font-weight: bold;
+                                }
+                            </style>
+
+                            <table class="attendance-table">
+                                <thead>
+                                    <!-- Day of week row -->
+                                    <tr>
+                                        <th rowspan="2" style="vertical-align: middle;">Employee Name</th>
+                                        <th rowspan="2" style="vertical-align: middle;">Department</th>
+                                        <th rowspan="2" style="vertical-align: middle;">Designation</th>
+                                        <t t-foreach="report_data['days_info']" t-as="day_info">
+                                            <th t-attf-class="{{day_info['is_weekend'] and 'weekend-header' or ''}}">
+                                                <t t-if="day_info['weekday'] == 0">M</t>
+                                                <t t-elif="day_info['weekday'] == 1">T</t>
+                                                <t t-elif="day_info['weekday'] == 2">W</t>
+                                                <t t-elif="day_info['weekday'] == 3">T</t>
+                                                <t t-elif="day_info['weekday'] == 4">F</t>
+                                                <t t-elif="day_info['weekday'] == 5">S</t>
+                                                <t t-elif="day_info['weekday'] == 6">S</t>
+                                            </th>
+                                        </t>
+                                        <th rowspan="2" class="stats-header" style="vertical-align: middle;">Total<br/>Present</th>
+                                        <th rowspan="2" class="stats-header" style="vertical-align: middle;">Total<br/>Absent</th>
+                                        <th rowspan="2" class="stats-header" style="vertical-align: middle;">Total<br/>Leave Days</th>
+                                        <th rowspan="2" class="stats-header" style="vertical-align: middle;">Total<br/>Leave Hours</th>
+                                        <th rowspan="2" class="stats-header" style="vertical-align: middle;">Total<br/>Late</th>
+                                        <th rowspan="2" class="stats-header" style="vertical-align: middle;">Work<br/>Hours</th>
+                                        <th rowspan="2" class="stats-header" style="vertical-align: middle;">Late Time<br/>(min)</th>
+                                        <th rowspan="2" class="stats-header" style="vertical-align: middle;">Late<br/>Days</th>
+                                        <th rowspan="2" class="stats-header" style="vertical-align: middle;">On Time<br/>Days</th>
+                                        <th rowspan="2" class="stats-header" style="vertical-align: middle;">Attendance<br/>Rate %</th>
+                                        <th rowspan="2" class="stats-header" style="vertical-align: middle;">Ranking</th>
+                                    </tr>
+                                    <!-- Day numbers row -->
+                                    <tr>
+                                        <t t-foreach="report_data['days_info']" t-as="day_info">
+                                            <th t-attf-class="{{day_info['is_weekend'] and 'weekend-header' or ''}}" t-esc="day_info['day']"/>
+                                        </t>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="report_data['employees_data']" t-as="emp_data">
+                                        <tr>
+                                            <td class="employee-name">
+                                                <t t-if="emp_data.get('device_id_num')">
+                                                    <span style="font-size:8px;color:#888;">[<t t-esc="emp_data['device_id_num']"/>]</span><br/>
+                                                </t>
+                                                <t t-esc="emp_data['name']"/>
+                                            </td>
+                                            <td class="employee-name"><t t-esc="emp_data.get('department', '')"/></td>
+                                            <td class="employee-name"><t t-esc="emp_data.get('job_position', '')"/></td>
+                                            <t t-foreach="emp_data['daily_attendance']" t-as="day_att">
+                                                <td t-attf-class="day-cell {{day_att['css_class']}}" t-esc="day_att['status']"/>
+                                            </t>
+                                            <td class="summary-cell" t-esc="emp_data['present_count']"/>
+                                            <td class="summary-cell" t-esc="emp_data['absent_count']"/>
+                                            <t t-set="total_leave_days" t-value="sum([lt.get('count', 0) for lt in emp_data.get('leave_types', {}).values()])"/>
+                                            <t t-set="total_leave_hours" t-value="sum([lt.get('hours', 0) for lt in emp_data.get('leave_types', {}).values()])"/>
+                                            <td class="summary-cell" t-esc="total_leave_days"/>
+                                            <td class="summary-cell"><t t-esc="'%.1f' % total_leave_hours"/>h</td>
+                                            <td class="summary-cell" t-esc="emp_data['late_count']"/>
+                                            <td class="summary-cell"><t t-esc="'%.1f' % emp_data.get('total_work_hours', 0)"/>h</td>
+                                            <td class="summary-cell" t-esc="emp_data.get('total_late_minutes', 0)"/>
+                                            <td class="summary-cell" t-esc="emp_data['late_count']"/>
+                                            <td class="summary-cell" t-esc="emp_data.get('on_time_count', 0)"/>
+                                            <td class="summary-cell"><t t-esc="'%.1f' % emp_data.get('attendance_rate', 0)"/>%</td>
+                                            <td t-attf-class="summary-cell {{emp_data.get('rank', 999) &lt;= 3 and 'rank-top' or (emp_data.get('rank', 999) &gt; report_data.get('total_employees', 999) - 3 and 'rank-bottom' or 'rank-middle')}}" t-esc="emp_data.get('rank', '-')"/>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+
+                            <br/>
+                            <div style="margin-top: 20px; font-size: 10px;">
+                                <strong>Legend:</strong><br/>
+                                <span class="present" style="padding: 5px; margin: 5px;">P = Present (On Time)</span>
+                                <span class="absent" style="padding: 5px; margin: 5px;">A = Absent</span>
+                                <span class="late" style="padding: 5px; margin: 5px;">LT = Late Check-in</span>
+                                <span class="leave" style="padding: 5px; margin: 5px;">SL/PL/CL/etc. = Leave Codes (e.g., SL = Sick Leave, PL = Paid Leave)</span>
+                                <span class="public_holiday" style="padding: 5px; margin: 5px;">H = Public Holiday</span>
+                                <span class="mandatory_day" style="padding: 5px; margin: 5px;">M = Mandatory Day</span>
+                                <span class="weekend" style="padding: 5px; margin: 5px;">- = Weekend/Holiday</span>
+                            </div>
+                        </t>
+
+                        <!-- Individual Sheets -->
+                        <t t-if="report_data['sheet_type'] == 'individual'">
+                            <style>
+                                .individual-table {
+                                    width: 100%;
+                                    border-collapse: collapse;
+                                    font-size: 9px;
+                                }
+                                .individual-table th, .individual-table td {
+                                    border: 1px solid #ddd;
+                                    padding: 3px;
+                                    text-align: center;
+                                }
+                                .individual-table th {
+                                    background-color: #B4C7E7;
+                                    color: #000;
+                                    font-weight: bold;
+                                }
+                                .individual-table th.stats-header {
+                                    background-color: #4472C4;
+                                    color: white;
+                                }
+                                .individual-table th.weekend-header {
+                                    background-color: #D9E1F2;
+                                }
+                                .individual-table td.label-cell {
+                                    text-align: left;
+                                    background-color: #E7E6E6;
+                                    font-weight: bold;
+                                }
+                                .individual-table td.day-cell {
+                                    width: 25px;
+                                }
+                                .present {
+                                    background-color: #C6EFCE;
+                                    color: #006100;
+                                    font-weight: bold;
+                                }
+                                .absent {
+                                    background-color: #FFC7CE;
+                                    color: #9C0006;
+                                    font-weight: bold;
+                                }
+                                .late {
+                                    background-color: #FFEB9C;
+                                    color: #9C6500;
+                                    font-weight: bold;
+                                }
+                                .weekend {
+                                    background-color: #F2F2F2;
+                                }
+                                .leave {
+                                    background-color: #BDD7EE;
+                                    color: #1F4E78;
+                                    font-weight: bold;
+                                }
+                                .public_holiday {
+                                    background-color: #FFF2CC;
+                                    color: #7F6000;
+                                    font-weight: bold;
+                                }
+                                .mandatory_day {
+                                    background-color: #E6B8FF;
+                                    color: #003366;
+                                    font-weight: bold;
+                                }
+                                .summary-cell {
+                                    background-color: #FFF2CC;
+                                    font-weight: bold;
+                                    font-size: 8px;
+                                }
+                            </style>
+
+                            <t t-foreach="report_data['employees_data']" t-as="emp_data">
+                                <div t-if="emp_data_index > 0" style="page-break-before: always;"/>
+
+                                <div class="mb-4">
+                                    <h4>
+                                        Employee: <t t-esc="emp_data['name']"/>
+                                        <t t-if="emp_data.get('device_id_num')">
+                                            <span style="font-size:11px;color:#666;font-weight:normal;margin-left:8px;">(ID: <t t-esc="emp_data['device_id_num']"/>)</span>
+                                        </t>
+                                    </h4>
+                                    <t t-if="emp_data['department']">
+                                        <p><strong>Department:</strong> <t t-esc="emp_data['department']"/></p>
+                                    </t>
+                                    <t t-if="emp_data['job_position']">
+                                        <p><strong>Job Position:</strong> <t t-esc="emp_data['job_position']"/></p>
+                                    </t>
+                                </div>
+
+                                <table class="individual-table">
+                                    <thead>
+                                        <!-- Day of week row -->
+                                        <tr>
+                                            <th rowspan="2" style="vertical-align: middle; width: 80px;">Status</th>
+                                            <t t-foreach="report_data['days_info']" t-as="day_info">
+                                                <th t-attf-class="{{day_info['is_weekend'] and 'weekend-header' or ''}}">
+                                                    <t t-if="day_info['weekday'] == 0">M</t>
+                                                    <t t-elif="day_info['weekday'] == 1">T</t>
+                                                    <t t-elif="day_info['weekday'] == 2">W</t>
+                                                    <t t-elif="day_info['weekday'] == 3">T</t>
+                                                    <t t-elif="day_info['weekday'] == 4">F</t>
+                                                    <t t-elif="day_info['weekday'] == 5">S</t>
+                                                    <t t-elif="day_info['weekday'] == 6">S</t>
+                                                </th>
+                                            </t>
+                                            <th rowspan="2" class="stats-header" style="vertical-align: middle;">Total<br/>Present</th>
+                                            <th rowspan="2" class="stats-header" style="vertical-align: middle;">Total<br/>Absent</th>
+                                            <th rowspan="2" class="stats-header" style="vertical-align: middle;">Total<br/>Leave Days</th>
+                                            <th rowspan="2" class="stats-header" style="vertical-align: middle;">Total<br/>Leave Hours</th>
+                                            <th rowspan="2" class="stats-header" style="vertical-align: middle;">Total<br/>Late</th>
+                                            <th rowspan="2" class="stats-header" style="vertical-align: middle;">Work<br/>Hours</th>
+                                            <th rowspan="2" class="stats-header" style="vertical-align: middle;">Late Time<br/>(min)</th>
+                                            <th rowspan="2" class="stats-header" style="vertical-align: middle;">Late<br/>Days</th>
+                                            <th rowspan="2" class="stats-header" style="vertical-align: middle;">On Time<br/>Days</th>
+                                            <th rowspan="2" class="stats-header" style="vertical-align: middle;">Attendance<br/>Rate %</th>
+                                        </tr>
+                                        <!-- Day numbers row -->
+                                        <tr>
+                                            <t t-foreach="report_data['days_info']" t-as="day_info">
+                                                <th t-attf-class="{{day_info['is_weekend'] and 'weekend-header' or ''}}" t-esc="day_info['day']"/>
+                                            </t>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="label-cell"></td>
+                                            <t t-foreach="emp_data['daily_attendance']" t-as="day_att">
+                                                <td t-attf-class="day-cell {{day_att['css_class']}}" t-esc="day_att['status']"/>
+                                            </t>
+                                            <td class="summary-cell" t-esc="emp_data['present_count']"/>
+                                            <td class="summary-cell" t-esc="emp_data['absent_count']"/>
+                                            <t t-set="total_leave_days" t-value="sum([lt.get('count', 0) for lt in emp_data.get('leave_types', {}).values()])"/>
+                                            <t t-set="total_leave_hours" t-value="sum([lt.get('hours', 0) for lt in emp_data.get('leave_types', {}).values()])"/>
+                                            <td class="summary-cell" t-esc="total_leave_days"/>
+                                            <td class="summary-cell"><t t-esc="'%.1f' % total_leave_hours"/>h</td>
+                                            <td class="summary-cell" t-esc="emp_data['late_count']"/>
+                                            <td class="summary-cell"><t t-esc="'%.1f' % emp_data.get('total_work_hours', 0)"/>h</td>
+                                            <td class="summary-cell" t-esc="emp_data.get('total_late_minutes', 0)"/>
+                                            <td class="summary-cell" t-esc="emp_data['late_count']"/>
+                                            <td class="summary-cell" t-esc="emp_data.get('on_time_count', 0)"/>
+                                            <td class="summary-cell"><t t-esc="'%.1f' % emp_data.get('attendance_rate', 0)"/>%</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                                <br/>
+                                <div style="margin-top: 10px; font-size: 10px;">
+                                    <strong>Legend:</strong><br/>
+                                    <span class="present" style="padding: 5px; margin: 5px;">P = Present (On Time)</span>
+                                    <span class="absent" style="padding: 5px; margin: 5px;">A = Absent</span>
+                                    <span class="late" style="padding: 5px; margin: 5px;">LT = Late Check-in</span>
+                                    <span class="leave" style="padding: 5px; margin: 5px;">SL/PL/CL/etc. = Leave Codes (e.g., SL = Sick Leave, PL = Paid Leave)</span>
+                                    <span class="public_holiday" style="padding: 5px; margin: 5px;">H = Public Holiday</span>
+                                    <span class="mandatory_day" style="padding: 5px; margin: 5px;">M = Mandatory Day</span>
+                                    <span class="weekend" style="padding: 5px; margin: 5px;">- = Weekend/Holiday</span>
+                                </div>
+                            </t>
+                        </t>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- PDF Report Action -->
+    <record id="action_report_employee_attendance_sheet" model="ir.actions.report">
+        <field name="name">Employee Attendance Sheet</field>
+        <field name="model">employee.attendance.sheet.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">dotbd_hr_zk_attendance_suite.employee_attendance_sheet_report_template</field>
+        <field name="report_file">dotbd_hr_zk_attendance_suite.employee_attendance_sheet_report_template</field>
+        <field name="binding_model_id" ref="model_employee_attendance_sheet_wizard"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>

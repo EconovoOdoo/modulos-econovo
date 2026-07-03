@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Minimal single-device upload wizard (used from device form page) -->
+    <record id="view_biometric_template_wizard_form" model="ir.ui.view">
+        <field name="name">biometric.template.wizard.form</field>
+        <field name="model">biometric.template.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Upload Fingerprints to Device">
+                <field name="device_id" invisible="1"/>
+                <group>
+                    <field name="file_name" invisible="1"/>
+                    <field name="file_data" filename="file_name" widget="binary"
+                           string="Fingerprint File (.json)" required="1"/>
+                    <div class="text-muted" style="font-size:12px;">
+                        <i class="fa fa-clock-o" title="Clock o" aria-label="Clock o"/>
+                        30+ users run in background — check device Chatter for progress.
+                    </div>
+                </group>
+                <footer>
+                    <button name="action_process_upload"
+                            string="Upload"
+                            type="object"
+                            class="btn-primary"
+                            icon="fa-upload"
+                            confirm="Push fingerprints to this device?"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

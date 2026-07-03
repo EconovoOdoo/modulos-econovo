@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         SALARY CERTIFICATE — QWeb PDF Template
+         Header/footer provided by web.external_layout (company logo + address).
+         Body: formal letter style, A4, bank / visa ready.
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <template id="dotbd_salary_certificate_pdf_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="cert">
+                <t t-call="web.external_layout">
+                    <div class="page" style="font-family: 'Arial', sans-serif; font-size: 10.5pt; color: #1a1a2e; line-height: 1.7; position: relative;">
+
+                        <!-- ══ WATERMARK ══════════════════════════════════ -->
+                        <t t-if="cert.company_id.logo">
+                            <div style="position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); opacity:0.06; z-index:0; pointer-events:none; text-align:center;">
+                                <img t-att-src="image_data_uri(cert.company_id.logo)"
+                                     alt=""
+                                     style="width:360px; height:auto; max-height:360px; object-fit:contain;"/>
+                            </div>
+                        </t>
+
+                        <!-- ══ DATE ═══════════════════════════════════════ -->
+                        <p style="text-align:right; margin:0 0 18px 0; font-size:10pt;">
+                            <strong>Date : <t t-esc="cert.date"/></strong>
+                        </p>
+
+                        <!-- ══ TITLE ══════════════════════════════════════ -->
+                        <p style="text-align:center; font-size:13pt; font-weight:700; letter-spacing:1.5px; text-decoration:underline; margin:0 0 18px 0; text-transform:uppercase;">
+                            To Whom It May Concern
+                        </p>
+
+                        <!-- ══ BODY PARAGRAPH ═════════════════════════════ -->
+                        <p style="margin:0 0 22px 0; text-align:justify;">
+                            This is to certify that
+                            <strong><t t-esc="cert.employee_name or cert.employee_id.name"/></strong>
+                            has been working as
+                            <strong><t t-esc="cert.designation or '—'"/></strong>
+                            of
+                            <strong><t t-esc="cert.company_id.name"/></strong>.
+                            <t t-if="cert.employee_type_label">
+                                He/She is a <strong><t t-esc="cert.employee_type_label"/></strong> Employ of the Organization
+                            </t>
+                            <t t-if="cert.join_date">
+                                since <strong><t t-esc="cert.join_date"/></strong>
+                            </t>.
+                        </p>
+
+                        <!-- ══ HONORARIUM LABEL ═══════════════════════════ -->
+                        <p style="margin:0 0 6px 0;">
+                            His/Her Honorarium as follows :
+                        </p>
+
+                        <!-- ══ SALARY BREAKDOWN TABLE ════════════════════ -->
+                        <table style="width:60%; border-collapse:collapse; margin-bottom:4px; margin-left:20px;">
+                            <t t-foreach="cert.line_ids" t-as="line">
+                                <tr>
+                                    <td style="padding:3px 0; width:55%; color:#1a1a2e;">
+                                        <t t-esc="line.name"/>
+                                    </td>
+                                    <td style="padding:3px 0; width:45%; text-align:left;">
+                                        <t t-esc="cert.currency_id.symbol or 'Tk'"/>
+                                        <t t-esc="'{:,.2f}'.format(line.amount)"/>
+                                    </td>
+                                </tr>
+                            </t>
+                            <!-- TOTAL ROW -->
+                            <tr style="border-top:1.5px solid #1a1a2e;">
+                                <td style="padding:5px 0; font-weight:700; font-size:10.5pt;">
+                                    Total
+                                </td>
+                                <td style="padding:5px 0; font-weight:700; font-size:10.5pt; text-align:left;">
+                                    <t t-esc="cert.currency_id.symbol or 'Tk'"/>
+                                    <t t-esc="'{:,.2f}'.format(cert.total_amount)"/>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- ══ IN WORDS ═══════════════════════════════════ -->
+                        <p t-if="cert.amount_in_words" style="margin:12px 0 18px 20px; font-size:10pt;">
+                            <strong>In word :</strong> <t t-esc="cert.amount_in_words"/> Only.
+                        </p>
+
+                        <!-- ══ NET PAY ════════════════════════════════════ -->
+                        <t t-if="cert.net_amount">
+                            <table style="width:60%; border-collapse:collapse; margin-bottom:0; margin-left:20px; border-top:1px solid #cccccc;">
+                                <tr>
+                                    <td style="padding:6px 0; width:55%; font-weight:600; font-size:10.5pt;">
+                                        Net Pay Salary
+                                    </td>
+                                    <td style="padding:6px 0; width:45%; font-weight:600; font-size:10.5pt; text-align:left;">
+                                        <t t-esc="cert.currency_id.symbol or 'Tk'"/>. <t t-esc="'{:,.2f}'.format(cert.net_amount)"/>
+                                    </td>
+                                </tr>
+                            </table>
+                        </t>
+
+                        <!-- ══ ON BEHALF ══════════════════════════════════ -->
+                        <p style="margin:28px 0 0 0; font-size:10pt;">
+                            On behalf of <t t-esc="cert.company_id.name"/>.
+                        </p>
+
+                        <!-- ══ SIGNATORY ══════════════════════════════════ -->
+                        <table style="width:100%; border-collapse:collapse; margin-top:50px;">
+                            <tr>
+                                <td style="width:55%;"></td>
+                                <td style="width:45%; vertical-align:top; padding-top:0;">
+                                    <div style="border-top:1.5px solid #1a1a2e; padding-top:6px;">
+                                        <div style="font-weight:700; font-size:10.5pt; color:#1a1a2e;">
+                                            <t t-esc="cert.signatory_name or '________________________'"/>
+                                        </div>
+                                        <div style="font-size:9.5pt; color:#333; margin-top:1px;">
+                                            <t t-esc="cert.signatory_designation or 'Authorized Signatory'"/>
+                                        </div>
+                                        <div style="font-size:9.5pt; color:#333;">
+                                            <t t-esc="cert.company_id.name"/>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- ══ FOOTER NOTE ════════════════════════════════ -->
+                        <div style="margin-top:40px; font-size:7.5pt; color:#888; text-align:center; border-top:1px dashed #ddd; padding-top:6px;">
+                            <t t-set="purpose_labels" t-value="{
+                                'bank_loan': 'Bank Loan',
+                                'visa': 'Visa / Immigration',
+                                'rental': 'House / Office Rental',
+                                'personal': 'Personal Use',
+                                'other': 'Other Purpose',
+                            }"/>
+                            Issued for: <t t-esc="purpose_labels.get(cert.purpose, cert.purpose)"/>
+                            <t t-if="cert.purpose == 'other' and cert.purpose_other"> — <t t-esc="cert.purpose_other"/></t>
+                            &#160;&#160;|&#160;&#160; Ref: <t t-esc="cert.name"/>
+                            &#160;&#160;|&#160;&#160; Date: <t t-esc="cert.date"/>
+                        </div>
+
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+</odoo>

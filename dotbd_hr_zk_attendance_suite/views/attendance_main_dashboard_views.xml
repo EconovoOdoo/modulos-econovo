@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Dot BD Solutions Limited
+    Attendance Main Dashboard – Client Action + Menu
+-->
+<odoo>
+
+    <!-- Client action that loads the OWL component -->
+    <record id="action_attendance_main_dashboard" model="ir.actions.client">
+        <field name="name">Biometric Attendance Insights</field>
+        <field name="tag">attendance_main_dashboard</field>
+    </record>
+
+    <!-- Menu item under the main HR Attendance menu, sequence 1 so it appears first -->
+    <!-- Visible to all attendance users; data is scoped by role in the controller -->
+    <menuitem
+        id="menu_attendance_main_dashboard"
+        name="Dashboard"
+        parent="hr_attendance.menu_hr_attendance_root"
+        action="action_attendance_main_dashboard"
+        sequence="1"/>
+
+</odoo>

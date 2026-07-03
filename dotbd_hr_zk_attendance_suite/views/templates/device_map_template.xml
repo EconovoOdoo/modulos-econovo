@@ -1,0 +1,577 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- UNIFIED MAP: Devices + Team Attendance                                 -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <template id="device_map_template">
+        <t t-call="web.layout">
+            <t t-set="head">
+                <link rel="stylesheet" href="/dotbd_hr_zk_attendance_suite/static/src/lib/leaflet/leaflet.css"/>
+                <script src="/dotbd_hr_zk_attendance_suite/static/src/lib/leaflet/leaflet.js"></script>
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
+            </t>
+            <t t-set="body_classname" t-value="''"/>
+            <style>
+                * { box-sizing: border-box; }
+                body { margin:0; padding:0; font-family:'Segoe UI',Arial,sans-serif; background:#f5f5f5; }
+                #map-container { display:flex; height:100vh; }
+
+                /* ── Sidebar ── */
+                #sidebar { width:370px; min-width:370px; background:#fff; box-shadow:2px 0 8px rgba(0,0,0,.1); display:flex; flex-direction:column; z-index:1000; }
+                .hdr { background:linear-gradient(135deg,#714B67,#92278f); color:#fff; padding:14px 16px; }
+                .hdr h2 { margin:0 0 4px; font-size:18px; }
+                .hdr p { margin:0; opacity:.85; font-size:12px; }
+
+                /* ── Stats bar ── */
+                .stats-bar { display:flex; gap:4px; padding:8px 12px; background:#f3e5f5; border-bottom:1px solid #e0e0e0; font-size:11px; flex-wrap:wrap; }
+                .stat-chip { padding:3px 8px; border-radius:12px; font-weight:600; }
+                .stat-devices { background:#e8eaf6; color:#3949ab; }
+                .stat-total { background:#e3f2fd; color:#1565c0; }
+                .stat-in { background:#e8f5e9; color:#2e7d32; }
+                .stat-out { background:#fce4ec; color:#c62828; }
+
+                /* ── Access hint ── */
+                .access-hint { padding:6px 12px; background:#fff3cd; font-size:11px; color:#856404; border-bottom:1px solid #eee; }
+
+                /* ── Filter bar ── */
+                .filter-bar { padding:8px 12px; background:#fafafa; border-bottom:1px solid #eee; }
+                .search-box { width:100%; padding:7px 10px 7px 30px; border:1px solid #ddd; border-radius:6px; font-size:13px; background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='%23999' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 10-1.397 1.398h-.001l3.85 3.85a1 1 0 001.415-1.414l-3.85-3.85zm-5.242.156a5 5 0 110-10 5 5 0 010 10z'/%3E%3C/svg%3E") no-repeat 8px center #fff; }
+                .filter-row { display:flex; gap:4px; margin-top:6px; flex-wrap:wrap; }
+                .filter-row select, .filter-row .date-input { padding:4px 6px; border:1px solid #ddd; border-radius:4px; font-size:12px; }
+                .date-input { width:38%; }
+                .filter-row select { flex:1; min-width:0; }
+                .btn-go { padding:4px 10px; background:#714B67; color:#fff; border:none; border-radius:4px; cursor:pointer; font-size:12px; font-weight:600; }
+                .btn-go:hover { background:#5a3a52; }
+
+                /* ── Toggle pills ── */
+                .toggle-bar { display:flex; gap:2px; padding:6px 12px; background:#f8f9fa; border-bottom:1px solid #eee; }
+                .toggle-btn { flex:1; padding:5px 4px; text-align:center; font-size:11px; font-weight:600; border:1px solid #ddd; background:#fff; cursor:pointer; border-radius:4px; transition:all .15s; }
+                .toggle-btn.active-all { background:#e3f2fd; border-color:#90caf9; color:#1565c0; }
+                .toggle-btn.active-devices { background:#e8eaf6; border-color:#9fa8da; color:#3949ab; }
+                .toggle-btn.active-in { background:#e8f5e9; border-color:#a5d6a7; color:#2e7d32; }
+                .toggle-btn.active-out { background:#fce4ec; border-color:#ef9a9a; color:#c62828; }
+
+                /* ── Scrollable list ── */
+                #emp-list { flex:1; overflow-y:auto; }
+
+                /* ── Section headers ── */
+                .section-header { padding:8px 12px; background:#714B67; color:#fff; font-size:12px; font-weight:700; cursor:pointer; display:flex; justify-content:space-between; align-items:center; }
+                .section-header:hover { background:#5a3a52; }
+                .section-header .cnt { background:rgba(255,255,255,.3); padding:1px 6px; border-radius:8px; font-size:10px; }
+                .section-body { display:block; }
+                .section-body.collapsed { display:none; }
+
+                /* ── Device cards ── */
+                .device-card { padding:10px 12px; border-bottom:1px solid #f0f0f0; cursor:pointer; transition:background .15s; border-left:3px solid transparent; }
+                .device-card:hover { background:#f8f8f8; }
+                .device-card.active { background:#f3e5f5; }
+                .device-card h4 { margin:0 0 2px; font-size:13px; display:flex; align-items:center; gap:5px; }
+                .device-card .meta { font-size:11px; color:#777; }
+                .status-dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:4px; }
+                .status-online { background:#28a745; }
+                .status-offline { background:#dc3545; }
+                .status-unknown { background:#ffc107; }
+
+                /* ── Employee cards ── */
+                .dept-group { border-bottom:1px solid #eee; }
+                .dept-header { padding:6px 12px; background:#f5f5f5; font-size:12px; font-weight:700; color:#555; cursor:pointer; display:flex; justify-content:space-between; align-items:center; }
+                .dept-header:hover { background:#eee; }
+                .dept-header .cnt { background:#ddd; padding:1px 6px; border-radius:8px; font-size:10px; color:#666; }
+                .dept-body { display:block; }
+                .dept-body.collapsed { display:none; }
+                .emp-card { padding:8px 12px; border-bottom:1px solid #f0f0f0; cursor:pointer; transition:background .15s; border-left:3px solid transparent; }
+                .emp-card:hover { background:#f8f8f8; }
+                .emp-card.active { background:#f0fff4; }
+                .emp-card h4 { margin:0 0 2px; font-size:13px; display:flex; align-items:center; gap:5px; }
+                .emp-card .color-dot { width:10px; height:10px; border-radius:50%; display:inline-block; flex-shrink:0; }
+                .emp-card .meta { font-size:11px; color:#777; }
+                .emp-card .meta .loc-tag { font-size:10px; padding:1px 5px; border-radius:8px; font-weight:600; }
+                .tag-inside { background:#e8f5e9; color:#2e7d32; }
+                .tag-outside { background:#fce4ec; color:#c62828; }
+                .badge-src { display:inline-block; padding:0 5px; border-radius:8px; font-size:9px; font-weight:700; }
+                .src-biometric { background:#e8eaf6; color:#3949ab; }
+                .src-mobile_app { background:#e8f5e9; color:#2e7d32; }
+                .src-web { background:#fff8e1; color:#f57f17; }
+                .src-manual { background:#f3e5f5; color:#7b1fa2; }
+                .dist-ok { color:#2e7d32; } .dist-warn { color:#f57f17; } .dist-far { color:#c62828; }
+                .no-data { padding:40px 20px; text-align:center; color:#aaa; }
+                .no-data i { font-size:40px; display:block; margin-bottom:8px; }
+
+                /* ── Map ── */
+                #map { flex:1; }
+                .legend { position:absolute; bottom:20px; right:20px; background:#fff; padding:10px 14px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,.18); z-index:1000; font-size:11px; }
+                .legend-item { display:flex; align-items:center; gap:5px; margin:2px 0; }
+
+                /* ── Leaflet tooltip override ── */
+                .emp-tooltip { background:#fff!important; border:2px solid #28a745!important; border-radius:8px!important; padding:8px 12px!important; box-shadow:0 3px 10px rgba(0,0,0,.15)!important; font-family:'Segoe UI',Arial,sans-serif!important; min-width:220px; }
+                .emp-tooltip .tt-name { font-weight:700; font-size:13px; margin-bottom:4px; }
+                .emp-tooltip .tt-row { font-size:11px; color:#555; margin:2px 0; }
+                .emp-tooltip .tt-row b { color:#333; }
+                .leaflet-tooltip-top:before { border-top-color:#28a745!important; }
+                .leaflet-tooltip-bottom:before { border-bottom-color:#28a745!important; }
+                .leaflet-tooltip-left:before { border-left-color:#28a745!important; }
+                .leaflet-tooltip-right:before { border-right-color:#28a745!important; }
+
+                .device-popup h3 { margin:0 0 8px 0; color:#714B67; }
+                .device-popup table { width:100%; font-size:12px; }
+                .device-popup td { padding:2px 8px 2px 0; }
+                .device-popup td:first-child { font-weight:bold; color:#555; white-space:nowrap; }
+                .device-popup .btn-open { display:inline-block; margin-top:8px; padding:4px 12px; background:#714B67; color:#fff; border-radius:4px; text-decoration:none; font-size:12px; }
+                .device-popup .btn-open:hover { background:#5a3a52; }
+            </style>
+
+            <div id="map-container">
+                <div id="sidebar">
+                    <div class="hdr">
+                        <h2>📍 Attendance Map</h2>
+                        <p t-if="is_manager">Devices + Team GPS attendance overview</p>
+                        <p t-if="not is_manager">Device locations + Your check-in history</p>
+                    </div>
+                    <div class="stats-bar" id="stats-bar"></div>
+                    <div class="access-hint" t-if="not is_manager">
+                        <i class="fa fa-info-circle"/> Showing your own attendance only. Contact HR for full team view.
+                    </div>
+                    <!-- Filters -->
+                    <div class="filter-bar">
+                        <input type="text" class="search-box" id="search-input" placeholder="🔍 Search name, device, mobile, ZK ID..."/>
+                        <div class="filter-row">
+                            <input type="date" class="date-input" id="date-from" value=""/>
+                            <input type="date" class="date-input" id="date-to" value=""/>
+                            <button class="btn-go" onclick="applyDateRange()">Go</button>
+                        </div>
+                        <div class="filter-row" style="margin-top:4px;">
+                            <select id="dept-filter" onchange="applyFilters()">
+                                <option value="">All Departments</option>
+                            </select>
+                        </div>
+                    </div>
+                    <!-- Toggle -->
+                    <div class="toggle-bar">
+                        <div class="toggle-btn active-all" id="tog-all" onclick="setToggle('all')">📋 All</div>
+                        <div class="toggle-btn" id="tog-devices" onclick="setToggle('devices')">🏢 Devices</div>
+                        <div class="toggle-btn" id="tog-in" onclick="setToggle('in')">✅ Inside</div>
+                        <div class="toggle-btn" id="tog-out" onclick="setToggle('out')">📍 Outside</div>
+                    </div>
+                    <div id="emp-list"></div>
+                </div>
+                <div id="map"></div>
+                <div class="legend">
+                    <div class="legend-item"><span style="background:#714B67; width:10px; height:10px; border-radius:50%; display:inline-block;"></span> Device + Geofence</div>
+                    <div class="legend-item"><span style="background:#28a745; width:10px; height:10px; border-radius:50%; display:inline-block;"></span> Check-in</div>
+                    <div class="legend-item"><span style="background:#dc3545; width:10px; height:10px; border-radius:50%; display:inline-block;"></span> Check-out</div>
+                    <hr style="margin:3px 0"/>
+                    <div style="font-size:10px; color:#888;">Each employee = unique color</div>
+                </div>
+            </div>
+
+            <!-- JSON data islands (QWeb processes t-out here; no HTML strings to break XML) -->
+            <script type="application/json" id="map-devices-data"><t t-out="device_json"/></script>
+            <script type="application/json" id="map-markers-data"><t t-out="markers_json"/></script>
+            <script type="application/json" id="map-departments-data"><t t-out="departments_json"/></script>
+            <script type="application/json" id="map-meta-data"><t t-out="meta_json"/></script>
+
+            <script>
+/*<![CDATA[*/
+                // ── Data from controller (read from JSON data islands) ──
+                var allDevices = JSON.parse(document.getElementById('map-devices-data').textContent);
+                var allMarkers = JSON.parse(document.getElementById('map-markers-data').textContent);
+                var departments = JSON.parse(document.getElementById('map-departments-data').textContent);
+                var __mapMeta = JSON.parse(document.getElementById('map-meta-data').textContent);
+                var isManager = __mapMeta.is_manager;
+
+                // ── State ──
+                var currentToggle = 'all';
+                var mapEmpMarkers = [];
+                var mapDeviceMarkers = [];
+
+                // ── Unique color per employee ──
+                var empColorCache = {};
+                function empColor(empId) {
+                    if (empColorCache[empId]) return empColorCache[empId];
+                    var hue = (empId * 137.508) % 360;
+                    empColorCache[empId] = 'hsl(' + Math.round(hue) + ',65%,42%)';
+                    return empColorCache[empId];
+                }
+                function empColorLight(empId) {
+                    var hue = (empId * 137.508) % 360;
+                    return 'hsl(' + Math.round(hue) + ',55%,65%)';
+                }
+
+                // ── Init dates ──
+                document.getElementById('date-from').value = __mapMeta.date_from;
+                document.getElementById('date-to').value = __mapMeta.date_to;
+
+                // ── Populate department dropdown ──
+                var deptSel = document.getElementById('dept-filter');
+                departments.forEach(function(d) {
+                    var o = document.createElement('option');
+                    o.value = d.id; o.textContent = d.name;
+                    deptSel.appendChild(o);
+                });
+
+                // ── Init map ──
+                var map = L.map('map').setView([23.8103, 90.4125], 6);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+                    maxZoom: 19
+                }).addTo(map);
+
+                // ══════════════════════════════════════════════════════════════
+                // DEVICE MARKERS (always on map)
+                // ══════════════════════════════════════════════════════════════
+                function buildDeviceMarkers() {
+                    mapDeviceMarkers.forEach(function(m) { map.removeLayer(m); });
+                    mapDeviceMarkers = [];
+
+                    allDevices.forEach(function(dev) {
+                        var statusClass = dev.status === 'online' ? 'status-online' :
+                                          dev.status === 'offline' ? 'status-offline' : 'status-unknown';
+                        var markerColor = dev.status === 'online' ? '#28a745' :
+                                          dev.status === 'offline' ? '#dc3545' : '#ffc107';
+
+                        var devIcon = L.divIcon({
+                            html: '<div style="background:' + markerColor + ';width:26px;height:26px;border-radius:50%;border:3px solid #714B67;box-shadow:0 2px 6px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;">🏢</div>',
+                            iconSize:[26,26], iconAnchor:[13,13], className:''
+                        });
+                        var marker = L.marker([dev.lat, dev.lng], {icon:devIcon}).addTo(map);
+
+                        // Geofence circle
+                        if (dev.geofence_radius > 0) {
+                            var circle = L.circle([dev.lat, dev.lng], {
+                                radius: dev.geofence_radius,
+                                color: '#714B67',
+                                fillColor: '#714B67',
+                                fillOpacity: 0.08,
+                                weight: 1.5,
+                                dashArray: '5, 5'
+                            }).addTo(map);
+                            mapDeviceMarkers.push(circle);
+                        }
+
+                        // Popup
+                        var statusLabel = dev.status === 'online' ? 'Online' :
+                                          dev.status === 'offline' ? 'Offline' : 'Unknown';
+                        var popupHtml = '<div class="device-popup">' +
+                            '<h3>🏢 ' + dev.name + '</h3>' +
+                            '<table>' +
+                            '<tr><td>Location:</td><td>' + (dev.location_name || 'N/A') + '</td></tr>' +
+                            '<tr><td>Status:</td><td><span class="status-dot ' + statusClass + '"></span>' + statusLabel + '</td></tr>' +
+                            '<tr><td>IP:</td><td>' + dev.ip + '</td></tr>' +
+                            '<tr><td>Mode:</td><td>' + dev.connection_mode + '</td></tr>' +
+                            '<tr><td>Users:</td><td>' + dev.user_count + '</td></tr>' +
+                            '<tr><td>Records:</td><td>' + dev.record_count + '</td></tr>' +
+                            '<tr><td>Storage:</td><td>' + dev.storage_pct + '%</td></tr>' +
+                            (dev.geofence_radius ? '<tr><td>Geofence:</td><td>' + dev.geofence_radius + 'm</td></tr>' : '') +
+                            '</table>' +
+                            '<a class="btn-open" href="/odoo/biometric.device.details/' + dev.id + '" target="_blank">Open Device Form</a>' +
+                            '</div>';
+                        marker.bindPopup(popupHtml, {maxWidth: 300});
+                        marker.bindTooltip('<b>🏢 ' + dev.name + '</b><br/>' + (dev.location_name || ''), {sticky:true, direction:'top'});
+
+                        mapDeviceMarkers.push(marker);
+                    });
+                }
+
+                // ══════════════════════════════════════════════════════════════
+                // EMPLOYEE ATTENDANCE MARKERS
+                // ══════════════════════════════════════════════════════════════
+                function buildEmpMarkers(data) {
+                    mapEmpMarkers.forEach(function(m) {
+                        if (m.leaflet) map.removeLayer(m.leaflet);
+                        if (m.outLeaflet) map.removeLayer(m.outLeaflet);
+                        if (m.line) map.removeLayer(m.line);
+                    });
+                    mapEmpMarkers = [];
+
+                    data.forEach(function(d) {
+                        var col = empColor(d.emp_id);
+                        var colL = empColorLight(d.emp_id);
+                        var srcClass = 'src-' + d.source;
+                        var markerSize = 36;
+
+                        var inIconHtml;
+                        if (d.emp_image_url) {
+                            inIconHtml = '<div style="position:relative;width:' + markerSize + 'px;height:' + markerSize + 'px;">' +
+                                '<div style="width:' + markerSize + 'px;height:' + markerSize + 'px;border-radius:50%;border:3px solid ' + col + ';box-shadow:0 2px 8px rgba(0,0,0,.35);overflow:hidden;background:#fff;">' +
+                                '<img src="' + d.emp_image_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.parentElement.innerHTML=\'<div style=\\\'width:100%;height:100%;border-radius:50%;background:' + col + ';display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;\\\'>' + (d.emp_initials || '?') + '</div>\'"/>' +
+                                '</div>' +
+                                '<div style="position:absolute;bottom:-2px;right:-2px;background:#fff;border-radius:50%;width:14px;height:14px;display:flex;align-items:center;justify-content:center;font-size:8px;box-shadow:0 1px 3px rgba(0,0,0,.3);border:1px solid #ddd;">' + d.source_icon + '</div>' +
+                                '</div>';
+                        } else {
+                            inIconHtml = '<div style="position:relative;width:' + markerSize + 'px;height:' + markerSize + 'px;">' +
+                                '<div style="width:' + markerSize + 'px;height:' + markerSize + 'px;border-radius:50%;border:3px solid ' + col + ';box-shadow:0 2px 8px rgba(0,0,0,.35);background:' + col + ';display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;">' + (d.emp_initials || '?') + '</div>' +
+                                '<div style="position:absolute;bottom:-2px;right:-2px;background:#fff;border-radius:50%;width:14px;height:14px;display:flex;align-items:center;justify-content:center;font-size:8px;box-shadow:0 1px 3px rgba(0,0,0,.3);border:1px solid #ddd;">' + d.source_icon + '</div>' +
+                                '</div>';
+                        }
+                        var inIcon = L.divIcon({
+                            html: inIconHtml,
+                            iconSize:[markerSize, markerSize],
+                            iconAnchor:[markerSize/2, markerSize/2],
+                            className: ''
+                        });
+                        var inM = L.marker([d.in_lat, d.in_lng], {icon:inIcon}).addTo(map);
+
+                        var cIn = d.check_in ? new Date(d.check_in).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : 'N/A';
+                        var cOut = d.check_out ? new Date(d.check_out).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : '⏳ Still In';
+                        var distCls = d.distance > 500 ? 'dist-far' : d.distance > 200 ? 'dist-warn' : 'dist-ok';
+                        var locTag = d.inside_office ? '✅ Inside Office' : '🔴 Outside Office';
+
+                        var tt = '<div class="tt-name" style="color:' + col + '">' + d.emp_name + '</div>' +
+                            (d.emp_job ? '<div class="tt-row">' + d.emp_job + '</div>' : '') +
+                            '<div class="tt-row"><b>Dept:</b> ' + d.department_name + '</div>' +
+                            '<div class="tt-row"><b>In:</b> ' + cIn + ' → <b>Out:</b> ' + cOut + '</div>' +
+                            '<div class="tt-row"><span class="badge-src ' + srcClass + '">' + d.source_icon + ' ' + d.source + '</span> ' + locTag + '</div>' +
+                            (d.distance > 0 ? '<div class="tt-row ' + distCls + '"><b>📏 ' + d.distance + 'm</b> from office</div>' : '') +
+                            (d.emp_badge ? '<div class="tt-row"><b>ZK ID:</b> ' + d.emp_badge + '</div>' : '') +
+                            (d.emp_mobile ? '<div class="tt-row"><b>📱</b> ' + d.emp_mobile + '</div>' : '');
+                        inM.bindTooltip(tt, {sticky:true, className:'emp-tooltip', direction:'top', offset:[0,-12]});
+
+                        var popup = '<div style="min-width:200px;"><b style="color:' + col + '">' + d.emp_name + '</b>' +
+                            (d.emp_job ? '<br/><small>' + d.emp_job + ' — ' + d.department_name + '</small>' : '') +
+                            '<hr style="margin:4px 0"/>' +
+                            '<table style="font-size:12px;">' +
+                            '<tr><td>🕐 In:</td><td>' + cIn + '</td></tr>' +
+                            '<tr><td>🕐 Out:</td><td>' + cOut + '</td></tr>' +
+                            '<tr><td>Source:</td><td><span class="badge-src ' + srcClass + '">' + d.source_icon + ' ' + d.source + '</span></td></tr>' +
+                            '<tr><td>Location:</td><td>' + locTag + '</td></tr>' +
+                            (d.distance > 0 ? '<tr><td>Distance:</td><td class="' + distCls + '">' + d.distance + 'm</td></tr>' : '') +
+                            (d.emp_mobile ? '<tr><td>Mobile:</td><td>' + d.emp_mobile + '</td></tr>' : '') +
+                            (d.emp_badge ? '<tr><td>ZK ID:</td><td>' + d.emp_badge + '</td></tr>' : '') +
+                            '</table></div>';
+                        inM.bindPopup(popup, {maxWidth:300});
+
+                        var entry = {leaflet: inM, data: d, outLeaflet: null, line: null};
+
+                        if (d.has_checkout_gps) {
+                            var outIcon = L.divIcon({
+                                html: '<div style="background:' + colL + ';width:16px;height:16px;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 4px rgba(0,0,0,.25);"></div>',
+                                iconSize:[16,16], iconAnchor:[8,8], className:''
+                            });
+                            var outM = L.marker([d.out_lat, d.out_lng], {icon:outIcon}).addTo(map);
+                            outM.bindPopup('<b>' + d.emp_name + '</b><br/>Check-out: ' + cOut);
+                            outM.bindTooltip('<b>' + d.emp_name + '</b><br/>Check-out: ' + cOut, {sticky:true, className:'emp-tooltip', direction:'top'});
+                            entry.outLeaflet = outM;
+                            entry.line = L.polyline([[d.in_lat,d.in_lng],[d.out_lat,d.out_lng]], {color:col, weight:1.5, dashArray:'4,4', opacity:.6}).addTo(map);
+                        }
+                        mapEmpMarkers.push(entry);
+                    });
+                }
+
+                // ══════════════════════════════════════════════════════════════
+                // SIDEBAR: Devices section + Employees grouped by department
+                // ══════════════════════════════════════════════════════════════
+                function buildSidebar(data) {
+                    var list = document.getElementById('emp-list');
+                    list.innerHTML = '';
+
+                    // ── Devices section (always visible) ──
+                    if (allDevices.length > 0) {
+                        var devSection = document.createElement('div');
+                        var devHdr = document.createElement('div');
+                        devHdr.className = 'section-header';
+                        devHdr.innerHTML = '🏢 Devices <span class="cnt">' + allDevices.length + '</span>';
+                        var devBody = document.createElement('div');
+                        devBody.className = 'section-body';
+                        devHdr.onclick = function() { devBody.classList.toggle('collapsed'); };
+                        devSection.appendChild(devHdr);
+
+                        allDevices.forEach(function(dev) {
+                            var statusClass = dev.status === 'online' ? 'status-online' :
+                                              dev.status === 'offline' ? 'status-offline' : 'status-unknown';
+                            var card = document.createElement('div');
+                            card.className = 'device-card';
+                            card.innerHTML = '<h4><span class="status-dot ' + statusClass + '"></span>🏢 ' + dev.name + '</h4>' +
+                                '<div class="meta">' +
+                                (dev.location_name || 'No location') + ' | ' + dev.ip +
+                                '<br/>Users: ' + dev.user_count + ' | Storage: ' + dev.storage_pct + '%' +
+                                (dev.geofence_radius ? ' | Geofence: ' + dev.geofence_radius + 'm' : '') +
+                                '</div>';
+                            card.onclick = function() {
+                                map.setView([dev.lat, dev.lng], 16);
+                                document.querySelectorAll('.device-card, .emp-card').forEach(function(c) { c.classList.remove('active'); });
+                                card.classList.add('active');
+                            };
+                            devBody.appendChild(card);
+                        });
+                        devSection.appendChild(devBody);
+                        list.appendChild(devSection);
+                    }
+
+                    // ── Employees section ──
+                    if (data.length === 0) {
+                        list.innerHTML += '<div class="no-data"><i class="fa fa-map-marker"/>No GPS check-ins found for this date range.<br/><small>Try changing the date or filters.</small></div>';
+                        return;
+                    }
+
+                    var empSection = document.createElement('div');
+                    var empHdr = document.createElement('div');
+                    empHdr.className = 'section-header';
+                    empHdr.style.background = '#28a745';
+                    empHdr.innerHTML = '👥 Team Check-ins <span class="cnt">' + data.length + '</span>';
+                    var empBody = document.createElement('div');
+                    empBody.className = 'section-body';
+                    empHdr.onclick = function() { empBody.classList.toggle('collapsed'); };
+                    empSection.appendChild(empHdr);
+
+                    // Group by department
+                    var groups = {};
+                    data.forEach(function(d) {
+                        var dk = d.department_name || 'No Department';
+                        if (!groups[dk]) groups[dk] = [];
+                        groups[dk].push(d);
+                    });
+                    var sortedKeys = Object.keys(groups).sort();
+                    sortedKeys.forEach(function(deptName) {
+                        var grp = document.createElement('div');
+                        grp.className = 'dept-group';
+                        var hdr = document.createElement('div');
+                        hdr.className = 'dept-header';
+                        hdr.innerHTML = '🏢 ' + deptName + ' <span class="cnt">' + groups[deptName].length + '</span>';
+                        var body = document.createElement('div');
+                        body.className = 'dept-body';
+                        hdr.onclick = function() { body.classList.toggle('collapsed'); };
+                        grp.appendChild(hdr);
+
+                        groups[deptName].forEach(function(d) {
+                            var col = empColor(d.emp_id);
+                            var cIn = d.check_in ? new Date(d.check_in).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : 'N/A';
+                            var cOut = d.check_out ? new Date(d.check_out).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : '⏳';
+                            var distCls = d.distance > 500 ? 'dist-far' : d.distance > 200 ? 'dist-warn' : 'dist-ok';
+                            var locTag = d.inside_office ? '<span class="loc-tag tag-inside">Inside</span>' : '<span class="loc-tag tag-outside">Outside</span>';
+                            var srcCls = 'src-' + d.source;
+
+                            var avatarHtml;
+                            if (d.emp_image_url) {
+                                avatarHtml = '<img src="' + d.emp_image_url + '" style="width:28px;height:28px;border-radius:50%;border:2px solid ' + col + ';object-fit:cover;flex-shrink:0;" onerror="this.outerHTML=\'<div style=\\\'width:28px;height:28px;border-radius:50%;background:' + col + ';display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;flex-shrink:0;\\\'>' + (d.emp_initials || '?') + '</div>\'"/>';
+                            } else {
+                                avatarHtml = '<div style="width:28px;height:28px;border-radius:50%;background:' + col + ';display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;flex-shrink:0;">' + (d.emp_initials || '?') + '</div>';
+                            }
+
+                            var card = document.createElement('div');
+                            card.className = 'emp-card';
+                            card.style.borderLeftColor = col;
+                            card.innerHTML = '<h4>' + avatarHtml + ' ' + d.emp_name +
+                                ' <span class="badge-src ' + srcCls + '">' + d.source_icon + '</span></h4>' +
+                                '<div class="meta">' + cIn + ' → ' + cOut + ' ' + locTag +
+                                (d.distance > 0 ? ' <span class="' + distCls + '">📏' + d.distance + 'm</span>' : '') +
+                                (d.emp_job ? '<br/>' + d.emp_job : '') +
+                                '</div>';
+                            card.onclick = function() {
+                                map.setView([d.in_lat, d.in_lng], 16);
+                                mapEmpMarkers.forEach(function(m) {
+                                    if (m.data.id === d.id) m.leaflet.openPopup();
+                                });
+                                document.querySelectorAll('.device-card, .emp-card').forEach(function(c) { c.classList.remove('active'); });
+                                card.classList.add('active');
+                            };
+                            body.appendChild(card);
+                        });
+                        grp.appendChild(body);
+                        empSection.appendChild(grp);
+                    });
+                    empSection.appendChild(empBody);
+                    list.appendChild(empSection);
+                }
+
+                // ── Stats ──
+                function updateStats(data) {
+                    var devCount = allDevices.length;
+                    var total = data.length;
+                    var inside = data.filter(function(d) { return d.inside_office; }).length;
+                    var outside = total - inside;
+                    document.getElementById('stats-bar').innerHTML =
+                        '<span class="stat-chip stat-devices">🏢 ' + devCount + ' Devices</span>' +
+                        '<span class="stat-chip stat-total">👥 ' + total + ' Check-ins</span>' +
+                        '<span class="stat-chip stat-in">✅ ' + inside + ' Inside</span>' +
+                        '<span class="stat-chip stat-out">📍 ' + outside + ' Outside</span>';
+                }
+
+                // ══════════════════════════════════════════════════════════════
+                // FILTERING
+                // ══════════════════════════════════════════════════════════════
+                function getFilteredData() {
+                    var search = document.getElementById('search-input').value.toLowerCase().trim();
+                    var deptId = document.getElementById('dept-filter').value;
+                    var filtered = allMarkers;
+
+                    if (currentToggle === 'in') {
+                        filtered = filtered.filter(function(d) { return d.inside_office; });
+                    } else if (currentToggle === 'out') {
+                        filtered = filtered.filter(function(d) { return !d.inside_office; });
+                    }
+
+                    if (deptId) {
+                        var did = parseInt(deptId);
+                        filtered = filtered.filter(function(d) { return d.department_id === did; });
+                    }
+
+                    if (search) {
+                        filtered = filtered.filter(function(d) {
+                            return (d.emp_name || '').toLowerCase().indexOf(search) >= 0 ||
+                                   (d.emp_mobile || '').toLowerCase().indexOf(search) >= 0 ||
+                                   (d.emp_badge || '').toLowerCase().indexOf(search) >= 0;
+                        });
+                    }
+                    return filtered;
+                }
+
+                function applyFilters() {
+                    var data = getFilteredData();
+                    buildEmpMarkers(data);
+                    buildSidebar(data);
+                    updateStats(data);
+                    fitMapBounds(data);
+                }
+
+                // ── Toggle ──
+                function setToggle(mode) {
+                    currentToggle = mode;
+                    document.getElementById('tog-all').className = 'toggle-btn' + (mode==='all' ? ' active-all' : '');
+                    document.getElementById('tog-devices').className = 'toggle-btn' + (mode==='devices' ? ' active-devices' : '');
+                    document.getElementById('tog-in').className = 'toggle-btn' + (mode==='in' ? ' active-in' : '');
+                    document.getElementById('tog-out').className = 'toggle-btn' + (mode==='out' ? ' active-out' : '');
+                    applyFilters();
+                }
+
+                // ── Date range ──
+                function applyDateRange() {
+                    var df = document.getElementById('date-from').value;
+                    var dt = document.getElementById('date-to').value;
+                    if (df || dt) {
+                        window.location.href = '/zkteco/attendance/map?date_from=' + encodeURIComponent(df || '') + '&date_to=' + encodeURIComponent(dt || df || '');
+                    }
+                }
+
+                // ── Fit map bounds ──
+                function fitMapBounds(data) {
+                    var allPins = [];
+                    // Include device markers
+                    if (currentToggle === 'all' || currentToggle === 'devices') {
+                        allDevices.forEach(function(d) { allPins.push(L.marker([d.lat, d.lng])); });
+                    }
+                    // Include employee markers
+                    if (currentToggle !== 'devices') {
+                        mapEmpMarkers.forEach(function(m) {
+                            allPins.push(m.leaflet);
+                            if (m.outLeaflet) allPins.push(m.outLeaflet);
+                        });
+                    }
+                    if (allPins.length > 0) {
+                        map.fitBounds(L.featureGroup(allPins).getBounds().pad(0.2));
+                    }
+                }
+
+                // ── Search on type ──
+                document.getElementById('search-input').addEventListener('input', function() {
+                    applyFilters();
+                });
+
+                // ══════════════════════════════════════════════════════════════
+                // INITIAL RENDER
+                // ══════════════════════════════════════════════════════════════
+                buildDeviceMarkers();
+                applyFilters();
+/*]]>*/            </script>
+        </t>
+    </template>
+</odoo>

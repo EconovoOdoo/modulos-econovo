@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Attendance and Salary Statement - PDF Report Template -->
+    <!-- Developer guide: to add a new column, add a Monetary field to
+         DotbdAttendanceStatementLine, add keyword detection in
+         _get_native_salary(), add a th/td here, and update the totals row. -->
+
+    <record id="report_attendance_statement_template" model="ir.ui.view">
+        <field name="name">dotbd_hr_zk_attendance_suite.report_attendance_statement_template</field>
+        <field name="type">qweb</field>
+        <field name="arch" type="xml">
+        <t t-name="dotbd_hr_zk_attendance_suite.report_attendance_statement_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="wizard">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <!-- ── Header ──────────────────────────────────── -->
+                        <div class="row mb-4">
+                            <div class="col-8">
+                                <h3 class="mb-1" style="color:#1c3a5e;">
+                                    Attendance &amp; Salary Statement
+                                </h3>
+                                <p class="mb-0 text-muted">
+                                    <t t-set="month_name" t-value="dict([
+                                        ('1','January'),('2','February'),('3','March'),
+                                        ('4','April'),('5','May'),('6','June'),
+                                        ('7','July'),('8','August'),('9','September'),
+                                        ('10','October'),('11','November'),('12','December')
+                                    ]).get(wizard.month, wizard.month)"/>
+                                    Period: <strong>
+                                        <t t-esc="month_name"/> <t t-esc="wizard.year"/>
+                                    </strong>
+                                </p>
+                            </div>
+                            <div class="col-4 text-right">
+                                <p class="mb-0 text-muted small">
+                                    Generated: <t t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y %H:%M')"/>
+                                </p>
+                                <p class="mb-0 text-muted small">
+                                    Employees: <strong><t t-esc="len(wizard.line_ids)"/></strong>
+                                </p>
+                                <p class="mb-0 text-muted small">
+                                    Source:
+                                    <t t-if="wizard.use_native_payroll">
+                                        <span class="badge badge-success">Native Payroll</span>
+                                    </t>
+                                    <t t-else="">
+                                        <span class="badge badge-secondary">Our Payroll System</span>
+                                    </t>
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- ── Table ───────────────────────────────────── -->
+                        <table class="table table-sm table-bordered"
+                               style="font-size:0.78em; page-break-inside: auto;">
+                            <thead style="background-color:#1c3a5e; color:#ffffff;">
+                                <tr>
+                                    <th style="width:3%;">#</th>
+                                    <th style="width:18%;">Employee</th>
+                                    <th style="width:12%;">Department</th>
+                                    <th class="text-right" style="width:8%;">Wage</th>
+                                    <th class="text-right" style="width:7%;">Housing</th>
+                                    <th class="text-right" style="width:7%;">Transport</th>
+                                    <th class="text-right" style="width:7%;">Bonus</th>
+                                    <th class="text-right" style="width:7%;">Advance</th>
+                                    <th class="text-right" style="width:7%;">Deductions</th>
+                                    <th class="text-right" style="width:6%;">Days</th>
+                                    <th class="text-right" style="width:6%;">Hours</th>
+                                    <th class="text-right" style="width:6%;">OT Hrs</th>
+                                    <th class="text-right font-weight-bold" style="width:8%;">Net</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-set="total_wage" t-value="0"/>
+                                <t t-set="total_housing" t-value="0"/>
+                                <t t-set="total_transport" t-value="0"/>
+                                <t t-set="total_bonus" t-value="0"/>
+                                <t t-set="total_advance" t-value="0"/>
+                                <t t-set="total_deductions" t-value="0"/>
+                                <t t-set="total_days" t-value="0"/>
+                                <t t-set="total_hours" t-value="0"/>
+                                <t t-set="total_overtime" t-value="0"/>
+                                <t t-set="total_net" t-value="0"/>
+                                <t t-set="row_num" t-value="0"/>
+
+                                <t t-foreach="wizard.line_ids" t-as="line">
+                                    <t t-set="row_num" t-value="row_num + 1"/>
+                                    <t t-set="total_wage"       t-value="total_wage + line.wage"/>
+                                    <t t-set="total_housing"    t-value="total_housing + line.housing"/>
+                                    <t t-set="total_transport"  t-value="total_transport + line.transport"/>
+                                    <t t-set="total_bonus"      t-value="total_bonus + line.bonus"/>
+                                    <t t-set="total_advance"    t-value="total_advance + line.advance"/>
+                                    <t t-set="total_deductions" t-value="total_deductions + line.deductions"/>
+                                    <t t-set="total_days"       t-value="total_days + line.attendance_days"/>
+                                    <t t-set="total_hours"      t-value="total_hours + line.worked_hours"/>
+                                    <t t-set="total_overtime"   t-value="total_overtime + line.overtime_hours"/>
+                                    <t t-set="total_net"        t-value="total_net + line.net_amount"/>
+
+                                    <tr t-attf-style="background:#{row_num % 2 == 0 and '#f8f9fa' or 'white'}">
+                                        <td class="text-center"><t t-esc="row_num"/></td>
+                                        <td><t t-esc="line.employee_id.name"/></td>
+                                        <td><t t-esc="line.department_id.name or ''"/></td>
+                                        <td class="text-right">
+                                            <t t-esc="'%.2f' % line.wage"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <t t-esc="'%.2f' % line.housing"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <t t-esc="'%.2f' % line.transport"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <t t-esc="'%.2f' % line.bonus"/>
+                                        </td>
+                                        <td class="text-right text-danger">
+                                            <t t-esc="'(%.2f)' % line.advance if line.advance else '—'"/>
+                                        </td>
+                                        <td class="text-right text-danger">
+                                            <t t-esc="'(%.2f)' % line.deductions if line.deductions else '—'"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <t t-esc="'%.1f' % line.attendance_days"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <t t-esc="'%.1f' % line.worked_hours"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <t t-esc="'%.1f' % line.overtime_hours if line.overtime_hours else '—'"/>
+                                        </td>
+                                        <td class="text-right font-weight-bold"
+                                            t-attf-style="color:#{line.net_amount >= 0 and '#155724' or '#721c24'}">
+                                            <t t-esc="'%.2f' % line.net_amount"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+
+                            <!-- Totals row -->
+                            <tfoot style="background-color:#e8f5e9; font-weight:bold;">
+                                <tr>
+                                    <td colspan="3" class="text-right">TOTAL</td>
+                                    <td class="text-right"><t t-esc="'%.2f' % total_wage"/></td>
+                                    <td class="text-right"><t t-esc="'%.2f' % total_housing"/></td>
+                                    <td class="text-right"><t t-esc="'%.2f' % total_transport"/></td>
+                                    <td class="text-right"><t t-esc="'%.2f' % total_bonus"/></td>
+                                    <td class="text-right text-danger"><t t-esc="'(%.2f)' % total_advance"/></td>
+                                    <td class="text-right text-danger"><t t-esc="'(%.2f)' % total_deductions"/></td>
+                                    <td class="text-right"><t t-esc="'%.1f' % total_days"/></td>
+                                    <td class="text-right"><t t-esc="'%.1f' % total_hours"/></td>
+                                    <td class="text-right"><t t-esc="'%.1f' % total_overtime"/></td>
+                                    <td class="text-right" style="color:#155724; font-size:1.05em;">
+                                        <t t-esc="'%.2f' % total_net"/>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                        <!-- ── Signature block ─────────────────────────── -->
+                        <div class="row mt-5">
+                            <div class="col-4 text-center">
+                                <div style="border-top:1px solid #ccc; padding-top:4px; margin-top:30px;">
+                                    Prepared By
+                                </div>
+                            </div>
+                            <div class="col-4 text-center">
+                                <div style="border-top:1px solid #ccc; padding-top:4px; margin-top:30px;">
+                                    HR Manager
+                                </div>
+                            </div>
+                            <div class="col-4 text-center">
+                                <div style="border-top:1px solid #ccc; padding-top:4px; margin-top:30px;">
+                                    Director / CEO
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+        </t>
+        </field>
+    </record>
+
+    <!-- ══════════════════ REPORT ACTION ══════════════════ -->
+    <record id="action_report_attendance_statement" model="ir.actions.report">
+        <field name="name">Attendance &amp; Salary Statement</field>
+        <field name="model">dotbd.attendance.statement.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">dotbd_hr_zk_attendance_suite.report_attendance_statement_template</field>
+        <field name="report_file">dotbd_hr_zk_attendance_suite.report_attendance_statement_template</field>
+        <field name="print_report_name">'Attendance Statement - %s %s' % (object.month, object.year)</field>
+        <field name="binding_model_id" ref="base.model_res_company" eval="False"/>
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+    </record>
+
+</odoo>

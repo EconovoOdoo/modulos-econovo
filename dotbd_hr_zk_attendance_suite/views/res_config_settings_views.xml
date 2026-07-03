@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Inherit Settings View to add Late Check-in Configuration -->
+    <record id="res_config_settings_view_form_inherit_hr_zk" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.hr.zk.attendance</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="hr_attendance.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@name='overtime_settings']" position="after">
+                <!-- has_accounting must be declared here (outside the invisible block)
+                     so the renderer knows its value before evaluating block visibility -->
+                <field name="has_accounting" invisible="1"/>
+
+                <block title="Attendance UI Preferences" name="dotbd_attendance_ui_prefs">
+                    <setting string="Default Landing Page"
+                             help="Choose which page opens first when entering the Attendance module.">
+                        <field name="attendance_landing_page" widget="radio"/>
+                        <div class="text-muted mt4">
+                            <b>Dashboard</b>: our custom attendance summary dashboard.<br/>
+                            <b>Overview</b>: Odoo's built-in attendance records list.
+                        </div>
+                    </setting>
+
+                </block>
+
+                <block title="Shift &amp; Auto-Close" name="dotbd_shift_autoclose_container">
+                    <setting string="Enable Shift-Aware Auto-Close"
+                             help="Master switch. When OFF, stuck open attendance records must be closed manually via Attendance → Open Attendance (No Check-Out).">
+                        <field name="enable_auto_close"/>
+                        <div class="mt16" invisible="not enable_auto_close">
+                            <label for="auto_close_checkout_offset_hours" class="o_form_label"/>
+                            <div class="text-muted">
+                                Hours added to the shift end when auto-closing. 0 = strict (check-out = exact shift end). Any positive integer (1, 2, 5, ...) gives grace so brief overtime is still credited. Also delays the cron by the same amount.
+                            </div>
+                            <field name="auto_close_checkout_offset_hours" class="text-center" style="width: 5ch;"/>
+                            <span class="ms-2">hours</span>
+                            <br/><br/>
+
+                            <label for="max_shift_hours" class="o_form_label"/>
+                            <div class="text-muted">
+                                Fallback window when an employee has no fixed schedule. A check-out punch within this many hours of the last check-in is paired as the same shift (covers night shifts that cross midnight).
+                            </div>
+                            <field name="max_shift_hours" class="text-center" style="width: 5ch;"/>
+                            <span class="ms-2">hours</span>
+                            <br/><br/>
+
+                            <label for="max_open_attendance_hours" class="o_form_label"/>
+                            <div class="text-muted">
+                                If a check-in has no check-out for longer than this, the hourly cron auto-closes it at the shift end. Prevents stuck open records from blocking future punches.
+                            </div>
+                            <field name="max_open_attendance_hours" class="text-center" style="width: 5ch;"/>
+                            <span class="ms-2">hours</span>
+                            <br/><br/>
+
+                            <label for="shift_hours_default" class="o_form_label"/>
+                            <div class="text-muted">
+                                Fallback shift length used when auto-closing a record for an employee with no work schedule.
+                            </div>
+                            <field name="shift_hours_default" class="text-center" style="width: 5ch;"/>
+                            <span class="ms-2">hours</span>
+                            <br/><br/>
+
+                            <label for="native_fallback_hours" class="o_form_label"/>
+                            <div class="text-muted">
+                                Safety net for Odoo native Automatic Check-Out. Normally we defer fixed-schedule employees to Odoo's own cron. If a record stays open longer than this (native cron failed, schedule was changed mid-shift, manual edit, etc.), our module closes it as a backup. Set 0 to disable the safety net.
+                            </div>
+                            <field name="native_fallback_hours" class="text-center" style="width: 5ch;"/>
+                            <span class="ms-2">hours</span>
+                        </div>
+                    </setting>
+                </block>
+
+                <!-- ── Native Payroll Integration ───────────────────── -->
+                <block title="Payroll Integration" name="native_payroll_container">
+                    <field name="native_payroll_installed" invisible="1"/>
+                    <setting string="Use Native Odoo Payroll for Attendance Statements"
+                             help="When ON, the Attendance Statement wizard reads wage, housing, transport and deductions from native Odoo payroll (hr.contract / hr.payslip). Works with Community and Enterprise. When OFF, uses our own salary assignment system.">
+                        <field name="enable_native_payroll"/>
+                        <div class="text-muted mt-2" style="font-size:0.85em;"
+                             invisible="not native_payroll_installed">
+                            <i class="fa fa-check text-success" title="Check" aria-label="Check"/>
+                            Native payroll is installed. Salary data will be auto-filled from
+                            <strong>confirmed payslips → contracts → salary rules</strong>
+                            (in that priority order).
+                        </div>
+                        <div class="alert alert-warning mt-2 py-2 px-3 mb-0" role="alert"
+                             style="font-size:0.85em;"
+                             invisible="native_payroll_installed">
+                            <i class="fa fa-exclamation-triangle" title="Exclamation triangle" aria-label="Exclamation triangle"/>
+                            Native payroll (<code>hr_payroll</code> or <code>hr_payroll_community</code>)
+                            is <strong>not installed</strong>. This setting has no effect —
+                            salary data will always come from our own salary assignment system.
+                        </div>
+                    </setting>
+                </block>
+
+                <block title="Late Check-in" name="late_checkin_penalties_container">
+                    <!-- Enable Late Penalties -->
+                    <setting id="enable_late_penalties_setting"
+                             string="Enable Late Check-in Penalties"
+                             company_dependent="1"
+                             help="Enable automatic tracking and penalty calculation for late check-ins">
+                        <field name="enable_late_penalties"/>
+
+                        <!-- All late check-in settings -->
+                        <div class="mt16" invisible="not enable_late_penalties">
+                            <label for="deduction_amount" class="o_form_label">
+                                Deduction Amount
+                            </label>
+                            <div class="text-muted">
+                                Amount to be deducted from payslip. If 'Per Minute' is chosen, this amount is deducted for each minute late. If 'Per Total' is chosen, this fixed amount is deducted once per late check-in.
+                            </div>
+                            <field name="dotbd_currency_id" invisible="1"/>
+                            <field name="deduction_amount" class="text-center" style="width: 10ch;"/>
+                            <span class="ms-2">৳</span>
+                            <br/><br/>
+
+                            <label for="deduction_type" class="o_form_label">
+                                Deduction Type
+                            </label>
+                            <field name="deduction_type" widget="radio"/>
+                            <br/><br/>
+
+                            <label for="late_check_in_after" class="o_form_label">
+                                Late Check-in Starts After
+                            </label>
+                            <div class="text-muted">
+                                Grace period before considering check-in as late (tolerance time)
+                            </div>
+                            <span class="me-2">Time Period</span>
+                            <field name="late_check_in_after" class="text-center" style="width: 5ch;"/>
+                            <span class="ms-2">Minutes</span>
+                            <br/><br/>
+
+                            <label for="maximum_minutes" class="o_form_label">
+                                Maximum Late Minute
+                            </label>
+                            <div class="text-muted">
+                                Maximum threshold for recording late check-ins. Beyond this, the attendance may be treated as absence. For example, if set to 100, a 99-minute late check-in will be recorded, but a 101-minute late check-in will not.
+                            </div>
+                            <span class="me-2">Time Period</span>
+                            <field name="maximum_minutes" class="text-center" style="width: 5ch;"/>
+                            <span class="ms-2">Minutes</span>
+                        </div>
+                    </setting>
+                </block>
+                <block title="Payroll" name="dotbd_payroll_settings_container">
+                    <setting id="enable_auto_payslip_setting"
+                             string="Auto Monthly Payslip Generation"
+                             help="Automatically generate payslips on the 1st of each month for all employees with an active salary assignment.">
+                        <field name="enable_auto_payslip"/>
+                        <div class="mt16" invisible="not enable_auto_payslip">
+                            <label for="payslip_notify_hr" class="o_form_label" string="Notify HR Manager on Auto Generation" />
+                            <div class="text-muted mb8">Send an internal message to HR managers after automatic payslip generation completes.</div>
+                            <field name="payslip_notify_hr"/>
+                        </div>
+                    </setting>
+                    <setting string="Auto-Email Payslip to Employee on Confirm"
+                             help="When a payslip is confirmed, automatically send the PDF payslip to the employee's work email.">
+                        <field name="payslip_auto_email"/>
+                    </setting>
+                    <setting string="Sync Deductions to Odoo Payroll (if installed)"
+                             help="Push attendance deduction totals to hr.payslip input lines when hr_payroll or hr_payroll_community is detected.">
+                        <field name="enable_hr_payroll_sync"/>
+                    </setting>
+                    <setting id="enable_absence_fine_setting"
+                             string="Enable Absence Fine"
+                             help="Automatically deduct an amount per absent day on the payslip. Useful when the Time Off module is not used.">
+                        <field name="enable_absence_fine"/>
+                        <div class="mt16" invisible="not enable_absence_fine">
+                            <label for="absence_fine_amount" class="o_form_label" string="Absence Fine Per Day" />
+                            <div class="text-muted mb8">Amount deducted per absent day. Set to 0 to auto-calculate (daily wage = basic_wage ÷ total_working_days).</div>
+                            <field name="absence_fine_amount" class="text-center" style="width: 10ch;"/>
+                            <span class="ms-2">per day (0 = auto daily wage)</span>
+                        </div>
+                    </setting>
+                </block>
+                <block title="Weekend Days" name="weekend_days_container">
+                    <setting string="Monday"
+                             help="Mark Monday as a non-working (weekend) day for your company">
+                        <field name="weekend_monday"/>
+                    </setting>
+                    <setting string="Tuesday"
+                             help="Mark Tuesday as a non-working (weekend) day for your company">
+                        <field name="weekend_tuesday"/>
+                    </setting>
+                    <setting string="Wednesday"
+                             help="Mark Wednesday as a non-working (weekend) day for your company">
+                        <field name="weekend_wednesday"/>
+                    </setting>
+                    <setting string="Thursday"
+                             help="Mark Thursday as a non-working (weekend) day for your company">
+                        <field name="weekend_thursday"/>
+                    </setting>
+                    <setting string="Friday"
+                             help="Mark Friday as a non-working (weekend) day for your company">
+                        <field name="weekend_friday"/>
+                    </setting>
+                    <setting string="Saturday"
+                             help="Mark Saturday as a non-working (weekend) day for your company">
+                        <field name="weekend_saturday"/>
+                    </setting>
+                    <setting string="Sunday"
+                             help="Mark Sunday as a non-working (weekend) day for your company">
+                        <field name="weekend_sunday"/>
+                    </setting>
+                </block>
+
+                <!-- ── Payroll Accounting (record IDs — functional only when account module present) ── -->
+                <block title="Payroll Accounting" name="dotbd_payroll_accounting">
+                    <setting string="Salary Journal (Record ID)"
+                             help="Record ID of the journal used to post salary entries. Set to 0 to disable.">
+                        <field name="dotbd_salary_journal_id"/>
+                    </setting>
+                    <setting string="Salary Expense Account (Record ID)"
+                             help="Record ID of the debit account for salary expense.">
+                        <field name="dotbd_salary_expense_account_id"/>
+                    </setting>
+                    <setting string="Salary Payable Account (Record ID)"
+                             help="Record ID of the credit account for net salary payable.">
+                        <field name="dotbd_salary_payable_account_id"/>
+                    </setting>
+                    <setting string="Deduction Payable Account (Record ID, optional)"
+                             help="Record ID of the separate credit account for deductions. 0 = combined into Payable.">
+                        <field name="dotbd_salary_deduction_account_id"/>
+                    </setting>
+                    <div class="text-muted" style="font-size:12px; padding:4px 0 8px 0;">
+                        <i class="fa fa-info-circle me-1" title="Info circle" aria-label="Info circle"/>
+                        These fields store <b>record IDs</b> of accounting objects.
+                        On <b>Confirm</b>: DR Salary Expense → CR Salary Payable (+ Deduction Payable if configured).
+                        On <b>Reset to Draft</b>: the entry is automatically cancelled.
+                        If IDs are 0 or the Accounting module is not installed, payslips work standalone without posting.
+                    </div>
+                </block>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

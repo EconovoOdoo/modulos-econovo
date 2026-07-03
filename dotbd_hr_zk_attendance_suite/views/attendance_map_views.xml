@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Old OWL Attendance Map menu REMOVED.
+         All map features are now unified in device_map_template.xml
+         accessed via menu_attendance_map in biometric_device_attendance_menus.xml
+         which points to /zkteco/attendance/map
+    -->
+</odoo>

@@ -1,0 +1,415 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Dot BD Solutions Limited – Attendance Main Dashboard OWL Template -->
+<templates xml:space="preserve">
+
+<t t-name="dotbd_hr_zk_attendance_suite.AttendanceDashboard">
+    <div class="o_attendance_dashboard">
+
+        <!-- ── Top bar ───────────────────────────────────────────────────────── -->
+        <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+
+            <!-- Greeting -->
+            <div class="o_att_greeting">
+                <h4 class="fw-bold mb-0"><t t-esc="greeting"/>, let's check attendance.</h4>
+                <p class="text-muted mb-0 mt-1"><t t-esc="todayLabel"/></p>
+            </div>
+
+            <!-- Filters -->
+            <div class="o_att_filters d-flex flex-wrap gap-3 align-items-end">
+
+                <div class="o_att_filter_group">
+                    <span class="o_att_filter_label">Department</span>
+                    <select class="form-select o_att_select" t-on-change="onDeptChange">
+                        <option value="">All Departments</option>
+                        <t t-foreach="state.departments" t-as="dept" t-key="dept.id">
+                            <option t-att-value="dept.id"
+                                    t-att-selected="state.department_id === dept.id">
+                                <t t-esc="dept.name"/>
+                            </option>
+                        </t>
+                    </select>
+                </div>
+
+                <div class="o_att_filter_group">
+                    <span class="o_att_filter_label">Employee</span>
+                    <select class="form-select o_att_select" t-on-change="onEmpChange">
+                        <option value="">All Employees</option>
+                        <t t-foreach="state.employees" t-as="emp" t-key="emp.id">
+                            <option t-att-value="emp.id"
+                                    t-att-selected="state.employee_id === emp.id"
+                                    t-esc="emp.device_id_num ? emp.name + ' [ID: ' + emp.device_id_num + ']' : emp.name"/>
+                        </t>
+                    </select>
+                </div>
+
+                <div class="o_att_filter_group">
+                    <span class="o_att_filter_label">Month</span>
+                    <select class="form-select o_att_select" t-on-change="onMonthChange">
+                        <option value="1"  t-att-selected="state.month === 1">January</option>
+                        <option value="2"  t-att-selected="state.month === 2">February</option>
+                        <option value="3"  t-att-selected="state.month === 3">March</option>
+                        <option value="4"  t-att-selected="state.month === 4">April</option>
+                        <option value="5"  t-att-selected="state.month === 5">May</option>
+                        <option value="6"  t-att-selected="state.month === 6">June</option>
+                        <option value="7"  t-att-selected="state.month === 7">July</option>
+                        <option value="8"  t-att-selected="state.month === 8">August</option>
+                        <option value="9"  t-att-selected="state.month === 9">September</option>
+                        <option value="10" t-att-selected="state.month === 10">October</option>
+                        <option value="11" t-att-selected="state.month === 11">November</option>
+                        <option value="12" t-att-selected="state.month === 12">December</option>
+                    </select>
+                </div>
+
+                <div class="o_att_filter_group">
+                    <span class="o_att_filter_label">Year</span>
+                    <select class="form-select o_att_select" t-on-change="onYearChange">
+                        <option value="2023" t-att-selected="state.year === 2023">2023</option>
+                        <option value="2024" t-att-selected="state.year === 2024">2024</option>
+                        <option value="2025" t-att-selected="state.year === 2025">2025</option>
+                        <option value="2026" t-att-selected="state.year === 2026">2026</option>
+                        <option value="2027" t-att-selected="state.year === 2027">2027</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Holiday banner ─────────────────────────────────────────────────── -->
+        <t t-if="state.today_holiday">
+            <div class="o_holiday_today_banner d-flex align-items-center gap-2 mb-3">
+                <i class="fa fa-sun-o"/>
+                <span>Today is a Public Holiday — <strong><t t-esc="state.today_holiday"/></strong></span>
+            </div>
+        </t>
+        <t t-if="state.upcoming_holidays.length">
+            <div class="o_upcoming_holidays_bar mb-3">
+                <i class="fa fa-calendar me-1"/>
+                Upcoming holidays:
+                <t t-foreach="state.upcoming_holidays" t-as="h" t-key="h.date">
+                    <strong><t t-esc="h.name"/></strong> (<t t-esc="h.date"/>)<t t-if="!h_last">, </t>
+                </t>
+            </div>
+        </t>
+
+        <!-- ── Stat cards ─────────────────────────────────────────────────────── -->
+        <p class="o_att_section_label mb-3">Today's Overview</p>
+        <div class="d-flex flex-wrap gap-3 mb-4">
+
+            <div class="o_att_stat_card">
+                <div class="o_att_stat_icon o_icon_employees">
+                    <i class="fa fa-users"/>
+                </div>
+                <div>
+                    <div class="o_att_stat_label">Total Employees</div>
+                    <div class="o_att_stat_value"><t t-esc="state.today.total"/></div>
+                </div>
+            </div>
+
+            <div class="o_att_stat_card">
+                <div class="o_att_stat_icon o_icon_present">
+                    <i class="fa fa-check-circle"/>
+                </div>
+                <div>
+                    <div class="o_att_stat_label">Present</div>
+                    <div class="o_att_stat_value o_val_present"><t t-esc="state.today.present"/></div>
+                </div>
+            </div>
+
+            <div class="o_att_stat_card">
+                <div class="o_att_stat_icon o_icon_absent">
+                    <i class="fa fa-times-circle"/>
+                </div>
+                <div>
+                    <div class="o_att_stat_label">Absent</div>
+                    <div class="o_att_stat_value o_val_absent"><t t-esc="state.today.absent"/></div>
+                </div>
+            </div>
+
+            <div class="o_att_stat_card">
+                <div class="o_att_stat_icon o_icon_leave">
+                    <i class="fa fa-plane"/>
+                </div>
+                <div>
+                    <div class="o_att_stat_label">On Leave</div>
+                    <div class="o_att_stat_value o_val_leave"><t t-esc="state.today.on_leave"/></div>
+                </div>
+            </div>
+
+            <t t-if="state.today.late_enabled">
+                <div class="o_att_stat_card">
+                    <div class="o_att_stat_icon o_icon_late">
+                        <i class="fa fa-clock-o"/>
+                    </div>
+                    <div>
+                        <div class="o_att_stat_label">Late Today</div>
+                        <div class="o_att_stat_value o_val_late"><t t-esc="state.today.late"/></div>
+                    </div>
+                </div>
+
+                <div class="o_att_stat_card">
+                    <div class="o_att_stat_icon o_icon_fine">
+                        <i class="fa fa-money"/>
+                    </div>
+                    <div>
+                        <div class="o_att_stat_label">Total Fine</div>
+                        <div class="o_att_stat_value o_val_fine">
+                            <t t-esc="state.today.currency_symbol"/>
+                            <t t-esc="state.today.total_fine.toFixed(2)"/>
+                        </div>
+                    </div>
+                </div>
+            </t>
+
+        </div>
+
+        <!-- ── Today status filter chips ─────────────────────────────────────── -->
+        <div class="o_att_status_filters d-flex flex-wrap gap-2 mb-4">
+            <button t-attf-class="o_status_chip o_chip_present {{ state.status_filter === 'present' ? 'active' : '' }}"
+                    t-on-click="() => this.onStatusFilter('present')">
+                <i class="fa fa-check-circle me-1"/> Present
+                <span class="o_chip_count"><t t-esc="monthlyPresentCount"/></span>
+            </button>
+            <button t-attf-class="o_status_chip o_chip_absent {{ state.status_filter === 'absent' ? 'active' : '' }}"
+                    t-on-click="() => this.onStatusFilter('absent')">
+                <i class="fa fa-times-circle me-1"/> Absent
+                <span class="o_chip_count"><t t-esc="monthlyAbsentCount"/></span>
+            </button>
+            <t t-if="state.today.late_enabled">
+                <button t-attf-class="o_status_chip o_chip_late {{ state.status_filter === 'late' ? 'active' : '' }}"
+                        t-on-click="() => this.onStatusFilter('late')">
+                    <i class="fa fa-clock-o me-1"/> Late
+                    <span class="o_chip_count"><t t-esc="monthlyLateCount"/></span>
+                </button>
+            </t>
+            <button t-attf-class="o_status_chip o_chip_leave {{ state.status_filter === 'leave' ? 'active' : '' }}"
+                    t-on-click="() => this.onStatusFilter('leave')">
+                <i class="fa fa-plane me-1"/> On Leave
+                <span class="o_chip_count"><t t-esc="monthlyLeaveCount"/></span>
+            </button>
+        </div>
+
+        <!-- ── Calendar section ───────────────────────────────────────────────── -->
+        <div class="d-flex align-items-center justify-content-between mb-2">
+            <p class="o_att_section_label mb-0">
+                Monthly Attendance — <t t-esc="state.month_name"/>
+            </p>
+
+            <!-- Sort buttons -->
+            <div class="o_att_sort_group d-flex gap-1 flex-wrap">
+                <button t-attf-class="o_sort_btn {{ state.sort_by === 'top_present' ? 'active o_sort_present' : '' }}"
+                        t-on-click="() => this.onSortBy('top_present')">
+                    <i class="fa fa-sort-amount-desc me-1"/>Top Present
+                </button>
+                <button t-attf-class="o_sort_btn {{ state.sort_by === 'top_absent' ? 'active o_sort_absent' : '' }}"
+                        t-on-click="() => this.onSortBy('top_absent')">
+                    <i class="fa fa-sort-amount-desc me-1"/>Top Absent
+                </button>
+                <button t-attf-class="o_sort_btn {{ state.sort_by === 'top_late' ? 'active o_sort_late' : '' }}"
+                        t-on-click="() => this.onSortBy('top_late')">
+                    <i class="fa fa-sort-amount-desc me-1"/>Top Late
+                </button>
+                <button t-attf-class="o_sort_btn {{ state.sort_by === 'top_leave' ? 'active o_sort_leave' : '' }}"
+                        t-on-click="() => this.onSortBy('top_leave')">
+                    <i class="fa fa-sort-amount-desc me-1"/>Top Leave
+                </button>
+            </div>
+        </div>
+
+        <!-- Legend + Download -->
+        <div class="d-flex align-items-center justify-content-end gap-3 flex-wrap mb-3">
+            <div class="o_att_legend d-flex gap-3 flex-wrap">
+                <div class="o_legend_item"><span class="o_leg_badge o_leg_present">P</span> Present</div>
+                <div class="o_legend_item"><span class="o_leg_badge o_leg_absent">A</span> Absent</div>
+                <div class="o_legend_item"><span class="o_leg_badge o_leg_leave">L</span> Leave</div>
+                <div class="o_legend_item"><span class="o_leg_badge o_leg_weekend">W</span> Weekend</div>
+                <div class="o_legend_item"><span class="o_leg_badge o_leg_holiday">H</span> Holiday</div>
+                <div class="o_legend_item"><span class="o_leg_badge o_leg_late">LT</span> Late</div>
+            </div>
+            <button class="btn o_att_btn_download"
+                    t-on-click="onDownloadExcel"
+                    t-att-disabled="state.downloading">
+                <i class="fa fa-download me-1"/>
+                <t t-if="state.downloading">Preparing…</t>
+                <t t-else="">Download Excel</t>
+            </button>
+        </div>
+
+        <!-- ── Selected employee summary panel ───────────────────────────────── -->
+        <t t-if="state.selected_employee">
+            <div class="o_emp_summary_panel mb-3">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <img t-att-src="state.selected_employee.avatar_url"
+                         class="o_emp_summary_avatar"
+                         t-att-alt="state.selected_employee.employee_name"/>
+                    <div>
+                        <div class="o_emp_summary_name">
+                            <t t-esc="state.selected_employee.employee_name"/>
+                        </div>
+                        <div class="o_emp_summary_job">
+                            <t t-esc="state.selected_employee.job_title"/>
+                        </div>
+                    </div>
+                    <button class="btn-close ms-auto o_emp_summary_close"
+                            t-on-click="() => { state.selected_employee = null; }"/>
+                </div>
+                <div class="d-flex flex-wrap gap-3">
+                    <div class="o_emp_sum_chip o_sum_present">
+                        <span class="o_sum_chip_val"><t t-esc="state.selected_employee.summary.P"/></span>
+                        <span class="o_sum_chip_lbl">Present</span>
+                    </div>
+                    <div class="o_emp_sum_chip o_sum_absent">
+                        <span class="o_sum_chip_val"><t t-esc="state.selected_employee.summary.A"/></span>
+                        <span class="o_sum_chip_lbl">Absent</span>
+                    </div>
+                    <div class="o_emp_sum_chip o_sum_leave">
+                        <span class="o_sum_chip_val"><t t-esc="state.selected_employee.summary.L"/></span>
+                        <span class="o_sum_chip_lbl">Leave</span>
+                    </div>
+                    <div class="o_emp_sum_chip o_sum_weekend">
+                        <span class="o_sum_chip_val"><t t-esc="state.selected_employee.summary.W"/></span>
+                        <span class="o_sum_chip_lbl">Weekend</span>
+                    </div>
+                    <div class="o_emp_sum_chip o_sum_holiday">
+                        <span class="o_sum_chip_val"><t t-esc="state.selected_employee.summary.H"/></span>
+                        <span class="o_sum_chip_lbl">Holiday</span>
+                    </div>
+                    <div class="o_emp_sum_chip o_sum_late">
+                        <span class="o_sum_chip_val"><t t-esc="state.selected_employee.summary.Late"/></span>
+                        <span class="o_sum_chip_lbl">Late</span>
+                    </div>
+                </div>
+            </div>
+        </t>
+
+        <!-- Loading state -->
+        <t t-if="state.loading">
+            <div class="text-center py-5 text-muted">
+                <i class="fa fa-spinner fa-spin fa-2x mb-2"/>
+                <div>Loading attendance data…</div>
+            </div>
+        </t>
+
+        <!-- Calendar table -->
+        <t t-else="">
+            <div class="o_att_table_outer">
+                <table class="o_att_table">
+                    <thead>
+                        <tr>
+                            <th class="o_th_employee o_sticky_col">Employee</th>
+                            <t t-foreach="state.calendar[0] and state.calendar[0].days or []"
+                               t-as="day_info" t-key="day_info.day">
+                                <th t-attf-class="o_th_day {{ day_info.is_weekend ? 'o_weekend_col' : '' }}">
+                                    <span class="o_day_name"><t t-esc="day_info.day_name"/></span>
+                                    <span class="o_day_num"><t t-esc="day_info.day"/></span>
+                                </th>
+                            </t>
+                            <th class="o_th_sum">P</th>
+                            <th class="o_th_sum">A</th>
+                            <th class="o_th_sum">L</th>
+                            <th class="o_th_sum">W</th>
+                            <th class="o_th_sum">H</th>
+                            <th class="o_th_sum o_th_late">Late</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="filteredCalendar" t-as="emp_row" t-key="emp_row.employee_id">
+                            <tr t-attf-class="{{ state.selected_employee and state.selected_employee.employee_id === emp_row.employee_id ? 'o_row_selected' : '' }}"
+                                t-on-click="() => this.onEmployeeSelect(emp_row)"
+                                style="cursor: pointer">
+                                <td class="o_td_employee o_sticky_col">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img t-att-src="emp_row.avatar_url"
+                                             class="o_emp_avatar"
+                                             t-att-alt="emp_row.employee_name"/>
+                                        <div>
+                                            <div class="o_emp_name"><t t-esc="emp_row.employee_name"/></div>
+                                            <div class="o_emp_job"><t t-esc="emp_row.job_title"/></div>
+                                            <t t-if="emp_row.device_id_num">
+                                                <div class="o_emp_device_id">ID: <t t-esc="emp_row.device_id_num"/></div>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </td>
+                                <t t-foreach="emp_row.days" t-as="d" t-key="d.day">
+                                    <td t-attf-class="o_att_cell {{ d.cell_class }}{{ d.cell_text ? ' o_cell_clickable' : '' }}"
+                                        t-on-click="() => this.onCellClick(emp_row, d)">
+                                        <t t-esc="d.cell_text"/>
+                                    </td>
+                                </t>
+                                <td class="o_td_sum"><t t-esc="emp_row.summary.P"/></td>
+                                <td class="o_td_sum"><t t-esc="emp_row.summary.A"/></td>
+                                <td class="o_td_sum"><t t-esc="emp_row.summary.L"/></td>
+                                <td class="o_td_sum"><t t-esc="emp_row.summary.W"/></td>
+                                <td class="o_td_sum"><t t-esc="emp_row.summary.H"/></td>
+                                <td class="o_td_sum o_td_late"><t t-esc="emp_row.summary.Late"/></td>
+                            </tr>
+                        </t>
+                        <t t-if="!filteredCalendar.length">
+                            <tr>
+                                <td t-att-colspan="state.days.length + 6"
+                                    class="text-center text-muted py-4">
+                                    No attendance data found for this period.
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+        </t>
+
+        <!-- ── Cell Detail Popup ──────────────────────────────────────────── -->
+        <t t-if="state.popup">
+            <div class="o_att_popup_overlay" t-on-click="onPopupClose"/>
+            <div class="o_att_popup shadow">
+                <button class="o_att_popup_close btn-close" t-on-click="onPopupClose"/>
+                <div class="o_att_popup_header">
+                    <strong><t t-esc="state.popup.employee_name"/></strong>
+                    <span class="text-muted ms-2 small"><t t-esc="state.popup.date_label"/></span>
+                </div>
+                <div class="o_att_popup_body">
+                    <t t-if="state.popup.check_in">
+                        <div>
+                            <i class="fa fa-sign-in me-1 text-success"/>
+                            Check-in: <strong><t t-esc="state.popup.check_in"/></strong>
+                        </div>
+                        <div>
+                            <i class="fa fa-sign-out me-1 text-danger"/>
+                            Check-out: <strong><t t-esc="state.popup.check_out || '—'"/></strong>
+                        </div>
+                        <div>
+                            <i class="fa fa-clock-o me-1"/>
+                            Worked: <strong><t t-esc="state.popup.worked_label"/></strong>
+                        </div>
+                        <t t-if="state.popup.late_minutes">
+                            <div class="text-warning mt-1">
+                                <i class="fa fa-exclamation-triangle me-1"/>
+                                Late: <strong><t t-esc="state.popup.late_minutes"/> min</strong>
+                            </div>
+                            <div class="text-muted small">
+                                Tolerance: <t t-esc="state.popup.tolerance"/> min applied
+                            </div>
+                        </t>
+                    </t>
+                    <t t-if="state.popup.leave_type">
+                        <div>
+                            <i class="fa fa-plane me-1 text-info"/>
+                            <strong><t t-esc="state.popup.leave_type"/></strong>
+                        </div>
+                        <t t-if="state.popup.leave_desc">
+                            <div class="text-muted small mt-1">
+                                <t t-esc="state.popup.leave_desc"/>
+                            </div>
+                        </t>
+                    </t>
+                    <t t-if="!state.popup.check_in and !state.popup.leave_type">
+                        <div class="text-muted">
+                            <t t-esc="state.popup.cell_text_label"/>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </t>
+
+    </div>
+</t>
+
+</templates>

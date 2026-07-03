@@ -1,0 +1,818 @@
+    # ==================== NEW PYZK METHODS - LIVE CAPTURE ====================
+
+    def action_start_live_capture(self):
+        """
+        Start real-time attendance monitoring
+        Uses pyzk method: live_capture()
+        This captures attendance events in REAL-TIME as they happen
+        """
+        self.ensure_one()
+
+        if self.live_capture_active:
+            raise UserError(_('Live capture is already running for this device!'))
+
+        # Start live capture in background thread
+        thread = threading.Thread(target=self._live_capture_worker)
+        thread.daemon = True
+        thread.start()
+
+        self.write({'live_capture_active': True})
+
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'message': f'Live capture started on {self.name}',
+                'type': 'success',
+                'sticky': False
+            }
+        }
+
+    def action_stop_live_capture(self):
+        """Stop live capture"""
+        self.ensure_one()
+        self.write({'live_capture_enabled': False, 'live_capture_active': False})
+
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'message': f'Live capture stopped on {self.name}',
+                'type': 'warning',
+                'sticky': False
+            }
+        }
+
+    def _live_capture_worker(self):
+        """
+        Background worker for live capture
+        Runs in separate thread to capture real-time events
+        """
+        device_password = self._get_device_password()
+        zk = ZK(self.device_ip, port=self.port_number, timeout=30,
+                password=device_password, ommit_ping=True)
+
+        conn = self.device_connect(zk)
+        if not conn:
+            _logger.error(f"Live capture failed: Unable to connect to {self.name}")
+            self.write({'live_capture_active': False})
+            return
+
+        try:
+            conn.disable_device()
+            _logger.info(f"Live capture started for device: {self.name}")
+
+            # Start live capture loop
+            for attendance in conn.live_capture(new_timeout=self.live_capture_timeout):
+                # Check if we should stop
+                if not self.live_capture_enabled:
+                    conn.end_live_capture = True
+                    break
+
+                if attendance is None:
+                    # No new events, continue listening
+                    continue
+
+                # Process attendance event immediately
+                self._process_live_attendance(attendance)
+
+                # Update last event time
+                self.write({'last_live_event_time': fields.Datetime.now()})
+
+                # Send real-time notification via bus
+                self._send_live_event_notification(attendance)
+
+        except Exception as e:
+            _logger.error(f"Live capture error on {self.name}: {str(e)}")
+        finally:
+            conn.enable_device()
+            conn.disconnect()
+            self.write({'live_capture_active': False})
+            _logger.info(f"Live capture stopped for device: {self.name}")
+
+    def _process_live_attendance(self, attendance):
+        """Process a single live attendance event"""
+        # Find employee by device ID
+        employee = self.env['hr.employee'].search([
+            ('device_id_num', '=', attendance.user_id)
+        ], limit=1)
+
+        if not employee:
+            _logger.warning(f"Live capture: Unknown user ID {attendance.user_id}")
+            return
+
+        # Create ZK attendance record
+        zk_attendance = self.env['zk.machine.attendance'].sudo().create({
+            'employee_id': employee.id,
+            'device_id_num': attendance.user_id,
+            'attendance_type': str(attendance.status),
+            'punch_type': str(attendance.punch),
+            'punching_time': attendance.timestamp,
+            'address_id': self.address_id.id if self.address_id else False
+        })
+
+        # Create/update hr.attendance based on mode
+        hr_attendance = self.env['hr.attendance'].sudo()
+        if self.attendance_mode == 'auto':
+            self._process_auto_attendance(employee, attendance.timestamp, hr_attendance)
+        else:
+            self._process_traditional_attendance(employee, attendance.timestamp, attendance.punch, hr_attendance)
+
+        # Display LCD message if enabled
+        if self.lcd_enabled:
+            self._display_attendance_lcd_message(employee, attendance.punch)
+
+        # Play audio if enabled
+        if self.audio_enabled:
+            self._play_attendance_audio(attendance.punch)
+
+        _logger.info(f"Live capture: Processed attendance for {employee.name} at {attendance.timestamp}")
+
+    def _send_live_event_notification(self, attendance):
+        """Send real-time notification via Odoo bus"""
+        try:
+            employee = self.env['hr.employee'].search([('device_id_num', '=', attendance.user_id)], limit=1)
+            if employee:
+                self.env['bus.bus']._sendone(
+                    self.env.user.partner_id,
+                    'attendance_live_event',
+                    {
+                        'device': self.name,
+                        'employee': employee.name,
+                        'time': str(attendance.timestamp),
+                        'type': 'Check-in' if attendance.punch == 0 else 'Check-out'
+                    }
+                )
+        except Exception as e:
+            _logger.error(f"Failed to send live event notification: {str(e)}")
+
+    # ==================== NEW PYZK METHODS - LCD MESSAGES ====================
+
+    def action_test_lcd(self):
+        """
+        Test LCD display with custom message
+        Uses pyzk methods: write_lcd(), clear_lcd()
+        """
+        self.ensure_one()
+        device_password = self._get_device_password()
+        zk = ZK(self.device_ip, port=self.port_number, timeout=15,
+                password=device_password, ommit_ping=True)
+
+        conn = self.device_connect(zk)
+        if not conn:
+            raise UserError(_('Unable to connect to device'))
+
+        try:
+            # Clear LCD first
+            conn.clear_lcd()
+
+            # Write test message
+            conn.write_lcd(line_number=1, text="Test Message")
+            conn.write_lcd(line_number=2, text=f"From: {self.env.user.name[:15]}")
+
+            self.message_post(body="LCD test message sent successfully")
+
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'message': 'Test message displayed on device LCD',
+                    'type': 'success',
+                    'sticky': False
+                }
+            }
+        finally:
+            conn.disconnect()
+
+    def action_clear_lcd(self):
+        """Clear LCD display"""
+        self.ensure_one()
+        device_password = self._get_device_password()
+        zk = ZK(self.device_ip, port=self.port_number, timeout=15,
+                password=device_password, ommit_ping=True)
+
+        conn = self.device_connect(zk)
+        if not conn:
+            raise UserError(_('Unable to connect to device'))
+
+        try:
+            conn.clear_lcd()
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'message': 'LCD cleared successfully',
+                    'type': 'success',
+                    'sticky': False
+                }
+            }
+        finally:
+            conn.disconnect()
+
+    def _display_attendance_lcd_message(self, employee, punch_type):
+        """Display personalized LCD message on attendance"""
+        if not self.lcd_enabled:
+            return
+
+        device_password = self._get_device_password()
+        zk = ZK(self.device_ip, port=self.port_number, timeout=5,
+                password=device_password, ommit_ping=True)
+
+        conn = self.device_connect(zk)
+        if conn:
+            try:
+                # Display employee name and message
+                message = self.lcd_welcome_message if punch_type == 0 else self.lcd_goodbye_message
+                conn.write_lcd(1, employee.name[:20])
+                conn.write_lcd(2, message[:20])
+            except:
+                pass
+            finally:
+                conn.disconnect()
+
+    # ==================== NEW PYZK METHODS - AUDIO FEEDBACK ====================
+
+    def action_test_voice(self):
+        """
+        Test device voice/audio feedback
+        Uses pyzk method: test_voice(index)
+        Available indices: 0-55 (different sounds/voices)
+        """
+        self.ensure_one()
+        device_password = self._get_device_password()
+        zk = ZK(self.device_ip, port=self.port_number, timeout=15,
+                password=device_password, ommit_ping=True)
+
+        conn = self.device_connect(zk)
+        if not conn:
+            raise UserError(_('Unable to connect to device'))
+
+        try:
+            # Test with check-in voice
+            conn.test_voice(index=self.checkin_voice_index)
+
+            self.message_post(body=f"Voice test played (index: {self.checkin_voice_index})")
+
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'message': f'Playing voice index {self.checkin_voice_index}',
+                    'type': 'success',
+                    'sticky': False
+                }
+            }
+        finally:
+            conn.disconnect()
+
+    def _play_attendance_audio(self, punch_type):
+        """Play audio feedback on attendance"""
+        if not self.audio_enabled:
+            return
+
+        device_password = self._get_device_password()
+        zk = ZK(self.device_ip, port=self.port_number, timeout=5,
+                password=device_password, ommit_ping=True)
+
+        conn = self.device_connect(zk)
+        if conn:
+            try:
+                voice_index = self.checkin_voice_index if punch_type == 0 else self.checkout_voice_index
+                conn.test_voice(index=voice_index)
+            except:
+                pass
+            finally:
+                conn.disconnect()
+
+    # ==================== NEW PYZK METHODS - DOOR CONTROL ====================
+
+    def action_unlock_door(self):
+        """
+        Unlock door for configured duration
+        Uses pyzk method: unlock(time)
+        """
+        self.ensure_one()
+
+        if not self.door_control_enabled:
+            raise UserError(_('Door control is not enabled for this device'))
+
+        device_password = self._get_device_password()
+        zk = ZK(self.device_ip, port=self.port_number, timeout=15,
+                password=device_password, ommit_ping=True)
+
+        conn = self.device_connect(zk)
+        if not conn:
+            raise UserError(_('Unable to connect to device'))
+
+        try:
+            # Unlock door
+            conn.unlock(time=self.default_unlock_duration)
+
+            # Update lock state
+            self.write({'current_lock_state': 'unlocked'})
+
+            # Log activity
+            self.message_post(
+                body=f"Door unlocked by {self.env.user.name} for {self.default_unlock_duration} seconds"
+            )
+
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'message': f'Door unlocked for {self.default_unlock_duration} seconds',
+                    'type': 'success',
+                    'sticky': False
+                }
+            }
+        finally:
+            conn.disconnect()
+
+    def action_get_lock_state(self):
+        """
+        Get current door lock state
+        Uses pyzk method: get_lock_state()
+        """
+        self.ensure_one()
+        device_password = self._get_device_password()
+        zk = ZK(self.device_ip, port=self.port_number, timeout=15,
+                password=device_password, ommit_ping=True)
+
+        conn = self.device_connect(zk)
+        if not conn:
+            raise UserError(_('Unable to connect to device'))
+
+        try:
+            lock_state = conn.get_lock_state()
+            state = 'locked' if lock_state else 'unlocked'
+            self.write({'current_lock_state': state})
+
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'message': f'Door is currently: {state.upper()}',
+                    'type': 'info',
+                    'sticky': False
+                }
+            }
+        finally:
+            conn.disconnect()
+
+    # ==================== NEW PYZK METHODS - USER MANAGEMENT ====================
+
+    def action_sync_users_to_device(self):
+        """
+        Sync all Odoo employees to device
+        Uses pyzk method: set_user()
+        """
+        self.ensure_one()
+        device_password = self._get_device_password()
+        zk = ZK(self.device_ip, port=self.port_number, timeout=30,
+                password=device_password, ommit_ping=True)
+
+        conn = self.device_connect(zk)
+        if not conn:
+            raise UserError(_('Unable to connect to device'))
+
+        try:
+            conn.disable_device()
+
+            # Get all employees with device ID
+            employees = self.env['hr.employee'].search([
+                ('device_id_num', '!=', False),
+                ('company_id', '=', self.company_id.id)
+            ])
+
+            enrolled_count = 0
+            for employee in employees:
+                try:
+                    # Create/update user on device
+                    conn.set_user(
+                        uid=None,  # Auto-assign
+                        name=employee.name[:24],  # Max 24 chars
+                        privilege=0,  # 0=User, 14=Admin
+                        password='',
+                        group_id='',
+                        user_id=employee.device_id_num,
+                        card=0
+                    )
+                    enrolled_count += 1
+                    _logger.info(f"Synced {employee.name} to device {self.name}")
+                except Exception as e:
+                    _logger.error(f"Failed to sync {employee.name}: {str(e)}")
+
+            # Refresh device info to get updated user count
+            sizes = conn.read_sizes()
+            self.write({
+                'user_count': sizes.get('users_cap', 0),
+            })
+
+            self.message_post(
+                body=f"Successfully synced {enrolled_count} employees to device"
+            )
+
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'message': f'Synced {enrolled_count} employees to device',
+                    'type': 'success',
+                    'sticky': False
+                }
+            }
+
+        finally:
+            conn.enable_device()
+            conn.disconnect()
+
+    # ==================== DELETE OPERATIONS (COMMENTED FOR SAFETY) ====================
+
+    # UNCOMMENT BELOW METHODS ONLY WHEN EXPLICITLY REQUESTED BY USER
+    # These operations are DESTRUCTIVE and cannot be undone!
+
+    # def action_clear_attendance(self):
+    #     """
+    #     ⚠️ DANGER: Clear ALL attendance records from device
+    #     Uses pyzk method: clear_attendance()
+    #     """
+    #     self.ensure_one()
+    #     device_password = self._get_device_password()
+    #     zk = ZK(self.device_ip, port=self.port_number, timeout=30,
+    #             password=device_password, ommit_ping=True)
+    #
+    #     conn = self.device_connect(zk)
+    #     if not conn:
+    #         raise UserError(_('Unable to connect to device'))
+    #
+    #     try:
+    #         conn.disable_device()
+    #         attendance = conn.get_attendance()
+    #
+    #         if attendance:
+    #             # Clear attendance from device
+    #             conn.clear_attendance()
+    #
+    #             # Also clear from zk.machine.attendance table
+    #             self.env['zk.machine.attendance'].search([
+    #                 ('address_id', '=', self.address_id.id if self.address_id else False)
+    #             ]).unlink()
+    #
+    #             # Update record count
+    #             sizes = conn.read_sizes()
+    #             self.write({'record_count': sizes.get('records_cap', 0)})
+    #
+    #             self.message_post(
+    #                 subject='⚠️ Attendance Records Cleared',
+    #                 body=f"ALL attendance records cleared from device by {self.env.user.name}",
+    #                 message_type='notification'
+    #             )
+    #
+    #             return {
+    #                 'type': 'ir.actions.client',
+    #                 'tag': 'display_notification',
+    #                 'params': {
+    #                     'message': 'All attendance records cleared from device',
+    #                     'type': 'warning',
+    #                     'sticky': True
+    #                 }
+    #             }
+    #         else:
+    #             raise UserError(_('No attendance records found to clear'))
+    #
+    #     finally:
+    #         conn.enable_device()
+    #         conn.disconnect()
+
+    # def action_delete_user_from_device(self, user_id):
+    #     """
+    #     ⚠️ DANGER: Delete user from device
+    #     Uses pyzk method: delete_user()
+    #     """
+    #     self.ensure_one()
+    #     device_password = self._get_device_password()
+    #     zk = ZK(self.device_ip, port=self.port_number, timeout=15,
+    #             password=device_password, ommit_ping=True)
+    #
+    #     conn = self.device_connect(zk)
+    #     if not conn:
+    #         raise UserError(_('Unable to connect to device'))
+    #
+    #     try:
+    #         conn.disable_device()
+    #         conn.delete_user(uid=None, user_id=user_id)
+    #
+    #         # Update user count
+    #         sizes = conn.read_sizes()
+    #         self.write({'user_count': sizes.get('users_cap', 0)})
+    #
+    #         self.message_post(
+    #             body=f"User {user_id} deleted from device by {self.env.user.name}"
+    #         )
+    #
+    #         return True
+    #     finally:
+    #         conn.enable_device()
+    #         conn.disconnect()
+
+    # def action_clear_all_data(self):
+    #     """
+    #     ⚠️⚠️⚠️ EXTREME DANGER: Clear ALL data from device (Factory Reset)
+    #     Uses pyzk method: clear_data()
+    #     This will delete EVERYTHING: users, fingerprints, attendance, face templates
+    #     """
+    #     self.ensure_one()
+    #     device_password = self._get_device_password()
+    #     zk = ZK(self.device_ip, port=self.port_number, timeout=30,
+    #             password=device_password, ommit_ping=True)
+    #
+    #     conn = self.device_connect(zk)
+    #     if not conn:
+    #         raise UserError(_('Unable to connect to device'))
+    #
+    #     try:
+    #         conn.disable_device()
+    #         conn.clear_data()
+    #
+    #         # Reset all capacity counters
+    #         self.write({
+    #             'user_count': 0,
+    #             'finger_count': 0,
+    #             'record_count': 0,
+    #             'face_count': 0,
+    #         })
+    #
+    #         self.message_post(
+    #             subject='⚠️⚠️⚠️ DEVICE FACTORY RESET',
+    #             body=f"ALL DATA CLEARED from device {self.name} by {self.env.user.name}<br/>"
+    #                  f"Users, fingerprints, attendance records, and face templates deleted.",
+    #             message_type='notification'
+    #         )
+    #
+    #         return {
+    #             'type': 'ir.actions.client',
+    #             'tag': 'display_notification',
+    #             'params': {
+    #                 'message': '⚠️ ALL DATA CLEARED FROM DEVICE',
+    #                 'type': 'danger',
+    #                 'sticky': True
+    #             }
+    #         }
+    #
+    #     finally:
+    #         conn.enable_device()
+    #         conn.disconnect()
+
+    # def action_delete_user_template(self, uid, temp_id):
+    #     """
+    #     ⚠️ DANGER: Delete specific fingerprint template
+    #     Uses pyzk method: delete_user_template()
+    #     """
+    #     self.ensure_one()
+    #     device_password = self._get_device_password()
+    #     zk = ZK(self.device_ip, port=self.port_number, timeout=15,
+    #             password=device_password, ommit_ping=True)
+    #
+    #     conn = self.device_connect(zk)
+    #     if not conn:
+    #         raise UserError(_('Unable to connect to device'))
+    #
+    #     try:
+    #         conn.disable_device()
+    #         conn.delete_user_template(uid=uid, temp_id=temp_id, user_id=None)
+    #
+    #         # Update finger count
+    #         sizes = conn.read_sizes()
+    #         self.write({'finger_count': sizes.get('fingers_cap', 0)})
+    #
+    #         return True
+    #     finally:
+    #         conn.enable_device()
+    #         conn.disconnect()
+
+    # def action_poweroff_device(self):
+    #     """
+    #     ⚠️ DANGER: Shutdown device
+    #     Uses pyzk method: poweroff()
+    #     """
+    #     self.ensure_one()
+    #     device_password = self._get_device_password()
+    #     zk = ZK(self.device_ip, port=self.port_number, timeout=15,
+    #             password=device_password, ommit_ping=True)
+    #
+    #     conn = self.device_connect(zk)
+    #     if not conn:
+    #         raise UserError(_('Unable to connect to device'))
+    #
+    #     try:
+    #         conn.poweroff()
+    #
+    #         self.message_post(
+    #             subject='Device Powered Off',
+    #             body=f"Device {self.name} powered off by {self.env.user.name}"
+    #         )
+    #
+    #         return {
+    #             'type': 'ir.actions.client',
+    #             'tag': 'display_notification',
+    #             'params': {
+    #                 'message': 'Device is powering off...',
+    #                 'type': 'warning',
+    #                 'sticky': True
+    #             }
+    #         }
+    #
+    #     finally:
+    #         conn.disconnect()
+
+    # ==================== EXISTING DOWNLOAD METHOD (Keep as is) ====================
+
+    def _is_duplicate_punch(self, employee_id, punch_time, threshold_minutes):
+        """Check if this punch is a duplicate within threshold time window"""
+        if threshold_minutes <= 0:
+            return False
+
+        zk_attendance = self.env['zk.machine.attendance']
+        time_from = punch_time - datetime.timedelta(minutes=threshold_minutes)
+        time_to = punch_time + datetime.timedelta(minutes=threshold_minutes)
+
+        duplicate = zk_attendance.search([
+            ('employee_id', '=', employee_id),
+            ('punching_time', '>=', time_from),
+            ('punching_time', '<=', time_to),
+        ], limit=1)
+
+        return bool(duplicate)
+
+    def _process_traditional_attendance(self, employee, atten_time, punch_type, hr_attendance):
+        """Process attendance in traditional mode (uses device punch type)"""
+        att_var = hr_attendance.search([
+            ('employee_id', '=', employee.id),
+            ('check_out', '=', False)
+        ])
+
+        if punch_type == 0:  # check-in from device
+            if not att_var:
+                hr_attendance.create({
+                    'employee_id': employee.id,
+                    'check_in': atten_time
+                })
+                _logger.info(f"Traditional mode: Check-in created for {employee.name}")
+        elif punch_type == 1:  # check-out from device
+            if len(att_var) == 1:
+                att_var.write({'check_out': atten_time})
+                _logger.info(f"Traditional mode: Check-out added for {employee.name}")
+
+    def _process_auto_attendance(self, employee, atten_time, hr_attendance):
+        """Process attendance in auto mode (ignores device punch type, auto-determines check-in/check-out)"""
+        last_attendance = hr_attendance.search([
+            ('employee_id', '=', employee.id)
+        ], order='check_in desc', limit=1)
+
+        if not last_attendance or last_attendance.check_out:
+            hr_attendance.create({
+                'employee_id': employee.id,
+                'check_in': atten_time
+            })
+            _logger.info(f"Auto mode: Check-in created for {employee.name} at {atten_time}")
+        else:
+            last_attendance.write({'check_out': atten_time})
+            _logger.info(f"Auto mode: Check-out added for {employee.name} at {atten_time}")
+
+    @api.model
+    def cron_download(self):
+        """Cron method for downloading attendance"""
+        machines = self.env['biometric.device.details'].search([])
+        for machine in machines:
+            machine.action_download_attendance()
+
+    @api.model
+    def cron_refresh_device_info(self):
+        """Cron method for refreshing device information"""
+        devices = self.search([])
+        for device in devices:
+            try:
+                device.action_refresh_device_info()
+            except Exception as e:
+                _logger.error(f"Failed to refresh device info for {device.name}: {str(e)}")
+
+    def action_download_attendance(self):
+        """Function to download attendance records from the device (EXISTING METHOD - Keep as is)"""
+        # ... (keep existing implementation)
+        _logger.info("++++++++++++Cron Executed++++++++++++++++++++++")
+        zk_attendance = self.env['zk.machine.attendance']
+        hr_attendance = self.env['hr.attendance']
+        for info in self:
+            machine_ip = info.device_ip
+            zk_port = info.port_number
+            device_password = info._get_device_password()
+            attendance_mode = info.attendance_mode or 'traditional'
+            duplicate_threshold = info.duplicate_threshold or 2
+            try:
+                zk = ZK(machine_ip, port=zk_port, timeout=15,
+                        password=device_password,
+                        force_udp=False, ommit_ping=True)
+            except NameError:
+                raise UserError(
+                    _("Pyzk module not Found. Please install it with 'pip3 install pyzk'."))
+
+            conn = self.device_connect(zk)
+            if conn:
+                conn.disable_device()
+                user = conn.get_users()
+                attendance = conn.get_attendance()
+                if attendance:
+                    for each in attendance:
+                        atten_time = each.timestamp
+                        local_tz = pytz.timezone('Asia/Dhaka')
+                        local_dt = local_tz.localize(atten_time, is_dst=None)
+                        utc_dt = local_dt.astimezone(pytz.utc)
+                        atten_time_dt = utc_dt
+                        atten_time_str = fields.Datetime.to_string(utc_dt)
+
+                        for uid in user:
+                            if uid.user_id == each.user_id:
+                                get_user_id = self.env['hr.employee'].search(
+                                    [('device_id_num', '=', each.user_id)])
+
+                                if get_user_id:
+                                    duplicate_atten_ids = zk_attendance.search(
+                                        [('device_id_num', '=', each.user_id),
+                                         ('punching_time', '=', atten_time_str)])
+
+                                    if duplicate_atten_ids:
+                                        _logger.info(f"Skipping exact duplicate punch for employee {get_user_id.name}")
+                                        continue
+
+                                    if self._is_duplicate_punch(get_user_id.id, atten_time_dt, duplicate_threshold):
+                                        _logger.info(f"Skipping duplicate punch within {duplicate_threshold} minutes")
+                                        continue
+
+                                    zk_record = zk_attendance.create({
+                                        'employee_id': get_user_id.id,
+                                        'device_id_num': each.user_id,
+                                        'attendance_type': str(each.status),
+                                        'punch_type': str(each.punch),
+                                        'punching_time': atten_time_str,
+                                        'address_id': info.address_id.id
+                                    })
+
+                                    att_var = hr_attendance.sudo().search([
+                                        ('employee_id', '=', get_user_id.id),
+                                        ('check_out', '=', False)
+                                    ])
+
+                                    if att_var:
+                                        for old_att in att_var:
+                                            old_check_in = old_att.check_in
+                                            if old_check_in.tzinfo is None:
+                                                old_check_in = pytz.UTC.localize(old_check_in)
+                                            time_diff = atten_time_dt - old_check_in
+                                            hours_open = time_diff.total_seconds() / 3600.0
+
+                                            if hours_open > 24:
+                                                check_in_date = old_att.check_in.date()
+                                                auto_checkout = datetime.datetime.combine(
+                                                    check_in_date,
+                                                    datetime.datetime.strptime("23:59:59", "%H:%M:%S").time()
+                                                )
+                                                auto_checkout_aware = pytz.timezone('Asia/Dhaka').localize(auto_checkout).astimezone(pytz.UTC)
+                                                auto_checkout_naive = auto_checkout_aware.replace(tzinfo=None)
+                                                old_att.sudo().write({'check_out': auto_checkout_naive})
+                                                _logger.warning(
+                                                    f"Auto-closed stale attendance for {get_user_id.name}"
+                                                )
+
+                                    if attendance_mode == 'auto':
+                                        self._process_auto_attendance(get_user_id, atten_time_str, hr_attendance)
+                                    else:
+                                        self._process_traditional_attendance(get_user_id, atten_time_str, each.punch, hr_attendance)
+                                else:
+                                    employee = self.env['hr.employee'].create({
+                                        'device_id_num': each.user_id,
+                                        'name': uid.name
+                                    })
+                                    zk_record = zk_attendance.create({
+                                        'employee_id': employee.id,
+                                        'device_id_num': each.user_id,
+                                        'attendance_type': str(each.status),
+                                        'punch_type': str(each.punch),
+                                        'punching_time': atten_time_str,
+                                        'address_id': info.address_id.id
+                                    })
+                                    new_attendance = hr_attendance.create({
+                                        'employee_id': employee.id,
+                                        'check_in': atten_time_str
+                                    })
+                                    zk_record.write({
+                                        'hr_attendance_id': new_attendance.id,
+                                        'processed': True
+                                    })
+
+                    conn.disconnect()
+                    info.last_download_time = fields.Datetime.now()
+                    return True
+                else:
+                    raise UserError(_('Unable to get the attendance log'))
+            else:
+                raise UserError(_('Unable to connect, please check parameters'))

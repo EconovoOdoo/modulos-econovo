@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_zk_import_users_wizard_form" model="ir.ui.view">
+        <field name="name">zk.import.users.wizard.form</field>
+        <field name="model">zk.import.users.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Import Employees from Device">
+
+                <div class="alert alert-info" role="alert">
+                    <strong>Device:</strong> <field name="device_id" readonly="1" nolabel="1" class="oe_inline"/>
+                    &amp;nbsp;&amp;nbsp;
+                    <strong>Total on device:</strong> <field name="total_count" readonly="1" nolabel="1" class="oe_inline"/>
+                    &amp;nbsp;&amp;nbsp;
+                    <strong>New:</strong> <field name="new_count" readonly="1" nolabel="1" class="oe_inline"/>
+                    &amp;nbsp;&amp;nbsp;
+                    <strong>Already in Odoo:</strong> <field name="existing_count" readonly="1" nolabel="1" class="oe_inline"/>
+                    &amp;nbsp;&amp;nbsp;
+                    <strong>Selected:</strong> <field name="selected_count" readonly="1" nolabel="1" class="oe_inline"/>
+                </div>
+
+                <div class="mb-2">
+                    <button string="Select All New" name="action_select_all_new"
+                            type="object" class="btn btn-sm btn-primary"/>
+                    <button string="Deselect All" name="action_deselect_all"
+                            type="object" class="btn btn-sm btn-secondary ms-1"/>
+                </div>
+
+                <field name="line_ids" nolabel="1">
+                    <tree editable="bottom" decoration-muted="status == 'exists'">
+                        <field name="is_selected" invisible="status == 'exists'"/>
+                        <field name="pin"/>
+                        <field name="name"/>
+                        <field name="privilege"/>
+                        <field name="status"
+                               decoration-success="status == 'new'"
+                               decoration-info="status == 'exists'"
+                               widget="badge"/>
+                        <field name="employee_id" optional="show"/>
+                    </tree>
+                </field>
+
+                <footer>
+                    <button name="action_import_selected"
+                            string="Import Selected"
+                            type="object"
+                            class="btn-primary"
+                            confirm="This will create new Odoo employees for the selected device users. Continue?"/>
+                    <button string="Close" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

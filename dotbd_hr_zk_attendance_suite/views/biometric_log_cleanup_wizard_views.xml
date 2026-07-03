@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- ==================== LOG CLEANUP WIZARD ==================== -->
+    <record id="biometric_log_cleanup_wizard_view_form" model="ir.ui.view">
+        <field name="name">biometric.log.cleanup.wizard.view.form</field>
+        <field name="model">biometric.log.cleanup.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Delete Old Logs">
+                <div class="alert alert-danger" role="alert">
+                    <strong>⚠️ Warning: This action cannot be undone!</strong><br/>
+                    All selected logs will be permanently deleted from the database.
+                </div>
+                <group>
+                    <group string="What to Delete">
+                        <field name="device_id" placeholder="Leave empty to delete from ALL devices"/>
+                        <field name="cleanup_type" widget="radio"/>
+                    </group>
+                    <group string="Age Filter">
+                        <field name="retention_days"/>
+                        <div class="alert alert-info" role="alert">
+                            <i class="fa fa-info-circle" title="Info circle" aria-label="Info circle"/> Logs older than 
+                            <field name="retention_days" class="oe_inline" readonly="1"/> days will be deleted.
+                        </div>
+                    </group>
+                </group>
+                <group string="Preview">
+                    <field name="log_count" class="oe_inline" readonly="1"/>
+                    <span class="oe_inline"> logs will be deleted</span>
+                </group>
+                <group>
+                    <field name="confirm_delete" class="oe_inline"/>
+                    <label for="confirm_delete" string="I understand this action cannot be undone"/>
+                </group>
+                <footer>
+                    <button name="action_confirm_cleanup"
+                            string="🗑️ Delete All Selected Logs"
+                            type="object"
+                            class="btn-danger"
+                            invisible="log_count == 0 or confirm_delete == False"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- ==================== WIZARD ACTION ==================== -->
+    <record id="action_biometric_log_cleanup_wizard" model="ir.actions.act_window">
+        <field name="name">Delete Old Logs</field>
+        <field name="res_model">biometric.log.cleanup.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

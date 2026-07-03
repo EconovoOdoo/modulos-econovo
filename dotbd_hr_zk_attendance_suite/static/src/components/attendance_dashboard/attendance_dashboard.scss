@@ -1,0 +1,532 @@
+// ---------------------------------------------------------------------------
+//  Dot BD Solutions Limited – Attendance Dashboard
+//  Modern minimal UI, Odoo 19 / Bootstrap 5
+// ---------------------------------------------------------------------------
+
+.o_attendance_dashboard {
+    padding: 28px 24px;
+    background: #f6f7f9;
+    min-height: 100%;
+    height: 100%;
+    overflow: auto;
+    box-sizing: border-box;
+    font-size: 0.875rem;
+
+    // ── Top bar ──────────────────────────────────────────────────────────────
+    .o_att_greeting {
+        h4 {
+            font-size: 1.1rem;
+            color: #1c1c2e;
+        }
+        p {
+            font-size: 0.8rem;
+        }
+    }
+
+    .o_att_filters {
+        .o_att_filter_group {
+            display: flex;
+            flex-direction: column;
+            min-width: 148px;
+        }
+
+        .o_att_filter_label {
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #9ca3af;
+            margin-bottom: 4px;
+        }
+
+        .o_att_select {
+            font-size: 0.82rem;
+            border-color: #e5e7eb;
+            border-radius: 8px;
+            background-color: #fff;
+            color: #374151;
+
+            &:focus {
+                border-color: #9ca3af;
+                box-shadow: 0 0 0 3px rgba(156, 163, 175, 0.18);
+            }
+        }
+    }
+
+    // ── Section label ────────────────────────────────────────────────────────
+    .o_att_section_label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #9ca3af;
+        border-bottom: 1px solid #e9ecef;
+        padding-bottom: 8px;
+    }
+
+    // ── Stat cards ───────────────────────────────────────────────────────────
+    .o_att_stat_card {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        background: #fff;
+        border: 1px solid #e9ecef;
+        border-radius: 12px;
+        padding: 16px 20px;
+        min-width: 158px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        transition: box-shadow 0.18s ease, transform 0.18s ease;
+
+        &:hover {
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+            transform: translateY(-1px);
+        }
+
+        .o_att_stat_icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .o_icon_employees { background: #ede9fe; color: #6d28d9; }
+        .o_icon_present   { background: #dcfce7; color: #15803d; }
+        .o_icon_absent    { background: #fee2e2; color: #b91c1c; }
+        .o_icon_leave     { background: #fef3c7; color: #b45309; }
+        .o_icon_late      { background: #ffedd5; color: #c2410c; }
+        .o_icon_fine      { background: #fce7f3; color: #be185d; }
+
+        .o_att_stat_label {
+            font-size: 0.72rem;
+            color: #9ca3af;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .o_att_stat_value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #1c1c2e;
+            line-height: 1.15;
+        }
+
+        .o_val_present { color: #15803d; }
+        .o_val_absent  { color: #b91c1c; }
+        .o_val_leave   { color: #b45309; }
+        .o_val_late    { color: #c2410c; }
+        .o_val_fine    { color: #be185d; font-size: 1.2rem; }
+    }
+
+    // ── Download button ──────────────────────────────────────────────────────
+    .o_att_btn_download {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        color: #374151;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        padding: 8px 16px;
+        font-weight: 500;
+        transition: background 0.15s, border-color 0.15s;
+
+        &:hover {
+            background: #f9fafb;
+            border-color: #9ca3af;
+            color: #1c1c2e;
+        }
+
+        i { font-size: 0.85rem; }
+    }
+
+    // ── Legend ───────────────────────────────────────────────────────────────
+    .o_att_legend {
+        font-size: 0.75rem;
+        color: #6b7280;
+
+        .o_legend_item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .o_leg_badge {
+            display: inline-block;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            min-width: 44px;
+            text-align: center;
+        }
+
+        .o_leg_present  { background: #dcfce7; color: #14532d; }
+        .o_leg_absent   { background: #fee2e2; color: #7f1d1d; }
+        .o_leg_leave    { background: #fef9c3; color: #713f12; }
+        .o_leg_weekend  { background: #f3f4f6; color: #6b7280; }
+        .o_leg_holiday  { background: #dbeafe; color: #1e3a8a; }
+        .o_leg_late     { background: #ffedd5; color: #c2410c; }
+    }
+
+    // ── Today status filter chips ─────────────────────────────────────────────
+    .o_att_status_filters {
+        .o_status_chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: 1.5px solid transparent;
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            background: #fff;
+
+            .o_chip_count {
+                background: rgba(0,0,0,0.08);
+                border-radius: 10px;
+                padding: 1px 7px;
+                font-size: 0.72rem;
+                font-weight: 700;
+            }
+        }
+
+        .o_chip_present {
+            color: #15803d;
+            border-color: #bbf7d0;
+            &:hover, &.active { background: #dcfce7; border-color: #15803d; }
+        }
+        .o_chip_absent {
+            color: #b91c1c;
+            border-color: #fecaca;
+            &:hover, &.active { background: #fee2e2; border-color: #b91c1c; }
+        }
+        .o_chip_late {
+            color: #c2410c;
+            border-color: #fed7aa;
+            &:hover, &.active { background: #ffedd5; border-color: #c2410c; }
+        }
+        .o_chip_leave {
+            color: #b45309;
+            border-color: #fde68a;
+            &:hover, &.active { background: #fef3c7; border-color: #b45309; }
+        }
+    }
+
+    // ── Sort buttons ─────────────────────────────────────────────────────────
+    .o_att_sort_group {
+        .o_sort_btn {
+            background: #fff;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 5px 11px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #6b7280;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+
+            &:hover { background: #f9fafb; border-color: #9ca3af; color: #374151; }
+            &.active { border-width: 2px; }
+        }
+
+        .o_sort_present.active { background: #dcfce7; border-color: #15803d; color: #14532d; }
+        .o_sort_absent.active  { background: #fee2e2; border-color: #b91c1c; color: #7f1d1d; }
+        .o_sort_late.active    { background: #ffedd5; border-color: #c2410c; color: #c2410c; }
+        .o_sort_leave.active   { background: #fef3c7; border-color: #b45309; color: #713f12; }
+    }
+
+    // ── Selected employee summary panel ──────────────────────────────────────
+    .o_emp_summary_panel {
+        background: #fff;
+        border: 2px solid #6d28d9;
+        border-radius: 14px;
+        padding: 18px 22px;
+        box-shadow: 0 2px 12px rgba(109, 40, 217, 0.10);
+
+        .o_emp_summary_avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #ede9fe;
+            flex-shrink: 0;
+        }
+
+        .o_emp_summary_name {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #1c1c2e;
+        }
+
+        .o_emp_summary_job {
+            font-size: 0.75rem;
+            color: #9ca3af;
+        }
+
+        .o_emp_summary_close {
+            opacity: 0.4;
+            &:hover { opacity: 0.8; }
+        }
+    }
+
+    .o_emp_sum_chip {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: 64px;
+        padding: 10px 16px;
+        border-radius: 10px;
+        gap: 2px;
+
+        .o_sum_chip_val {
+            font-size: 1.4rem;
+            font-weight: 700;
+            line-height: 1.1;
+        }
+
+        .o_sum_chip_lbl {
+            font-size: 0.68rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            opacity: 0.75;
+        }
+    }
+
+    .o_sum_present { background: #dcfce7; color: #14532d; }
+    .o_sum_absent  { background: #fee2e2; color: #7f1d1d; }
+    .o_sum_leave   { background: #fef9c3; color: #713f12; }
+    .o_sum_weekend { background: #f3f4f6; color: #374151; }
+    .o_sum_holiday { background: #dbeafe; color: #1e3a8a; }
+    .o_sum_late    { background: #ffedd5; color: #c2410c; }
+
+    // ── Table wrapper ────────────────────────────────────────────────────────
+    .o_att_table_outer {
+        background: #fff;
+        border: 1px solid #e9ecef;
+        border-radius: 14px;
+        overflow-x: auto;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+    }
+
+    // ── Table ────────────────────────────────────────────────────────────────
+    .o_att_table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: 0.75rem;
+
+        // ── Head
+        thead tr {
+            background: #f9fafb;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        th {
+            padding: 9px 4px;
+            text-align: center;
+            font-weight: 600;
+            color: #6b7280;
+            border-right: 1px solid #f0f0f0;
+            white-space: nowrap;
+
+            &.o_th_employee {
+                text-align: left;
+                padding: 9px 16px;
+                min-width: 192px;
+            }
+
+            &.o_th_day {
+                min-width: 54px;
+                .o_day_name { display: block; font-size: 0.7rem; }
+                .o_day_num  { display: block; font-size: 0.68rem; color: #c4c9d4; }
+            }
+
+            &.o_weekend_col { background: #f5f5f6; }
+
+            &.o_th_sum {
+                background: #f3f4f6;
+                font-size: 0.68rem;
+                min-width: 28px;
+                padding: 9px 3px;
+                border-left: 1px solid #e5e7eb;
+            }
+        }
+
+        // ── Sticky first column
+        .o_sticky_col {
+            position: sticky;
+            left: 0;
+            z-index: 2;
+            background: #fff;
+            box-shadow: 3px 0 6px -2px rgba(0, 0, 0, 0.06);
+        }
+
+        thead .o_sticky_col {
+            background: #f9fafb;
+            z-index: 3;
+        }
+
+        // ── Body rows
+        tbody tr {
+            border-bottom: 1px solid #f3f4f6;
+            transition: background 0.12s;
+
+            &:last-child { border-bottom: none; }
+
+            &:hover {
+                background: #fafafa;
+                .o_sticky_col { background: #fafafa; }
+            }
+
+            &.o_row_selected {
+                background: #f5f3ff;
+                .o_sticky_col { background: #f5f3ff; }
+                outline: 2px solid #6d28d9;
+                outline-offset: -1px;
+            }
+        }
+
+        // Employee cell
+        .o_td_employee {
+            padding: 8px 16px;
+            min-width: 192px;
+            white-space: nowrap;
+
+            .o_emp_avatar {
+                width: 30px;
+                height: 30px;
+                border-radius: 50%;
+                object-fit: cover;
+                border: 1px solid #e5e7eb;
+                flex-shrink: 0;
+            }
+
+            .o_emp_name {
+                font-weight: 600;
+                font-size: 0.78rem;
+                color: #1c1c2e;
+                line-height: 1.3;
+            }
+
+            .o_emp_job {
+                font-size: 0.68rem;
+                color: #9ca3af;
+            }
+
+            .o_emp_device_id {
+                font-size: 0.65rem;
+                color: #b0b7c3;
+            }
+        }
+
+        // ── Attendance cells
+        .o_att_cell {
+            text-align: center;
+            padding: 6px 2px;
+            border-right: 1px solid #f5f5f5;
+            font-weight: 500;
+            white-space: nowrap;
+            cursor: default;
+        }
+
+        // Cell status colours — intentionally subtle and minimal
+        .o_cell_present      { color: #14532d; font-size: 0.65rem; }
+        .o_cell_present_late { color: #713f12; font-size: 0.65rem; }
+        .o_cell_absent       { color: #b91c1c; font-weight: 700; }
+        .o_cell_leave        { color: #1e40af; font-weight: 700; }
+        .o_cell_holiday      { background: #eff6ff; color: #1e40af; font-weight: 700; }
+        .o_cell_weekend      { background: #f9fafb; color: #d1d5db; }
+        .o_cell_none         { color: #e5e7eb; }
+
+        // Summary count cells
+        .o_td_sum {
+            text-align: center;
+            padding: 6px 3px;
+            background: #f9fafb;
+            font-weight: 600;
+            color: #374151;
+            border-left: 1px solid #e9ecef;
+        }
+
+        .o_th_late { background: #fff7ed; color: #c2410c; }
+        .o_td_late { background: #fff7ed; color: #c2410c; font-weight: 700; }
+    }
+
+    // ── Holiday banners ───────────────────────────────────────────────────────
+    .o_holiday_today_banner {
+        background: #fef3c7;
+        border: 1px solid #fbbf24;
+        border-radius: 10px;
+        padding: 10px 16px;
+        color: #92400e;
+        font-size: 0.82rem;
+        font-weight: 500;
+
+        i { color: #f59e0b; font-size: 1rem; }
+    }
+
+    .o_upcoming_holidays_bar {
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 10px;
+        padding: 8px 16px;
+        color: #1e40af;
+        font-size: 0.78rem;
+
+        i { color: #3b82f6; }
+    }
+
+} // end .o_attendance_dashboard
+
+.o_cell_clickable {
+    cursor: pointer;
+    &:hover { filter: brightness(0.88); }
+}
+
+.o_att_popup_overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1050;
+    background: transparent;
+}
+
+.o_att_popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1051;
+    background: #fff;
+    border-radius: 10px;
+    padding: 18px 20px 16px;
+    min-width: 270px;
+    max-width: 340px;
+    border: 1px solid #dee2e6;
+    box-shadow: 0 8px 24px #00000029;
+
+    .o_att_popup_close {
+        position: absolute;
+        top: 10px;
+        right: 12px;
+        opacity: 0.5;
+        &:hover { opacity: 1; }
+    }
+
+    .o_att_popup_header {
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #dee2e6;
+        font-size: 0.92em;
+    }
+
+    .o_att_popup_body {
+        font-size: 0.88em;
+        > div { margin-bottom: 6px; }
+    }
+}

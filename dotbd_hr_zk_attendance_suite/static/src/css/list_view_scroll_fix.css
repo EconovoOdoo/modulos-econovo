@@ -1,0 +1,145 @@
+/**
+ * Attendance Module Scrollbar Fix
+ * This CSS enables natural scrolling behavior in attendance views
+ * without forcing unnecessary styling that conflicts with Odoo
+ */
+
+/* List View - Allow scrolling when content overflows */
+.o_list_view {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+/* List Table Container - Enable scrolling */
+.o_list_view .o_list_renderer {
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+}
+
+/* Table scrolling within list view */
+.o_list_renderer table {
+    width: 100%;
+}
+
+/* Gantt View - Allow scrolling when content overflows */
+.o_gantt_view {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+/* Gantt Content - Enable scrolling */
+.o_gantt_view .o_gantt_renderer {
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+}
+
+/* View Manager - Proper flexbox layout */
+.o_view_manager {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+/* View Controller - Proper layout for views */
+.o_view_controller {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    flex: 1;
+}
+
+/* Attendance List View - Specific fix */
+.o_attendance_analysis_view .o_list_renderer {
+    overflow-y: auto;
+    flex: 1;
+}
+
+/* Attendance Gantt View - Specific fix */
+.o_attendance_gantt_view {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+/* Daily Attendance View */
+.o_daily_attendance_view .o_list_renderer {
+    overflow-y: auto;
+    flex: 1;
+}
+
+/* Leave Type Help/Info Section - Reduce font size for better readability */
+.alert.alert-info {
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.alert.alert-info p {
+    font-size: 12px;
+    margin-bottom: 8px;
+}
+
+.alert.alert-info p strong {
+    font-size: 12px;
+}
+
+.alert.alert-info ul {
+    font-size: 12px;
+    list-style-type: disc;
+    padding-left: 20px;
+}
+
+.alert.alert-info li {
+    font-size: 12px;
+    margin-bottom: 4px;
+}
+
+.alert.alert-info li strong {
+    font-size: 12px;
+}
+
+.alert.alert-info ul ul {
+    font-size: 11px;
+    margin-top: 4px;
+    padding-left: 20px;
+}
+
+.alert.alert-info ul ul li {
+    font-size: 11px;
+    margin-bottom: 2px;
+}
+
+/* Radio Button Widget - Leave Attendance Category - Reduce font size */
+.o_field_widget.o_field_radio {
+    font-size: 12px;
+}
+
+.o_field_widget.o_field_radio label {
+    font-size: 12px;
+    margin-bottom: 4px;
+}
+
+.o_field_widget.o_field_radio .o_radio_item {
+    font-size: 12px;
+}
+
+.o_field_widget.o_field_radio .o_radio_item label {
+    font-size: 12px;
+    margin: 0 8px 0 0;
+}
+
+/* Specific targeting for leave_attendance_category field */
+.o_field_widget[name="leave_attendance_category"] {
+    font-size: 12px;
+}
+
+.o_field_widget[name="leave_attendance_category"] label {
+    font-size: 12px;
+}
+
+.o_field_widget[name="leave_attendance_category"] .o_radio_item label {
+    font-size: 12px;
+}

@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <menuitem id="biometric_device_details_menu"
+              name="Biometric Devices"
+              sequence="10"
+              parent="hr_attendance.menu_hr_attendance_root"
+              groups="hr_attendance.group_hr_attendance_officer"/>
+    <!--Biometric device configuration list view-->
+    <record id="biometric_device_details_view_list" model="ir.ui.view">
+        <field name="name">biometric.device.details.view.list</field>
+        <field name="model">biometric.device.details</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="device_ip"/>
+                <field name="port_number"/>
+                <field name="attendance_mode" decoration-success="attendance_mode == 'auto'" decoration-info="attendance_mode == 'traditional'"/>
+                <field name="duplicate_threshold"/>
+                <field name="last_download_time"/>
+            </tree>
+        </field>
+    </record>
+    <!--Biometric device configuration form view-->
+    <record id="biometric_device_details_view_form" model="ir.ui.view">
+        <field name="name">biometric.device.details.view.form</field>
+        <field name="model">biometric.device.details</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_test_connection"
+                            string="Test Connection"
+                            type="object"
+                            class="oe_highlight"
+                            icon="fa-plug"/>
+                    <button name="action_download_attendance"
+                            string="Download Attendance"
+                            type="object"
+                            class="oe_highlight"
+                            icon="fa-download"/>
+                    <button name="action_set_timezone"
+                            string="Set Time"
+                            type="object"
+                            icon="fa-clock-o"/>
+                    <button name="action_restart_device"
+                            string="Restart Device"
+                            type="object"
+                            icon="fa-refresh"
+                            confirm="Are you sure you want to restart the biometric device?"/>
+                </header>
+                <sheet>
+                    <!-- Device Name and Status -->
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_test_connection"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-wifi">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">Connection</span>
+                                <span class="o_stat_value">Test</span>
+                            </div>
+                        </button>
+                    </div>
+
+                    <div class="oe_title">
+                        <label for="name" class="oe_edit_only"/>
+                        <h1>
+                            <field name="name" placeholder="e.g., Main Entrance Device"/>
+                        </h1>
+                        <div class="text-muted" invisible="last_download_time == False">
+                            <i class="fa fa-clock-o" title="Clock o" aria-label="Clock o"/> Last Download: <field name="last_download_time" readonly="1"/>
+                        </div>
+                    </div>
+
+                    <notebook>
+                        <page string="Device Configuration" name="device_config">
+                            <group>
+                                <group string="Connection Details">
+                                    <field name="device_ip" placeholder="192.168.1.100"/>
+                                    <field name="port_number" placeholder="4370"/>
+                                </group>
+                                <group string="Location">
+                                    <field name="address_id" placeholder="Select location..."/>
+                                </group>
+                            </group>
+
+                            <group>
+                                <group string="Attendance Mode Settings">
+                                    <field name="attendance_mode" widget="radio"/>
+                                    <field name="duplicate_threshold"/>
+                                </group>
+                                <group>
+                                    <field name="company_id" invisible="1"/>
+                                </group>
+                            </group>
+
+                            <!-- Help text for Attendance Mode -->
+                            <div class="alert alert-info" role="alert" style="margin: 20px;">
+                                <h5 style="margin-top: 0;">
+                                    <i class="fa fa-info-circle" title="Info circle" aria-label="Info circle"/> Attendance Mode Explanation
+                                </h5>
+                                <div style="margin-bottom: 15px;">
+                                    <strong style="color: #667eea;">Traditional Mode (Default):</strong>
+                                    <ul style="margin-top: 5px;">
+                                        <li>Uses the punch type set on the biometric device (Check-in = 0, Check-out = 1)</li>
+                                        <li>HR must ensure device is configured correctly</li>
+                                        <li>If device is set to "check-out" by mistake, it will record check-out</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <strong style="color: #28a745;">Auto Mode (Recommended):</strong>
+                                    <ul style="margin-top: 5px;">
+                                        <li><strong>Ignores device punch type completely</strong> - no need to configure device settings</li>
+                                        <li>First punch of the day = <strong>Auto Check-in</strong></li>
+                                        <li>Second punch = <strong>Auto Check-out</strong></li>
+                                        <li>Third punch = <strong>Auto Check-in</strong> (alternates automatically)</li>
+                                        <li><strong>Prevents HR mistakes</strong> - even if device shows "check-out", system will determine correct action</li>
+                                        <li>Duplicate punches within threshold time are automatically ignored</li>
+                                    </ul>
+                                </div>
+                                <div class="alert alert-warning" role="alert" style="margin-top: 15px;">
+                                    <strong>Duplicate Prevention:</strong> If an employee punches multiple times within the specified threshold (default: 2 minutes),
+                                    only the first punch is recorded. This prevents accidental duplicate entries.
+                                </div>
+                            </div>
+                        </page>
+
+                        <page string="Supported Devices" name="supported_devices">
+                            <div class="alert alert-info" role="alert" style="margin: 20px;">
+                                <h4 style="margin-top: 0;">
+                                    <i class="fa fa-info-circle" title="Info circle" aria-label="Info circle"/> ZKteco Device Compatibility
+                                </h4>
+                                <p>This module has been tested and verified to work with the following ZKteco biometric devices:</p>
+                            </div>
+
+                            <div style="padding: 20px;">
+                                <h5 style="color: #667eea; margin-bottom: 15px;">
+                                    <i class="fa fa-check-circle" title="Check circle" aria-label="Check circle"/> Officially Tested Models
+                                </h5>
+                                <div style="margin-left: 20px; margin-bottom: 25px;">
+                                    <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                                        <i class="fa fa-circle" title="Circle" aria-label="Circle" style="font-size: 8px; margin-right: 10px; color: #667eea;"/>
+                                        <strong>uFace202</strong> <span style="margin-left: 10px; color: #666;">(ZKteco) - Face + Fingerprint Recognition</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                                        <i class="fa fa-circle" title="Circle" aria-label="Circle" style="font-size: 8px; margin-right: 10px; color: #667eea;"/>
+                                        <strong>iFace990</strong> <span style="margin-left: 10px; color: #666;">(ZKteco) - Advanced Face Recognition</span>
+                                    </div>
+                                </div>
+
+                                <h5 style="color: #28a745; margin-bottom: 15px;">
+                                    <i class="fa fa-users" title="Users" aria-label="Users"/> Client-Verified Compatible Models
+                                </h5>
+                                <div style="margin-left: 20px; margin-bottom: 25px;">
+                                    <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                                        <i class="fa fa-circle" title="Circle" aria-label="Circle" style="font-size: 8px; margin-right: 10px; color: #28a745;"/>
+                                        <strong>K40 Pro</strong> <span style="margin-left: 10px; color: #666;">(ZKteco)</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                                        <i class="fa fa-circle" title="Circle" aria-label="Circle" style="font-size: 8px; margin-right: 10px; color: #28a745;"/>
+                                        <strong>SFace900</strong> <span style="margin-left: 10px; color: #666;">(ZKteco)</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                                        <i class="fa fa-circle" title="Circle" aria-label="Circle" style="font-size: 8px; margin-right: 10px; color: #28a745;"/>
+                                        <strong>FR1500</strong> <span style="margin-left: 10px; color: #666;">(ZKteco)</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                                        <i class="fa fa-circle" title="Circle" aria-label="Circle" style="font-size: 8px; margin-right: 10px; color: #28a745;"/>
+                                        <strong>UA760</strong> <span style="margin-left: 10px; color: #666;">(ZKteco)</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                                        <i class="fa fa-circle" title="Circle" aria-label="Circle" style="font-size: 8px; margin-right: 10px; color: #28a745;"/>
+                                        <strong>MB10</strong> <span style="margin-left: 10px; color: #666;">(ZKteco)</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                                        <i class="fa fa-circle" title="Circle" aria-label="Circle" style="font-size: 8px; margin-right: 10px; color: #28a745;"/>
+                                        <strong>F18</strong> <span style="margin-left: 10px; color: #666;">(ZKteco)</span>
+                                    </div>
+                                </div>
+
+                                <div class="alert alert-success" role="alert" style="margin-top: 20px;">
+                                    <p style="margin: 0;">
+                                        <i class="fa fa-lightbulb-o" title="Lightbulb o" aria-label="Lightbulb o"/> <strong>Note:</strong> Most ZKteco devices that support the SDK/API protocol should work with this module.
+                                        If you have a different ZKteco model, test the connection to verify compatibility.
+                                    </p>
+                                </div>
+                            </div>
+                        </page>
+
+                        <page string="Quick Setup Guide" name="setup_guide">
+                            <div style="padding: 20px;">
+                                <h4 style="color: #667eea; margin-bottom: 20px;">
+                                    <i class="fa fa-book" title="Book" aria-label="Book"/> Device Setup Instructions
+                                </h4>
+
+                                <div class="alert alert-warning" role="alert">
+                                    <strong>Prerequisites:</strong>
+                                    <ul style="margin-bottom: 0; margin-top: 10px;">
+                                        <li>Ensure the biometric device is powered on and connected to the network</li>
+                                        <li>Device IP address should be accessible from the Odoo server</li>
+                                        <li>Default port is usually 4370 (check device documentation)</li>
+                                        <li>Python library <code>pyzk</code> must be installed: <code>pip install pyzk</code></li>
+                                    </ul>
+                                </div>
+
+                                <div style="margin-top: 25px;">
+                                    <h5 style="color: #333; margin-bottom: 15px;">
+                                        <span class="badge badge-primary" style="background-color: #667eea; padding: 5px 10px; border-radius: 3px; color: white; margin-right: 10px;">Step 1</span>
+                                        Configure Device Connection
+                                    </h5>
+                                    <p style="margin-left: 75px; color: #666;">
+                                        Enter the device name, IP address, and port number in the "Device Configuration" tab above.
+                                    </p>
+
+                                    <h5 style="color: #333; margin-bottom: 15px; margin-top: 25px;">
+                                        <span class="badge badge-primary" style="background-color: #667eea; padding: 5px 10px; border-radius: 3px; color: white; margin-right: 10px;">Step 2</span>
+                                        Test Connection
+                                    </h5>
+                                    <p style="margin-left: 75px; color: #666;">
+                                        Click the "Test Connection" button in the header or in the button box to verify connectivity with the device.
+                                    </p>
+
+                                    <h5 style="color: #333; margin-bottom: 15px; margin-top: 25px;">
+                                        <span class="badge badge-primary" style="background-color: #667eea; padding: 5px 10px; border-radius: 3px; color: white; margin-right: 10px;">Step 3</span>
+                                        Download Attendance Data
+                                    </h5>
+                                    <p style="margin-left: 75px; color: #666;">
+                                        Once connected, click "Download Attendance" to fetch attendance records from the device to Odoo.
+                                    </p>
+
+                                    <h5 style="color: #333; margin-bottom: 15px; margin-top: 25px;">
+                                        <span class="badge badge-primary" style="background-color: #667eea; padding: 5px 10px; border-radius: 3px; color: white; margin-right: 10px;">Step 4</span>
+                                        Configure Employee Device IDs
+                                    </h5>
+                                    <p style="margin-left: 75px; color: #666;">
+                                        Go to Employees and set the "Biometric Device ID" field to match the employee ID in the device.
+                                        This ensures attendance records are correctly mapped to employees in Odoo.
+                                    </p>
+                                </div>
+
+                                <div class="alert alert-info" role="alert" style="margin-top: 30px;">
+                                    <h6 style="margin-top: 0;"><i class="fa fa-cogs" title="Cogs" aria-label="Cogs"/> Additional Device Operations</h6>
+                                    <ul style="margin-bottom: 0;">
+                                        <li><strong>Set Time:</strong> Synchronize the device time with the server time</li>
+                                        <li><strong>Restart Device:</strong> Remotely restart the biometric device</li>
+                                        <li><strong>Auto-Sync:</strong> Enable automatic attendance synchronization in Settings</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!--	Action for the biometric device-->
+    <record id="biometric_device_details_action" model="ir.actions.act_window">
+        <field name="name">Biometric Device</field>
+        <field name="res_model">biometric.device.details</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

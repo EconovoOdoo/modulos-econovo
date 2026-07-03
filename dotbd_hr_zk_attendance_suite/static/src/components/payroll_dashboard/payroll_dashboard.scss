@@ -1,0 +1,208 @@
+// Dot BD Solutions Limited – Payroll Dashboard Styles
+
+.o_payroll_dashboard {
+    padding: 24px;
+    background: #f5f6fa;
+    // Same pattern as attendance dashboard:
+    // the component itself is the scroll container.
+    min-height: 100%;
+    height: 100%;
+    overflow: auto;
+    box-sizing: border-box;
+
+    // ── KPI Cards ────────────────────────────────────────────────────────
+    .o_prd_card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 20px;
+        cursor: pointer;
+        transition: transform 0.15s, box-shadow 0.15s;
+        box-shadow: 0 1px 4px rgba(0,0,0,.07);
+        border-left: 4px solid transparent;
+        position: relative;
+        overflow: hidden;
+
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,.12);
+        }
+
+        .o_prd_card_icon {
+            font-size: 28px;
+            opacity: 0.15;
+            position: absolute;
+            top: 16px;
+            right: 18px;
+        }
+
+        .o_prd_card_label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #6c757d;
+            margin-bottom: 6px;
+        }
+
+        .o_prd_card_value {
+            font-size: 26px;
+            font-weight: 700;
+            line-height: 1.1;
+            color: #212529;
+        }
+
+        .o_prd_card_sub {
+            margin-top: 4px;
+        }
+
+        .o_prd_card_footer {
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        &.o_prd_card_primary { border-left-color: #0d6efd; .o_prd_card_icon { color: #0d6efd; } }
+        &.o_prd_card_warning { border-left-color: #ffc107; .o_prd_card_icon { color: #ffc107; } }
+        &.o_prd_card_success { border-left-color: #198754; .o_prd_card_icon { color: #198754; } }
+        &.o_prd_card_info    { border-left-color: #0dcaf0; .o_prd_card_icon { color: #0dcaf0; } }
+    }
+
+    // ── Status Cards ─────────────────────────────────────────────────────
+    .o_prd_status_card {
+        background: #fff;
+        border-radius: 10px;
+        padding: 16px;
+        text-align: center;
+        cursor: pointer;
+        transition: transform 0.15s, box-shadow 0.15s;
+        box-shadow: 0 1px 4px rgba(0,0,0,.07);
+
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 14px rgba(0,0,0,.12);
+        }
+
+        .o_prd_status_count {
+            font-size: 36px;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .o_prd_status_label {
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 4px;
+        }
+
+        &.o_prd_status_draft     { border-top: 4px solid #ffc107; .o_prd_status_count { color: #856404; } .o_prd_status_label { color: #856404; } }
+        &.o_prd_status_confirmed { border-top: 4px solid #0d6efd; .o_prd_status_count { color: #0d6efd; } .o_prd_status_label { color: #0d6efd; } }
+        &.o_prd_status_partial   { border-top: 4px solid #dc3545; .o_prd_status_count { color: #dc3545; } .o_prd_status_label { color: #dc3545; } }
+        &.o_prd_status_paid      { border-top: 4px solid #198754; .o_prd_status_count { color: #198754; } .o_prd_status_label { color: #198754; } }
+    }
+
+    // ── Chart Cards ──────────────────────────────────────────────────────
+    .o_prd_chart_card {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 1px 4px rgba(0,0,0,.07);
+        overflow: hidden;
+
+        .o_prd_chart_title {
+            padding: 14px 18px 10px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #212529;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .o_prd_chart_body {
+            padding: 16px 18px;
+        }
+    }
+
+    // ── Top bar ──────────────────────────────────────────────────────────
+    .o_prd_topbar {
+        h3 { font-size: 22px; }
+    }
+
+    // ── Filter panel ─────────────────────────────────────────────────────
+    .o_prd_filter_panel {
+        background: #fff;
+        border-radius: 12px;
+        padding: 14px 18px;
+        box-shadow: 0 1px 4px rgba(0,0,0,.06);
+        // Prevent the panel itself from ever going wider than its column
+        max-width: 100%;
+        overflow: hidden;
+
+        // The flex row wraps so filters flow to a second line automatically
+        .d-flex {
+            row-gap: 10px !important;
+        }
+
+        .o_prd_filter_group {
+            display: flex;
+            flex-direction: column;
+            // Grow/shrink freely, base width keeps them from being too wide
+            flex: 0 1 140px;
+            min-width: 120px;
+            max-width: 200px;
+        }
+
+        .o_prd_filter_label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: #6c757d;
+            margin-bottom: 4px;
+            white-space: nowrap;
+        }
+
+        // Vertical separator — hide when the row has wrapped
+        .o_prd_filter_sep {
+            width: 1px;
+            height: 36px;
+            background: #e9ecef;
+            align-self: flex-end;
+            flex-shrink: 0;
+        }
+
+        .o_prd_groupby_select {
+            border-color: #0d6efd;
+            color: #0d6efd;
+            font-weight: 600;
+        }
+    }
+
+    // ── Breakdown headers ─────────────────────────────────────────────────
+    .o_prd_breakdown_header {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #6c757d;
+        margin-bottom: 8px;
+    }
+
+    // ── Rank badges (Top Earners) ─────────────────────────────────────────
+    .o_prd_rank_badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        font-size: 11px;
+        font-weight: 700;
+        flex-shrink: 0;
+
+        &.o_prd_rank_1 { background: #ffd700; color: #6b5a00; }
+        &.o_prd_rank_2 { background: #c0c0c0; color: #444; }
+        &.o_prd_rank_3 { background: #cd7f32; color: #fff; }
+        &.o_prd_rank_4,
+        &.o_prd_rank_5 { background: #e9ecef; color: #6c757d; }
+    }
+}

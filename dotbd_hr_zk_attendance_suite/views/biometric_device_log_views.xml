@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- ==================== DEVICE LOG FORM VIEW ==================== -->
+    <record id="biometric_device_log_view_form" model="ir.ui.view">
+        <field name="name">biometric.device.log.view.form</field>
+        <field name="model">biometric.device.log</field>
+        <field name="arch" type="xml">
+            <form string="Device Log" create="false" delete="false" edit="false">
+                <header>
+                    <button name="action_delete_all_logs"
+                            string="Delete All Logs for This Device"
+                            type="object"
+                            class="btn-danger"
+                            icon="fa-trash"
+                            confirm="Are you sure you want to delete ALL logs for this device? This cannot be undone!"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="device_id" readonly="1"/>
+                            <span> - </span>
+                            <field name="log_type" readonly="1"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group string="Operation Info">
+                            <field name="log_type"/>
+                            <field name="status" widget="badge"
+                                   decoration-success="status == 'success'"
+                                   decoration-danger="status == 'failed'"
+                                   decoration-warning="status == 'warning'"/>
+                            <field name="log_time"/>
+                            <field name="duration" widget="float_time"/>
+                        </group>
+                        <group string="Device">
+                            <field name="device_id"/>
+                            <field name="company_id"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Statistics" name="statistics">
+                            <group string="Download Statistics" invisible="log_type != 'download'">
+                                <group>
+                                    <field name="records_found"/>
+                                    <field name="records_new"/>
+                                    <field name="records_duplicate"/>
+                                </group>
+                                <group>
+                                    <field name="records_failed"/>
+                                    <field name="employees_not_found"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Error Details" name="error" invisible="error_message == False">
+                            <field name="error_message" nolabel="1"/>
+                        </page>
+                        <page string="Details" name="details" invisible="details == False">
+                            <field name="details" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ==================== DEVICE LOG LIST VIEW ==================== -->
+    <record id="biometric_device_log_view_list" model="ir.ui.view">
+        <field name="name">biometric.device.log.view.list</field>
+        <field name="model">biometric.device.log</field>
+        <field name="arch" type="xml">
+            <tree string="Device Logs" create="false" delete="false" edit="false"
+                  decoration-danger="status == 'failed'"
+                  decoration-warning="status == 'warning'"
+                  decoration-success="status == 'success'">
+                <header>
+                    <button name="action_delete_all_device_logs"
+                            string="Delete All Logs"
+                            type="object"
+                            class="btn-danger"
+                            icon="fa-trash"
+                            confirm="Are you sure you want to delete ALL logs from ALL devices? This cannot be undone!"/>
+                </header>
+                <field name="log_time"/>
+                <field name="device_id"/>
+                <field name="log_type"/>
+                <field name="status" widget="badge"
+                       decoration-success="status == 'success'"
+                       decoration-danger="status == 'failed'"
+                       decoration-warning="status == 'warning'"/>
+                <field name="records_found"/>
+                <field name="records_new"/>
+                <field name="records_duplicate"/>
+                <field name="records_failed"/>
+                <field name="employees_not_found"/>
+                <field name="duration" widget="float_time"/>
+                <field name="error_message" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ==================== DEVICE LOG SEARCH VIEW ==================== -->
+    <record id="biometric_device_log_view_search" model="ir.ui.view">
+        <field name="name">biometric.device.log.view.search</field>
+        <field name="model">biometric.device.log</field>
+        <field name="arch" type="xml">
+            <search string="Search Device Logs">
+                <field name="device_id" string="Device"/>
+                <field name="error_message" string="Error"/>
+                <filter name="filter_today" string="Today"
+                        domain="[('log_time', '&gt;=', (context_today()).strftime('%%Y-%%m-%%d 00:00:00'))]"/>
+                <filter name="filter_this_week" string="This Week"
+                        domain="[('log_time', '&gt;=', (context_today() - datetime.timedelta(days=7)).strftime('%%Y-%%m-%%d'))]"/>
+                <separator/>
+                <filter name="filter_download" string="Downloads"
+                        domain="[('log_type', '=', 'download')]"/>
+                <filter name="filter_connection" string="Connections"
+                        domain="[('log_type', '=', 'connection')]"/>
+                <separator/>
+                <filter name="filter_success" string="Success"
+                        domain="[('status', '=', 'success')]"/>
+                <filter name="filter_failed" string="Failed"
+                        domain="[('status', '=', 'failed')]"/>
+                <filter name="filter_warning" string="Warning"
+                        domain="[('status', '=', 'warning')]"/>
+                <separator/>
+                <filter name="group_by_device" string="Device"
+                        context="{'group_by': 'device_id'}"/>
+                <filter name="group_by_type" string="Operation Type"
+                        context="{'group_by': 'log_type'}"/>
+                <filter name="group_by_status" string="Status"
+                        context="{'group_by': 'status'}"/>
+                <filter name="group_by_day" string="Day"
+                        context="{'group_by': 'log_time:day'}"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- ==================== ACTION ==================== -->
+    <record id="action_biometric_device_log" model="ir.actions.act_window">
+        <field name="name">Device Logs</field>
+        <field name="res_model">biometric.device.log</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_filter_today': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No device logs yet
+            </p>
+            <p>
+                Device operation logs will appear here after downloading attendance
+                or performing other device operations.
+            </p>
+        </field>
+    </record>
+
+    <!-- ==================== MENU ==================== -->
+    <menuitem id="menu_biometric_device_logs"
+              name="Device Logs"
+              sequence="30"
+              parent="menu_biometric_device_root"
+              action="action_biometric_device_log"/>
+
+    <!-- ==================== SCHEDULED ACTION: Auto-Cleanup ==================== -->
+    <record id="ir_cron_log_cleanup" model="ir.cron">
+        <field name="name">Biometric: Auto-Cleanup Old Logs</field>
+        <field name="model_id" ref="model_biometric_device_log"/>
+        <field name="state">code</field>
+        <field name="code">model.cron_cleanup_old_logs()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="active" eval="True"/>
+        <field name="priority">20</field>
+        <field name="user_id" ref="base.user_root"/>
+    </record>
+
+</odoo>

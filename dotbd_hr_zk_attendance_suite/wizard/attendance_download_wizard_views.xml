@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- ==================== DOWNLOAD WIZARD ==================== -->
+    <record id="attendance_download_wizard_view_form" model="ir.ui.view">
+        <field name="name">attendance.download.wizard.view.form</field>
+        <field name="model">attendance.download.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Download Attendance">
+                <header>
+                    <button name="action_start_download"
+                            string="Start Download"
+                            type="object"
+                            class="oe_highlight"
+                            icon="fa-download"
+                            invisible="state != 'draft'"/>
+                    <button name="action_close"
+                            string="Close"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state == 'draft'"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="device_id" readonly="1"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="download_mode" invisible="state != 'draft'"/>
+                            <field name="state" widget="badge"
+                                   decoration-info="state == 'draft'"
+                                   decoration-success="state == 'done'"
+                                   decoration-danger="state == 'error'"/>
+                        </group>
+                        <group invisible="state == 'draft'">
+                            <field name="duration" string="Duration (sec)"/>
+                        </group>
+                    </group>
+
+                    <!-- Statistics (shown after download) -->
+                    <group string="Download Statistics" invisible="state == 'draft'">
+                        <group>
+                            <field name="records_found"/>
+                            <field name="records_new"/>
+                        </group>
+                        <group>
+                            <field name="records_duplicate"/>
+                            <field name="records_failed"/>
+                        </group>
+                    </group>
+
+                    <!-- Result / Log -->
+                    <group string="Details" invisible="state == 'draft'">
+                        <field name="result_message" nolabel="1" colspan="2"
+                               readonly="1"
+                               style="font-family: monospace; background-color: #f5f5f5; padding: 10px;"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Window action (referenced by button on device form) -->
+    <record id="action_attendance_download_wizard" model="ir.actions.act_window">
+        <field name="name">Download Attendance</field>
+        <field name="res_model">attendance.download.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{}</field>
+    </record>
+
+</odoo>

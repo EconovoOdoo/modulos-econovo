@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Dashboard Menu Action -->
+    <record id="attendance_anomaly_dashboard_action" model="ir.actions.act_url">
+        <field name="name">Biometric Attendance Insights</field>
+        <field name="url">/attendance/anomaly/dashboard</field>
+        <field name="target">self</field>
+    </record>
+
+    <!-- Add Dashboard Menu Item directly under Attendance menu -->
+    <menuitem id="attendance_anomaly_dashboard_menu"
+              name="Biometric Attendance Insights"
+              action="attendance_anomaly_dashboard_action"
+              parent="hr_attendance.menu_hr_attendance_root"
+              groups="hr_attendance.group_hr_attendance_officer"
+              sequence="5"/>
+</odoo>

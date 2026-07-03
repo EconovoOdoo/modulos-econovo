@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--    Inherited hr employee for adding new field and smart button-->
+    <record id="view_employee_form" model="ir.ui.view">
+        <field name="name">hr.employee.view.form.inherit.hr.zk.attendance</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='employee_type']"
+                   position="after">
+                <field name="device_id_num"/>
+            </xpath>
+
+            <!-- Add Biometric Information Section -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Biometric Data" name="biometric_data">
+                    <group>
+                        <group string="Device Registration">
+                            <field name="device_id_num" string="Device User ID"/>
+                            <div colspan="2">
+                                <p class="text-muted">
+                                    <i class="fa fa-info-circle" title="Info circle" aria-label="Info circle"/> This is the unique ID used by biometric devices to identify this employee.
+                                    Must be set before syncing to device or enrolling fingerprint.
+                                </p>
+                            </div>
+                        </group>
+                        <group string="Fingerprint Templates">
+                            <field name="fp_template_count" string="Stored Templates"/>
+                            <button name="action_view_fp_templates"
+                                    string="View Templates"
+                                    type="object"
+                                    class="btn-secondary"
+                                    icon="fa-list"/>
+                            <button name="action_enroll_fingerprint"
+                                    string="Enroll Fingerprint (ADMS)"
+                                    type="object"
+                                    class="btn-primary"
+                                    icon="fa-fingerprint"
+                                    help="Trigger fingerprint enrollment on an ADMS-connected device"/>
+                        </group>
+                    </group>
+
+                    <!-- Enrollment workflow guide -->
+                    <div class="alert alert-info" role="alert" style="margin: 16px;">
+                        <h5><i class="fa fa-hand-pointer-o" title="Hand pointer o" aria-label="Hand pointer o"/> Fingerprint Enrollment Workflow (ADMS)</h5>
+                        <ol style="margin-bottom: 0;">
+                            <li><strong>Set Device User ID</strong> above (e.g., 1, 2, 3...)</li>
+                            <li>Go to <strong>Biometric Device → Sync Users (ADMS)</strong> to push user to device</li>
+                            <li>Click <strong>"Enroll Fingerprint (ADMS)"</strong> button above → select device and finger</li>
+                            <li>Employee places finger on device sensor <strong>3 times</strong></li>
+                            <li>Template is automatically saved back to Odoo ✅</li>
+                        </ol>
+                    </div>
+
+                    <group>
+                        <group string="Quick Actions">
+                            <button name="%(dotbd_hr_zk_attendance_suite.action_biometric_device_details)d"
+                                    string="View Biometric Devices"
+                                    type="action"
+                                    class="btn-primary"
+                                    icon="fa-desktop"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!--Smart button in hr.employee.public to show the late check in records - Temporarily disabled
+    <record id="hr_employee_public_view_form" model="ir.ui.view">
+        <field name="name">hr.employee.public.view.form.inherit.hr.zk.attendance</field>
+        <field name="model">hr.employee.public</field>
+        <field name="inherit_id" ref="hr.hr_employee_public_view_form"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                <button name="action_to_open_late_check_in_records"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-clock-o">
+                    <field name="late_check_in_count" widget="statinfo" string="Late Check-In"/>
+                </button>
+            </div>
+        </field>
+    </record>
+    -->
+</odoo>

@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- ADMS Device Command List View -->
+    <record id="adms_device_command_view_list" model="ir.ui.view">
+        <field name="name">adms.device.command.view.list</field>
+        <field name="model">adms.device.command</field>
+        <field name="arch" type="xml">
+            <tree string="ADMS Commands"
+                  decoration-muted="status == 'done'"
+                  decoration-danger="status == 'failed'"
+                  decoration-info="status == 'pending'"
+                  decoration-warning="status == 'sent'">
+                <field name="command_id" string="ID"/>
+                <field name="command_type"/>
+                <field name="command_body" optional="show"/>
+                <field name="employee_id" optional="show"/>
+                <field name="status" widget="badge"
+                       decoration-success="status == 'done'"
+                       decoration-danger="status == 'failed'"
+                       decoration-info="status == 'pending'"
+                       decoration-warning="status == 'sent'"/>
+                <field name="create_date" string="Created"/>
+                <field name="sent_time" optional="show"/>
+                <field name="done_time" optional="show"/>
+                <field name="result" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ADMS Device Command Form View -->
+    <record id="adms_device_command_view_form" model="ir.ui.view">
+        <field name="name">adms.device.command.view.form</field>
+        <field name="model">adms.device.command</field>
+        <field name="arch" type="xml">
+            <form string="ADMS Command">
+                <header>
+                    <field name="status" widget="statusbar" statusbar_visible="pending,sent,done"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="Command Details">
+                            <field name="device_id"/>
+                            <field name="command_type"/>
+                            <field name="command_id" readonly="1"/>
+                        </group>
+                        <group string="Target">
+                            <field name="employee_id"
+                                   invisible="command_type not in ('enroll_fp', 'sync_user', 'delete_user')"/>
+                            <field name="finger_index"
+                                   invisible="command_type != 'enroll_fp'"/>
+                        </group>
+                    </group>
+                    <group string="Command Body">
+                        <field name="command_body" nolabel="1" colspan="2"/>
+                    </group>
+                    <group string="Result" invisible="status not in ('done', 'failed')">
+                        <field name="result" nolabel="1" colspan="2"/>
+                        <field name="sent_time"/>
+                        <field name="done_time"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Biometric Template List View -->
+    <record id="biometric_fp_template_view_list" model="ir.ui.view">
+        <field name="name">biometric.fp.template.view.list</field>
+        <field name="model">biometric.fp.template</field>
+        <field name="arch" type="xml">
+            <tree string="Stored Biometrics">
+                <header>
+                    <button name="%(action_download_adms_json_templates)d" string="Download Backup to PC" type="action" class="btn-primary" display="always"/>
+                    <button name="%(action_upload_adms_json_templates)d" string="Upload Backup from PC" type="action" class="btn-warning" display="always"/>
+                    <button name="action_sync_to_adms_devices" string="Sync Selected to Devices" type="object" class="oe_highlight" display="always"/>
+                </header>
+                <field name="employee_id"/>
+                <field name="device_id"/>
+                <field name="template_type"/>
+                <field name="finger_index" string="Index/FID"/>
+                <field name="template_size"/>
+                <field name="capture_time"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Biometric Template Form View -->
+    <record id="biometric_fp_template_view_form" model="ir.ui.view">
+        <field name="name">biometric.fp.template.view.form</field>
+        <field name="model">biometric.fp.template</field>
+        <field name="arch" type="xml">
+            <form string="Stored Biometric">
+                <header>
+                    <button name="action_sync_to_adms_devices" string="Sync to Connected Devices" type="object" class="oe_highlight"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="employee_id"/>
+                            <field name="device_id"/>
+                            <field name="template_type"/>
+                            <field name="finger_index" string="Index/FID"/>
+                        </group>
+                        <group>
+                            <field name="template_size"/>
+                            <field name="template_version"/>
+                            <field name="capture_time"/>
+                        </group>
+                    </group>
+                    <group string="Template Data (Base64)">
+                        <field name="template_data" nolabel="1" colspan="2"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    
+    <record id="action_biometric_fp_template" model="ir.actions.act_window">
+        <field name="name">ADMS Stored Biometrics</field>
+        <field name="res_model">biometric.fp.template</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No biometric templates found.
+            </p>
+            <p>
+                As devices push Face, Palm, or Fingerprint templates via ADMS, they will appear here.
+                You can export these records to a CSV/Excel file for local backup, or import them to restore via Odoo's native Actions menu!
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="biometric_fp_template_menu"
+              name="ADMS Stored Biometrics"
+              action="action_biometric_fp_template"
+              parent="biometric_device_details_menu"
+              groups="hr_attendance.group_hr_attendance_manager"
+              sequence="23"/>
+</odoo>

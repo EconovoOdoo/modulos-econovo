@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- ================================================================== -->
+    <!-- ATTENDANCE & SALARY STATEMENT WIZARD                                -->
+    <!--                                                                     -->
+    <!-- DEVELOPER GUIDE                                                     -->
+    <!-- ──────────────────────────────────────────────────────────────────  -->
+    <!-- The wizard runs in two steps:                                       -->
+    <!--   Step 1  →  Select period / employee filter / payroll source       -->
+    <!--   Step 2  →  Editable table of employees with auto-filled data      -->
+    <!--                                                                     -->
+    <!-- SALARY DATA SOURCE (priority order):                                -->
+    <!--   1. Confirmed hr.payslip for the period  (most accurate)           -->
+    <!--   2. hr.contract + salary structure rules (fixed / % rules only)    -->
+    <!--   3. dotbd.employee.salary  (our own system, fallback)              -->
+    <!--                                                                     -->
+    <!-- TO ADD A NEW SALARY COLUMN (e.g. "Meal Allowance"):                 -->
+    <!--   1. Add a Monetary field to DotbdAttendanceStatementLine model     -->
+    <!--      in dotbd_attendance_statement.py                               -->
+    <!--   2. Add the field to _compute_totals() if it affects gross/net     -->
+    <!--   3. Add keyword detection in _get_native_salary():                 -->
+    <!--        _MEAL_KW = {'MEAL', 'FOOD', 'LUNCH'}                        -->
+    <!--        elif _kw_match(combo, _MEAL_KW): result['meal'] += amount    -->
+    <!--   4. Pass it in action_load() lines dict                            -->
+    <!--   5. Add a <field> column in this view inside the tree              -->
+    <!--                                                                     -->
+    <!-- TO ADD DYNAMIC COLUMNS (fully configurable from UI):               -->
+    <!--   Create a 'dotbd.statement.extra.column' model with:               -->
+    <!--     - name, code, category (ALW/DED), keyword_csv                  -->
+    <!--   In action_load(), iterate these records and bucket rule amounts   -->
+    <!--   into JSON stored on the line, then render in a custom widget.    -->
+    <!--   (This is the recommended approach for HR-defined custom columns.) -->
+    <!-- ================================================================== -->
+
+    <!-- ══════════════════ STEP 1 FORM ══════════════════ -->
+    <record id="view_dotbd_attendance_statement_wizard_step1" model="ir.ui.view">
+        <field name="name">dotbd.attendance.statement.wizard.step1</field>
+        <field name="model">dotbd.attendance.statement.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Attendance &amp; Salary Statement">
+                <sheet>
+                    <!-- Step indicator -->
+                    <div class="alert alert-info mb-3" role="alert" style="font-size:0.9em;"
+                         invisible="state != 'step1'">
+                        <strong><i class="fa fa-info-circle" title="Info circle" aria-label="Info circle"/> STEP 1 — SELECT PERIOD &amp; FILTER</strong>
+                        Choose the month, year and employee scope, then click
+                        <strong>Load Employees</strong> to auto-fill salary and attendance data.
+                    </div>
+
+                    <div class="alert alert-success mb-3" role="alert" style="font-size:0.9em;"
+                         invisible="state != 'step2'">
+                        <strong><i class="fa fa-check-circle" title="Check circle" aria-label="Check circle"/> STEP 2 — REVIEW &amp; PRINT</strong><br/>
+                        All salary and attendance fields are <strong>fully editable</strong> — adjust any value
+                        before printing. The <em>Data Source</em> badge shows where each salary was loaded from:
+                        <span class="badge" style="background:#28a745;color:#fff;">From Confirmed Payslip</span>
+                        means live payslip data (most accurate) &#160;·&#160;
+                        <span class="badge" style="background:#17a2b8;color:#fff;">From Contract / Structure</span>
+                        means read from salary rules &#160;·&#160;
+                        <span class="badge" style="background:#6c757d;color:#fff;">Our Payroll System</span>
+                        means read from our salary assignments &#160;·&#160;
+                        <span class="badge" style="background:#ffc107;color:#000;">Not Found</span>
+                        means no salary data was found — please fill in manually.<br/><br/>
+                        <strong><i class="fa fa-lightbulb-o" title="Lightbulb o" aria-label="Lightbulb o"/> Tips:</strong>
+                        <ul class="mb-0 mt-1" style="font-size:0.9em;">
+                            <li>Toggle columns on/off using the <i class="fa fa-cog" title="Cog" aria-label="Cog"/> icon on the table header</li>
+                            <li>To add permanent new columns (e.g. Meal Allowance) — see developer guide below</li>
+                            <li>Housing, Transport, Bonus are auto-detected from salary rule names/codes</li>
+                            <li>If values are wrong, check the salary structure rule names contain keywords like
+                                HOUSE, TRANS, BONUS, ADVANCE, DED</li>
+                        </ul>
+                    </div>
+
+                    <!-- ── DEVELOPER GUIDE NOTE ────────────────────────── -->
+                    <div class="alert alert-secondary mb-3" role="alert" style="font-size:0.82em;"
+                         invisible="state != 'step2'">
+                        <strong><i class="fa fa-code" title="Code" aria-label="Code"/> Developer Guide — Adding Custom Columns</strong><br/>
+                        To add a new salary component column (e.g. <em>Meal Allowance</em>, <em>Commission</em>,
+                        <em>Pension</em>):
+                        <ol class="mb-1 mt-1">
+                            <li>Add a <code>Monetary</code> field to <code>DotbdAttendanceStatementLine</code>
+                                in <code>models/dotbd_attendance_statement.py</code></li>
+                            <li>Add keyword detection in <code>_get_native_salary()</code> — define a keyword set
+                                (e.g. <code>_MEAL_KW = {'MEAL', 'FOOD', 'LUNCH'}</code>) and add an
+                                <code>elif _kw_match(combo, _MEAL_KW)</code> branch for both the payslip loop
+                                and the salary rule loop</li>
+                            <li>Include the field in the <code>lines</code> dict inside <code>action_load()</code></li>
+                            <li>Add <code>&lt;field name="meal" optional="show"/&gt;</code> inside the
+                                <code>&lt;list&gt;</code> in this view</li>
+                            <li>Add a column in <code>action_export_excel()</code> if Excel export is needed</li>
+                            <li>Add a <code>&lt;th&gt;</code> and <code>&lt;td&gt;</code> in the PDF template
+                                (<code>views/templates/dotbd_attendance_statement_pdf.xml</code>)</li>
+                        </ol>
+                        <strong>Keyword matching</strong> is case-insensitive and checks both the salary rule
+                        <em>code</em> and <em>name</em>. To make a rule appear as Housing, its code or name
+                        must contain one of: HOUSE, HOUSING, ACCOMMODATION, RENT, LODGE, SHELTER.
+                    </div>
+
+                    <!-- Step 1 content -->
+                    <group invisible="state != 'step1'">
+                        <group string="Period">
+                            <field name="month" widget="selection"/>
+                            <field name="year"/>
+                        </group>
+                        <group string="Filter">
+                            <field name="company_id" options="{'no_create': True}"/>
+                            <field name="employee_ids" widget="many2many_tags"
+                                   placeholder="Leave empty for all employees"/>
+                            <field name="department_ids" widget="many2many_tags"
+                                   invisible="employee_ids"
+                                   placeholder="Leave empty for all departments"/>
+                        </group>
+                        <group string="Payroll Source">
+                            <field name="native_payroll_available" invisible="1"/>
+                            <field name="use_native_payroll"
+                                   widget="boolean_toggle"
+                                   invisible="not native_payroll_available"/>
+                            <div class="alert alert-warning py-2 px-3 mb-0" role="alert"
+                                 invisible="native_payroll_available"
+                                 style="font-size:0.85em;">
+                                <i class="fa fa-exclamation-triangle" title="Exclamation triangle" aria-label="Exclamation triangle"/> Native Odoo payroll
+                                (<code>hr_payroll</code> or <code>hr_payroll_community</code>)
+                                is not installed. Salary data will be read from our own salary
+                                assignment system.
+                            </div>
+                            <div class="alert alert-info py-2 px-3 mb-0" role="alert"
+                                 invisible="not native_payroll_available or not use_native_payroll"
+                                 style="font-size:0.85em;">
+                                <i class="fa fa-check text-success" title="Check" aria-label="Check"/>
+                                Salary data will be auto-filled from native Odoo payroll
+                                (confirmed payslips → contracts → salary rules).
+                                Works with both Community and Enterprise.
+                            </div>
+                            <div class="alert alert-secondary py-2 px-3 mb-0" role="alert"
+                                 invisible="not native_payroll_available or use_native_payroll"
+                                 style="font-size:0.85em;">
+                                <i class="fa fa-info-circle" title="Info circle" aria-label="Info circle"/>
+                                Using our own salary assignment system. Make sure employees
+                                have an active salary assignment.
+                            </div>
+                        </group>
+                    </group>
+
+                    <!-- Step 2 content -->
+                    <group invisible="state != 'step2'">
+                        <field name="state" invisible="1"/>
+                        <field name="employee_count" readonly="1" string="Total Employees"/>
+                    </group>
+
+                    <field name="line_ids" invisible="state != 'step2'"
+                           widget="one2many_list"
+                           string="Employee Statement Lines">
+                        <tree editable="top" decoration-warning="salary_source == 'none'"
+                              decoration-success="salary_source == 'payslip'">
+                            <field name="employee_id" readonly="1"/>
+                            <field name="department_id" readonly="1"/>
+                            <field name="salary_source" optional="show" readonly="1"
+                                   widget="badge"
+                                   decoration-success="salary_source == 'payslip'"
+                                   decoration-info="salary_source == 'contract'"
+                                   decoration-secondary="salary_source == 'dotbd'"
+                                   decoration-warning="salary_source == 'none'"/>
+                            <field name="currency_id" column_invisible="True"/>
+                            <field name="wage"/>
+                            <field name="housing" optional="show"/>
+                            <field name="transport" optional="show"/>
+                            <field name="bonus" optional="show" string="Bonus / Allowance"/>
+                            <field name="advance" optional="show"/>
+                            <field name="deductions" optional="show"/>
+                            <field name="gross_amount" readonly="1"/>
+                            <field name="net_amount" readonly="1"/>
+                            <field name="attendance_days" optional="show"/>
+                            <field name="worked_hours" optional="show"/>
+                            <field name="overtime_hours" optional="show"/>
+                            <field name="late_minutes" optional="show"/>
+                        </tree>
+                    </field>
+
+                    <!-- ── DEVELOPER NOTE (visible only in debug mode) ─── -->
+                    <!--
+                    To add a new column (e.g. Meal Allowance):
+                    1. Add field 'meal' to DotbdAttendanceStatementLine in dotbd_attendance_statement.py
+                    2. Add _MEAL_KW detection in _get_native_salary()
+                    3. Add 'meal' to action_load() lines dict
+                    4. Add <field name="meal" optional="show"/> inside this tree
+                    That's it — no other changes needed.
+                    -->
+                </sheet>
+
+                <footer>
+                    <!-- Step 1 footer -->
+                    <button string="Load Employees" name="action_load"
+                            type="object" class="btn-primary"
+                            invisible="state != 'step1'"/>
+                    <button string="Cancel" class="btn-secondary"
+                            special="cancel" invisible="state != 'step1'"/>
+
+                    <!-- Step 2 footer -->
+                    <button string="← Back" name="action_back"
+                            type="object" class="btn-secondary"
+                            invisible="state != 'step2'"/>
+                    <button string="Print Statements (PDF)" name="action_print_statements"
+                            type="object" class="btn-primary"
+                            invisible="state != 'step2'"/>
+                    <button string="Export Excel" name="action_export_excel"
+                            type="object" class="btn-success"
+                            invisible="state != 'step2'"/>
+                    <button string="Close" class="btn-secondary"
+                            special="cancel" invisible="state != 'step2'"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- ══════════════════ ACTION ══════════════════ -->
+    <record id="action_dotbd_attendance_statement_wizard" model="ir.actions.act_window">
+        <field name="name">Attendance &amp; Salary Statement</field>
+        <field name="res_model">dotbd.attendance.statement.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="view_id" ref="view_dotbd_attendance_statement_wizard_step1"/>
+    </record>
+
+    <!-- ══════════════════ MENU ITEM ══════════════════ -->
+    <menuitem
+        id="menu_dotbd_attendance_statement"
+        name="Attendance Statement"
+        parent="dotbd_hr_zk_attendance_suite.menu_dotbd_payroll_payslips"
+        action="action_dotbd_attendance_statement_wizard"
+        sequence="7"
+        groups="dotbd_hr_zk_attendance_suite.group_dotbd_payroll_visible"/>
+
+    <!-- QWeb PDF report template (kept here to avoid relaxng issues with separate file) -->
+    <record id="report_attendance_statement_template" model="ir.ui.view">
+        <field name="name">dotbd_hr_zk_attendance_suite.report_attendance_statement_template</field>
+        <field name="type">qweb</field>
+        <field name="arch" type="xml">
+            <t t-name="dotbd_hr_zk_attendance_suite.report_attendance_statement_template">
+                <t t-call="web.html_container">
+                    <t t-foreach="docs" t-as="wizard">
+                        <t t-call="web.external_layout">
+                            <div class="page">
+                                <div class="row mb-4">
+                                    <div class="col-8">
+                                        <h3 class="mb-1" style="color:#1c3a5e;">Attendance &amp; Salary Statement</h3>
+                                        <p class="mb-0 text-muted">
+                                            <t t-set="month_name" t-value="dict([('1','January'),('2','February'),('3','March'),('4','April'),('5','May'),('6','June'),('7','July'),('8','August'),('9','September'),('10','October'),('11','November'),('12','December')]).get(wizard.month, wizard.month)"/>
+                                            Period: <strong><t t-esc="month_name"/> <t t-esc="wizard.year"/></strong>
+                                        </p>
+                                    </div>
+                                    <div class="col-4 text-right">
+                                        <p class="mb-0 text-muted small">Employees: <strong><t t-esc="len(wizard.line_ids)"/></strong></p>
+                                        <p class="mb-0 text-muted small">
+                                            <t t-if="wizard.use_native_payroll"><span class="badge badge-success">Native Payroll</span></t>
+                                            <t t-else=""><span class="badge badge-secondary">Our Payroll System</span></t>
+                                        </p>
+                                    </div>
+                                </div>
+                                <table class="table table-sm table-bordered" style="font-size:0.78em;">
+                                    <thead style="background-color:#1c3a5e; color:#ffffff;">
+                                        <tr>
+                                            <th style="width:3%;">#</th>
+                                            <th style="width:18%;">Employee</th>
+                                            <th style="width:12%;">Department</th>
+                                            <th class="text-right" style="width:8%;">Wage</th>
+                                            <th class="text-right" style="width:7%;">Housing</th>
+                                            <th class="text-right" style="width:7%;">Transport</th>
+                                            <th class="text-right" style="width:7%;">Bonus</th>
+                                            <th class="text-right" style="width:7%;">Advance</th>
+                                            <th class="text-right" style="width:7%;">Deductions</th>
+                                            <th class="text-right" style="width:6%;">Days</th>
+                                            <th class="text-right" style="width:6%;">Hours</th>
+                                            <th class="text-right" style="width:6%;">OT Hrs</th>
+                                            <th class="text-right font-weight-bold" style="width:8%;">Net</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-set="tw" t-value="0"/><t t-set="th2" t-value="0"/><t t-set="tt" t-value="0"/>
+                                        <t t-set="tb" t-value="0"/><t t-set="ta" t-value="0"/><t t-set="td2" t-value="0"/>
+                                        <t t-set="tdays" t-value="0"/><t t-set="thrs" t-value="0"/><t t-set="tot" t-value="0"/>
+                                        <t t-set="tnet" t-value="0"/><t t-set="rn" t-value="0"/>
+                                        <t t-foreach="wizard.line_ids" t-as="line">
+                                            <t t-set="rn" t-value="rn + 1"/>
+                                            <t t-set="tw" t-value="tw + line.wage"/>
+                                            <t t-set="th2" t-value="th2 + line.housing"/>
+                                            <t t-set="tt" t-value="tt + line.transport"/>
+                                            <t t-set="tb" t-value="tb + line.bonus"/>
+                                            <t t-set="ta" t-value="ta + line.advance"/>
+                                            <t t-set="td2" t-value="td2 + line.deductions"/>
+                                            <t t-set="tdays" t-value="tdays + line.attendance_days"/>
+                                            <t t-set="thrs" t-value="thrs + line.worked_hours"/>
+                                            <t t-set="tot" t-value="tot + line.overtime_hours"/>
+                                            <t t-set="tnet" t-value="tnet + line.net_amount"/>
+                                            <tr t-attf-style="background:#{rn % 2 == 0 and '#f8f9fa' or 'white'}">
+                                                <td class="text-center"><t t-esc="rn"/></td>
+                                                <td><t t-esc="line.employee_id.name"/></td>
+                                                <td><t t-esc="line.department_id.name or ''"/></td>
+                                                <td class="text-right"><t t-esc="'%.2f' % line.wage"/></td>
+                                                <td class="text-right"><t t-esc="'%.2f' % line.housing"/></td>
+                                                <td class="text-right"><t t-esc="'%.2f' % line.transport"/></td>
+                                                <td class="text-right"><t t-esc="'%.2f' % line.bonus"/></td>
+                                                <td class="text-right text-danger"><t t-esc="'(%.2f)' % line.advance if line.advance else '-'"/></td>
+                                                <td class="text-right text-danger"><t t-esc="'(%.2f)' % line.deductions if line.deductions else '-'"/></td>
+                                                <td class="text-right"><t t-esc="'%.1f' % line.attendance_days"/></td>
+                                                <td class="text-right"><t t-esc="'%.1f' % line.worked_hours"/></td>
+                                                <td class="text-right"><t t-esc="'%.1f' % line.overtime_hours if line.overtime_hours else '-'"/></td>
+                                                <td class="text-right font-weight-bold"><t t-esc="'%.2f' % line.net_amount"/></td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                    <tfoot style="background-color:#e8f5e9; font-weight:bold;">
+                                        <tr>
+                                            <td colspan="3" class="text-right">TOTAL</td>
+                                            <td class="text-right"><t t-esc="'%.2f' % tw"/></td>
+                                            <td class="text-right"><t t-esc="'%.2f' % th2"/></td>
+                                            <td class="text-right"><t t-esc="'%.2f' % tt"/></td>
+                                            <td class="text-right"><t t-esc="'%.2f' % tb"/></td>
+                                            <td class="text-right text-danger"><t t-esc="'(%.2f)' % ta"/></td>
+                                            <td class="text-right text-danger"><t t-esc="'(%.2f)' % td2"/></td>
+                                            <td class="text-right"><t t-esc="'%.1f' % tdays"/></td>
+                                            <td class="text-right"><t t-esc="'%.1f' % thrs"/></td>
+                                            <td class="text-right"><t t-esc="'%.1f' % tot"/></td>
+                                            <td class="text-right" style="color:#155724;"><t t-esc="'%.2f' % tnet"/></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                                <div class="row mt-5">
+                                    <div class="col-4 text-center"><div style="border-top:1px solid #ccc; padding-top:4px; margin-top:30px;">Prepared By</div></div>
+                                    <div class="col-4 text-center"><div style="border-top:1px solid #ccc; padding-top:4px; margin-top:30px;">HR Manager</div></div>
+                                    <div class="col-4 text-center"><div style="border-top:1px solid #ccc; padding-top:4px; margin-top:30px;">Director / CEO</div></div>
+                                </div>
+                            </div>
+                        </t>
+                    </t>
+                </t>
+            </t>
+        </field>
+    </record>
+
+    <record id="action_report_attendance_statement" model="ir.actions.report">
+        <field name="name">Attendance &amp; Salary Statement</field>
+        <field name="model">dotbd.attendance.statement.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">dotbd_hr_zk_attendance_suite.report_attendance_statement_template</field>
+        <field name="report_file">dotbd_hr_zk_attendance_suite.report_attendance_statement_template</field>
+        <field name="print_report_name">'Attendance Statement - %s %s' % (object.month, object.year)</field>
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+    </record>
+
+</odoo>

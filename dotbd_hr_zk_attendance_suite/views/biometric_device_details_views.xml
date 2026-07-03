@@ -1,0 +1,1680 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- ==================== ENHANCED DEVICE FORM VIEW ==================== -->
+    <record id="biometric_device_details_view_form" model="ir.ui.view">
+        <field name="name">biometric.device.details.view.form.enhanced</field>
+        <field name="model">biometric.device.details</field>
+        <field name="arch" type="xml">
+            <form string="Biometric Device">
+                <header>
+                    <!--
+                    ═══════════════════════════════════════════════════════════
+                    GROUP 1 — DOWNLOAD ATTENDANCE  (PyZK only)
+                    Primary action: background download (most used)
+                    Secondary: with-progress, then date shortcuts
+                    ═══════════════════════════════════════════════════════════
+                    -->
+                    <button name="action_download_attendance_background"
+                            string="Download (Background)"
+                            type="object"
+                            class="oe_highlight"
+                            icon="fa-download"
+                            invisible="connection_mode == 'adms'"
+                            help="Download all new attendance records in background (recommended)"/>
+
+                    <button name="action_download_with_progress"
+                            string="Download (With Progress)"
+                            type="object"
+                            class="btn-primary"
+                            icon="fa-tasks"
+                            invisible="connection_mode == 'adms'"
+                            help="Download attendance with a real-time progress bar"/>
+
+                    <button name="action_download_current_month"
+                            string="This Month"
+                            type="object"
+                            class="btn-secondary"
+                            icon="fa-calendar"
+                            invisible="connection_mode == 'adms'"
+                            help="Download this month's attendance only"/>
+
+                    <button name="action_download_current_week"
+                            string="This Week"
+                            type="object"
+                            class="btn-secondary"
+                            icon="fa-calendar-o"
+                            invisible="connection_mode == 'adms'"
+                            help="Download this week's attendance only"/>
+
+                    <button name="action_download_today"
+                            string="Today"
+                            type="object"
+                            class="btn-secondary"
+                            icon="fa-clock-o"
+                            invisible="connection_mode == 'adms'"
+                            help="Download today's attendance only"/>
+
+                    <!--
+                    ═══════════════════════════════════════════════════════════
+                    GROUP 2 — LIVE CAPTURE  (PyZK only, context-aware)
+                    Green = start, Red = stop — only one shows at a time
+                    ═══════════════════════════════════════════════════════════
+                    -->
+                    <button name="action_start_live_capture"
+                            string="Start Live Capture"
+                            type="object"
+                            class="btn-success"
+                            icon="fa-play"
+                            invisible="live_capture_active == True or connection_mode == 'adms'"
+                            confirm="Start real-time attendance monitoring for this device?"/>
+
+                    <button name="action_stop_live_capture"
+                            string="Stop Live Capture"
+                            type="object"
+                            class="btn-danger"
+                            icon="fa-stop"
+                            invisible="live_capture_active == False or connection_mode == 'adms'"/>
+
+                    <!--
+                    ═══════════════════════════════════════════════════════════
+                    GROUP 3 — DEVICE DIAGNOSTICS  (PyZK only)
+                    ═══════════════════════════════════════════════════════════
+                    -->
+                    <button name="action_test_connection"
+                            string="Test Connection"
+                            type="object"
+                            class="btn-secondary"
+                            icon="fa-plug"
+                            invisible="connection_mode == 'adms'"
+                            help="Ping the device and verify it is reachable"/>
+
+                    <button name="action_refresh_device_info"
+                            string="Refresh Info"
+                            type="object"
+                            class="btn-secondary"
+                            icon="fa-refresh"
+                            invisible="connection_mode == 'adms'"
+                            help="Refresh firmware version, capacity, and user count from device"/>
+
+                    <button name="action_set_timezone"
+                            string="Sync Time"
+                            type="object"
+                            class="btn-secondary"
+                            icon="fa-clock-o"
+                            invisible="connection_mode == 'adms'"
+                            help="Sync device clock to the configured timezone"/>
+
+                    <button name="action_restart_device"
+                            string="Restart Device"
+                            type="object"
+                            class="btn-secondary"
+                            icon="fa-power-off"
+                            invisible="connection_mode == 'adms'"
+                            confirm="Restart this device? It will go offline briefly."/>
+
+                    <button name="action_reset_live_capture"
+                            string="Reset Live Capture"
+                            type="object"
+                            class="btn-secondary"
+                            icon="fa-undo"
+                            invisible="live_capture_active == False or connection_mode == 'adms'"
+                            help="Reset stale live-capture flag (use if Odoo restarted mid-capture)"/>
+
+                    <!--
+                    ═══════════════════════════════════════════════════════════
+                    GROUP 4 — ADMS ACTIONS  (ADMS / Hybrid only)
+                    ═══════════════════════════════════════════════════════════
+                    -->
+                    <button name="action_adms_enroll_fingerprint"
+                            string="Enroll Fingerprint"
+                            type="object"
+                            class="oe_highlight"
+                            icon="fa-fingerprint"
+                            invisible="connection_mode == 'direct'"
+                            help="Send an enroll-fingerprint command to this device via ADMS"/>
+
+                    <button name="action_adms_sync_users"
+                            string="Sync Users"
+                            type="object"
+                            class="btn-primary"
+                            icon="fa-users"
+                            invisible="connection_mode == 'direct'"
+                            confirm="Queue a user-sync command to push all mapped employees to this device?"/>
+
+                    <button name="action_adms_reboot"
+                            string="Reboot Device"
+                            type="object"
+                            class="btn-secondary"
+                            icon="fa-refresh"
+                            invisible="connection_mode == 'direct'"
+                            confirm="Queue a reboot command for this device?"/>
+
+                    <!--
+                    ═══════════════════════════════════════════════════════════
+                    GROUP 5 — ADMIN  (last, least often used)
+                    ═══════════════════════════════════════════════════════════
+                    -->
+                    <button name="action_archive"
+                            string="Archive"
+                            type="object"
+                            class="btn-secondary"
+                            icon="fa-archive"
+                            invisible="not active"
+                            confirm="Archive this device? It will be excluded from schedules and downloads. Restore it any time from the Archived filter."/>
+
+                    <button name="action_unarchive"
+                            string="Restore Device"
+                            type="object"
+                            class="btn-warning"
+                            icon="fa-undo"
+                            invisible="active or adms_pending_activation"/>
+
+                    <!-- One-click approve for auto-registered (pending) devices -->
+                    <button name="action_activate_device"
+                            string="Review &amp; Activate"
+                            type="object"
+                            class="btn-success"
+                            icon="fa-check"
+                            invisible="not adms_pending_activation"
+                            confirm="Activate this auto-registered device? It connected on its own via ADMS push and has been held inactive for safety. Once activated it will start accepting attendance data."/>
+
+                    <field name="active" invisible="1"/>
+                    <field name="adms_auto_registered" invisible="1"/>
+                    <field name="adms_pending_activation" invisible="1"/>
+                </header>
+
+                <!-- SAFETY banner: device auto-registered via ADMS and is awaiting approval -->
+                <div class="alert alert-danger mb-0" role="alert"
+                     invisible="not adms_pending_activation">
+                    <h5 class="mb-1"><i class="fa fa-shield" title="Shield" aria-label="Shield"/> Auto-Registered Device — Pending Activation</h5>
+                    This device contacted the server on its own via ADMS push and was
+                    created <strong>INACTIVE for safety</strong>. It may have connected using a
+                    bare <strong>IP address</strong> or your <strong>raw domain</strong> (no <code>/db/</code> path),
+                    which bypasses any intended database filter.
+                    <ul class="mb-1 mt-2">
+                        <li>Its attendance punches are <strong>currently rejected</strong> (the device holds and resends them).</li>
+                        <li>It still shows a heartbeat (<strong>Online</strong>) so you can identify it.</li>
+                        <li>Confirm the <strong>Serial Number</strong> and <strong>IP</strong> below are a device you recognise, then click <strong>Review &amp; Activate</strong>. Buffered punches are then accepted automatically.</li>
+                    </ul>
+                    <span class="text-muted" style="font-size:0.85em;">
+                        If you do NOT recognise this device, leave it inactive or delete it — no data is accepted while it stays inactive.
+                    </span>
+                </div>
+
+                <!-- Generic archived banner (manually archived, not a pending auto-registration) -->
+                <div class="alert alert-warning text-center mb-0" role="alert"
+                     invisible="active or adms_pending_activation">
+                    <i class="fa fa-archive" title="Archive" aria-label="Archive"/> This device is <strong>archived</strong> and will not receive scheduled downloads or ADMS attendance pushes.
+                    Click <strong>Restore</strong> to reactivate it.
+                </div>
+
+                <sheet>
+                    <!-- Smart Buttons -->
+                    <div class="oe_button_box" name="button_box">
+                        <!-- Device Status Button -->
+                        <button name="action_refresh_device_info"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-heartbeat">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">Status</span>
+                                <span class="o_stat_value">
+                                    <field name="device_status" widget="badge"
+                                           decoration-success="device_status == 'online'"
+                                           decoration-danger="device_status == 'offline'"
+                                           decoration-warning="device_status == 'unknown'"/>
+                                </span>
+                            </div>
+                        </button>
+
+                        <!-- ═══════════════════════════════════════════════════ -->
+                        <!-- NEW: Operation Logs Smart Button (All Modes) -->
+                        <!-- Shows success/failed/warning counts at a glance -->
+                        <!-- Works for PyZK, ADMS, and Hybrid modes -->
+                        <!-- ═══════════════════════════════════════════════════ -->
+                        <button name="action_view_operation_logs"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-file-text-o"
+                                title="View all operation logs (success/failed/warning)">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">Operation</span>
+                                <span class="o_stat_text">Logs</span>
+                                <div class="o_stat_value" style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+                                    <span class="badge bg-success" title="Success operations">
+                                        ✓ <field name="log_success_count"/>
+                                    </span>
+                                    <span class="badge bg-danger" title="Failed operations">
+                                        ✗ <field name="log_failed_count"/>
+                                    </span>
+                                    <span class="badge bg-warning text-dark" title="Warning operations">
+                                        ⚠ <field name="log_warning_count"/>
+                                    </span>
+                                </div>
+                            </div>
+                        </button>
+
+                        <!-- Download Logs Button -->
+                        <button name="action_view_device_logs"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-list-alt"
+                                title="All Device Logs">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">Download</span>
+                                <span class="o_stat_text">Logs</span>
+                                <span class="o_stat_value">
+                                    <field name="device_log_count"/>
+                                </span>
+                            </div>
+                        </button>
+
+                        <!-- Live Capture Logs Button -->
+                        <button name="action_view_live_capture_logs"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-bolt"
+                                title="Live Capture Session Logs">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">Live Capture</span>
+                                <span class="o_stat_text">Logs</span>
+                                <span class="o_stat_value">
+                                    <field name="live_capture_log_count"/>
+                                </span>
+                            </div>
+                        </button>
+
+                        <!-- Device Attendance Records Button -->
+                        <button name="action_view_attendance_records"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-database">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">Attendance</span>
+                                <span class="o_stat_text">Records</span>
+                                <span class="o_stat_value">
+                                    <field name="device_attendance_count"/>
+                                </span>
+                            </div>
+                        </button>
+
+                        <!-- User Count Button -->
+                        <button name="action_view_enrolled_users"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-users">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">On Device</span>
+                                <span class="o_stat_text">Users</span>
+                                <span class="o_stat_value">
+                                    <field name="user_count"/>
+                                </span>
+                            </div>
+                        </button>
+
+                        <!-- Live Events Button -->
+                        <button name="action_start_live_capture"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-bolt"
+                                invisible="live_capture_enabled == False">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">Events Today</span>
+                                <span class="o_stat_value">
+                                    <field name="live_events_today"/>
+                                </span>
+                            </div>
+                        </button>
+
+                        <!-- Biometric Templates Button -->
+                        <button name="action_download_templates"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-fingerprint">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">Download</span>
+                                <span class="o_stat_text">Fingerprints (PyZK)</span>
+                            </div>
+                        </button>
+
+                        <!-- Verify Biometric Button -->
+                        <button name="action_verify_employee_biometric"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-check-circle">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">Verify</span>
+                                <span class="o_stat_text">Biometric</span>
+                            </div>
+                        </button>
+
+                        <!-- ADMS Commands Smart Button -->
+                        <button name="action_view_adms_commands"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-terminal"
+                                invisible="connection_mode == 'direct'">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">ADMS</span>
+                                <span class="o_stat_text">Commands</span>
+                                <span class="o_stat_value">
+                                    <field name="adms_command_count"/>
+                                </span>
+                            </div>
+                        </button>
+
+                        <!-- Stored Biometrics Templates Smart Button -->
+                        <button name="action_view_fp_templates"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-fingerprint"
+                                invisible="connection_mode == 'direct'">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">Stored</span>
+                                <span class="o_stat_text">Biometrics</span>
+                            </div>
+                        </button>
+                    </div>
+                    
+                    <!-- ══════════════════════════════════════════════════════
+                         DEVICE IDENTITY HEADER
+                    ══════════════════════════════════════════════════════ -->
+                    <div class="d-flex align-items-start gap-3 mb-3 pb-3"
+                         style="border-bottom: 2px solid #e9ecef;">
+
+                        <!-- Device icon -->
+                        <div class="d-flex align-items-center justify-content-center flex-shrink-0"
+                             style="width:64px; height:64px; border-radius:14px;
+                                    background: linear-gradient(135deg, #1e3a5f 0%, #2d5a8e 100%);
+                                    box-shadow: 0 4px 14px rgba(30,58,95,0.35);">
+                            <i class="fa fa-shield fa-2x" title="Shield" aria-label="Shield" style="color:white;"/>
+                        </div>
+
+                        <!-- Device name + meta -->
+                        <div class="flex-grow-1">
+                            <label for="name" class="o_form_label" style="font-size:11px; color:#8898aa; font-weight:600; letter-spacing:.6px; text-transform:uppercase; margin-bottom:2px;"/>
+                            <h1 class="oe_title mb-0" style="font-size:1.9rem; font-weight:700; color:#1e3a5f; line-height:1.2;">
+                                <field name="name" placeholder="e.g., Main Entrance Device"
+                                       style="color:#1e3a5f; font-weight:700;"/>
+                            </h1>
+                            <div class="d-flex flex-wrap gap-2 mt-1" invisible="firmware_version == False">
+                                <span class="badge" style="background:#eef2ff; color:#3730a3; font-weight:500; font-size:11px; padding:4px 8px; border-radius:6px;">
+                                    <i class="fa fa-microchip me-1" title="Microchip" aria-label="Microchip"/>
+                                    <field name="firmware_version" readonly="1" class="oe_inline"/>
+                                </span>
+                                <span class="badge" invisible="serial_number == False"
+                                      style="background:#f0fdf4; color:#166534; font-weight:500; font-size:11px; padding:4px 8px; border-radius:6px;">
+                                    S/N: <field name="serial_number" readonly="1" class="oe_inline"/>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Connection status pill -->
+                        <div class="flex-shrink-0 text-end">
+                            <field name="device_status" widget="badge" readonly="1"
+                                   decoration-success="device_status == 'online'"
+                                   decoration-danger="device_status == 'offline'"
+                                   decoration-warning="device_status == 'unknown'"
+                                   style="font-size:13px; padding:6px 14px;"/>
+                        </div>
+                    </div>
+
+                    <!-- ══════════════════════════════════════════════════════
+                         METRIC TILES ROW
+                    ══════════════════════════════════════════════════════ -->
+                    <div class="row g-3 mb-3">
+
+                        <!-- Attendance Records -->
+                        <div class="col-6 col-md-3">
+                            <div class="rounded-3 p-3 h-100"
+                                 style="background:white; border:1px solid #e8edf3;
+                                        box-shadow:0 2px 8px rgba(0,0,0,0.06); cursor:pointer;"
+                                 title="Click to view attendance records">
+                                <div style="font-size:11px; font-weight:600; color:#8898aa; text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px;">
+                                    <i class="fa fa-database me-1" title="Database" aria-label="Database" style="color:#6366f1;"/> Records
+                                </div>
+                                <div style="font-size:28px; font-weight:800; color:#1e3a5f; line-height:1;">
+                                    <field name="device_attendance_count" readonly="1"/>
+                                </div>
+                                <div style="font-size:11px; color:#adb5bd; margin-top:4px;">attendance logs</div>
+                            </div>
+                        </div>
+
+                        <!-- Users enrolled -->
+                        <div class="col-6 col-md-3">
+                            <div class="rounded-3 p-3 h-100"
+                                 style="background:white; border:1px solid #e8edf3;
+                                        box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                                <div style="font-size:11px; font-weight:600; color:#8898aa; text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px;">
+                                    <i class="fa fa-users me-1" title="Users" aria-label="Users" style="color:#10b981;"/> Users
+                                </div>
+                                <div style="font-size:28px; font-weight:800; color:#1e3a5f; line-height:1;">
+                                    <field name="user_count" readonly="1"/>
+                                </div>
+                                <div style="font-size:11px; color:#adb5bd; margin-top:4px;">enrolled on device</div>
+                            </div>
+                        </div>
+
+                        <!-- Operation logs -->
+                        <div class="col-6 col-md-3">
+                            <div class="rounded-3 p-3 h-100"
+                                 style="background:white; border:1px solid #e8edf3;
+                                        box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                                <div style="font-size:11px; font-weight:600; color:#8898aa; text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px;">
+                                    <i class="fa fa-bar-chart me-1" title="Bar chart" aria-label="Bar chart" style="color:#f59e0b;"/> Operations
+                                </div>
+                                <div class="d-flex align-items-baseline gap-2" style="line-height:1;">
+                                    <span style="font-size:22px; font-weight:800; color:#16a34a;"><field name="log_success_count" readonly="1"/></span>
+                                    <span style="font-size:22px; font-weight:800; color:#dc2626;"><field name="log_failed_count" readonly="1"/></span>
+                                    <span style="font-size:22px; font-weight:800; color:#d97706;"><field name="log_warning_count" readonly="1"/></span>
+                                </div>
+                                <div style="font-size:11px; color:#adb5bd; margin-top:4px;">ok · fail · warn</div>
+                            </div>
+                        </div>
+
+                        <!-- Download logs -->
+                        <div class="col-6 col-md-3">
+                            <div class="rounded-3 p-3 h-100"
+                                 style="background:white; border:1px solid #e8edf3;
+                                        box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                                <div style="font-size:11px; font-weight:600; color:#8898aa; text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px;">
+                                    <i class="fa fa-download me-1" title="Download" aria-label="Download" style="color:#3b82f6;"/> Downloads
+                                </div>
+                                <div style="font-size:28px; font-weight:800; color:#1e3a5f; line-height:1;">
+                                    <field name="device_log_count" readonly="1"/>
+                                </div>
+                                <div style="font-size:11px; color:#adb5bd; margin-top:4px;">download sessions</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ══════════════════════════════════════════════════════
+                         STATUS BANNERS (modern style)
+                    ══════════════════════════════════════════════════════ -->
+
+                    <!-- Storage warning -->
+                    <div class="d-flex align-items-center gap-3 p-3 mb-2 rounded-3"
+                         style="background:#fff5f5; border:1px solid #fca5a5;"
+                         invisible="storage_warning == False">
+                        <i class="fa fa-exclamation-triangle fa-lg flex-shrink-0" title="Exclamation triangle" aria-label="Exclamation triangle" style="color:#dc2626;"/>
+                        <div>
+                            <span style="font-weight:700; color:#b91c1c;">Storage Warning</span>
+                            <span class="ms-2" style="font-size:13px; color:#6b7280;">
+                                Device is over 80% full —
+                                <field name="record_count" readonly="1" class="oe_inline"/> /
+                                <field name="record_capacity" readonly="1" class="oe_inline"/> records
+                                (<field name="record_usage_percent" readonly="1" class="oe_inline"/>%).
+                                Clear old records to prevent data loss.
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Live capture active -->
+                    <div class="d-flex align-items-center gap-3 p-3 mb-3 rounded-3"
+                         style="background:#f0fdf4; border:1px solid #86efac;"
+                         invisible="live_capture_active == False">
+                        <span class="flex-shrink-0"
+                              style="width:12px; height:12px; border-radius:50%; background:#16a34a;
+                                     box-shadow:0 0 0 4px rgba(22,163,74,0.2); display:inline-block;"/>
+                        <div>
+                            <span style="font-weight:700; color:#15803d;">Live Capture Active</span>
+                            <span class="ms-2" style="font-size:13px; color:#6b7280;">
+                                Real-time monitoring running · Last event:
+                                <field name="last_live_event_time" readonly="1" class="oe_inline"/>
+                            </span>
+                        </div>
+                    </div>
+
+                    <notebook>
+                        <!-- Tab 1: Basic Configuration (Existing - Enhanced) -->
+                        <page string="Configuration" name="device_config">
+
+                            <!-- ── Row 1: Connection Mode ── -->
+                            <group>
+                                <group string="Connection Mode" colspan="2">
+                                    <field name="connection_mode" widget="radio"/>
+                                </group>
+                            </group>
+
+                            <!-- ── Row 2: Connection settings ── -->
+                            <div class="row mt-2 mb-0">
+                                <!-- PyZK / Direct -->
+                                <div class="col-md-4" invisible="connection_mode == 'adms'">
+                                    <group string="PyZK Direct Connection">
+                                        <field name="device_ip" placeholder="192.168.1.100" required="connection_mode != 'adms'"/>
+                                        <field name="port_number" placeholder="4370" required="connection_mode != 'adms'"/>
+                                        <field name="device_password" password="True" placeholder="Leave empty for default (0)"/>
+                                        <field name="live_capture_enabled"/>
+                                        <field name="live_capture_timeout" invisible="live_capture_enabled == False"/>
+                                        <field name="pyzk_status" widget="badge" readonly="1"
+                                               string="PyZK Status"
+                                               decoration-success="pyzk_status == 'online'"
+                                               decoration-danger="pyzk_status == 'offline'"
+                                               decoration-warning="pyzk_status == 'unknown'"/>
+                                        <field name="pyzk_last_success" readonly="1"/>
+                                        <field name="pyzk_last_attempt" readonly="1"/>
+                                    </group>
+                                </div>
+                                <!-- ADMS Cloud -->
+                                <div class="col-md-4" invisible="connection_mode == 'direct'">
+                                    <group string="ADMS Cloud Settings">
+                                        <field name="device_serial" placeholder="Auto-filled on first heartbeat"/>
+                                        <field name="adms_auto_fill_serial"/>
+                                        <field name="adms_receive_only" widget="boolean_toggle"/>
+                                        <field name="adms_last_heartbeat" readonly="1"/>
+                                        <field name="adms_status" widget="badge"
+                                               decoration-success="adms_status == 'online'"
+                                               decoration-danger="adms_status == 'offline'"/>
+                                        <field name="adms_offline_threshold" string="Offline Threshold (min)"/>
+                                        <field name="adms_push_count" readonly="1"/>
+                                        <field name="adms_command_count"/>
+                                        <field name="adms_server_url" readonly="1"
+                                               string="Server Address (firmware)"
+                                               help="Paste into 'Server Address' on device firmware. No https:// prefix."/>
+                                        <field name="adms_server_port" readonly="1"
+                                               string="Server Port (firmware)"
+                                               help="Paste into 'Server Port' on device firmware. 443=HTTPS proxy, 80=HTTP proxy, 8069=direct Odoo."/>
+                                        <field name="adms_server_url_raw" readonly="1"
+                                               string="Raw Domain (no /db/)"
+                                               help="Use ONLY if the device firmware will not accept a path after the address. The database is resolved by Odoo dbfilter / Odoo.sh domain mapping. Devices connecting this way auto-register as INACTIVE for safety."/>
+                                        <field name="adms_server_host_ip" readonly="1"
+                                               string="Server IP"
+                                               help="Use ONLY if the device firmware cannot accept a domain name. IP-based devices cannot send a database path and auto-register as INACTIVE for safety."/>
+                                    </group>
+                                    <!-- Port reachability checker -->
+                                    <div class="mt-2">
+                                        <button name="action_check_server_ports"
+                                                string="Check Server Ports"
+                                                type="object"
+                                                class="btn btn-sm btn-outline-primary"
+                                                icon="fa-plug"
+                                                help="Probe ports 80 / 443 / 8069 / 8081 on this server's host so you can pick a working Server Port for the firmware."/>
+                                        <field name="adms_port_status_html" nolabel="1" readonly="1"
+                                               class="mt-2"/>
+                                    </div>
+                                </div>
+                                <!-- Location -->
+                                <div class="col-md-4">
+                                    <group string="Location">
+                                        <field name="address_id"/>
+                                        <field name="company_id" options="{'no_create': True}"/>
+                                        <field name="last_download_time" readonly="1"/>
+                                    </group>
+                                </div>
+                            </div>
+
+                            <!-- ── Hybrid connectivity warning ── -->
+                            <div class="alert alert-warning mt-2" role="alert"
+                                 invisible="not connectivity_warning"
+                                 style="font-size:0.9em; padding:8px 14px;">
+                                <i class="fa fa-exclamation-triangle"/> <b>Hybrid Warning:</b>
+                                <field name="connectivity_warning" readonly="1" nolabel="1"/>
+                            </div>
+
+                            <!-- ── ADMS Setup Guide cards (only for ADMS / Hybrid) ── -->
+                            <div class="row mt-2 mb-2" invisible="connection_mode not in ('adms', 'hybrid')">
+                                <div class="col-md-6">
+                                    <div class="alert alert-info mb-0" role="alert" style="font-size:0.87em;">
+                                        <strong><i class="fa fa-plug" title="Plug" aria-label="Plug"/> ADMS / Hybrid — Device Firmware Setup</strong>
+                                        <ol class="mb-1 mt-2 pl-3">
+                                            <li class="mb-1">On your ZKTeco device go to
+                                                <em>Menu → Comm → Cloud Server Setting</em></li>
+                                            <li class="mb-1">Set <strong>Server Address</strong> to the value from
+                                                <strong>Server Address (firmware)</strong> above.<br/>
+                                                <span style="color:#155724;">Example: <code>myodoo.com/db/my_database</code></span><br/>
+                                                <strong>⚠ No https://</strong> — firmware takes host + path only.</li>
+                                            <li class="mb-1">Set <strong>Server Port</strong> to the value from
+                                                <strong>Server Port (firmware)</strong> above:<br/>
+                                                <small><code>8069</code> direct Odoo · <code>80</code> HTTP proxy · <code>443</code> HTTPS proxy</small></li>
+                                            <li class="mb-1">If your device has an <strong>HTTPS / SSL</strong> toggle:
+                                                <strong>ON</strong> when port is 443, <strong>OFF</strong> otherwise.</li>
+                                            <li class="mb-1">Save and <strong>restart the device</strong>. It connects
+                                                automatically and fills the Serial Number on first heartbeat.</li>
+                                        </ol>
+                                        <strong><i class="fa fa-database" title="Database" aria-label="Database"/> Multiple databases on the same server:</strong>
+                                        each database has its own <em>Device Server Address</em> (containing
+                                        <code>/db/database_name</code>). Always copy from this page — do not type it manually.
+                                        <hr class="my-2"/>
+                                        <strong><i class="fa fa-shield text-danger" title="Shield" aria-label="Shield"/> Devices that cannot enter a <code>/db/</code> path (IP or raw domain):</strong>
+                                        <ul class="mb-1 mt-1">
+                                            <li>Many ZKTeco firmwares accept only a bare <strong>IP</strong> or <strong>domain</strong> — no URL path. In that case use the
+                                                <strong>Raw Domain</strong> or <strong>Server IP</strong> field above instead of the <code>/db/</code> address.</li>
+                                            <li>Without the <code>/db/</code> path the request lands on whatever database your
+                                                <strong>dbfilter</strong> selects. On <strong>Odoo.sh</strong> each domain already maps to exactly one database, so the raw domain works directly.</li>
+                                            <li><strong><i class="fa fa-exclamation-triangle text-warning" title="Exclamation triangle" aria-label="Exclamation triangle"/> Odoo.sh + IP does NOT work:</strong>
+                                                on Odoo.sh the IP is a <strong>shared proxy</strong> that routes by <strong>domain name</strong>, not by IP — a device pointed at a raw IP cannot be routed to your database.
+                                                Always use the <strong>domain</strong> (Server Port <code>443</code>, HTTPS <strong>ON</strong>). The <strong>Server IP</strong> field only works on your <strong>own server / VPS</strong>, where a changing IP is fine — just update it here when it changes.</li>
+                                            <li><strong><i class="fa fa-cloud text-success" title="Cloud" aria-label="Cloud"/> On Odoo.sh — use the Raw Domain:</strong>
+                                                copy the <strong>Raw Domain</strong> field above into the device (Server Port <code>443</code>, HTTPS <strong>ON</strong>). Each Odoo.sh domain maps to exactly one database, so no <code>/db/</code> path is needed — this is the recommended, simplest setup for Odoo.sh customers.</li>
+                                            <li><strong><i class="fa fa-database text-danger" title="Database" aria-label="Database"/> On-premises with several databases:</strong>
+                                                a raw IP or raw domain (no <code>/db/</code> path) may hand-shake into a <strong>different database</strong> than you expect — whichever your <strong>dbfilter</strong> resolves. The device is still auto-created <strong>INACTIVE</strong>, but it may appear in another database. If you do not see the pending device here, <strong>check your other databases too</strong> — or add the <code>/db/</code> path so it always lands in the right one.</li>
+                                            <li><strong>Safety:</strong> any device that reaches the server this way and is not already
+                                                registered is auto-created <strong>INACTIVE</strong>. It shows Online (heartbeat) but its punches are held and rejected until you open it and click <strong>Review &amp; Activate</strong>. This prevents a stranger's device — or one pointed at the wrong database — from silently injecting attendance.</li>
+                                            <li>Use <strong>Check Server Ports</strong> above to confirm which port (443 / 80 / 8069) is actually reachable before configuring the firmware.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="col-md-6" invisible="connection_mode != 'hybrid'">
+                                    <div class="alert mb-0" role="alert" style="font-size:0.87em;background:#fff3cd;border-color:#ffc107;">
+                                        <strong><i class="fa fa-exchange text-warning" title="Exchange" aria-label="Exchange"/> Hybrid Mode — Additional Notes</strong>
+                                        <p class="mb-1 mt-2">Hybrid uses <strong>ADMS for attendance push</strong>
+                                            (device → Odoo) and <strong>PyZK for hardware control</strong>
+                                            (Odoo → device: door, LCD, voice, enroll).</p>
+                                        <strong>Attendance push (ADMS side):</strong>
+                                        <ul class="mb-2 mt-1">
+                                            <li>Configure Server Address exactly as above</li>
+                                            <li>Works identically to Cloud (ADMS) mode</li>
+                                        </ul>
+                                        <strong>Hardware control (PyZK side):</strong>
+                                        <ul class="mb-1 mt-1">
+                                            <li>Requires Odoo to reach device on <strong>TCP port 4370</strong></li>
+                                            <li><strong>On-premise Odoo</strong>: works automatically on same LAN</li>
+                                            <li><strong>Cloud Odoo</strong>: requires a <strong>VPN</strong> or
+                                                <strong>port forwarding</strong> on the site router for each device</li>
+                                            <li>Without network access: use <strong>Cloud (ADMS) mode</strong> instead
+                                                — attendance still works, hardware control features are unavailable</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="col-md-6" invisible="connection_mode != 'adms'">
+                                    <div class="alert alert-warning mb-0" role="alert" style="font-size:0.83em;height:100%;">
+                                        <strong><i class="fa fa-server" title="Server" aria-label="Server"/> nginx — Required for ADMS</strong><br/>
+                                        Add a dedicated <code>/iclock/</code> block to prevent nginx sending
+                                        an HTTP <code>Date</code> header that causes ZKteco firmware to
+                                        sync the device clock and shift punch times.<br/><br/>
+                                        <strong>1.</strong> Install headers-more module:<br/>
+                                        <code style="display:block;background:#fff8e1;padding:3px 6px;border-radius:3px;margin:3px 0;">sudo apt install libnginx-mod-http-headers-more-filter</code>
+                                        <strong>2.</strong> Add before <code>location /</code> in your nginx site config:<br/>
+                                        <code style="display:block;background:#fff8e1;padding:4px 6px;border-radius:3px;margin:3px 0;white-space:pre-wrap;">location /iclock/ {
+  proxy_pass http://127.0.0.1:8069;
+  proxy_http_version 1.1;
+  proxy_set_header Host $host;
+  proxy_set_header X-Real-IP $remote_addr;
+  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+  proxy_set_header X-Forwarded-Proto $scheme;
+  proxy_redirect off;
+  proxy_hide_header Date;
+  more_clear_headers Date;
+}</code>
+                                        <strong>3.</strong> Reload: <code>sudo nginx -t &amp;&amp; sudo systemctl reload nginx</code><br/>
+                                        See <strong>SETUP.md</strong> for full documentation.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ── Row 3: Attendance / Time sync / Cron ── -->
+                            <div class="row mt-2">
+                                <div class="col-md-4">
+                                    <group string="Attendance Mode">
+                                        <field name="attendance_mode" widget="radio"/>
+                                        <field name="duplicate_threshold"/>
+                                    </group>
+                                    <!-- ── Shift-Aware Auto-Close: behavior note ── -->
+                                    <div class="alert alert-info" role="alert"
+                                         style="margin-top: 8px; font-size: 0.85em; padding: 8px 10px;">
+                                        <b><i class="fa fa-info-circle" title="Info circle" aria-label="Info circle"/> Shift-Aware Auto-Close (module feature)</b>
+                                        <p class="mb-1 mt-1">
+                                            When an employee forgets to punch out, this module closes the stuck
+                                            record automatically based on each employee's Work Schedule
+                                            (Employee form → Work Information). Configure globally at
+                                            <b>Attendances → Configuration → Settings → Shift &amp; Auto-Close</b>.
+                                        </p>
+                                        <ul class="mb-1 ps-3">
+                                            <li><b>Fixed schedule</b> (e.g. 09:00–17:00): check-out set at shift end.</li>
+                                            <li><b>Night shift</b> (e.g. 21:00–05:00): handled across midnight.</li>
+                                            <li><b>Flexible / no schedule</b>: fallback window (default 16h), check-out set at check-in + default shift hours (default 8h).</li>
+                                            <li><b>Offset (hours)</b> adds grace past the shift end — 0 = strict, 1/2/5/… = credit brief overtime. Free integer input.</li>
+                                            <li><b>Runs hourly</b> via cron "Biometric: Auto-Close Stale Open Attendance".</li>
+                                            <li><b>Manual cleanup</b>: Attendances → Management → <i>Open Attendance (No Check-Out)</i> → select rows → Actions → Auto-Close at Shift End.</li>
+                                        </ul>
+                                        <div class="mt-1">
+                                            <b>Odoo native Automatic Check-Out</b>
+                                            (Attendances → Configuration → Settings) is respected — when it is ON,
+                                            fixed-schedule employees are left to Odoo's cron and we only handle
+                                            flexible / no-schedule employees. No clash, no double-close.
+                                        </div>
+                                        <div class="mt-1">
+                                            <b>Safety net:</b> if a record that native should have closed is still
+                                            open past the <i>Native Safety Net</i> threshold (default 36h) —
+                                            because the native cron failed, someone edited the record manually,
+                                            or the schedule was switched from flexible to fixed mid-shift — our
+                                            module steps in and closes it using the current work schedule.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <group string="Time Synchronization">
+                                        <field name="time_sync_method" widget="radio"
+                                               options="{'horizontal': false}"/>
+                                        <field name="company_timezone" readonly="1"
+                                               string="Company Timezone"
+                                               invisible="time_sync_method != 'company'"
+                                               decoration-success="company_timezone != False"/>
+                                        <field name="custom_timezone"
+                                               invisible="time_sync_method != 'custom'"
+                                               required="time_sync_method == 'custom'"/>
+                                        <!-- ADMS Timezone Override (Hybrid mode) -->
+                                        <field name="adms_custom_timezone"
+                                               string="ADMS Timezone Override"
+                                               invisible="connection_mode not in ('adms', 'hybrid')"
+                                               placeholder="Leave empty to use Custom Timezone above"/>
+                                        <div class="alert alert-info" role="alert"
+                                             invisible="not adms_custom_timezone or connection_mode not in ('adms', 'hybrid')"
+                                             style="margin-top: 4px; font-size: 0.83em; padding: 6px 10px;">
+                                            <i class="fa fa-info-circle" title="Info circle" aria-label="Info circle"/> <b>ADMS Override Active.</b>
+                                            ADMS push data will use <b><field name="adms_custom_timezone" readonly="1" nolabel="1"/></b>.
+                                            PyZK downloads continue using Custom Timezone above.
+                                        </div>
+                                        <!-- ADMS Time Offset Correction -->
+                                        <field name="adms_time_offset_hours"
+                                               string="ADMS Time Offset (hours)"
+                                               invisible="connection_mode not in ('adms', 'hybrid')"/>
+                                        <div class="alert alert-warning" role="alert"
+                                             invisible="adms_time_offset_hours == 0 or connection_mode not in ('adms', 'hybrid')"
+                                             style="margin-top: 4px; font-size: 0.83em; padding: 6px 10px;">
+                                            <i class="fa fa-clock-o" title="Clock o" aria-label="Clock o"/> <b>Time Offset Active:</b>
+                                            <field name="adms_time_offset_hours" readonly="1" nolabel="1"/><b>h</b>
+                                            applied to all ADMS attendance after timezone conversion.
+                                            Set to <b>0</b> to disable.
+                                        </div>
+                                        <field name="manual_datetime"
+                                               invisible="time_sync_method != 'manual' or connection_mode in ('adms', 'hybrid')"
+                                               required="time_sync_method == 'manual' and connection_mode not in ('adms', 'hybrid')"/>
+                                        <field name="effective_timezone" readonly="1" string="Current Device TZ"/>
+                                        <field name="adms_device_seen_tz" readonly="1" string="ADMS Detected TZ"
+                                               invisible="connection_mode not in ('adms', 'hybrid')"/>
+                                        <field name="adms_device_seen_time" readonly="1" string="ADMS Last Device Time"
+                                               invisible="connection_mode not in ('adms', 'hybrid')"/>
+                                        <field name="adms_device_echo_time" readonly="1" string="ADMS Device Current Time"
+                                               invisible="connection_mode not in ('adms', 'hybrid')"/>
+                                        <field name="device_firmware_tz" string="Auto-Detected Firmware TZ"
+                                               help="Auto-detected from live ATTLOG punches. When set, Odoo uses this TZ to interpret device timestamps (overrides Custom Timezone). Clear to re-detect."/>
+                                        <div class="alert alert-success" role="alert"
+                                             invisible="not device_firmware_tz"
+                                             style="margin-top: 6px; font-size: 0.88em; padding: 6px 10px;">
+                                            <i class="fa fa-magic" title="Magic" aria-label="Magic"/> <b>Auto-correction active.</b>
+                                            Firmware TZ: <b><field name="device_firmware_tz" readonly="1" nolabel="1"/></b>.
+                                            Timestamps are converted automatically.
+                                            Clear to revert to Custom Timezone.
+                                        </div>
+                                        <div class="alert alert-success" role="alert"
+                                             invisible="time_sync_method != 'company' or connection_mode not in ('adms', 'hybrid')"
+                                             style="margin-top: 6px; font-size: 0.85em; padding: 8px 12px;">
+                                            <i class="fa fa-check-circle" title="Check circle" aria-label="Check circle"/> <b>Auto Mode Active.</b>
+                                            Device timestamps will be interpreted using your
+                                            <b>Company Timezone</b> shown above. No configuration needed —
+                                            punches will display correctly in Odoo automatically.
+                                        </div>
+                                        <div class="alert alert-warning" role="alert"
+                                             invisible="time_sync_method != 'custom' or connection_mode not in ('adms', 'hybrid')"
+                                             style="margin-top: 6px; font-size: 0.83em; padding: 8px 12px;">
+                                            <i class="fa fa-info-circle" title="Info circle" aria-label="Info circle"/> <b>Custom Timezone (ADMS)</b> —
+                                            for branches outside your company's country.
+                                            <br/><br/>
+                                            <b>⚠️ nginx Date Header Note:</b>
+                                            If your server runs behind nginx, the HTTP <code>Date</code>
+                                            response header can cause some ZKteco firmware to drift the
+                                            device clock. To prevent this, add this block to your nginx
+                                            site config (requires <code>libnginx-mod-http-headers-more-filter</code>):
+                                            <br/>
+                                            <code style="display:block; margin-top:4px; white-space:pre-wrap; overflow-x:auto; font-size:0.9em;">location /iclock/ {
+    proxy_pass http://127.0.0.1:8069;
+    proxy_hide_header Date;
+    more_clear_headers Date;
+}</code>
+                                            See <b>SETUP.md</b> for the full config.
+                                        </div>
+                                    </group>
+                                </div>
+                                <div class="col-md-4">
+                                    <group string="Scheduled Cron Download">
+                                        <field name="cron_download_mode" widget="radio"
+                                               invisible="connection_mode == 'adms'"/>
+                                        <div class="alert alert-success" role="alert"
+                                             invisible="cron_download_mode == 'all' or connection_mode == 'adms'"
+                                             style="margin-top: 8px; font-size: 0.88em; padding: 6px 10px;">
+                                            <i class="fa fa-check-circle" title="Check circle" aria-label="Check circle"/> Good choice — reduces database load.
+                                        </div>
+                                        <div class="alert alert-info" role="alert"
+                                             invisible="connection_mode != 'adms'"
+                                             style="margin-top: 8px; font-size: 0.88em; padding: 6px 10px;">
+                                            <i class="fa fa-info-circle" title="Info circle" aria-label="Info circle"/> ADMS mode: attendance is pushed
+                                            by the device in real-time — scheduled cron download does not apply.
+                                        </div>
+                                    </group>
+                                </div>
+                            </div>
+                            
+                        </page>
+
+                        <!-- Tab 2: Device Information (NEW) -->
+                        <page string="Device Information" name="device_info">
+                            <group>
+                                <group string="Hardware Information">
+                                    <field name="firmware_version" readonly="1"/>
+                                    <field name="serial_number" readonly="1"/>
+                                    <field name="platform" readonly="1"/>
+                                    <field name="mac_address" readonly="1"/>
+                                    <field name="device_name_from_device" readonly="1"/>
+                                    <field name="pin_width" readonly="1"/>
+                                </group>
+                                <group string="Biometric Capabilities">
+                                    <field name="face_version" readonly="1"/>
+                                    <field name="fp_version" readonly="1"/>
+                                </group>
+                            </group>
+                            
+                            <group>
+                                <group string="Network Configuration">
+                                    <field name="network_ip" readonly="1"/>
+                                    <field name="network_mask" readonly="1"/>
+                                    <field name="network_gateway" readonly="1"/>
+                                </group>
+                                <group string="Status">
+                                    <field name="device_status" readonly="1" widget="badge"
+                                           decoration-success="device_status == 'online'"
+                                           decoration-danger="device_status == 'offline'"
+                                           decoration-warning="device_status == 'unknown'"/>
+                                    <field name="last_online_time" readonly="1"/>
+                                </group>
+                            </group>
+                            
+                            <div class="alert alert-info" role="alert" style="margin: 20px;">
+                                <i class="fa fa-lightbulb-o" title="Lightbulb o" aria-label="Lightbulb o"/> 
+                                <strong>Tip:</strong> Click "Refresh Device Info" button to update all information from the device.
+                            </div>
+                        </page>
+                        
+                        <!-- Tab 3: Capacity & Health (NEW) -->
+                        <page string="Capacity &amp; Health" name="capacity_health">
+                            <group>
+                                <group string="User Capacity">
+                                    <label for="user_count"/>
+                                    <div>
+                                        <field name="user_count" readonly="1" class="oe_inline"/> / 
+                                        <field name="user_capacity" readonly="1" class="oe_inline"/>
+                                        <field name="user_usage_percent" readonly="1" widget="progressbar" class="oe_inline"/>
+                                    </div>
+                                </group>
+                                <group string="Fingerprint Capacity">
+                                    <label for="finger_count"/>
+                                    <div>
+                                        <field name="finger_count" readonly="1" class="oe_inline"/> / 
+                                        <field name="finger_capacity" readonly="1" class="oe_inline"/>
+                                    </div>
+                                </group>
+                            </group>
+                            
+                            <group>
+                                <group string="Attendance Record Capacity">
+                                    <label for="record_count"/>
+                                    <div>
+                                        <field name="record_count" readonly="1" class="oe_inline"/> / 
+                                        <field name="record_capacity" readonly="1" class="oe_inline"/>
+                                        <field name="record_usage_percent" readonly="1" widget="progressbar" class="oe_inline"/>
+                                    </div>
+                                    <field name="storage_warning" readonly="1" invisible="1"/>
+                                </group>
+                                <group string="Face Template Capacity">
+                                    <label for="face_count"/>
+                                    <div>
+                                        <field name="face_count" readonly="1" class="oe_inline"/> / 
+                                        <field name="face_capacity" readonly="1" class="oe_inline"/>
+                                    </div>
+                                </group>
+                            </group>
+                            
+                            <div class="alert alert-warning" role="alert" style="margin: 20px;" invisible="storage_warning == False">
+                                <h5><i class="fa fa-exclamation-triangle" title="Exclamation triangle" aria-label="Exclamation triangle"/> Storage Alert</h5>
+                                <p>
+                                    One or more capacity metrics exceed 80% threshold. 
+                                    Consider clearing old records or adding more devices.
+                                </p>
+                            </div>
+                        </page>
+                        
+                        <!-- Tab 4: Live Monitoring (NEW) -->
+                        <page string="Live Monitoring" name="live_monitoring" invisible="connection_mode == 'adms'">
+                            <group>
+                                <group string="Live Capture Settings">
+                                    <field name="live_capture_enabled"/>
+                                    <field name="live_capture_timeout" invisible="live_capture_enabled == False"/>
+                                    <field name="live_capture_active" readonly="1"/>
+                                </group>
+                                <group string="Statistics">
+                                    <field name="last_live_event_time" readonly="1"/>
+                                    <field name="live_events_today" readonly="1"/>
+                                </group>
+                            </group>
+                            
+                            <div class="alert alert-success" role="alert" style="margin: 20px;" invisible="live_capture_enabled == False">
+                                <h5><i class="fa fa-bolt" title="Bolt" aria-label="Bolt"/> Live Capture Enabled</h5>
+                                <p><strong>Real-time Mode:</strong> Attendance events are captured INSTANTLY as they happen!</p>
+                                <ul>
+                                    <li>No more 5-minute polling delay</li>
+                                    <li>Instant notifications via Odoo bus</li>
+                                    <li>Automatic LCD messages and audio feedback</li>
+                                    <li>Real-time dashboard updates</li>
+                                </ul>
+                                <p class="text-muted">
+                                    <i class="fa fa-info-circle" title="Info circle" aria-label="Info circle"/>
+                                    Click "Start Live Capture" in the header to begin monitoring.
+                                </p>
+                                <div style="margin-top: 15px; padding: 10px; background-color: #fff3cd; border-left: 4px solid #ffc107;">
+                                    <p style="margin: 0;"><strong><i class="fa fa-clock-o" title="Clock o" aria-label="Clock o"/> Timeout Configuration Recommendations:</strong></p>
+                                    <ul style="margin-bottom: 0;">
+                                        <li><strong>For LOCAL network (192.168.x.x):</strong> 60 seconds ✓ (Default - Fast &amp; Efficient)</li>
+                                        <li><strong>For PUBLIC IP (Internet):</strong> 90-120 seconds ✓ (Recommended - Accounts for latency)</li>
+                                        <li><strong>For Poor Connection:</strong> 120-180 seconds (Higher tolerance for delays)</li>
+                                    </ul>
+                                    <p style="margin: 5px 0 0 0; font-size: 12px; color: #856404;">
+                                        <i class="fa fa-lightbulb-o" title="Lightbulb o" aria-label="Lightbulb o"/> <strong>Tip:</strong> Higher timeout = More patience before checking status.
+                                        This is especially important when connecting via internet/public IP!
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-info" role="alert" style="margin: 20px;" invisible="live_capture_enabled == True">
+                                <h5><i class="fa fa-question-circle" title="Question circle" aria-label="Question circle"/> What is Live Capture?</h5>
+                                <p>
+                                    Live Capture enables real-time attendance monitoring. When enabled:
+                                </p>
+                                <ul>
+                                    <li>Attendance events are captured as they happen (instead of polling every X minutes)</li>
+                                    <li>Instant notifications sent to relevant users</li>
+                                    <li>LCD messages and audio feedback triggered automatically</li>
+                                    <li>Better user experience and faster data sync</li>
+                                </ul>
+                                <p>
+                                    <strong>To enable:</strong> Check "Enable Live Capture" checkbox and click "Start Live Capture" button.
+                                </p>
+                            </div>
+                        </page>
+                        
+                        <!-- Tab 5: Messages & Audio (NEW) -->
+                        <page string="Messages &amp; Audio" name="messages_audio" invisible="connection_mode == 'adms'">
+                            <group>
+                                <group string="LCD Message Settings">
+                                    <field name="lcd_enabled"/>
+                                    <field name="lcd_welcome_message" placeholder="Welcome!" invisible="lcd_enabled == False"/>
+                                    <field name="lcd_goodbye_message" placeholder="Goodbye!" invisible="lcd_enabled == False"/>
+                                </group>
+                                <group string="LCD Test">
+                                    <button name="action_test_lcd"
+                                            string="Test LCD Message"
+                                            type="object"
+                                            class="btn-primary"
+                                            icon="fa-television"
+                                            invisible="lcd_enabled == False"/>
+                                    <button name="action_clear_lcd"
+                                            string="Clear LCD"
+                                            type="object"
+                                            icon="fa-eraser"
+                                            invisible="lcd_enabled == False"/>
+                                </group>
+                            </group>
+                            
+                            <group>
+                                <group string="Audio Feedback Settings">
+                                    <field name="audio_enabled"/>
+                                    <field name="checkin_voice_index" invisible="audio_enabled == False"/>
+                                    <field name="checkout_voice_index" invisible="audio_enabled == False"/>
+                                    <field name="error_voice_index" invisible="audio_enabled == False"/>
+                                </group>
+                                <group string="Audio Test">
+                                    <button name="action_test_voice"
+                                            string="Test Voice/Audio"
+                                            type="object"
+                                            class="btn-primary"
+                                            icon="fa-volume-up"
+                                            invisible="audio_enabled == False"/>
+                                </group>
+                            </group>
+                            
+                            <div class="alert alert-info" role="alert" style="margin: 20px;">
+                                <h5><i class="fa fa-info-circle" title="Info circle" aria-label="Info circle"/> Usage Tips</h5>
+                                <ul>
+                                    <li><strong>LCD Messages:</strong> Max 20 characters per line. Use {name} placeholder for employee name (if supported by device).</li>
+                                    <li><strong>Audio Alerts:</strong> Voice index 0-55. Different sounds available. 0=default beep, 1=error beep.</li>
+                                    <li><strong>Testing:</strong> Use test buttons to preview LCD messages and audio sounds before enabling.</li>
+                                </ul>
+                            </div>
+                        </page>
+                        
+                        <!-- Tab 6: Door Control (NEW - Optional) -->
+                        <page string="Door Control" name="door_control" invisible="connection_mode == 'adms'">
+                            <group>
+                                <group string="Door Control Settings">
+                                    <field name="door_control_enabled"/>
+                                    <field name="default_unlock_duration" invisible="door_control_enabled == False"/>
+                                    <field name="current_lock_state" readonly="1" invisible="door_control_enabled == False"/>
+                                </group>
+                                <group string="Door Actions">
+                                    <button name="action_unlock_door"
+                                            string="Unlock Door"
+                                            type="object"
+                                            class="btn-danger"
+                                            icon="fa-unlock"
+                                            invisible="door_control_enabled == False"
+                                            confirm="Unlock door for configured duration?"/>
+                                    <button name="action_get_lock_state"
+                                            string="Check Lock Status"
+                                            type="object"
+                                            class="btn-info"
+                                            icon="fa-lock"
+                                            invisible="door_control_enabled == False"/>
+                                </group>
+                            </group>
+                            
+                            <div class="alert alert-warning" role="alert" style="margin: 20px;" invisible="door_control_enabled == False">
+                                <h5><i class="fa fa-exclamation-triangle" title="Exclamation triangle" aria-label="Exclamation triangle"/> Security Warning</h5>
+                                <p>
+                                    Door control features are enabled. Use with caution!
+                                </p>
+                                <ul>
+                                    <li>Only authorized personnel should have access to door unlock</li>
+                                    <li>All door unlock actions are logged in the chatter</li>
+                                    <li>Default unlock duration: <field name="default_unlock_duration" readonly="1" class="oe_inline"/> seconds</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="alert alert-info" role="alert" style="margin: 20px;" invisible="door_control_enabled == True">
+                                <h5><i class="fa fa-info-circle" title="Info circle" aria-label="Info circle"/> About Door Control</h5>
+                                <p>
+                                    If your biometric device is connected to an access control system, you can enable door control features.
+                                </p>
+                                <p>
+                                    <strong>Features:</strong>
+                                </p>
+                                <ul>
+                                    <li>Manual door unlock button</li>
+                                    <li>Check lock status</li>
+                                    <li>Configurable unlock duration</li>
+                                    <li>Activity logging for security audit</li>
+                                </ul>
+                                <p>
+                                    <strong>Note:</strong> This feature requires compatible ZKTeco device with door control capability.
+                                </p>
+                            </div>
+                        </page>
+                        
+                        <!-- Tab 7: Device Location & Map (NEW) -->
+                        <page string="Location &amp; Map" name="device_location">
+                            <group>
+                                <group string="Device Location">
+                                    <field name="location_name" placeholder="e.g., Main Office Lobby"/>
+                                    <field name="latitude" placeholder="e.g., 23.8103"/>
+                                    <field name="longitude" placeholder="e.g., 90.4125"/>
+                                    <field name="geofence_radius"/>
+                                    <field name="has_location" invisible="1"/>
+                                </group>
+                                <group string="Map Preview">
+                                    <div class="alert alert-info" role="alert" invisible="has_location == True" style="font-size: 0.88em;">
+                                        <i class="fa fa-info-circle" title="Info circle" aria-label="Info circle"/> Set latitude and longitude to see device location on the map.
+                                        You can find coordinates from Google Maps (right-click → copy coordinates).
+                                    </div>
+                                    <div class="alert alert-success" role="alert" invisible="has_location == False" style="font-size: 0.88em;">
+                                        <i class="fa fa-check-circle" title="Check circle" aria-label="Check circle"/> Device location configured. 
+                                        Location: <field name="location_name" readonly="1" nolabel="1" class="oe_inline"/>
+                                        <br/>Geofence radius: <field name="geofence_radius" readonly="1" nolabel="1" class="oe_inline"/> meters
+                                    </div>
+                                </group>
+                            </group>
+                            <div class="alert alert-warning" role="alert" style="margin: 10px 20px;">
+                                <h5><i class="fa fa-map-marker" title="Map marker" aria-label="Map marker"/> About Device Location</h5>
+                                <p>Set the physical location of this biometric device to enable:</p>
+                                <ul>
+                                    <li><strong>Device Map View</strong> — See all your devices on a map from the Attendance menu</li>
+                                    <li><strong>Geofence Validation</strong> — Flag mobile check-ins outside the device radius</li>
+                                    <li><strong>Location-based Analytics</strong> — Attendance reports filtered by device location</li>
+                                </ul>
+                                <p class="text-muted"><i class="fa fa-lightbulb-o" title="Lightbulb o" aria-label="Lightbulb o"/> Tip: Find coordinates by right-clicking on Google Maps and selecting "Copy coordinates".</p>
+                            </div>
+                        </page>
+
+                        <!-- Tab 8: Users & Enrollment — Modern UI -->
+                        <page string="Users" name="users">
+
+                            <!-- ── Hero bar ── -->
+                            <div class="rounded-3 p-4 mb-4 d-flex flex-wrap align-items-center gap-3"
+                                 style="background: linear-gradient(135deg, #1e3a5f 0%, #2d5a8e 100%);
+                                        box-shadow: 0 4px 20px rgba(30,58,95,0.25);">
+
+                                <!-- Enrolled stat -->
+                                <div class="text-white me-auto">
+                                    <div style="font-size:42px; font-weight:800; line-height:1;">
+                                        <field name="user_count" readonly="1" class="oe_inline"/>
+                                    </div>
+                                    <div style="font-size:13px; opacity:.75; margin-top:2px;">
+                                        users enrolled on this device
+                                    </div>
+                                    <div style="font-size:11px; opacity:.55; margin-top:4px;"
+                                         invisible="finger_count == 0 and face_count == 0">
+                                        <field name="finger_count" readonly="1" class="oe_inline"/> fingerprints ·
+                                        <field name="face_count" readonly="1" class="oe_inline"/> faces ·
+                                        <field name="finger_capacity" readonly="1" class="oe_inline"/> max capacity
+                                    </div>
+                                </div>
+
+                                <!-- Action buttons -->
+                                <div class="d-flex flex-wrap gap-2">
+                                    <button name="action_sync_users_to_device"
+                                            string="Sync All Employees"
+                                            type="object"
+                                            class="btn"
+                                            icon="fa-refresh"
+                                            style="background:white; color:#1e3a5f; font-weight:600; border:none; padding:8px 18px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.15);"
+                                            confirm="Sync all employees with a Device ID Number to this device?"/>
+                                    <button name="action_view_enrolled_users"
+                                            string="View Users"
+                                            type="object"
+                                            class="btn"
+                                            icon="fa-users"
+                                            style="background:rgba(255,255,255,0.15); color:white; border:1px solid rgba(255,255,255,0.3); padding:8px 18px; border-radius:8px;"/>
+                                    <button name="action_import_employees_from_device"
+                                            string="Import from Device"
+                                            type="object"
+                                            class="btn"
+                                            icon="fa-download"
+                                            invisible="connection_mode != 'direct'"
+                                            style="background:rgba(255,255,255,0.15); color:white; border:1px solid rgba(255,255,255,0.3); padding:8px 18px; border-radius:8px;"/>
+                                </div>
+                            </div>
+
+                            <!-- ── Two action cards ── -->
+                            <div class="row g-3 mb-3">
+
+                                <!-- PyZK Fingerprint card -->
+                                <div class="col-lg-6" invisible="connection_mode == 'adms'">
+                                    <div class="h-100 rounded-3 overflow-hidden"
+                                         style="border:1px solid #e2e8f0; box-shadow:0 2px 12px rgba(0,0,0,0.06);">
+
+                                        <!-- Card header -->
+                                        <div class="d-flex align-items-center gap-3 px-4 py-3"
+                                             style="background: linear-gradient(135deg, #eef2ff, #e0e7ff); border-bottom:1px solid #c7d2fe;">
+                                            <div class="d-flex align-items-center justify-content-center rounded-2"
+                                                 style="width:38px; height:38px; background:#4f46e5; flex-shrink:0;">
+                                                <i class="fa fa-fingerprint" title="Fingerprint" aria-label="Fingerprint" style="color:white; font-size:18px;"/>
+                                            </div>
+                                            <div>
+                                                <div style="font-size:14px; font-weight:700; color:#312e81;">Fingerprint Backup</div>
+                                                <div style="font-size:11px; color:#6366f1;">PyZK · Direct TCP · Port 4370 · Fingerprints only</div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Card body -->
+                                        <div class="p-4" style="background:white;">
+                                            <div class="d-flex flex-column gap-2">
+
+                                                <button name="action_download_templates"
+                                                        type="object"
+                                                        class="btn d-flex align-items-center gap-2"
+                                                        style="background:#4f46e5; color:white; border:none; border-radius:8px; padding:10px 16px; font-weight:600; text-align:left; box-shadow:0 2px 8px rgba(79,70,229,0.3);">
+                                                    <i class="fa fa-download fa-fw" title="Download" aria-label="Download"/>
+                                                    <span>Download Fingerprints to PC</span>
+                                                </button>
+
+                                                <button name="action_upload_templates_to_device"
+                                                        type="object"
+                                                        class="btn d-flex align-items-center gap-2"
+                                                        style="background:white; color:#4f46e5; border:2px solid #c7d2fe; border-radius:8px; padding:10px 16px; font-weight:600; text-align:left;">
+                                                    <i class="fa fa-upload fa-fw" title="Upload" aria-label="Upload"/>
+                                                    <span>Upload Fingerprints from PC</span>
+                                                </button>
+
+                                                <button name="action_verify_employee_biometric"
+                                                        type="object"
+                                                        class="btn d-flex align-items-center gap-2"
+                                                        style="background:#f8fafc; color:#64748b; border:1px solid #e2e8f0; border-radius:8px; padding:10px 16px; font-weight:500; text-align:left;">
+                                                    <i class="fa fa-check-circle fa-fw" title="Check circle" aria-label="Check circle"/>
+                                                    <span>Verify Employee Biometric</span>
+                                                </button>
+                                            </div>
+
+                                            <div class="mt-3 pt-3 d-flex align-items-start gap-2"
+                                                 style="border-top:1px solid #f1f5f9; font-size:11px; color:#94a3b8;">
+                                                <i class="fa fa-info-circle mt-1 flex-shrink-0" title="Info circle" aria-label="Info circle"/>
+                                                <span>
+                                                    Cross-device copy: Download from Device A → Upload to Device B.
+                                                    Uploads with 30+ users run in the background — watch the Chatter for progress.
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- ADMS Biometrics card -->
+                                <div class="col-lg-6" invisible="connection_mode == 'direct'">
+                                    <div class="h-100 rounded-3 overflow-hidden"
+                                         style="border:1px solid #e2e8f0; box-shadow:0 2px 12px rgba(0,0,0,0.06);">
+
+                                        <!-- Card header -->
+                                        <div class="d-flex align-items-center gap-3 px-4 py-3"
+                                             style="background: linear-gradient(135deg, #ecfdf5, #d1fae5); border-bottom:1px solid #a7f3d0;">
+                                            <div class="d-flex align-items-center justify-content-center rounded-2"
+                                                 style="width:38px; height:38px; background:#059669; flex-shrink:0;">
+                                                <i class="fa fa-cloud" title="Cloud" aria-label="Cloud" style="color:white; font-size:18px;"/>
+                                            </div>
+                                            <div>
+                                                <div style="font-size:14px; font-weight:700; color:#064e3b;">Biometric Backup</div>
+                                                <div style="font-size:11px; color:#059669;">ADMS · Cloud · Faces · Palms · Fingerprints</div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Card body -->
+                                        <div class="p-4" style="background:white;">
+                                            <div class="d-flex flex-column gap-2">
+
+                                                <button name="action_download_adms_for_device"
+                                                        type="object"
+                                                        class="btn d-flex align-items-center gap-2"
+                                                        style="background:#059669; color:white; border:none; border-radius:8px; padding:10px 16px; font-weight:600; text-align:left; box-shadow:0 2px 8px rgba(5,150,105,0.3);">
+                                                    <i class="fa fa-download fa-fw" title="Download" aria-label="Download"/>
+                                                    <span>Download Biometrics to PC</span>
+                                                </button>
+
+                                                <button name="action_upload_adms_for_device"
+                                                        type="object"
+                                                        class="btn d-flex align-items-center gap-2"
+                                                        style="background:white; color:#059669; border:2px solid #a7f3d0; border-radius:8px; padding:10px 16px; font-weight:600; text-align:left;">
+                                                    <i class="fa fa-upload fa-fw" title="Upload" aria-label="Upload"/>
+                                                    <span>Upload Biometrics from PC</span>
+                                                </button>
+
+                                                <button name="action_view_fp_templates"
+                                                        type="object"
+                                                        class="btn d-flex align-items-center gap-2"
+                                                        style="background:#f8fafc; color:#64748b; border:1px solid #e2e8f0; border-radius:8px; padding:10px 16px; font-weight:500; text-align:left;">
+                                                    <i class="fa fa-database fa-fw" title="Database" aria-label="Database"/>
+                                                    <span>Open Biometrics Manager</span>
+                                                </button>
+                                            </div>
+
+                                            <div class="mt-3 pt-3 d-flex align-items-start gap-2"
+                                                 style="border-top:1px solid #f1f5f9; font-size:11px; color:#94a3b8;">
+                                                <i class="fa fa-clock-o mt-1 flex-shrink-0" title="Clock o" aria-label="Clock o"/>
+                                                <span>
+                                                    Templates are stored automatically when the device sends biometric data via ADMS.
+                                                    Sync to other devices is queued — applied within ~30 seconds.
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <!-- ── Quick-start tip ── -->
+                            <div class="d-flex align-items-start gap-3 p-3 rounded-3"
+                                 style="background:#fffbeb; border:1px solid #fde68a;">
+                                <i class="fa fa-lightbulb-o fa-lg flex-shrink-0 mt-1" title="Lightbulb o" aria-label="Lightbulb o" style="color:#d97706;"/>
+                                <div style="font-size:12px; color:#78350f;">
+                                    <strong>Quick start:</strong>
+                                    Fill in <em>Device ID Number</em> on each employee record (HR → Employees → Work Information),
+                                    then click <strong>Sync All Employees</strong> — users are created on the device automatically.
+                                    Auto-enrollment can be enabled in <em>Attendances → Configuration → Settings</em>.
+                                </div>
+                            </div>
+
+                        </page>
+                    </notebook>
+                </sheet>
+
+                <!-- Chatter -->
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    
+    <!-- ==================== ENHANCED LIST VIEW ==================== -->
+    <record id="biometric_device_details_view_list" model="ir.ui.view">
+        <field name="name">biometric.device.details.view.list.enhanced</field>
+        <field name="model">biometric.device.details</field>
+        <field name="arch" type="xml">
+            <tree string="Biometric Devices"
+                  decoration-danger="adms_pending_activation == True">
+                <field name="adms_pending_activation" column_invisible="1"/>
+                <field name="name"/>
+                <field name="device_ip"/>
+                <field name="port_number"/>
+                <field name="device_status" widget="badge"
+                       decoration-success="device_status == 'online'"
+                       decoration-danger="device_status == 'offline'"
+                       decoration-warning="device_status == 'unknown'"/>
+                <field name="adms_pending_activation" string="Pending Activation"
+                       widget="boolean" optional="show"/>
+                <field name="attendance_mode"
+                       decoration-success="attendance_mode == 'auto'"
+                       decoration-info="attendance_mode == 'traditional'"/>
+                <field name="live_capture_active" widget="boolean"/>
+                <field name="user_count"/>
+                <field name="record_usage_percent" widget="progressbar"/>
+                <field name="storage_warning" widget="boolean"
+                       decoration-danger="storage_warning == True"/>
+                <field name="device_attendance_count" string="Records" optional="show"/>
+                <field name="last_download_time"/>
+                <field name="firmware_version" optional="hide"/>
+                <field name="serial_number" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+    
+    <!-- ==================== KANBAN VIEW (NEW - For Dashboard) ==================== -->
+    <record id="biometric_device_details_view_kanban" model="ir.ui.view">
+        <field name="name">biometric.device.details.view.kanban</field>
+        <field name="model">biometric.device.details</field>
+        <field name="arch" type="xml">
+            <kanban sample="1" class="o_kanban_small_column">
+                <field name="name"/>
+                <field name="device_ip"/>
+                <field name="device_status"/>
+                <field name="record_usage_percent"/>
+                <field name="user_count"/>
+                <field name="user_capacity"/>
+                <field name="storage_warning"/>
+                <field name="live_capture_active"/>
+                <field name="firmware_version"/>
+                <field name="connection_mode"/>
+                <field name="finger_count"/>
+                <field name="face_count"/>
+                <field name="device_attendance_count"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <!--
+                            Status colour key:
+                            online  → green left border
+                            offline → red left border
+                            warning → amber left border
+                        -->
+                        <div class="oe_kanban_global_click"
+                             style="border-radius:12px; overflow:hidden; border:1px solid #e2e8f0;
+                                    box-shadow:0 2px 12px rgba(0,0,0,0.07); background:white; padding:0;">
+
+                            <!-- Coloured top strip -->
+                            <div t-attf-style="
+                                height:4px; width:100%;
+                                background: #{
+                                    record.storage_warning.raw_value   ? '#f59e0b' :
+                                    record.device_status.raw_value == 'online'  ? '#10b981' :
+                                    record.device_status.raw_value == 'offline' ? '#ef4444' :
+                                                                                  '#94a3b8'
+                                };"/>
+
+                            <div style="padding:16px;">
+
+                                <!-- Header row: icon + name + status badge -->
+                                <div class="d-flex align-items-start gap-3 mb-3">
+                                    <!-- Device icon -->
+                                    <div class="d-flex align-items-center justify-content-center flex-shrink-0"
+                                         style="width:40px; height:40px; border-radius:10px;
+                                                background: linear-gradient(135deg, #1e3a5f, #2d5a8e);">
+                                        <i class="fa fa-shield" title="Shield" aria-label="Shield" style="color:white; font-size:18px;"/>
+                                    </div>
+
+                                    <!-- Name + IP -->
+                                    <div class="flex-grow-1 overflow-hidden">
+                                        <div style="font-size:14px; font-weight:700; color:#1e3a5f;
+                                                    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                                            <field name="name"/>
+                                        </div>
+                                        <div style="font-size:11px; color:#94a3b8; margin-top:1px;">
+                                            <i class="fa fa-wifi me-1" title="Wifi" aria-label="Wifi"/>
+                                            <field name="device_ip"/>
+                                        </div>
+                                    </div>
+
+                                    <!-- Status badge -->
+                                    <div class="flex-shrink-0">
+                                        <span t-if="record.device_status.raw_value == 'online'"
+                                              style="display:inline-flex; align-items:center; gap:5px;
+                                                     background:#ecfdf5; color:#065f46;
+                                                     padding:3px 8px; border-radius:20px;
+                                                     font-size:11px; font-weight:600;">
+                                            <span style="width:6px; height:6px; border-radius:50%; background:#10b981;
+                                                         box-shadow:0 0 0 2px rgba(16,185,129,0.25);"/>
+                                            Online
+                                        </span>
+                                        <span t-if="record.device_status.raw_value == 'offline'"
+                                              style="display:inline-flex; align-items:center; gap:5px;
+                                                     background:#fef2f2; color:#991b1b;
+                                                     padding:3px 8px; border-radius:20px;
+                                                     font-size:11px; font-weight:600;">
+                                            <span style="width:6px; height:6px; border-radius:50%; background:#ef4444;"/>
+                                            Offline
+                                        </span>
+                                        <span t-if="record.device_status.raw_value == 'unknown'"
+                                              style="display:inline-flex; align-items:center; gap:5px;
+                                                     background:#f8fafc; color:#64748b;
+                                                     padding:3px 8px; border-radius:20px;
+                                                     font-size:11px; font-weight:600;">
+                                            <span style="width:6px; height:6px; border-radius:50%; background:#94a3b8;"/>
+                                            Unknown
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Metric pills row -->
+                                <div class="d-flex gap-2 flex-wrap mb-3">
+                                    <!-- Users -->
+                                    <div style="background:#f0f6ff; border-radius:8px; padding:6px 10px; flex:1; min-width:60px;">
+                                        <div style="font-size:18px; font-weight:800; color:#1e3a5f; line-height:1;">
+                                            <field name="user_count"/>
+                                        </div>
+                                        <div style="font-size:10px; color:#94a3b8; margin-top:1px;">Users</div>
+                                    </div>
+                                    <!-- Attendance -->
+                                    <div style="background:#f0fdf4; border-radius:8px; padding:6px 10px; flex:1; min-width:60px;">
+                                        <div style="font-size:18px; font-weight:800; color:#065f46; line-height:1;">
+                                            <field name="device_attendance_count"/>
+                                        </div>
+                                        <div style="font-size:10px; color:#94a3b8; margin-top:1px;">Records</div>
+                                    </div>
+                                    <!-- Live -->
+                                    <div t-if="record.live_capture_active.raw_value"
+                                         style="background:#f0fdf4; border-radius:8px; padding:6px 10px; flex:0 0 auto;">
+                                        <div style="display:flex; align-items:center; gap:4px; height:18px;">
+                                            <span style="width:8px; height:8px; border-radius:50%; background:#10b981;
+                                                         box-shadow:0 0 0 3px rgba(16,185,129,0.2); display:inline-block;"/>
+                                        </div>
+                                        <div style="font-size:10px; color:#94a3b8; margin-top:1px;">Live</div>
+                                    </div>
+                                </div>
+
+                                <!-- Storage bar -->
+                                <div style="margin-bottom:4px;">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span style="font-size:11px; color:#64748b; font-weight:500;">Storage</span>
+                                        <span t-attf-style="font-size:11px; font-weight:600;
+                                              color:#{record.storage_warning.raw_value ? '#d97706' : '#64748b'};">
+                                            <field name="record_usage_percent"/>%
+                                        </span>
+                                    </div>
+                                    <div style="height:5px; background:#f1f5f9; border-radius:999px; overflow:hidden;">
+                                        <div t-attf-style="
+                                            height:100%; border-radius:999px;
+                                            width:#{record.record_usage_percent.raw_value or 0}%;
+                                            background:#{
+                                                record.storage_warning.raw_value ? '#f59e0b' :
+                                                (record.record_usage_percent.raw_value or 0) > 60 ? '#3b82f6' : '#10b981'
+                                            };
+                                            transition: width 0.3s ease;"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Card footer -->
+                            <div class="d-flex align-items-center justify-content-between px-4 py-2"
+                                 style="background:#f8fafc; border-top:1px solid #f1f5f9;">
+                                <span style="font-size:11px; color:#94a3b8;">
+                                    <i class="fa fa-microchip me-1" title="Microchip" aria-label="Microchip"/>
+                                    <t t-if="record.firmware_version.value">
+                                        <field name="firmware_version"/>
+                                    </t>
+                                    <t t-else="">No firmware info</t>
+                                </span>
+                                <div class="d-flex gap-1">
+                                    <!-- Connection mode chip -->
+                                    <span t-if="record.connection_mode.raw_value == 'direct'"
+                                          style="font-size:10px; background:#eef2ff; color:#4338ca;
+                                                 padding:2px 7px; border-radius:20px; font-weight:600;">
+                                        PyZK
+                                    </span>
+                                    <span t-if="record.connection_mode.raw_value == 'adms'"
+                                          style="font-size:10px; background:#ecfdf5; color:#065f46;
+                                                 padding:2px 7px; border-radius:20px; font-weight:600;">
+                                        ADMS
+                                    </span>
+                                    <span t-if="record.connection_mode.raw_value == 'hybrid'"
+                                          style="font-size:10px; background:#fffbeb; color:#92400e;
+                                                 padding:2px 7px; border-radius:20px; font-weight:600;">
+                                        Hybrid
+                                    </span>
+                                    <!-- Storage warning chip -->
+                                    <span t-if="record.storage_warning.raw_value"
+                                          style="font-size:10px; background:#fffbeb; color:#92400e;
+                                                 padding:2px 7px; border-radius:20px; font-weight:600;">
+                                        <i class="fa fa-exclamation-triangle me-1" title="Exclamation triangle" aria-label="Exclamation triangle"/>Storage
+                                    </span>
+                                </div>
+                            </div>
+
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+    
+    <!-- ==================== SEARCH VIEW (Enhanced) ==================== -->
+    <record id="biometric_device_details_view_search" model="ir.ui.view">
+        <field name="name">biometric.device.details.view.search</field>
+        <field name="model">biometric.device.details</field>
+        <field name="arch" type="xml">
+            <search string="Search Biometric Devices">
+                <field name="name" string="Device Name"/>
+                <field name="device_ip" string="IP Address"/>
+                <field name="serial_number" string="Serial Number"/>
+                <field name="firmware_version" string="Firmware"/>
+                <filter name="filter_online" string="Online"
+                        domain="[('device_status', '=', 'online')]"/>
+                <filter name="filter_offline" string="Offline"
+                        domain="[('device_status', '=', 'offline')]"/>
+                <separator/>
+                <filter name="filter_live_active" string="Live Capture Active"
+                        domain="[('live_capture_active', '=', True)]"/>
+                <filter name="filter_live_enabled" string="Live Capture Enabled"
+                        domain="[('live_capture_enabled', '=', True)]"/>
+                <separator/>
+                <filter name="filter_storage_warning" string="Storage Warning"
+                        domain="[('storage_warning', '=', True)]"/>
+                <separator/>
+                <!-- Auto-registered devices are INACTIVE; active_test:False reveals them -->
+                <filter name="filter_pending_activation" string="Pending Activation"
+                        domain="['&amp;', ('adms_auto_registered', '=', True), ('active', '=', False)]"
+                        context="{'active_test': False}"
+                        help="Devices that auto-registered via ADMS and are awaiting your approval (held inactive for safety)."/>
+                <separator/>
+                <filter name="filter_auto_mode" string="Auto Mode"
+                        domain="[('attendance_mode', '=', 'auto')]"/>
+                <filter name="filter_traditional_mode" string="Traditional Mode"
+                        domain="[('attendance_mode', '=', 'traditional')]"/>
+                <separator/>
+                <filter name="group_by_company" string="Company"
+                        context="{'group_by': 'company_id'}"/>
+                <filter name="group_by_status" string="Status"
+                        context="{'group_by': 'device_status'}"/>
+                <filter name="group_by_mode" string="Attendance Mode"
+                        context="{'group_by': 'attendance_mode'}"/>
+            </search>
+        </field>
+    </record>
+    
+    <!-- ==================== ACTIONS ==================== -->
+    <record id="action_biometric_device_details" model="ir.actions.act_window">
+        <field name="name">Biometric Devices</field>
+        <field name="res_model">biometric.device.details</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first Biometric Device!
+            </p>
+            <p>
+                Add ZKTeco biometric devices to sync attendance data with Odoo.
+                Configure real-time monitoring, LCD messages, and audio feedback.
+            </p>
+        </field>
+    </record>
+    
+    <record id="action_biometric_device_details_list" model="ir.actions.act_window">
+        <field name="name">All Devices</field>
+        <field name="res_model">biometric.device.details</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    
+    <record id="action_biometric_device_details_kanban" model="ir.actions.act_window">
+        <field name="name">Device Health Dashboard</field>
+        <field name="res_model">biometric.device.details</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="context">{'search_default_filter_storage_warning': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No devices configured yet!
+            </p>
+            <p>
+                Add biometric devices to monitor their health, capacity, and status.
+            </p>
+        </field>
+    </record>
+    
+    <!-- ==================== LIST VIEW SERVER ACTIONS (ZKTeco Devices) ==================== -->
+
+    <!-- Bulk download: download fingerprints from all selected devices as one JSON -->
+    <record id="action_bulk_download_fingerprints" model="ir.actions.server">
+        <field name="name">Download Fingerprints from Selected Devices</field>
+        <field name="model_id" ref="model_biometric_device_details"/>
+        <field name="binding_model_id" ref="model_biometric_device_details"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+if records:
+    action = records.action_bulk_download_templates()
+        </field>
+    </record>
+
+    <!-- Bulk upload: open wizard with selected devices pre-filled -->
+    <record id="action_bulk_upload_fingerprints" model="ir.actions.server">
+        <field name="name">Upload Fingerprints to Selected Devices</field>
+        <field name="model_id" ref="model_biometric_device_details"/>
+        <field name="binding_model_id" ref="model_biometric_device_details"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+if records:
+    action = records.action_bulk_upload_templates()
+        </field>
+    </record>
+
+    <!-- ==================== MENUS ==================== -->
+    <menuitem id="menu_biometric_device_root"
+              name="ZKTeco Devices"
+              sequence="20"
+              parent="hr_attendance.menu_hr_attendance_root"
+              groups="hr_attendance.group_hr_attendance_officer"/>
+    
+    <menuitem id="menu_biometric_device_details"
+              name="Devices"
+              sequence="10"
+              parent="menu_biometric_device_root"
+              action="action_biometric_device_details"/>
+    
+<!--    <menuitem id="menu_biometric_device_health_dashboard"-->
+<!--              name="Device Health Dashboard"-->
+<!--              sequence="20"-->
+<!--              parent="menu_biometric_device_root"-->
+<!--              action="action_biometric_device_details_kanban"/>-->
+    
+</odoo>

@@ -1,0 +1,419 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Dot BD Solutions Limited – Payroll Dashboard OWL Template -->
+<templates xml:space="preserve">
+
+<t t-name="dotbd_hr_zk_attendance_suite.PayrollDashboard">
+<div class="o_payroll_dashboard">
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         TOP BAR
+    ═══════════════════════════════════════════════════════════════════ -->
+    <div class="o_prd_topbar d-flex flex-wrap align-items-start justify-content-between gap-3 mb-3">
+        <div>
+            <h3 class="fw-bold mb-0">
+                <i class="fa fa-money me-2 text-primary"/>Payroll Dashboard
+            </h3>
+            <p class="text-muted mb-0 mt-1 small" t-esc="state.month_name"/>
+        </div>
+        <div t-if="activeFilterCount > 0" class="align-self-center">
+            <span class="badge bg-primary"><t t-esc="activeFilterCount"/> active filter(s)</span>
+            <button class="btn btn-sm btn-link text-danger p-0 ms-1" t-on-click="clearFilters">
+                <i class="fa fa-times"/> Clear all
+            </button>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         FILTER PANEL
+    ═══════════════════════════════════════════════════════════════════ -->
+    <div class="o_prd_filter_panel mb-4">
+        <div class="d-flex flex-wrap gap-3 align-items-end">
+
+            <div class="o_prd_filter_group">
+                <label class="o_prd_filter_label">Month</label>
+                <select class="form-select form-select-sm" t-on-change="onMonthChange">
+                    <t t-foreach="months" t-as="m" t-key="m[0]">
+                        <option t-att-value="m[0]" t-att-selected="state.month === m[0]"><t t-esc="m[1]"/></option>
+                    </t>
+                </select>
+            </div>
+
+            <div class="o_prd_filter_group">
+                <label class="o_prd_filter_label">Year</label>
+                <select class="form-select form-select-sm" t-on-change="onYearChange">
+                    <t t-foreach="years" t-as="y" t-key="y">
+                        <option t-att-value="y" t-att-selected="state.year === y"><t t-esc="y"/></option>
+                    </t>
+                </select>
+            </div>
+
+            <div class="o_prd_filter_sep"/>
+
+            <div class="o_prd_filter_group">
+                <label class="o_prd_filter_label">Department</label>
+                <select class="form-select form-select-sm" t-on-change="onDeptChange">
+                    <option value="">All Departments</option>
+                    <t t-foreach="state.departments" t-as="dept" t-key="dept.id">
+                        <option t-att-value="dept.id" t-att-selected="state.department_id === dept.id"><t t-esc="dept.name"/></option>
+                    </t>
+                </select>
+            </div>
+
+            <div class="o_prd_filter_group">
+                <label class="o_prd_filter_label">Employee Type</label>
+                <select class="form-select form-select-sm" t-on-change="onEmpTypeChange">
+                    <option value="">All Types</option>
+                    <option value="employee"     t-att-selected="state.employee_type === 'employee'">Regular Employee</option>
+                    <option value="daily_labour" t-att-selected="state.employee_type === 'daily_labour'">Daily Labour</option>
+                    <option value="student"      t-att-selected="state.employee_type === 'student'">Intern / Student</option>
+                    <option value="freelance"    t-att-selected="state.employee_type === 'freelance'">Freelancer</option>
+                </select>
+            </div>
+
+            <div class="o_prd_filter_group">
+                <label class="o_prd_filter_label">Wage Type</label>
+                <select class="form-select form-select-sm" t-on-change="onWageTypeChange">
+                    <option value="">All Wage Types</option>
+                    <option value="monthly" t-att-selected="state.wage_type === 'monthly'">Monthly</option>
+                    <option value="daily"   t-att-selected="state.wage_type === 'daily'">Daily</option>
+                    <option value="hourly"  t-att-selected="state.wage_type === 'hourly'">Hourly</option>
+                    <option value="fixed"   t-att-selected="state.wage_type === 'fixed'">Fixed Contract</option>
+                </select>
+            </div>
+
+            <div class="o_prd_filter_group">
+                <label class="o_prd_filter_label">Status</label>
+                <select class="form-select form-select-sm" t-on-change="onStateFilterChange">
+                    <option value="">All Statuses</option>
+                    <option value="draft"     t-att-selected="state.state_filter === 'draft'">Draft</option>
+                    <option value="confirmed" t-att-selected="state.state_filter === 'confirmed'">Confirmed</option>
+                    <option value="partial"   t-att-selected="state.state_filter === 'partial'">Partially Paid</option>
+                    <option value="paid"      t-att-selected="state.state_filter === 'paid'">Paid</option>
+                </select>
+            </div>
+
+            <div class="o_prd_filter_sep"/>
+
+            <div class="o_prd_filter_group">
+                <label class="o_prd_filter_label"><i class="fa fa-object-group me-1 text-primary"/>Group By</label>
+                <select class="form-select form-select-sm o_prd_groupby_select" t-on-change="onGroupByChange">
+                    <option value="department"    t-att-selected="state.group_by === 'department'">Department</option>
+                    <option value="employee_type" t-att-selected="state.group_by === 'employee_type'">Employee Type</option>
+                    <option value="wage_type"     t-att-selected="state.group_by === 'wage_type'">Wage Type</option>
+                    <option value="job"           t-att-selected="state.group_by === 'job'">Job Position</option>
+                    <option value="template"      t-att-selected="state.group_by === 'template'">Salary Template</option>
+                    <option value="state"         t-att-selected="state.group_by === 'state'">Status</option>
+                </select>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         LOADING
+    ═══════════════════════════════════════════════════════════════════ -->
+    <t t-if="state.loading">
+        <div class="d-flex justify-content-center align-items-center" style="height:200px;">
+            <div class="spinner-border text-primary" role="status"/>
+        </div>
+    </t>
+
+    <t t-if="!state.loading">
+
+        <!-- ═══════════════════════════════════════════════════════════════
+             ALERTS
+        ═══════════════════════════════════════════════════════════════ -->
+        <t t-if="state.alerts.length">
+            <div class="mb-4">
+                <t t-foreach="state.alerts" t-as="alert" t-key="alert_index">
+                    <div t-attf-class="alert alert-#{alert.type} d-flex align-items-start gap-2 py-2 mb-2 rounded-3" role="alert">
+                        <i t-attf-class="fa fa-#{alert.type === 'danger' ? 'exclamation-circle' : 'exclamation-triangle'} mt-1"/>
+                        <span t-esc="alert.message"/>
+                    </div>
+                </t>
+            </div>
+        </t>
+
+        <!-- ═══════════════════════════════════════════════════════════════
+             KPI CARDS
+        ═══════════════════════════════════════════════════════════════ -->
+        <div class="row g-3 mb-3">
+
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="o_prd_card o_prd_card_primary h-100" t-on-click="() => this.openPayslips()">
+                    <div class="o_prd_card_icon"><i class="fa fa-money"/></div>
+                    <div class="o_prd_card_label">Total Net Payable</div>
+                    <div class="o_prd_card_value" t-esc="fmt(state.total_net)"/>
+                    <div class="o_prd_card_sub">Gross: <t t-esc="fmt(state.total_gross)"/></div>
+                    <div class="o_prd_card_footer"><i class="fa fa-arrow-right me-1"/>View payslips</div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="o_prd_card o_prd_card_warning h-100" t-on-click="() => this.openPayslipsByState('partial')">
+                    <div class="o_prd_card_icon"><i class="fa fa-clock-o"/></div>
+                    <div class="o_prd_card_label">Pending Payment</div>
+                    <div class="o_prd_card_value" t-esc="fmt(state.pending_payment)"/>
+                    <div class="o_prd_card_sub">Paid so far: <t t-esc="fmt(state.paid_amount)"/></div>
+                    <div class="o_prd_card_footer"><i class="fa fa-arrow-right me-1"/>Partial payslips</div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="o_prd_card o_prd_card_success h-100">
+                    <div class="o_prd_card_icon"><i class="fa fa-users"/></div>
+                    <div class="o_prd_card_label">Employees Covered</div>
+                    <div class="o_prd_card_value">
+                        <t t-esc="state.employees_covered"/>
+                        <span class="fs-6 fw-normal text-muted"> / <t t-esc="state.employees_total"/></span>
+                    </div>
+                    <div class="progress mt-2 mb-1" style="height:5px;">
+                        <div class="progress-bar bg-success" t-att-style="'width:' + coveragePercent + '%'"/>
+                    </div>
+                    <div class="o_prd_card_sub"><t t-esc="coveragePercent"/>% coverage</div>
+                    <div class="o_prd_card_footer">
+                        <i class="fa fa-exclamation-triangle text-warning me-1" t-if="state.no_payslip_count > 0"/>
+                        <t t-esc="state.no_payslip_count"/> without payslip
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="o_prd_card o_prd_card_info h-100" t-on-click="() => this.openPayslips()">
+                    <div class="o_prd_card_icon"><i class="fa fa-file-text-o"/></div>
+                    <div class="o_prd_card_label">Total Payslips</div>
+                    <div class="o_prd_card_value" t-esc="totalPayslips"/>
+                    <div class="o_prd_card_sub">Deductions: <t t-esc="fmt(state.total_deductions)"/></div>
+                    <div class="o_prd_card_footer">
+                        <span class="badge bg-warning text-dark me-1"><t t-esc="state.draft_count"/> Draft</span>
+                        <span class="badge bg-success"><t t-esc="state.paid_count"/> Paid</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════════
+             STATUS MINI CARDS (clickable)
+        ═══════════════════════════════════════════════════════════════ -->
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3">
+                <div class="o_prd_status_card o_prd_status_draft"
+                     t-on-click="() => this.openPayslipsByState('draft')">
+                    <div class="o_prd_status_count" t-esc="state.draft_count"/>
+                    <div class="o_prd_status_label">Draft</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="o_prd_status_card o_prd_status_confirmed"
+                     t-on-click="() => this.openPayslipsByState('confirmed')">
+                    <div class="o_prd_status_count" t-esc="state.confirmed_count"/>
+                    <div class="o_prd_status_label">Confirmed</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="o_prd_status_card o_prd_status_partial"
+                     t-on-click="() => this.openPayslipsByState('partial')">
+                    <div class="o_prd_status_count" t-esc="state.partial_count"/>
+                    <div class="o_prd_status_label">Partial</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="o_prd_status_card o_prd_status_paid"
+                     t-on-click="() => this.openPayslipsByState('paid')">
+                    <div class="o_prd_status_count" t-esc="state.paid_count"/>
+                    <div class="o_prd_status_label">Paid</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════════
+             GROUP-BY CHART + DONUT
+        ═══════════════════════════════════════════════════════════════ -->
+        <div class="row g-4 mb-4">
+
+            <div class="col-12 col-lg-8">
+                <div class="o_prd_chart_card h-100">
+                    <div class="o_prd_chart_title d-flex align-items-center justify-content-between">
+                        <span>
+                            <i class="fa fa-bar-chart me-2 text-primary"/>
+                            Net Payable — by <strong t-esc="groupByLabel"/>
+                        </span>
+                        <span class="badge bg-light text-muted fw-normal small"
+                              t-esc="state.group_chart.length + ' group(s)'"/>
+                    </div>
+                    <div style="height:280px; position:relative; padding:10px 14px 6px;">
+                        <t t-if="state.group_chart.length">
+                            <canvas t-ref="groupChart"/>
+                        </t>
+                        <t t-else="">
+                            <div class="d-flex align-items-center justify-content-center h-100 text-muted">
+                                <i class="fa fa-inbox me-2"/>No data for selected filters.
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-4">
+                <div class="o_prd_chart_card h-100">
+                    <div class="o_prd_chart_title">
+                        <i class="fa fa-pie-chart me-2 text-primary"/>Payslip Status
+                    </div>
+                    <div style="height:280px; position:relative; padding:10px 14px 6px;">
+                        <t t-if="totalPayslips > 0">
+                            <canvas t-ref="statusChart"/>
+                        </t>
+                        <t t-else="">
+                            <div class="d-flex align-items-center justify-content-center h-100 text-muted">
+                                No payslips yet.
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════════
+             TREND + BREAKDOWN
+        ═══════════════════════════════════════════════════════════════ -->
+        <div class="row g-4 mb-4">
+
+            <div class="col-12 col-lg-8">
+                <div class="o_prd_chart_card h-100">
+                    <div class="o_prd_chart_title">
+                        <i class="fa fa-line-chart me-2 text-success"/>6-Month Payroll Trend
+                    </div>
+                    <div style="height:230px; position:relative; padding:10px 14px 6px;">
+                        <canvas t-ref="trendChart"/>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-4">
+                <div class="o_prd_chart_card h-100">
+                    <div class="o_prd_chart_title">
+                        <i class="fa fa-list-ul me-2 text-info"/>Breakdown
+                    </div>
+                    <div class="p-3">
+
+                        <div class="o_prd_breakdown_header">By Employee Type</div>
+                        <t t-if="state.type_chart.length">
+                            <t t-foreach="state.type_chart" t-as="row" t-key="row.label">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="small text-muted" t-esc="row.label"/>
+                                    <span class="badge bg-light text-dark border" t-esc="row.count"/>
+                                </div>
+                                <div class="progress mb-2" style="height:4px;">
+                                    <div class="progress-bar bg-info"
+                                         t-att-style="'width:' + Math.round((row.count / (totalPayslips || 1)) * 100) + '%'"/>
+                                </div>
+                            </t>
+                        </t>
+                        <p t-else="" class="text-muted small">No data.</p>
+
+                        <hr class="my-2"/>
+
+                        <div class="o_prd_breakdown_header">By Wage Type</div>
+                        <t t-if="state.wage_chart.length">
+                            <t t-foreach="state.wage_chart" t-as="row" t-key="row.label">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="small text-muted" t-esc="row.label"/>
+                                    <div class="d-flex gap-2">
+                                        <span class="badge bg-light text-dark border" t-esc="row.count"/>
+                                        <span class="small text-success fw-semibold" t-esc="fmt(row.net)"/>
+                                    </div>
+                                </div>
+                                <div class="progress mb-2" style="height:4px;">
+                                    <div class="progress-bar bg-primary"
+                                         t-att-style="'width:' + Math.round((row.count / (totalPayslips || 1)) * 100) + '%'"/>
+                                </div>
+                            </t>
+                        </t>
+                        <p t-else="" class="text-muted small">No data.</p>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════════
+             TOP EARNERS + QUICK GENERATE
+        ═══════════════════════════════════════════════════════════════ -->
+        <div class="row g-4 mb-4">
+
+            <div class="col-12 col-lg-4">
+                <div class="o_prd_chart_card h-100">
+                    <div class="o_prd_chart_title">
+                        <i class="fa fa-trophy me-2 text-warning"/>Top 5 Earners
+                    </div>
+                    <div class="p-3">
+                        <t t-if="state.top_earners.length">
+                            <t t-foreach="state.top_earners" t-as="emp" t-key="emp_index">
+                                <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span t-attf-class="o_prd_rank_badge o_prd_rank_#{emp_index + 1}">
+                                            <t t-esc="emp_index + 1"/>
+                                        </span>
+                                        <span class="small fw-semibold" t-esc="emp.name"/>
+                                    </div>
+                                    <span class="small text-success fw-bold" t-esc="fmt(emp.net)"/>
+                                </div>
+                            </t>
+                        </t>
+                        <p t-else="" class="text-muted small">No payslips for this period.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-8">
+                <div class="o_prd_chart_card h-100">
+                    <div class="o_prd_chart_title">
+                        <i class="fa fa-bolt me-2 text-warning"/>Quick Generate Payslips
+                    </div>
+                    <div class="p-3">
+                        <div class="d-flex flex-wrap gap-2">
+                            <button class="btn btn-primary btn-sm"
+                                    t-on-click="() => this.generatePayslips()">
+                                <i class="fa fa-users me-1"/>All Employees
+                            </button>
+                            <button class="btn btn-outline-primary btn-sm"
+                                    t-on-click="generateForDept">
+                                <i class="fa fa-building me-1"/>Selected Department
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm"
+                                    t-on-click="() => this.generatePayslips({default_employee_type: 'daily_labour'})">
+                                <i class="fa fa-hard-hat me-1"/>Daily Labour
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm"
+                                    t-on-click="() => this.generatePayslips({default_wage_type: 'monthly'})">
+                                <i class="fa fa-calendar me-1"/>Monthly Staff
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm"
+                                    t-on-click="() => this.generatePayslips({default_wage_type: 'hourly'})">
+                                <i class="fa fa-clock-o me-1"/>Hourly Workers
+                            </button>
+                            <button class="btn btn-outline-info btn-sm"
+                                    t-on-click="() => this.openPayslips()">
+                                <i class="fa fa-list me-1"/>View All Payslips
+                            </button>
+                        </div>
+                        <p class="text-muted small mt-3 mb-0">
+                            <i class="fa fa-info-circle me-1"/>
+                            Generating skips employees who already have a confirmed / paid payslip this month.
+                            "Selected Department" uses the Department filter above.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </t><!-- end !loading -->
+
+</div>
+</t>
+
+</templates>

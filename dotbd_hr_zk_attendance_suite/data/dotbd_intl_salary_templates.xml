@@ -1,0 +1,654 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!--
+        ═══════════════════════════════════════════════════════════════════════
+        INTERNATIONAL SALARY TEMPLATES
+        noupdate="1" — installed once; administrators may modify freely.
+
+        Regions covered:
+          1.  UAE / GCC (Middle East)
+          2.  India (Standard Corporate)
+          3.  Pakistan (Standard Private)
+          4.  Nepal / Sri Lanka (Standard)
+          5.  Malaysia (EPF / SOCSO)
+          6.  Philippines (SSS / PhilHealth / Pag-IBIG)
+          7.  Indonesia (BPJS)
+          8.  General International (tax-free, minimal)
+
+        IMPORTANT: Statutory deduction rates and minimum wages change frequently.
+        Always verify current rates with local labour law before processing payroll.
+        ═══════════════════════════════════════════════════════════════════════
+        -->
+
+        <!-- ───────────────────────────────────────────────────────────────
+             1. UAE / GCC — STANDARD PACKAGE
+             Applies to UAE, Saudi Arabia, Qatar, Kuwait, Bahrain, Oman.
+             No income tax. Gratuity is statutory under UAE Labour Law
+             (21 working days of basic per year for first 5 years).
+             Monthly gratuity provision ≈ basic × 21/365 × 30 ≈ 5.83%.
+             Annual air ticket allowance is common but paid once — not monthly.
+        ─────────────────────────────────────────────────────────────────── -->
+        <record id="tmpl_uae_gcc" model="dotbd.salary.template">
+            <field name="name">UAE / GCC — Standard Package</field>
+            <field name="template_type">uae_gcc</field>
+            <field name="working_days_per_month">22</field>
+            <field name="note">
+Applicable to UAE, Saudi Arabia, Qatar, Kuwait, Bahrain and Oman.
+No income tax deductions.
+Gratuity (End of Service Benefit) is provisioned monthly at 5.83% of basic
+(21 working days × basic/26 working days per month, annualised).
+Remove gratuity provision if your company pays it at end of contract only.
+Annual Air Ticket Allowance is typically paid once a year — not included here.
+Add custom allowances for child education, furniture, telephone as applicable.
+Working days: 22 (standard 5-day week). Adjust to 26 for 6-day operations.
+Unpaid / unauthorised leave is deducted at per-day gross rate.
+            </field>
+        </record>
+
+        <record id="comp_uae_hra" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_uae_gcc"/>
+            <field name="sequence">10</field>
+            <field name="name">Housing Allowance</field>
+            <field name="code">HRA</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">25</field>
+        </record>
+        <record id="comp_uae_transport" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_uae_gcc"/>
+            <field name="sequence">20</field>
+            <field name="name">Transport Allowance</field>
+            <field name="code">TRN</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">10</field>
+        </record>
+        <record id="comp_uae_gratuity" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_uae_gcc"/>
+            <field name="sequence">30</field>
+            <field name="name">Gratuity Provision (End of Service)</field>
+            <field name="code">GRAT</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">5.83</field>
+        </record>
+
+        <record id="lvrule_uae_unpaid" model="dotbd.salary.leave.rule">
+            <field name="template_id" ref="tmpl_uae_gcc"/>
+            <field name="sequence">99</field>
+            <field name="name">Unpaid / Unauthorised Leave Deduction</field>
+            <field name="rule_action">deduct</field>
+            <field name="amount_type">per_day_gross</field>
+        </record>
+
+        <!-- ───────────────────────────────────────────────────────────────
+             2. INDIA — STANDARD CORPORATE PACKAGE
+             Based on standard CTC structure for Indian private sector.
+             Basic: 40-50% of gross. HRA: 40% of basic (metro city rate).
+             PF Employee: 12% of basic (EPF Act 1952, capped at INR 15,000 basic).
+             Professional Tax: fixed INR 200/month (most states — adjust by state).
+             ESI: applicable if gross < INR 21,000 (0.75% employee share).
+             Add income tax (TDS) as a custom deduction per employee slab.
+        ─────────────────────────────────────────────────────────────────── -->
+        <record id="tmpl_india" model="dotbd.salary.template">
+            <field name="name">India — Standard Corporate Package</field>
+            <field name="template_type">india</field>
+            <field name="working_days_per_month">26</field>
+            <field name="note">
+Based on standard Indian CTC structure for private sector organisations.
+Basic is set per employee. Allowances calculated as percentage of basic.
+PF Employee (EPF): 12% of basic, capped at INR 15,000 basic = INR 1,800 max.
+  For employees above the PF ceiling, disable the PF deduction component.
+Professional Tax: fixed INR 200/month for most states (varies — Karnataka = INR 200,
+  Maharashtra = up to INR 2,500/yr). Adjust as required.
+ESI (Employee): 0.75% of gross, applicable only if gross ≤ INR 21,000/month.
+  Disable this component for higher-salary employees.
+HRA rate: 40% of basic for non-metro, 50% for metro cities.
+TDS/Income Tax: add per employee as a custom fixed deduction.
+LTA (Leave Travel Allowance): included at 8.33% for annual encashment provision.
+            </field>
+        </record>
+
+        <record id="comp_india_hra" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_india"/>
+            <field name="sequence">10</field>
+            <field name="name">House Rent Allowance</field>
+            <field name="code">HRA</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">40</field>
+        </record>
+        <record id="comp_india_special" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_india"/>
+            <field name="sequence">20</field>
+            <field name="name">Special Allowance</field>
+            <field name="code">SPA</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">15</field>
+        </record>
+        <record id="comp_india_lta" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_india"/>
+            <field name="sequence">30</field>
+            <field name="name">Leave Travel Allowance</field>
+            <field name="code">LTA</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">8.33</field>
+        </record>
+        <record id="comp_india_medical" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_india"/>
+            <field name="sequence">40</field>
+            <field name="name">Medical Reimbursement</field>
+            <field name="code">MED</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">5</field>
+        </record>
+        <!-- Statutory deductions -->
+        <record id="comp_india_pf" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_india"/>
+            <field name="sequence">50</field>
+            <field name="name">Provident Fund — Employee (EPF 12%)</field>
+            <field name="code">PF_EMP</field>
+            <field name="component_type">deduction</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">12</field>
+        </record>
+        <record id="comp_india_esi" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_india"/>
+            <field name="sequence">60</field>
+            <field name="name">ESI — Employee (0.75%)</field>
+            <field name="code">ESI_EMP</field>
+            <field name="component_type">deduction</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">0.75</field>
+        </record>
+        <record id="comp_india_pt" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_india"/>
+            <field name="sequence">70</field>
+            <field name="name">Professional Tax</field>
+            <field name="code">PT</field>
+            <field name="component_type">deduction</field>
+            <field name="calculation_type">fixed</field>
+            <field name="fixed_amount">200</field>
+        </record>
+
+        <record id="lvrule_india_unpaid" model="dotbd.salary.leave.rule">
+            <field name="template_id" ref="tmpl_india"/>
+            <field name="sequence">99</field>
+            <field name="name">Loss of Pay (LOP) — Unpaid Leave</field>
+            <field name="rule_action">deduct</field>
+            <field name="amount_type">per_day_gross</field>
+        </record>
+
+        <!-- ───────────────────────────────────────────────────────────────
+             3. PAKISTAN — STANDARD PRIVATE SECTOR
+             HRA: 45% of basic. Medical: 10%. Transport: fixed.
+             EOBI: Employee contribution fixed PKR 370/month (2024 rate).
+             Provident Fund: 8.33% of basic in many companies.
+             Income Tax: add per employee as custom deduction.
+        ─────────────────────────────────────────────────────────────────── -->
+        <record id="tmpl_pakistan" model="dotbd.salary.template">
+            <field name="name">Pakistan — Standard Private Sector</field>
+            <field name="template_type">pakistan</field>
+            <field name="working_days_per_month">26</field>
+            <field name="note">
+Standard private sector structure for Pakistan.
+EOBI (Employees Old-Age Benefits Institution): PKR 370/month employee contribution (2024).
+  Update this amount if the EOBI rate changes.
+Provident Fund: 8.33% of basic — enable/disable per company policy.
+SESSI/PESSI (Social Security): applicable in Sindh/Punjab; rate ~1-7% of wages.
+  Add as custom deduction if applicable.
+Income Tax (WHT): varies per slab; add as fixed deduction per employee.
+Gratuity: 1 month's basic per completed year of service — provision monthly at 8.33%.
+            </field>
+        </record>
+
+        <record id="comp_pak_hra" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_pakistan"/>
+            <field name="sequence">10</field>
+            <field name="name">House Rent Allowance</field>
+            <field name="code">HRA</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">45</field>
+        </record>
+        <record id="comp_pak_medical" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_pakistan"/>
+            <field name="sequence">20</field>
+            <field name="name">Medical Allowance</field>
+            <field name="code">MED</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">10</field>
+        </record>
+        <record id="comp_pak_transport" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_pakistan"/>
+            <field name="sequence">30</field>
+            <field name="name">Conveyance Allowance</field>
+            <field name="code">TRN</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">fixed</field>
+            <field name="fixed_amount">3000</field>
+        </record>
+        <record id="comp_pak_pf" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_pakistan"/>
+            <field name="sequence">40</field>
+            <field name="name">Provident Fund — Employee (8.33%)</field>
+            <field name="code">PF_EMP</field>
+            <field name="component_type">deduction</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">8.33</field>
+        </record>
+        <record id="comp_pak_eobi" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_pakistan"/>
+            <field name="sequence">50</field>
+            <field name="name">EOBI Contribution</field>
+            <field name="code">EOBI</field>
+            <field name="component_type">deduction</field>
+            <field name="calculation_type">fixed</field>
+            <field name="fixed_amount">370</field>
+        </record>
+
+        <record id="lvrule_pak_unpaid" model="dotbd.salary.leave.rule">
+            <field name="template_id" ref="tmpl_pakistan"/>
+            <field name="sequence">99</field>
+            <field name="name">Unpaid Leave Deduction</field>
+            <field name="rule_action">deduct</field>
+            <field name="amount_type">per_day_basic</field>
+        </record>
+
+        <!-- ───────────────────────────────────────────────────────────────
+             4. NEPAL / SRI LANKA — STANDARD PACKAGE
+             Broadly applicable across Nepal and Sri Lanka private sector.
+             Nepal: PF 10% employee + 10% employer. CIT 1%.
+             Sri Lanka: EPF 8% employee, ETF 3% employer.
+             Template uses Nepal rates (PKR → NPR equivalent).
+             Adjust deduction amounts to local currency and rates.
+        ─────────────────────────────────────────────────────────────────── -->
+        <record id="tmpl_nepal" model="dotbd.salary.template">
+            <field name="name">Nepal / Sri Lanka — Standard Package</field>
+            <field name="template_type">nepal</field>
+            <field name="working_days_per_month">26</field>
+            <field name="note">
+Broadly applicable to Nepal and Sri Lanka private sector.
+Nepal: Provident Fund — Employee 10%, Employer 10%; CIT (Employee Welfare Fund) 1%.
+Sri Lanka: EPF — Employee 8%; ETF — Employer 3% (not deducted from employee).
+Festival allowance (Dashain bonus in Nepal) is paid annually — not provisioned here.
+Dearness Allowance (DA) may apply in government or regulated sectors.
+Adjust deduction rates and currency amounts to match the specific country requirements.
+            </field>
+        </record>
+
+        <record id="comp_nepal_hra" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_nepal"/>
+            <field name="sequence">10</field>
+            <field name="name">House Rent Allowance</field>
+            <field name="code">HRA</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">40</field>
+        </record>
+        <record id="comp_nepal_dearness" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_nepal"/>
+            <field name="sequence">20</field>
+            <field name="name">Dearness Allowance</field>
+            <field name="code">DA</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">15</field>
+        </record>
+        <record id="comp_nepal_medical" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_nepal"/>
+            <field name="sequence">30</field>
+            <field name="name">Medical Allowance</field>
+            <field name="code">MED</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">8</field>
+        </record>
+        <record id="comp_nepal_pf" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_nepal"/>
+            <field name="sequence">40</field>
+            <field name="name">Provident Fund — Employee (10%)</field>
+            <field name="code">PF_EMP</field>
+            <field name="component_type">deduction</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">10</field>
+        </record>
+        <record id="comp_nepal_cit" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_nepal"/>
+            <field name="sequence">50</field>
+            <field name="name">CIT / Welfare Fund (1%)</field>
+            <field name="code">CIT</field>
+            <field name="component_type">deduction</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">1</field>
+        </record>
+
+        <record id="lvrule_nepal_unpaid" model="dotbd.salary.leave.rule">
+            <field name="template_id" ref="tmpl_nepal"/>
+            <field name="sequence">99</field>
+            <field name="name">Unpaid Leave Deduction</field>
+            <field name="rule_action">deduct</field>
+            <field name="amount_type">per_day_basic</field>
+        </record>
+
+        <!-- ───────────────────────────────────────────────────────────────
+             5. MALAYSIA — EPF / SOCSO PACKAGE
+             Mandatory contributions under Malaysian Labour Law.
+             EPF Employee: 11% of gross (employees below 60).
+             SOCSO Employee: 0.5% of gross (capped at MYR 86.65/month).
+             EIS Employee: 0.4% of gross (Employment Insurance System).
+             PCB/MTD (income tax withholding): add per employee individually.
+        ─────────────────────────────────────────────────────────────────── -->
+        <record id="tmpl_malaysia" model="dotbd.salary.template">
+            <field name="name">Malaysia — EPF / SOCSO Standard Package</field>
+            <field name="template_type">malaysia</field>
+            <field name="working_days_per_month">22</field>
+            <field name="note">
+Compliant with Malaysian Employment Act 1955 and statutory contribution requirements.
+EPF (KWSP): Employee 11%, Employer 13% for salary ≤ MYR 5,000 (12% for higher).
+  Enable/disable per employee age group (employees over 60 contribute 5.5%).
+SOCSO (PERKESO): Employee 0.5%, capped at maximum insurable earnings.
+  Disable for employees earning above RM 4,000/month (employer pays only).
+EIS (SIP): Employee 0.4%, employer 0.4%, capped at RM 4,000 insurable earnings.
+PCB/MTD (Income Tax): add as individual fixed deduction per employee slab.
+Overtime: calculated per Employment Act (1.5x hourly rate) — track separately.
+Working days: 22 (standard 5-day week; adjust for 5.5 or 6-day operations).
+            </field>
+        </record>
+
+        <record id="comp_mys_hra" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_malaysia"/>
+            <field name="sequence">10</field>
+            <field name="name">Housing Allowance</field>
+            <field name="code">HRA</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">20</field>
+        </record>
+        <record id="comp_mys_transport" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_malaysia"/>
+            <field name="sequence">20</field>
+            <field name="name">Transport Allowance</field>
+            <field name="code">TRN</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">10</field>
+        </record>
+        <record id="comp_mys_epf" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_malaysia"/>
+            <field name="sequence">30</field>
+            <field name="name">EPF — Employee Contribution (11%)</field>
+            <field name="code">EPF_EMP</field>
+            <field name="component_type">deduction</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">11</field>
+        </record>
+        <record id="comp_mys_socso" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_malaysia"/>
+            <field name="sequence">40</field>
+            <field name="name">SOCSO — Employee Contribution (0.5%)</field>
+            <field name="code">SOCSO_EMP</field>
+            <field name="component_type">deduction</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">0.5</field>
+        </record>
+        <record id="comp_mys_eis" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_malaysia"/>
+            <field name="sequence">50</field>
+            <field name="name">EIS — Employee Contribution (0.4%)</field>
+            <field name="code">EIS_EMP</field>
+            <field name="component_type">deduction</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">0.4</field>
+        </record>
+
+        <record id="lvrule_mys_unpaid" model="dotbd.salary.leave.rule">
+            <field name="template_id" ref="tmpl_malaysia"/>
+            <field name="sequence">99</field>
+            <field name="name">No Pay Leave Deduction</field>
+            <field name="rule_action">deduct</field>
+            <field name="amount_type">per_day_gross</field>
+        </record>
+
+        <!-- ───────────────────────────────────────────────────────────────
+             6. PHILIPPINES — SSS / PHILHEALTH / PAG-IBIG PACKAGE
+             Mandatory contributions under Philippine Labour Code.
+             SSS: employee share ~4.5% of Monthly Salary Credit (MSC).
+             PhilHealth: employee 2.5% of basic (effective 2024).
+             Pag-IBIG (HDMF): PHP 100 fixed or 2% of basic (max PHP 100 voluntary).
+             Tax (BIR): withholding tax; add per employee as fixed deduction.
+        ─────────────────────────────────────────────────────────────────── -->
+        <record id="tmpl_philippines" model="dotbd.salary.template">
+            <field name="name">Philippines — SSS / PhilHealth / Pag-IBIG Package</field>
+            <field name="template_type">philippines</field>
+            <field name="working_days_per_month">22</field>
+            <field name="note">
+Compliant with Philippine Labour Code mandatory contribution requirements (2024).
+SSS: Employee contribution based on Monthly Salary Credit table (~4.5% effective rate).
+  The fixed component here is PHP 450 as an approximation for PHP 10,000 basic.
+  Adjust the fixed amount per the SSS contribution table for each salary range.
+PhilHealth: Employee 2.5% of basic salary (effective 2024, up to PHP 5,000/month).
+Pag-IBIG (HDMF): PHP 100/month mandatory minimum (or 2% if employee opts for higher).
+BIR Withholding Tax: add per employee as individual fixed deduction.
+13th Month Pay: 1/12 of basic per month (mandatory); include here or pay separately.
+COLA (Cost of Living Allowance): may be applicable under DOLE orders — add if required.
+            </field>
+        </record>
+
+        <record id="comp_ph_cola" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_philippines"/>
+            <field name="sequence">10</field>
+            <field name="name">COLA / Cost of Living Allowance</field>
+            <field name="code">COLA</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">fixed</field>
+            <field name="fixed_amount">700</field>
+        </record>
+        <record id="comp_ph_rice" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_philippines"/>
+            <field name="sequence">20</field>
+            <field name="name">Rice Allowance</field>
+            <field name="code">RICE</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">fixed</field>
+            <field name="fixed_amount">1500</field>
+        </record>
+        <record id="comp_ph_13th" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_philippines"/>
+            <field name="sequence">30</field>
+            <field name="name">13th Month Pay Provision (8.33%)</field>
+            <field name="code">13TH</field>
+            <field name="component_type">bonus</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">8.33</field>
+        </record>
+        <record id="comp_ph_sss" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_philippines"/>
+            <field name="sequence">40</field>
+            <field name="name">SSS — Employee Contribution</field>
+            <field name="code">SSS_EMP</field>
+            <field name="component_type">deduction</field>
+            <field name="calculation_type">fixed</field>
+            <field name="fixed_amount">450</field>
+        </record>
+        <record id="comp_ph_philhealth" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_philippines"/>
+            <field name="sequence">50</field>
+            <field name="name">PhilHealth — Employee (2.5%)</field>
+            <field name="code">PHEALTH</field>
+            <field name="component_type">deduction</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">2.5</field>
+        </record>
+        <record id="comp_ph_pagibig" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_philippines"/>
+            <field name="sequence">60</field>
+            <field name="name">Pag-IBIG (HDMF) — Employee</field>
+            <field name="code">PAGIBIG</field>
+            <field name="component_type">deduction</field>
+            <field name="calculation_type">fixed</field>
+            <field name="fixed_amount">100</field>
+        </record>
+
+        <record id="lvrule_ph_unpaid" model="dotbd.salary.leave.rule">
+            <field name="template_id" ref="tmpl_philippines"/>
+            <field name="sequence">99</field>
+            <field name="name">Unpaid Leave Deduction</field>
+            <field name="rule_action">deduct</field>
+            <field name="amount_type">per_day_gross</field>
+        </record>
+
+        <!-- ───────────────────────────────────────────────────────────────
+             7. INDONESIA — BPJS PACKAGE
+             Mandatory BPJS Ketenagakerjaan (social security) and
+             BPJS Kesehatan (health insurance) contributions.
+             JHT (Jaminan Hari Tua): employee 2% of salary.
+             JP (Jaminan Pensiun): employee 1% of salary.
+             BPJS Kesehatan: employee 1% of salary (capped at IDR 12M salary).
+             PPh 21 (income tax): add per employee individually.
+        ─────────────────────────────────────────────────────────────────── -->
+        <record id="tmpl_indonesia" model="dotbd.salary.template">
+            <field name="name">Indonesia — BPJS Standard Package</field>
+            <field name="template_type">indonesia</field>
+            <field name="working_days_per_month">22</field>
+            <field name="note">
+Compliant with Indonesian Manpower Law (UU Ketenagakerjaan) and BPJS requirements.
+BPJS Ketenagakerjaan:
+  - JHT (Old Age Security): Employee 2%, Employer 3.7%
+  - JP (Pension): Employee 1%, Employer 2% (capped at JPY 9,559,600 annual salary)
+  - JKK (Accident Insurance): Employer only (0.24–1.74%) — not deducted from employee
+  - JKM (Death Insurance): Employer only (0.3%) — not deducted from employee
+BPJS Kesehatan (Health): Employee 1% of salary, Employer 4% (capped at IDR 12M/month).
+PPh 21 (Income Tax): varies by slab; add as fixed deduction per employee.
+THR (Tunjangan Hari Raya / Holiday Bonus): 1 month salary paid before Lebaran.
+  Provision monthly at 8.33% or pay directly in the holiday month.
+Meal and transport allowances are common — included here as fixed amounts.
+            </field>
+        </record>
+
+        <record id="comp_idn_meal" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_indonesia"/>
+            <field name="sequence">10</field>
+            <field name="name">Meal Allowance (Uang Makan)</field>
+            <field name="code">MEAL</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">fixed</field>
+            <field name="fixed_amount">450000</field>
+        </record>
+        <record id="comp_idn_transport" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_indonesia"/>
+            <field name="sequence">20</field>
+            <field name="name">Transport Allowance (Uang Transport)</field>
+            <field name="code">TRN</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">fixed</field>
+            <field name="fixed_amount">300000</field>
+        </record>
+        <record id="comp_idn_thr" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_indonesia"/>
+            <field name="sequence">30</field>
+            <field name="name">THR — Hari Raya Bonus Provision (8.33%)</field>
+            <field name="code">THR</field>
+            <field name="component_type">bonus</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">8.33</field>
+        </record>
+        <record id="comp_idn_bpjs_jht" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_indonesia"/>
+            <field name="sequence">40</field>
+            <field name="name">BPJS Ketenagakerjaan — JHT Employee (2%)</field>
+            <field name="code">JHT_EMP</field>
+            <field name="component_type">deduction</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">2</field>
+        </record>
+        <record id="comp_idn_bpjs_jp" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_indonesia"/>
+            <field name="sequence">50</field>
+            <field name="name">BPJS Ketenagakerjaan — JP Employee (1%)</field>
+            <field name="code">JP_EMP</field>
+            <field name="component_type">deduction</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">1</field>
+        </record>
+        <record id="comp_idn_bpjs_health" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_indonesia"/>
+            <field name="sequence">60</field>
+            <field name="name">BPJS Kesehatan — Employee (1%)</field>
+            <field name="code">BPJSKES</field>
+            <field name="component_type">deduction</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">1</field>
+        </record>
+
+        <record id="lvrule_idn_unpaid" model="dotbd.salary.leave.rule">
+            <field name="template_id" ref="tmpl_indonesia"/>
+            <field name="sequence">99</field>
+            <field name="name">Unpaid Leave Deduction</field>
+            <field name="rule_action">deduct</field>
+            <field name="amount_type">per_day_gross</field>
+        </record>
+
+        <!-- ───────────────────────────────────────────────────────────────
+             8. GENERAL INTERNATIONAL — MINIMAL TEMPLATE
+             Clean starting point for any country not listed above.
+             Only basic allowances, no statutory deductions.
+             Administrators should add country-specific deductions manually.
+        ─────────────────────────────────────────────────────────────────── -->
+        <record id="tmpl_general_intl" model="dotbd.salary.template">
+            <field name="name">General International — Minimal Template</field>
+            <field name="template_type">general</field>
+            <field name="working_days_per_month">22</field>
+            <field name="note">
+A clean, minimal template for any country not listed as a pre-defined option.
+Includes Housing (30%), Medical (10%) and Transport (5%) as basic allowances.
+No statutory deductions are included — add your country's required contributions
+(social security, health insurance, pension, income tax) as Deduction components.
+Working days default to 22 (5-day week). Change to 26 for 6-day operations.
+            </field>
+        </record>
+
+        <record id="comp_intl_hra" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_general_intl"/>
+            <field name="sequence">10</field>
+            <field name="name">Housing Allowance</field>
+            <field name="code">HRA</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">30</field>
+        </record>
+        <record id="comp_intl_medical" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_general_intl"/>
+            <field name="sequence">20</field>
+            <field name="name">Medical Allowance</field>
+            <field name="code">MED</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">10</field>
+        </record>
+        <record id="comp_intl_transport" model="dotbd.salary.component">
+            <field name="template_id" ref="tmpl_general_intl"/>
+            <field name="sequence">30</field>
+            <field name="name">Transport Allowance</field>
+            <field name="code">TRN</field>
+            <field name="component_type">allowance</field>
+            <field name="calculation_type">percentage</field>
+            <field name="percentage">5</field>
+        </record>
+
+        <record id="lvrule_intl_unpaid" model="dotbd.salary.leave.rule">
+            <field name="template_id" ref="tmpl_general_intl"/>
+            <field name="sequence">99</field>
+            <field name="name">Unpaid Leave Deduction</field>
+            <field name="rule_action">deduct</field>
+            <field name="amount_type">per_day_gross</field>
+        </record>
+
+    </data>
+</odoo>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!--
+        "Show DotBD Payroll" toggle on the User form — Access Rights tab.
+        - Default: OFF (unchecked) — payroll hidden unless explicitly enabled
+        - Works for ALL user types: employee, officer, manager, admin
+        - No groups restriction on the field — anyone who can edit a user can toggle it
+        - Syncs with group_payroll_access membership via write() override in res_users.py
+    -->
+    <record id="res_users_view_form_dotbd_payroll" model="ir.ui.view">
+        <field name="name">res.users.form.dotbd.payroll.access</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='access_rights']" position="inside">
+                <separator string="DotBD Attendance &amp; Payroll"/>
+                <group>
+                    <group>
+                        <!-- No groups= restriction — works for any user type -->
+                        <field name="dotbd_show_payroll"
+                               widget="boolean_toggle"
+                               string="Show DotBD Payroll"/>
+                        <div style="font-size:0.83em; color:#555; margin-top:2px;">
+                            <i class="fa fa-info-circle" title="Information" role="img" aria-label="Information"/>
+                            <strong>OFF</strong> (default) — DotBD Payroll is hidden for this user.<br/>
+                            <strong>ON</strong> — user can see DotBD Payroll app, payslips, salary templates.<br/>
+                            Applies to any user role: Employee, Officer, Manager, Admin.
+                        </div>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

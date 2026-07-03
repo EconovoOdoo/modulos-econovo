@@ -1,0 +1,1567 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="attendance_anomaly_dashboard_template" name="Attendance Anomaly Dashboard">
+        <t t-call="web.layout">
+            <t t-set="head">
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
+                <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+                <style>
+                    body {
+                        background-color: #f5f7fa;
+                        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+                    }
+
+                    .dashboard-container {
+                        max-width: 1400px;
+                        margin: 0 auto;
+                        padding: 30px 20px;
+                    }
+
+                    .dashboard-header {
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: white;
+                        padding: 30px;
+                        border-radius: 12px;
+                        margin-bottom: 30px;
+                        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                    }
+
+                    .dashboard-header h1 {
+                        margin: 0 0 10px 0;
+                        font-size: 32px;
+                        font-weight: 700;
+                    }
+
+                    .dashboard-header p {
+                        margin: 0;
+                        opacity: 0.9;
+                        font-size: 16px;
+                    }
+
+                    .header-actions {
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        flex-wrap: wrap;
+                        gap: 15px;
+                    }
+
+                    .btn-back {
+                        background: rgba(255, 255, 255, 0.2);
+                        color: white;
+                        width: 40px;
+                        height: 40px;
+                        border-radius: 50%;
+                        text-decoration: none;
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                        transition: all 0.3s ease;
+                        border: 2px solid rgba(255, 255, 255, 0.3);
+                        font-size: 18px;
+                    }
+
+                    .btn-back:hover {
+                        background: white;
+                        color: #667eea;
+                        border-color: white;
+                        transform: translateX(-3px);
+                        text-decoration: none;
+                    }
+
+                    .btn-download {
+                        background: white;
+                        color: #667eea;
+                        padding: 12px 24px;
+                        border-radius: 8px;
+                        text-decoration: none;
+                        font-weight: 600;
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 8px;
+                        transition: all 0.3s ease;
+                        border: none;
+                        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                    }
+
+                    .btn-download:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+                        color: #667eea;
+                        text-decoration: none;
+                    }
+
+                    .btn-filter {
+                        background: rgba(255, 255, 255, 0.2);
+                        color: white;
+                        padding: 10px 18px;
+                        border-radius: 8px;
+                        border: 2px solid rgba(255, 255, 255, 0.3);
+                        font-weight: 600;
+                        font-size: 14px;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 8px;
+                    }
+
+                    .btn-filter:hover {
+                        background: rgba(255, 255, 255, 0.3);
+                        border-color: rgba(255, 255, 255, 0.5);
+                        transform: translateY(-2px);
+                    }
+
+                    .btn-filter.active {
+                        background: white;
+                        color: #667eea;
+                        border-color: white;
+                    }
+
+                    .date-input {
+                        background: white;
+                        color: #2d3748;
+                        font-size: 14px;
+                    }
+
+                    .section-title {
+                        font-size: 22px;
+                        font-weight: 700;
+                        margin-bottom: 20px;
+                        color: #2d3748;
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                    }
+
+                    .stats-grid {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+                        gap: 20px;
+                        margin-bottom: 30px;
+                    }
+
+                    .stat-card {
+                        background: white;
+                        border-radius: 12px;
+                        padding: 25px;
+                        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+                        transition: all 0.3s ease;
+                        border-left: 4px solid;
+                    }
+
+                    .stat-card:hover {
+                        transform: translateY(-4px);
+                        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+                    }
+
+                    .stat-card.total { border-left-color: #667eea; }
+                    .stat-card.danger { border-left-color: #f56565; }
+                    .stat-card.warning { border-left-color: #ed8936; }
+                    .stat-card.info { border-left-color: #4299e1; }
+                    .stat-card.success { border-left-color: #48bb78; }
+
+                    .stat-icon {
+                        font-size: 36px;
+                        margin-bottom: 15px;
+                        display: block;
+                    }
+
+                    .stat-icon.primary { color: #667eea; }
+                    .stat-icon.danger { color: #f56565; }
+                    .stat-icon.warning { color: #ed8936; }
+                    .stat-icon.info { color: #4299e1; }
+                    .stat-icon.success { color: #48bb78; }
+
+                    .stat-value {
+                        font-size: 36px;
+                        font-weight: 700;
+                        margin: 10px 0 5px 0;
+                        line-height: 1;
+                    }
+
+                    .stat-value.text-danger { color: #f56565; }
+                    .stat-value.text-warning { color: #ed8936; }
+                    .stat-value.text-info { color: #4299e1; }
+                    .stat-value.text-success { color: #48bb78; }
+                    .stat-value.text-primary { color: #667eea; }
+
+                    .stat-label {
+                        color: #718096;
+                        font-size: 14px;
+                        font-weight: 500;
+                        text-transform: uppercase;
+                        letter-spacing: 0.5px;
+                    }
+
+                    .charts-grid {
+                        display: grid;
+                        grid-template-columns: 2fr 1fr;
+                        gap: 20px;
+                        margin-bottom: 30px;
+                    }
+
+                    .chart-card {
+                        background: white;
+                        border-radius: 12px;
+                        padding: 25px;
+                        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+                    }
+
+                    .chart-card h3 {
+                        margin: 0 0 20px 0;
+                        font-size: 18px;
+                        font-weight: 600;
+                        color: #2d3748;
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                    }
+
+                    .table-grid {
+                        display: grid;
+                        grid-template-columns: 1fr 1fr;
+                        gap: 20px;
+                        margin-bottom: 30px;
+                    }
+
+                    .table-card {
+                        background: white;
+                        border-radius: 12px;
+                        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+                        overflow: hidden;
+                    }
+
+                    .table-card-header {
+                        background: #f7fafc;
+                        padding: 20px;
+                        border-bottom: 1px solid #e2e8f0;
+                    }
+
+                    .table-card-header h3 {
+                        margin: 0;
+                        font-size: 18px;
+                        font-weight: 600;
+                        color: #2d3748;
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                    }
+
+                    .table-card-body {
+                        padding: 0;
+                        overflow-x: auto;
+                    }
+
+                    .data-table {
+                        width: 100%;
+                        border-collapse: collapse;
+                    }
+
+                    .data-table thead {
+                        background: #f7fafc;
+                    }
+
+                    .data-table th {
+                        padding: 12px 15px;
+                        text-align: left;
+                        font-size: 13px;
+                        font-weight: 600;
+                        color: #4a5568;
+                        text-transform: uppercase;
+                        letter-spacing: 0.5px;
+                        border-bottom: 2px solid #e2e8f0;
+                    }
+
+                    .data-table th.text-center {
+                        text-align: center;
+                    }
+
+                    .data-table td {
+                        padding: 12px 15px;
+                        font-size: 14px;
+                        color: #2d3748;
+                        border-bottom: 1px solid #e2e8f0;
+                    }
+
+                    .data-table td.text-center {
+                        text-align: center;
+                    }
+
+                    .data-table tbody tr:hover {
+                        background: #f7fafc;
+                    }
+
+                    .badge {
+                        display: inline-block;
+                        padding: 4px 10px;
+                        border-radius: 12px;
+                        font-size: 12px;
+                        font-weight: 600;
+                        line-height: 1;
+                    }
+
+                    .badge.badge-primary { background: #667eea; color: white; }
+                    .badge.badge-danger { background: #f56565; color: white; }
+                    .badge.badge-warning { background: #ed8936; color: white; }
+                    .badge.badge-info { background: #4299e1; color: white; }
+                    .badge.badge-success { background: #48bb78; color: white; }
+
+                    .rank-badge {
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                        width: 28px;
+                        height: 28px;
+                        border-radius: 50%;
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: white;
+                        font-weight: 700;
+                        font-size: 13px;
+                    }
+
+                    .rank-badge.rank-success {
+                        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                    }
+
+                    .rank-badge.rank-warning {
+                        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+                    }
+
+                    .empty-state {
+                        text-align: center;
+                        padding: 40px 20px;
+                        color: #a0aec0;
+                    }
+
+                    .empty-state i {
+                        font-size: 48px;
+                        margin-bottom: 15px;
+                        display: block;
+                        color: #48bb78;
+                    }
+
+                    .empty-state p {
+                        margin: 0;
+                        font-size: 16px;
+                    }
+
+                    @media (max-width: 992px) {
+                        .charts-grid {
+                            grid-template-columns: 1fr;
+                        }
+
+                        .table-grid {
+                            grid-template-columns: 1fr;
+                        }
+
+                        .stats-grid {
+                            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                        }
+                    }
+
+                    @media (max-width: 576px) {
+                        .dashboard-header h1 {
+                            font-size: 24px;
+                        }
+
+                        .stats-grid {
+                            grid-template-columns: 1fr;
+                        }
+                    }
+                </style>
+            </t>
+
+            <div class="dashboard-container">
+                <!-- Header -->
+                <div class="dashboard-header">
+                    <div class="header-actions">
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
+                                <a href="/web" class="btn-back" title="Back to Odoo">
+                                    <i class="fa fa-arrow-left"></i>
+                                </a>
+                                <h1 style="margin: 0;">
+                                    <i class="fa fa-chart-line"></i>
+                                    Biometric Attendance Insights
+                                </h1>
+                            </div>
+                            <p style="margin-bottom: 15px;">Monitoring Period: <t t-esc="start_date"/> to <t t-esc="end_date"/></p>
+
+                            <!-- Date Range Filter -->
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                                <button class="btn-filter" data-range="today" onclick="applyDateRange('today')">
+                                    <i class="fa fa-calendar-day"></i> Today
+                                </button>
+                                <button class="btn-filter" data-range="week" onclick="applyDateRange('week')">
+                                    <i class="fa fa-calendar-week"></i> This Week
+                                </button>
+                                <button class="btn-filter active" data-range="month" onclick="applyDateRange('month')">
+                                    <i class="fa fa-calendar-alt"></i> This Month
+                                </button>
+                                <button class="btn-filter" data-range="year" onclick="applyDateRange('year')">
+                                    <i class="fa fa-calendar"></i> This Year
+                                </button>
+                                <button class="btn-filter" data-range="custom" onclick="toggleCustomRange()">
+                                    <i class="fa fa-calendar-plus"></i> Custom Range
+                                </button>
+                            </div>
+
+                            <!-- Custom Date Range Selector -->
+                            <div id="customRangeSelector" style="display: none; margin-top: 15px; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px;">
+                                <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                                    <div>
+                                        <label style="display: block; margin-bottom: 5px; font-size: 12px;">From Date</label>
+                                        <input type="date" id="startDate" class="date-input" style="padding: 8px; border-radius: 6px; border: none;"/>
+                                    </div>
+                                    <div>
+                                        <label style="display: block; margin-bottom: 5px; font-size: 12px;">To Date</label>
+                                        <input type="date" id="endDate" class="date-input" style="padding: 8px; border-radius: 6px; border: none;"/>
+                                    </div>
+                                    <button onclick="applyCustomRange()" style="background: white; color: #667eea; padding: 8px 20px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; margin-top: 20px;">
+                                        <i class="fa fa-check"></i> Apply
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <a href="/web#action=dotbd_hr_zk_attendance_suite.attendance_report_wizard_action" class="btn-download">
+                            <i class="fa fa-download"></i> Generate Report
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Attendance Issues Statistics -->
+                <h2 class="section-title">
+                    <i class="fa fa-exclamation-triangle" style="color: #ed8936;"></i>
+                    Attendance Issues Overview
+                </h2>
+                <div class="stats-grid">
+                    <div class="stat-card total">
+                        <i class="fa fa-exclamation-triangle stat-icon primary"></i>
+                        <div class="stat-value" t-esc="dashboard_data['summary']['total']">0</div>
+                        <div class="stat-label">Total Issues</div>
+                    </div>
+                    <div class="stat-card danger">
+                        <i class="fa fa-sign-out-alt stat-icon danger"></i>
+                        <div class="stat-value text-danger" t-esc="dashboard_data['summary']['missing_checkout']">0</div>
+                        <div class="stat-label">Missing Check-out</div>
+                    </div>
+                    <div class="stat-card warning">
+                        <i class="fa fa-copy stat-icon warning"></i>
+                        <div class="stat-value text-warning" t-esc="dashboard_data['summary']['duplicate_checkin']">0</div>
+                        <div class="stat-label">Duplicate Check-in</div>
+                    </div>
+                    <div class="stat-card info">
+                        <i class="fa fa-sign-in-alt stat-icon info"></i>
+                        <div class="stat-value text-info" t-esc="dashboard_data['summary']['missing_checkin']">0</div>
+                        <div class="stat-label">Missing Check-in</div>
+                    </div>
+                </div>
+
+                <!-- Attendance Summary -->
+                <t t-if="dashboard_data.get('attendance_stats')">
+                    <h2 class="section-title">
+                        <i class="fa fa-calendar-check" style="color: #48bb78;"></i>
+                        Attendance Summary
+                    </h2>
+                    <div class="stats-grid">
+                        <div class="stat-card success">
+                            <i class="fa fa-check-circle stat-icon success"></i>
+                            <div class="stat-value text-success" t-esc="dashboard_data['attendance_stats'].get('present_days', 0)">0</div>
+                            <div class="stat-label">Present Days</div>
+                        </div>
+                        <div class="stat-card danger">
+                            <i class="fa fa-times-circle stat-icon danger"></i>
+                            <div class="stat-value text-danger" t-esc="dashboard_data['attendance_stats'].get('absent_days', 0)">0</div>
+                            <div class="stat-label">Absent Days</div>
+                        </div>
+                        <div class="stat-card warning">
+                            <i class="fa fa-clock stat-icon warning"></i>
+                            <div class="stat-value text-warning" t-esc="dashboard_data['attendance_stats'].get('late_arrivals', 0)">0</div>
+                            <div class="stat-label">Late Arrivals</div>
+                        </div>
+                        <div class="stat-card" style="border-left-color: #f59e0b;">
+                            <i class="fa fa-umbrella-beach stat-icon" style="color: #f59e0b;"></i>
+                            <div class="stat-value" style="color: #f59e0b;" t-esc="dashboard_data['attendance_stats'].get('leave_days', 0)">0</div>
+                            <div class="stat-label">On Leave</div>
+                        </div>
+                        <div class="stat-card total">
+                            <i class="fa fa-user-clock stat-icon primary"></i>
+                            <div class="stat-value text-primary">
+                                <t t-esc="'{:.1f}'.format(dashboard_data['attendance_stats'].get('total_overtime', 0))"/>h
+                            </div>
+                            <div class="stat-label">Total Overtime</div>
+                        </div>
+                        <div class="stat-card info">
+                            <i class="fa fa-business-time stat-icon info"></i>
+                            <div class="stat-value text-info">
+                                <t t-esc="'{:.0f}'.format(dashboard_data['attendance_stats'].get('total_worked_hours', 0))"/>h
+                            </div>
+                            <div class="stat-label">Total Worked Hours</div>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- Charts -->
+                <h2 class="section-title">
+                    <i class="fa fa-chart-area" style="color: #667eea;"></i>
+                    Trend Analysis
+                </h2>
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h3>
+                            <i class="fa fa-chart-line" style="color: #667eea;"></i>
+                            Daily Issues Trend
+                        </h3>
+                        <canvas id="dailyTrendChart" style="max-height: 300px;"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3>
+                            <i class="fa fa-chart-pie" style="color: #667eea;"></i>
+                            Issues Distribution
+                        </h3>
+                        <canvas id="anomalyTypeChart" style="max-height: 300px;"></canvas>
+                    </div>
+                </div>
+
+                <!-- Employee Tables -->
+                <h2 class="section-title">
+                    <i class="fa fa-users" style="color: #667eea;"></i>
+                    Employee Details
+                </h2>
+                <div class="table-grid">
+                    <!-- Top Employees with Anomalies -->
+                    <div class="table-card">
+                        <div class="table-card-header">
+                            <h3>
+                                <i class="fa fa-trophy" style="color: #f56565;"></i>
+                                Top Employees with Issues
+                            </h3>
+                        </div>
+                        <div class="table-card-body">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Employee</th>
+                                        <th class="text-center">Total</th>
+                                        <th class="text-center">Missing Out</th>
+                                        <th class="text-center">Dup. In</th>
+                                        <th class="text-center">Missing In</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="dashboard_data['top_employees'][:10]" t-as="emp">
+                                        <tr>
+                                            <td>
+                                                <t t-if="emp.get('device_id_num')"><small style="color:#9ca3af;">[<t t-esc="emp['device_id_num']"/>]</small> </t>
+                                                <strong t-esc="emp['employee']"/>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge badge-primary" t-esc="emp['count']"/>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge badge-danger" t-if="emp['missing_checkout'] > 0" t-esc="emp['missing_checkout']"/>
+                                                <span t-else="" style="color: #a0aec0;">-</span>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge badge-warning" t-if="emp['duplicate_checkin'] > 0" t-esc="emp['duplicate_checkin']"/>
+                                                <span t-else="" style="color: #a0aec0;">-</span>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge badge-info" t-if="emp['missing_checkin'] > 0" t-esc="emp['missing_checkin']"/>
+                                                <span t-else="" style="color: #a0aec0;">-</span>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                    <t t-if="not dashboard_data['top_employees']">
+                                        <tr>
+                                            <td colspan="5">
+                                                <div class="empty-state">
+                                                    <i class="fa fa-check-circle"></i>
+                                                    <p>No anomalies found!</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Recent Anomalies -->
+                    <div class="table-card">
+                        <div class="table-card-header">
+                            <h3>
+                                <i class="fa fa-clock" style="color: #ed8936;"></i>
+                                Recent Issues
+                            </h3>
+                        </div>
+                        <div class="table-card-body">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Employee</th>
+                                        <th>Type</th>
+                                        <th class="text-center">In/Out</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="dashboard_data['recent_anomalies']" t-as="anomaly">
+                                        <tr>
+                                            <td><small t-esc="anomaly['date']"/></td>
+                                            <td>
+                                                <t t-if="anomaly.get('device_id_num')"><small style="color:#9ca3af;">[<t t-esc="anomaly['device_id_num']"/>]</small> </t>
+                                                <strong t-esc="anomaly['employee']"/>
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-danger" t-if="anomaly['type'] == 'Missing Check-out'" t-esc="anomaly['type']"/>
+                                                <span class="badge badge-warning" t-elif="anomaly['type'] == 'Duplicate Check-in'" t-esc="anomaly['type']"/>
+                                                <span class="badge badge-info" t-else="" t-esc="anomaly['type']"/>
+                                            </td>
+                                            <td class="text-center">
+                                                <small>
+                                                    <span style="color: #48bb78; font-weight: 600;" t-esc="anomaly['checkin_count']"/>
+                                                    <span>/</span>
+                                                    <span style="color: #f56565; font-weight: 600;" t-esc="anomaly['checkout_count']"/>
+                                                </small>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                    <t t-if="not dashboard_data['recent_anomalies']">
+                                        <tr>
+                                            <td colspan="4">
+                                                <div class="empty-state">
+                                                    <i class="fa fa-check-circle"></i>
+                                                    <p>No recent anomalies!</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Employee Attendance Lists -->
+                <h2 class="section-title">
+                    <i class="fa fa-user-check" style="color: #667eea;"></i>
+                    Employee Attendance Rankings
+                </h2>
+                <div class="table-grid" style="grid-template-columns: repeat(2, 1fr);">
+                    <!-- Top Present Employees -->
+                    <div class="table-card">
+                        <div class="table-card-header" style="background: #ecfdf5; border-bottom-color: #10b981;">
+                            <h3>
+                                <i class="fa fa-star" style="color: #10b981;"></i>
+                                Top Present Employees
+                            </h3>
+                        </div>
+                        <div class="table-card-body">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Rank</th>
+                                        <th>Employee</th>
+                                        <th class="text-center">Present Days</th>
+                                        <th class="text-center">Hours</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="dashboard_data['top_present']" t-as="emp">
+                                        <tr>
+                                            <td>
+                                                <span class="rank-badge" t-esc="emp_index + 1"/>
+                                            </td>
+                                            <td>
+                                                <t t-if="emp.get('device_id_num')"><small style="color:#9ca3af;">[<t t-esc="emp['device_id_num']"/>]</small> </t>
+                                                <strong t-esc="emp['employee_name']"/>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge badge-success" t-esc="emp['present_count']"/>
+                                            </td>
+                                            <td class="text-center">
+                                                <t t-esc="'{:.1f}'.format(emp['total_worked_hours'])"/>h
+                                            </td>
+                                        </tr>
+                                    </t>
+                                    <t t-if="not dashboard_data['top_present']">
+                                        <tr>
+                                            <td colspan="4">
+                                                <div class="empty-state">
+                                                    <i class="fa fa-info-circle"></i>
+                                                    <p>No data available</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Top Absent Employees -->
+                    <div class="table-card">
+                        <div class="table-card-header" style="background: #fef2f2; border-bottom-color: #ef4444;">
+                            <h3>
+                                <i class="fa fa-exclamation-circle" style="color: #ef4444;"></i>
+                                Top Absent Employees
+                            </h3>
+                        </div>
+                        <div class="table-card-body">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Rank</th>
+                                        <th>Employee</th>
+                                        <th class="text-center">Absent Days</th>
+                                        <th class="text-center">Present</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="dashboard_data['top_absent']" t-as="emp">
+                                        <tr>
+                                            <td>
+                                                <span class="rank-badge rank-warning" t-esc="emp_index + 1"/>
+                                            </td>
+                                            <td>
+                                                <t t-if="emp.get('device_id_num')"><small style="color:#9ca3af;">[<t t-esc="emp['device_id_num']"/>]</small> </t>
+                                                <strong t-esc="emp['employee_name']"/>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge badge-danger" t-esc="emp['absent_count']"/>
+                                            </td>
+                                            <td class="text-center">
+                                                <span t-esc="emp['present_count']"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                    <t t-if="not dashboard_data['top_absent']">
+                                        <tr>
+                                            <td colspan="4">
+                                                <div class="empty-state">
+                                                    <i class="fa fa-info-circle"></i>
+                                                    <p>No data available</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Top Late Employees -->
+                    <div class="table-card">
+                        <div class="table-card-header" style="background: #fef3c7; border-bottom-color: #f59e0b;">
+                            <h3>
+                                <i class="fa fa-clock" style="color: #f59e0b;"></i>
+                                Top Late Employees
+                            </h3>
+                        </div>
+                        <div class="table-card-body">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Rank</th>
+                                        <th>Employee</th>
+                                        <th class="text-center">Late Days</th>
+                                        <th class="text-center">On Time</th>
+                                        <th class="text-center">Total Days</th>
+                                        <th class="text-center">Late %</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="dashboard_data['top_late']" t-as="emp">
+                                        <tr>
+                                            <td>
+                                                <span class="rank-badge rank-warning" t-esc="emp_index + 1"/>
+                                            </td>
+                                            <td>
+                                                <t t-if="emp.get('device_id_num')"><small style="color:#9ca3af;">[<t t-esc="emp['device_id_num']"/>]</small> </t>
+                                                <strong t-esc="emp['employee_name']"/>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge badge-warning" t-esc="emp['late_count']"/>
+                                            </td>
+                                            <td class="text-center">
+                                                <span t-esc="emp['on_time_count']"/>
+                                            </td>
+                                            <td class="text-center">
+                                                <strong t-esc="emp['total_present_days']"/>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge" style="background: #f59e0b; color: white;">
+                                                    <t t-esc="'{:.1f}%'.format(emp['late_percentage'])"/>
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                    <t t-if="not dashboard_data['top_late']">
+                                        <tr>
+                                            <td colspan="6">
+                                                <div class="empty-state">
+                                                    <i class="fa fa-check-circle"></i>
+                                                    <p>No late arrivals!</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Top On-Time Employees -->
+                    <div class="table-card">
+                        <div class="table-card-header" style="background: #ede9fe; border-bottom-color: #8b5cf6;">
+                            <h3>
+                                <i class="fa fa-check-circle" style="color: #8b5cf6;"></i>
+                                Top On-Time Employees
+                            </h3>
+                        </div>
+                        <div class="table-card-body">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Rank</th>
+                                        <th>Employee</th>
+                                        <th class="text-center">On Time</th>
+                                        <th class="text-center">Late</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="dashboard_data['top_on_time']" t-as="emp">
+                                        <tr>
+                                            <td>
+                                                <span class="rank-badge rank-success" t-esc="emp_index + 1"/>
+                                            </td>
+                                            <td>
+                                                <t t-if="emp.get('device_id_num')"><small style="color:#9ca3af;">[<t t-esc="emp['device_id_num']"/>]</small> </t>
+                                                <strong t-esc="emp['employee_name']"/>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge" style="background: #8b5cf6; color: white;" t-esc="emp['on_time_count']"/>
+                                            </td>
+                                            <td class="text-center">
+                                                <span t-esc="emp['late_count']"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                    <t t-if="not dashboard_data['top_on_time']">
+                                        <tr>
+                                            <td colspan="4">
+                                                <div class="empty-state">
+                                                    <i class="fa fa-info-circle"></i>
+                                                    <p>No data available</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Late Check-in Analytics Section -->
+                <t t-if="dashboard_data.get('late_check_in_stats')">
+                    <h2 class="section-title">
+                        <i class="fa fa-user-clock" style="color: #f59e0b;"></i>
+                        Late Check-in Analytics
+                    </h2>
+
+                    <!-- Late Check-in Summary Stats -->
+                    <div class="stats-grid">
+                        <div class="stat-card" style="border-left-color: #f59e0b;">
+                            <i class="fa fa-exclamation-circle stat-icon" style="color: #f59e0b;"></i>
+                            <div class="stat-value" style="color: #f59e0b;" t-esc="dashboard_data['late_check_in_stats']['total_incidents']">0</div>
+                            <div class="stat-label">Total Late Incidents</div>
+                        </div>
+                        <div class="stat-card danger">
+                            <i class="fa fa-money-bill-wave stat-icon danger"></i>
+                            <div class="stat-value text-danger">
+                                <t t-esc="'{:,.0f}'.format(dashboard_data['late_check_in_stats']['total_penalty'])"/> ৳
+                            </div>
+                            <div class="stat-label">Total Penalty Amount</div>
+                        </div>
+                        <div class="stat-card warning">
+                            <i class="fa fa-clock stat-icon warning"></i>
+                            <div class="stat-value text-warning">
+                                <t t-esc="'{:.1f}'.format(dashboard_data['late_check_in_stats']['avg_late_minutes'])"/> min
+                            </div>
+                            <div class="stat-label">Avg Late Minutes</div>
+                        </div>
+                        <div class="stat-card info">
+                            <i class="fa fa-calculator stat-icon info"></i>
+                            <div class="stat-value text-info">
+                                <t t-esc="'{:,.0f}'.format(dashboard_data['late_check_in_stats']['avg_penalty'])"/> ৳
+                            </div>
+                            <div class="stat-label">Avg Penalty/Incident</div>
+                        </div>
+                    </div>
+
+                    <!-- Late Check-in Status Breakdown -->
+                    <div class="stats-grid">
+                        <div class="stat-card info">
+                            <i class="fa fa-file-alt stat-icon info"></i>
+                            <div class="stat-value text-info" t-esc="dashboard_data['late_check_in_stats']['draft']">0</div>
+                            <div class="stat-label">Draft (Pending)</div>
+                        </div>
+                        <div class="stat-card success">
+                            <i class="fa fa-check-circle stat-icon success"></i>
+                            <div class="stat-value text-success" t-esc="dashboard_data['late_check_in_stats']['approved']">0</div>
+                            <div class="stat-label">Approved</div>
+                        </div>
+                        <div class="stat-card danger">
+                            <i class="fa fa-times-circle stat-icon danger"></i>
+                            <div class="stat-value text-danger" t-esc="dashboard_data['late_check_in_stats']['refused']">0</div>
+                            <div class="stat-label">Refused</div>
+                        </div>
+                        <div class="stat-card" style="border-left-color: #6b7280;">
+                            <i class="fa fa-coins stat-icon" style="color: #6b7280;"></i>
+                            <div class="stat-value" style="color: #6b7280;" t-esc="dashboard_data['late_check_in_stats']['deducted']">0</div>
+                            <div class="stat-label">Deducted</div>
+                        </div>
+                    </div>
+
+                    <!-- Late Check-in Charts -->
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <h3>
+                                <i class="fa fa-chart-line" style="color: #f59e0b;"></i>
+                                Daily Late Check-in Trend
+                            </h3>
+                            <canvas id="lateTrendChart" style="max-height: 300px;"></canvas>
+                        </div>
+                        <div class="chart-card">
+                            <h3>
+                                <i class="fa fa-chart-bar" style="color: #f59e0b;"></i>
+                                Penalty Amount Trend
+                            </h3>
+                            <canvas id="penaltyTrendChart" style="max-height: 300px;"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Late Check-in Tables -->
+                    <div class="table-grid">
+                        <!-- Top Late Employees (by count) -->
+                        <div class="table-card">
+                            <div class="table-card-header" style="background: #fef3c7; border-bottom-color: #f59e0b;">
+                                <h3>
+                                    <i class="fa fa-trophy" style="color: #f59e0b;"></i>
+                                    Most Late Check-ins
+                                </h3>
+                            </div>
+                            <div class="table-card-body">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Rank</th>
+                                            <th>Employee</th>
+                                            <th class="text-center">Count</th>
+                                            <th class="text-center">Total Minutes</th>
+                                            <th class="text-center">Penalty</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="dashboard_data['top_late_employees']" t-as="emp">
+                                            <tr>
+                                                <td>
+                                                    <span class="rank-badge rank-warning" t-esc="emp_index + 1"/>
+                                                </td>
+                                                <td>
+                                                    <t t-if="emp.get('device_id_num')"><small style="color:#9ca3af;">[<t t-esc="emp['device_id_num']"/>]</small> </t>
+                                                    <strong t-esc="emp['employee_name']"/>
+                                                </td>
+                                                <td class="text-center">
+                                                    <span class="badge badge-warning" t-esc="emp['late_count']"/>
+                                                </td>
+                                                <td class="text-center">
+                                                    <t t-esc="'{:,.0f}'.format(emp['total_late_minutes'])"/> min
+                                                </td>
+                                                <td class="text-center">
+                                                    <t t-esc="'{:,.0f}'.format(emp['total_penalty'])"/> ৳
+                                                </td>
+                                            </tr>
+                                        </t>
+                                        <t t-if="not dashboard_data['top_late_employees']">
+                                            <tr>
+                                                <td colspan="5">
+                                                    <div class="empty-state">
+                                                        <i class="fa fa-check-circle"></i>
+                                                        <p>No late check-ins!</p>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Top Penalty Employees -->
+                        <div class="table-card">
+                            <div class="table-card-header" style="background: #fef2f2; border-bottom-color: #ef4444;">
+                                <h3>
+                                    <i class="fa fa-money-bill-wave" style="color: #ef4444;"></i>
+                                    Highest Penalties
+                                </h3>
+                            </div>
+                            <div class="table-card-body">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Rank</th>
+                                            <th>Employee</th>
+                                            <th class="text-center">Incidents</th>
+                                            <th class="text-center">Penalty Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="dashboard_data['top_penalty_employees']" t-as="emp">
+                                            <tr>
+                                                <td>
+                                                    <span class="rank-badge" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);" t-esc="emp_index + 1"/>
+                                                </td>
+                                                <td>
+                                                    <t t-if="emp.get('device_id_num')"><small style="color:#9ca3af;">[<t t-esc="emp['device_id_num']"/>]</small> </t>
+                                                    <strong t-esc="emp['employee_name']"/>
+                                                </td>
+                                                <td class="text-center">
+                                                    <span t-esc="emp['late_count']"/>
+                                                </td>
+                                                <td class="text-center">
+                                                    <span class="badge badge-danger">
+                                                        <t t-esc="'{:,.0f}'.format(emp['total_penalty'])"/> ৳
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                        <t t-if="not dashboard_data['top_penalty_employees']">
+                                            <tr>
+                                                <td colspan="4">
+                                                    <div class="empty-state">
+                                                        <i class="fa fa-check-circle"></i>
+                                                        <p>No penalties!</p>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Late Check-ins -->
+                    <div class="table-card">
+                        <div class="table-card-header">
+                            <h3>
+                                <i class="fa fa-history" style="color: #f59e0b;"></i>
+                                Recent Late Check-ins
+                            </h3>
+                        </div>
+                        <div class="table-card-body">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Employee</th>
+                                        <th class="text-center">Late Minutes (Counted)</th>
+                                        <th class="text-center">Actual Late</th>
+                                        <th class="text-center">Penalty</th>
+                                        <th class="text-center">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="dashboard_data['recent_late_records']" t-as="late">
+                                        <tr>
+                                            <td><small t-esc="late['date']"/></td>
+                                            <td>
+                                                <t t-if="late.get('device_id_num')"><small style="color:#9ca3af;">[<t t-esc="late['device_id_num']"/>]</small> </t>
+                                                <strong t-esc="late['employee']"/>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge badge-warning" t-esc="late['late_minutes']"/> min
+                                            </td>
+                                            <td class="text-center">
+                                                <t t-esc="late['actual_late_minutes']"/> min
+                                            </td>
+                                            <td class="text-center">
+                                                <strong><t t-esc="'{:,.0f}'.format(late['penalty_amount'])"/> ৳</strong>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge badge-info" t-if="late['state'] == 'draft'" t-esc="late['state_label']"/>
+                                                <span class="badge badge-success" t-elif="late['state'] == 'approved'" t-esc="late['state_label']"/>
+                                                <span class="badge badge-danger" t-elif="late['state'] == 'refused'" t-esc="late['state_label']"/>
+                                                <span class="badge" style="background: #6b7280; color: white;" t-else="" t-esc="late['state_label']"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                    <t t-if="not dashboard_data['recent_late_records']">
+                                        <tr>
+                                            <td colspan="6">
+                                                <div class="empty-state">
+                                                    <i class="fa fa-check-circle"></i>
+                                                    <p>No recent late check-ins!</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- Employee Time Off (Leave) List -->
+                <t t-if="dashboard_data.get('employee_leave_list')">
+                    <h2 class="section-title">
+                        <i class="fa fa-umbrella-beach" style="color: #f59e0b;"></i>
+                        Employee Time Off List
+                    </h2>
+
+                    <div class="card">
+                        <div class="table-responsive">
+                            <table class="table table-hover data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Employee Name</th>
+                                        <th class="text-center">Total Days Off</th>
+                                        <th class="text-center">Total Hours Off</th>
+                                        <th>Leave Dates</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="dashboard_data['employee_leave_list']" t-as="emp_leave">
+                                        <tr>
+                                            <td>
+                                                <t t-if="emp_leave.get('device_id_num')"><small style="color:#9ca3af;">[<t t-esc="emp_leave['device_id_num']"/>]</small> </t>
+                                                <strong t-esc="emp_leave['employee_name']"/>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge" style="background: #f59e0b; color: white;" t-esc="emp_leave['leave_days']"/>
+                                            </td>
+                                            <td class="text-center">
+                                                <t t-esc="'{:.1f}h'.format(emp_leave['leave_hours'])"/>
+                                            </td>
+                                            <td>
+                                                <t t-foreach="emp_leave['leave_dates'][:5]" t-as="leave_date">
+                                                    <span class="badge badge-info" style="margin: 2px;">
+                                                        <t t-esc="leave_date['date']"/> - <t t-esc="leave_date['leave_type']"/>
+                                                    </span>
+                                                </t>
+                                                <t t-if="len(emp_leave['leave_dates']) &gt; 5">
+                                                    <span class="badge badge-secondary" style="margin: 2px;">
+                                                        +<t t-esc="len(emp_leave['leave_dates']) - 5"/> more
+                                                    </span>
+                                                </t>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                    <t t-if="not dashboard_data['employee_leave_list']">
+                                        <tr>
+                                            <td colspan="4">
+                                                <div class="empty-state">
+                                                    <i class="fa fa-check-circle"></i>
+                                                    <p>No employees on leave in this period</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- Manual Attendance Tracking Section -->
+                <t t-if="dashboard_data.get('manual_attendance_stats')">
+                    <h2 class="section-title">
+                        <i class="fa fa-user-edit" style="color: #8b5cf6;"></i>
+                        Manual Attendance Entries
+                    </h2>
+
+                    <!-- Manual Attendance Summary Stats -->
+                    <div class="stats-grid">
+                        <div class="stat-card" style="border-left-color: #8b5cf6;">
+                            <i class="fa fa-hand-pointer stat-icon" style="color: #8b5cf6;"></i>
+                            <div class="stat-value" style="color: #8b5cf6;" t-esc="dashboard_data['manual_attendance_stats']['total_manual_entries']">0</div>
+                            <div class="stat-label">Total Manual Entries</div>
+                        </div>
+                        <div class="stat-card danger">
+                            <i class="fa fa-exclamation-triangle stat-icon danger"></i>
+                            <div class="stat-value text-danger" t-esc="dashboard_data['manual_attendance_stats']['manual_missing_checkout']">0</div>
+                            <div class="stat-label">Missing Check-outs</div>
+                        </div>
+                        <div class="stat-card warning">
+                            <i class="fa fa-clock stat-icon warning"></i>
+                            <div class="stat-value text-warning" t-esc="dashboard_data['manual_attendance_stats']['manual_invalid_time']">0</div>
+                            <div class="stat-label">Invalid Time Entries</div>
+                        </div>
+                    </div>
+
+                    <!-- Manual Attendance List -->
+                    <div class="card" style="margin-top: 20px;">
+                        <div class="table-responsive">
+                            <table class="table table-hover data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Employee</th>
+                                        <th>Check In</th>
+                                        <th>Check Out</th>
+                                        <th>Source</th>
+                                        <th class="text-center">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="dashboard_data['manual_attendance_list'][:20]" t-as="manual">
+                                        <tr>
+                                            <td><small t-esc="manual['date']"/></td>
+                                            <td>
+                                                <t t-if="manual.get('device_id_num')"><small style="color:#9ca3af;">[<t t-esc="manual['device_id_num']"/>]</small> </t>
+                                                <strong t-esc="manual['employee']"/>
+                                            </td>
+                                            <td><small t-esc="manual['check_in']"/></td>
+                                            <td><small t-esc="manual['check_out']"/></td>
+                                            <td>
+                                                <span class="badge" style="background: #8b5cf6; color: white;">
+                                                    <i class="fa fa-hand-pointer"/> <t t-esc="manual['source']"/>
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge badge-success" t-if="manual['anomaly_type'] == 'Normal'">Normal</span>
+                                                <span class="badge badge-danger" t-elif="manual['anomaly_type'] == 'Missing Check-out'">
+                                                    <i class="fa fa-exclamation-triangle"/> Missing Check-out
+                                                </span>
+                                                <span class="badge badge-warning" t-elif="manual['anomaly_type'] == 'Invalid Time'">
+                                                    <i class="fa fa-clock"/> Invalid Time
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                    <t t-if="not dashboard_data['manual_attendance_list']">
+                                        <tr>
+                                            <td colspan="6">
+                                                <div class="empty-state">
+                                                    <i class="fa fa-info-circle"></i>
+                                                    <p>No manual attendance entries in this period</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </t>
+            </div>
+
+            <!-- Chart.js Scripts -->
+            <script type="text/javascript">
+                document.addEventListener('DOMContentLoaded', function() {
+                    var dashboardData = <t t-out="json.dumps(dashboard_data)"/>;
+
+                    if (!dashboardData) {
+                        console.error('No dashboard data available');
+                        return;
+                    }
+
+                    // Daily Trend Chart
+                    var trendCtx = document.getElementById('dailyTrendChart');
+                    if (trendCtx) {
+                        if (dashboardData.daily_trend) {
+                            new Chart(trendCtx.getContext('2d'), {
+                                type: 'line',
+                                data: {
+                                    labels: dashboardData.daily_trend.map(function(d) { return d.date; }),
+                                    datasets: [{
+                                        label: 'Missing Check-out',
+                                        data: dashboardData.daily_trend.map(function(d) { return d.missing_checkout; }),
+                                        borderColor: '#f56565',
+                                        backgroundColor: 'rgba(245, 101, 101, 0.1)',
+                                        tension: 0.4,
+                                        fill: true
+                                    }, {
+                                        label: 'Duplicate Check-in',
+                                        data: dashboardData.daily_trend.map(function(d) { return d.duplicate_checkin; }),
+                                        borderColor: '#ed8936',
+                                        backgroundColor: 'rgba(237, 137, 54, 0.1)',
+                                        tension: 0.4,
+                                        fill: true
+                                    }, {
+                                        label: 'Missing Check-in',
+                                        data: dashboardData.daily_trend.map(function(d) { return d.missing_checkin; }),
+                                        borderColor: '#4299e1',
+                                        backgroundColor: 'rgba(66, 153, 225, 0.1)',
+                                        tension: 0.4,
+                                        fill: true
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: true,
+                                    plugins: {
+                                        legend: { position: 'bottom' },
+                                        tooltip: { mode: 'index', intersect: false }
+                                    },
+                                    scales: {
+                                        y: { beginAtZero: true, ticks: { precision: 0 } }
+                                    }
+                                }
+                            });
+                        }
+                    }
+
+                    // Pie Chart
+                    var pieCtx = document.getElementById('anomalyTypeChart');
+                    if (pieCtx) {
+                        if (dashboardData.summary) {
+                            new Chart(pieCtx.getContext('2d'), {
+                                type: 'doughnut',
+                                data: {
+                                    labels: ['Missing Check-out', 'Duplicate Check-in', 'Missing Check-in'],
+                                    datasets: [{
+                                        data: [
+                                            dashboardData.summary.missing_checkout,
+                                            dashboardData.summary.duplicate_checkin,
+                                            dashboardData.summary.missing_checkin
+                                        ],
+                                        backgroundColor: ['#f56565', '#ed8936', '#4299e1'],
+                                        borderWidth: 2,
+                                        borderColor: '#fff'
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: true,
+                                    plugins: {
+                                        legend: { position: 'bottom' }
+                                    }
+                                }
+                            });
+                        }
+                    }
+
+                    // ===== LATE CHECK-IN CHARTS =====
+                    // Late Check-in Trend Chart
+                    var lateTrendCtx = document.getElementById('lateTrendChart');
+                    if (lateTrendCtx &amp;&amp; dashboardData.late_daily_trend) {
+                        new Chart(lateTrendCtx.getContext('2d'), {
+                            type: 'line',
+                            data: {
+                                labels: dashboardData.late_daily_trend.map(function(d) { return d.date; }),
+                                datasets: [{
+                                    label: 'Late Incidents',
+                                    data: dashboardData.late_daily_trend.map(function(d) { return d.count; }),
+                                    borderColor: '#f59e0b',
+                                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                                    tension: 0.4,
+                                    fill: true,
+                                    yAxisID: 'y'
+                                }, {
+                                    label: 'Total Late Minutes',
+                                    data: dashboardData.late_daily_trend.map(function(d) { return d.total_minutes; }),
+                                    borderColor: '#ef4444',
+                                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                                    tension: 0.4,
+                                    fill: true,
+                                    yAxisID: 'y1'
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: true,
+                                interaction: {
+                                    mode: 'index',
+                                    intersect: false,
+                                },
+                                plugins: {
+                                    legend: { position: 'bottom' },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function(context) {
+                                                var label = context.dataset.label || '';
+                                                if (label) {
+                                                    label += ': ';
+                                                }
+                                                if (context.parsed.y !== null) {
+                                                    if (context.datasetIndex === 0) {
+                                                        label += context.parsed.y + ' incidents';
+                                                    } else {
+                                                        label += context.parsed.y + ' minutes';
+                                                    }
+                                                }
+                                                return label;
+                                            }
+                                        }
+                                    }
+                                },
+                                scales: {
+                                    y: {
+                                        type: 'linear',
+                                        display: true,
+                                        position: 'left',
+                                        beginAtZero: true,
+                                        ticks: { precision: 0 },
+                                        title: {
+                                            display: true,
+                                            text: 'Incidents'
+                                        }
+                                    },
+                                    y1: {
+                                        type: 'linear',
+                                        display: true,
+                                        position: 'right',
+                                        beginAtZero: true,
+                                        grid: {
+                                            drawOnChartArea: false,
+                                        },
+                                        title: {
+                                            display: true,
+                                            text: 'Minutes'
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    }
+
+                    // Penalty Trend Chart
+                    var penaltyTrendCtx = document.getElementById('penaltyTrendChart');
+                    if (penaltyTrendCtx &amp;&amp; dashboardData.late_daily_trend) {
+                        new Chart(penaltyTrendCtx.getContext('2d'), {
+                            type: 'bar',
+                            data: {
+                                labels: dashboardData.late_daily_trend.map(function(d) { return d.date; }),
+                                datasets: [{
+                                    label: 'Daily Penalty Amount (৳)',
+                                    data: dashboardData.late_daily_trend.map(function(d) { return d.total_penalty; }),
+                                    backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                                    borderColor: '#dc2626',
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: true,
+                                plugins: {
+                                    legend: { position: 'bottom' },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function(context) {
+                                                return 'Penalty: ৳' + context.parsed.y.toLocaleString();
+                                            }
+                                        }
+                                    }
+                                },
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        ticks: {
+                                            callback: function(value) {
+                                                return '৳' + value.toLocaleString();
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    }
+
+                    // ===== DATE RANGE FILTER FUNCTIONS =====
+                    // Set active button on page load based on current range
+                    setActiveButton();
+                });
+
+                function setActiveButton() {
+                    // Default to month if nothing specified
+                    const buttons = document.querySelectorAll('.btn-filter');
+                    buttons.forEach(btn => btn.classList.remove('active'));
+                    document.querySelector('.btn-filter[data-range="month"]').classList.add('active');
+                }
+
+                function toggleCustomRange() {
+                    const customSelector = document.getElementById('customRangeSelector');
+                    const isVisible = customSelector.style.display !== 'none';
+
+                    if (isVisible) {
+                        customSelector.style.display = 'none';
+                    } else {
+                        customSelector.style.display = 'block';
+                        // Set today's date as default
+                        const today = new Date().toISOString().split('T')[0];
+                        document.getElementById('endDate').value = today;
+
+                        // Set 30 days ago as start date
+                        const thirtyDaysAgo = new Date();
+                        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                        document.getElementById('startDate').value = thirtyDaysAgo.toISOString().split('T')[0];
+                    }
+
+                    // Update active button
+                    const buttons = document.querySelectorAll('.btn-filter');
+                    buttons.forEach(btn => btn.classList.remove('active'));
+                    document.querySelector('.btn-filter[data-range="custom"]').classList.add('active');
+                }
+
+                function applyDateRange(range) {
+                    const today = new Date();
+                    let startDate, endDate;
+
+                    switch(range) {
+                        case 'today':
+                            startDate = endDate = today.toISOString().split('T')[0];
+                            break;
+                        case 'week':
+                            const weekStart = new Date(today);
+                            weekStart.setDate(today.getDate() - today.getDay());
+                            startDate = weekStart.toISOString().split('T')[0];
+                            endDate = today.toISOString().split('T')[0];
+                            break;
+                        case 'month':
+                            startDate = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+                            endDate = today.toISOString().split('T')[0];
+                            break;
+                        case 'year':
+                            startDate = new Date(today.getFullYear(), 0, 1).toISOString().split('T')[0];
+                            endDate = today.toISOString().split('T')[0];
+                            break;
+                    }
+
+                    // Update active button
+                    const buttons = document.querySelectorAll('.btn-filter');
+                    buttons.forEach(btn => btn.classList.remove('active'));
+                    document.querySelector('.btn-filter[data-range="' + range + '"]').classList.add('active');
+
+                    // Hide custom range selector
+                    document.getElementById('customRangeSelector').style.display = 'none';
+
+                    // Reload page with new date range
+                    window.location.href = '/attendance/anomaly/dashboard?start_date=' + startDate + '&amp;end_date=' + endDate;
+                }
+
+                function applyCustomRange() {
+                    const startDate = document.getElementById('startDate').value;
+                    const endDate = document.getElementById('endDate').value;
+
+                    if (!startDate || !endDate) {
+                        alert('Please select both start and end dates');
+                        return;
+                    }
+
+                    if (startDate > endDate) {
+                        alert('Start date must be before end date');
+                        return;
+                    }
+
+                    // Reload page with new date range
+                    window.location.href = '/attendance/anomaly/dashboard?start_date=' + startDate + '&amp;end_date=' + endDate;
+                }
+            </script>
+        </t>
+    </template>
+</odoo>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         PAYSLIP GENERATOR WIZARD — Form View
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <record id="view_dotbd_payslip_generator_wizard_form" model="ir.ui.view">
+        <field name="name">dotbd.payslip.generator.wizard.form</field>
+        <field name="model">dotbd.payslip.generator.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Generate Payslips">
+                <group string="Payroll Period">
+                    <field name="month"/>
+                    <field name="year"/>
+                    <field name="batch_name" readonly="1" string="Batch Name"/>
+                </group>
+                <group string="Employee Filter">
+                    <field name="employee_ids" widget="many2many_tags"
+                           help="Leave empty to generate for all employees with an active salary."/>
+                    <field name="department_id"
+                           help="Filter by department when Employees field is empty."/>
+                </group>
+                <group string="Options">
+                    <field name="template_id"
+                           help="Leave empty to use each employee's assigned template."/>
+                    <field name="employee_count" readonly="1"
+                           string="Employees to Process"/>
+                </group>
+                <footer>
+                    <button name="action_generate" string="Generate Payslips"
+                            type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         PAYSLIP GENERATOR WIZARD — Action
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <record id="action_dotbd_payslip_generator_wizard" model="ir.actions.act_window">
+        <field name="name">Generate Payslips</field>
+        <field name="res_model">dotbd.payslip.generator.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         SALARY TEMPLATE — LIST VIEW
+    ═══════════════════════════════════════════════════════════════════ -->
+    <record id="dotbd_salary_template_view_list" model="ir.ui.view">
+        <field name="name">dotbd.salary.template.view.list</field>
+        <field name="model">dotbd.salary.template</field>
+        <field name="arch" type="xml">
+            <tree string="Salary Templates" decoration-muted="active == False">
+                <field name="name"/>
+                <field name="template_type" widget="badge"
+                       decoration-info="template_type in ('general', 'uae_gcc')"
+                       decoration-success="template_type in ('bd_private', 'bd_garments', 'bd_it', 'bd_ngo', 'india', 'malaysia', 'philippines', 'indonesia')"
+                       decoration-warning="template_type in ('bd_public', 'bd_bank', 'bd_healthcare', 'bd_education', 'pakistan', 'nepal')"
+                       decoration-muted="template_type == 'custom'"/>
+                <field name="working_days_per_month" string="Work Days/Mo" optional="show"/>
+                <field name="currency_id" optional="hide"/>
+                <field name="employee_count" string="Employees"/>
+                <field name="active" column_invisible="True"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         SALARY TEMPLATE — FORM VIEW
+    ═══════════════════════════════════════════════════════════════════ -->
+    <record id="dotbd_salary_template_view_form" model="ir.ui.view">
+        <field name="name">dotbd.salary.template.view.form</field>
+        <field name="model">dotbd.salary.template</field>
+        <field name="arch" type="xml">
+            <form string="Salary Template">
+                <header>
+                    <button name="action_view_employees"
+                            string="View Employees"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="employee_count == 0"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button"
+                                name="action_view_employees"
+                                type="object"
+                                icon="fa-users">
+                            <field name="employee_count"
+                                   widget="statinfo"
+                                   string="Employees"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon"
+                            title="Archived"
+                            bg_color="text-bg-danger"
+                            invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name"
+                                   placeholder="e.g. Standard Package"
+                                   style="width:100%"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="template_type"/>
+                            <field name="suitable_employee_type"/>
+                            <field name="suitable_category_ids"
+                                   widget="many2many_tags"
+                                   options="{'color_field': 'color'}"/>
+                            <field name="wage_type"
+                                   widget="radio"
+                                   options="{'horizontal': True}"/>
+                            <field name="working_days_per_month"
+                                   invisible="wage_type == 'hourly'"/>
+                            <field name="currency_id"
+                                   options="{'no_create': True}"/>
+                            <field name="company_id"
+                                   options="{'no_create': True}"
+                                   groups="base.group_multi_company"/>
+                        </group>
+                        <group>
+                            <field name="active" invisible="1"/>
+                            <!-- Wage type explanation -->
+                            <div class="text-muted" style="font-size:12px; line-height:1.6;">
+                                <p class="mb-0" invisible="wage_type != 'monthly'">
+                                    <b>Monthly:</b> Contract wage is the full monthly basic.
+                                    Allowances are calculated as % of this amount.
+                                </p>
+                                <p class="mb-0" invisible="wage_type != 'daily'">
+                                    <b>Daily:</b> Contract wage is the daily rate.
+                                    Basic = daily rate × days worked.
+                                    Allowances are % of earned basic.
+                                </p>
+                                <p class="mb-0" invisible="wage_type != 'hourly'">
+                                    <b>Hourly:</b> Contract wage is the hourly rate.
+                                    Basic = hourly rate × hours worked.
+                                    Allowances are % of earned basic.
+                                </p>
+                                <p class="mb-0" invisible="wage_type != 'fixed'">
+                                    <b>Fixed Contract:</b> Full contract amount paid
+                                    regardless of attendance. Absence fines skipped.
+                                </p>
+                            </div>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <!-- ── Salary Components Tab ── -->
+                        <page string="Salary Components" name="components">
+                            <field name="component_ids"
+                                   widget="one2many"
+                                   context="{'default_template_id': id}">
+                                <tree editable="bottom"
+                                      string="Components">
+                                    <field name="sequence"
+                                           widget="handle"/>
+                                    <field name="name"
+                                           placeholder="e.g. House Rent Allowance"/>
+                                    <field name="code"
+                                           placeholder="HRA"/>
+                                    <field name="component_type"/>
+                                    <field name="calculation_type"/>
+                                    <field name="percentage"
+                                           string="Percentage (%)"
+                                           invisible="calculation_type != 'percentage'"
+                                           optional="show"/>
+                                    <field name="fixed_amount"
+                                           string="Fixed Amount"
+                                           invisible="calculation_type != 'fixed'"
+                                           optional="show"/>
+                                    <field name="daily_amount"
+                                           string="Per Day Amount"
+                                           invisible="calculation_type != 'per_working_day'"
+                                           optional="show"/>
+                                    <field name="show_in_payslip"
+                                           string="Earning?"
+                                           invisible="calculation_type != 'per_working_day'"
+                                           optional="show"/>
+                                    <field name="currency_id"
+                                           column_invisible="True"/>
+                                    <field name="active"
+                                           optional="hide"/>
+                                </tree>
+                            </field>
+                            <div class="text-muted mt-2" style="font-size:13px;">
+                                <i class="fa fa-info-circle me-1" title="Info circle" aria-label="Info circle"/>
+                                Components are calculated in sequence order.
+                                Percentage components use the employee's basic wage as the base.
+                            </div>
+                        </page>
+
+                        <!-- ── Leave Rules Tab ── -->
+                        <page string="Leave Rules" name="leave_rules">
+                            <field name="leave_rule_ids"
+                                   widget="one2many"
+                                   context="{'default_template_id': id}">
+                                <tree editable="bottom"
+                                      string="Leave Rules">
+                                    <field name="sequence"
+                                           widget="handle"/>
+                                    <field name="name"
+                                           placeholder="e.g. Unpaid Leave Deduction"/>
+                                    <field name="leave_type_id"
+                                           placeholder="(catch-all if empty)"/>
+                                    <field name="rule_action"
+                                           widget="badge"
+                                           decoration-danger="rule_action == 'deduct'"
+                                           decoration-warning="rule_action == 'deduct_if_exceeded'"
+                                           decoration-success="rule_action == 'add'"
+                                           decoration-muted="rule_action == 'ignore'"/>
+                                    <field name="threshold_type"
+                                           invisible="rule_action != 'deduct_if_exceeded'"
+                                           optional="show"/>
+                                    <field name="monthly_threshold"
+                                           string="Free Days/Month"
+                                           invisible="rule_action != 'deduct_if_exceeded' or threshold_type != 'monthly_limit'"
+                                           optional="show"/>
+                                    <field name="amount_type"
+                                           invisible="rule_action == 'ignore'"/>
+                                    <field name="percentage"
+                                           string="Pct (%)"
+                                           invisible="amount_type != 'percentage_basic' or rule_action == 'ignore'"
+                                           optional="show"/>
+                                    <field name="fixed_amount"
+                                           invisible="amount_type not in ('fixed_per_day', 'fixed_total') or rule_action == 'ignore'"
+                                           optional="show"/>
+                                    <field name="rule_summary"
+                                           string="Summary"
+                                           optional="show"/>
+                                    <field name="currency_id"
+                                           column_invisible="True"/>
+                                    <field name="active"
+                                           optional="hide"/>
+                                </tree>
+                            </field>
+                            <div class="text-muted mt-2" style="font-size:13px;">
+                                <i class="fa fa-info-circle me-1" title="Info circle" aria-label="Info circle"/>
+                                Rules are applied top to bottom. Set <b>Ignore</b> for paid leaves (no salary effect).
+                                Leave the Leave Type blank to create a catch-all rule for any remaining leave days.
+                                Per-day amounts use <b>Working Days/Month</b> set above.
+                            </div>
+                        </page>
+
+                        <!-- ── Fine / Deduction Rules Tab ── -->
+                        <page string="Fine &amp; Deduction Rules" name="fine_rules">
+                            <field name="fine_rule_ids"
+                                   widget="one2many"
+                                   context="{'default_template_id': id}">
+                                <tree editable="bottom"
+                                      string="Fine Rules">
+                                    <field name="sequence"
+                                           widget="handle"/>
+                                    <field name="name"
+                                           placeholder="e.g. Late Arrival Fine"/>
+                                    <field name="rule_type"/>
+                                    <field name="amount"
+                                           string="Amount"/>
+                                    <field name="threshold_days"
+                                           string="Threshold (Days)"
+                                           invisible="rule_type != 'late_threshold'"
+                                           optional="show"/>
+                                    <field name="rule_type_description"
+                                           string="Summary"
+                                           optional="show"/>
+                                    <field name="currency_id"
+                                           column_invisible="True"/>
+                                    <field name="active"
+                                           optional="hide"/>
+                                </tree>
+                            </field>
+                            <div class="text-muted mt-2" style="font-size:13px;">
+                                <i class="fa fa-info-circle me-1" title="Info circle" aria-label="Info circle"/>
+                                All active rules are applied and listed separately on the payslip.
+                                Late and absent data comes from ZK attendance records.
+                            </div>
+                        </page>
+
+                        <!-- ── Notes Tab ── -->
+                        <page string="Notes" name="notes">
+                            <field name="note"
+                                   placeholder="Internal notes about this template..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         SALARY TEMPLATE — SEARCH VIEW
+    ═══════════════════════════════════════════════════════════════════ -->
+    <record id="dotbd_salary_template_view_search" model="ir.ui.view">
+        <field name="name">dotbd.salary.template.view.search</field>
+        <field name="model">dotbd.salary.template</field>
+        <field name="arch" type="xml">
+            <search string="Search Salary Templates">
+                <field name="name"/>
+                <field name="template_type"/>
+                <filter string="Active"
+                        name="active"
+                        domain="[('active', '=', True)]"/>
+                <filter string="Archived"
+                        name="archived"
+                        domain="[('active', '=', False)]"/>
+                <separator/>
+                <!-- Bangladesh sectors -->
+                <filter string="BD Private"
+                        name="bd_private"
+                        domain="[('template_type', '=', 'bd_private')]"/>
+                <filter string="BD Government"
+                        name="bd_public"
+                        domain="[('template_type', '=', 'bd_public')]"/>
+                <filter string="BD Garments"
+                        name="bd_garments"
+                        domain="[('template_type', '=', 'bd_garments')]"/>
+                <filter string="BD Banking"
+                        name="bd_bank"
+                        domain="[('template_type', '=', 'bd_bank')]"/>
+                <filter string="BD NGO"
+                        name="bd_ngo"
+                        domain="[('template_type', '=', 'bd_ngo')]"/>
+                <filter string="BD IT"
+                        name="bd_it"
+                        domain="[('template_type', '=', 'bd_it')]"/>
+                <filter string="BD Healthcare"
+                        name="bd_healthcare"
+                        domain="[('template_type', '=', 'bd_healthcare')]"/>
+                <filter string="BD Education"
+                        name="bd_education"
+                        domain="[('template_type', '=', 'bd_education')]"/>
+                <separator/>
+                <!-- International -->
+                <filter string="UAE / GCC"
+                        name="uae_gcc"
+                        domain="[('template_type', '=', 'uae_gcc')]"/>
+                <filter string="India"
+                        name="india"
+                        domain="[('template_type', '=', 'india')]"/>
+                <filter string="Pakistan"
+                        name="pakistan"
+                        domain="[('template_type', '=', 'pakistan')]"/>
+                <filter string="Nepal / Sri Lanka"
+                        name="nepal"
+                        domain="[('template_type', '=', 'nepal')]"/>
+                <filter string="Malaysia"
+                        name="malaysia"
+                        domain="[('template_type', '=', 'malaysia')]"/>
+                <filter string="Philippines"
+                        name="philippines"
+                        domain="[('template_type', '=', 'philippines')]"/>
+                <filter string="Indonesia"
+                        name="indonesia"
+                        domain="[('template_type', '=', 'indonesia')]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Type"
+                            name="group_type"
+                            context="{'group_by': 'template_type'}"/>
+                    <filter string="Currency"
+                            name="group_currency"
+                            context="{'group_by': 'currency_id'}"/>
+                    <filter string="Company"
+                            name="group_company"
+                            context="{'group_by': 'company_id'}"
+                            groups="base.group_multi_company"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         SALARY TEMPLATE — ACTION
+    ═══════════════════════════════════════════════════════════════════ -->
+    <record id="action_dotbd_salary_template" model="ir.actions.act_window">
+        <field name="name">Salary Templates</field>
+        <field name="res_model">dotbd.salary.template</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first salary template
+            </p>
+            <p>
+                Salary templates define the earnings, allowances, leave rules
+                and fine rules for a group of employees. Assign a template to
+                each employee and payslips are calculated automatically.
+            </p>
+        </field>
+    </record>
+
+</odoo>

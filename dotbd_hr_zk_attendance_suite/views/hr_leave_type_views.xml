@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Extend hr.leave.type form view to add leave code field -->
+        <record id="view_hr_leave_type_form_inherit" model="ir.ui.view">
+            <field name="name">hr.leave.type.form.inherit</field>
+            <field name="model">hr.leave.type</field>
+            <field name="inherit_id" ref="hr_holidays.edit_holiday_status_form"/>
+            <field name="arch" type="xml">
+                <!-- Add leave code field after name -->
+                <field name="name" position="after">
+                    <field name="leave_short_code"
+                           placeholder="e.g., SL, PL, CL"
+                           class="oe_inline"
+                           style="width: 120px;"/>
+                    <field name="leave_attendance_category"
+                           class="oe_inline"
+                           widget="radio"
+                           options="{'horizontal': true}"/>
+                </field>
+            </field>
+        </record>
+
+        <!-- Extend hr.leave.type tree view to show leave code -->
+        <record id="view_hr_leave_type_tree_inherit" model="ir.ui.view">
+            <field name="name">hr.leave.type.tree.inherit</field>
+            <field name="model">hr.leave.type</field>
+            <field name="inherit_id" ref="hr_holidays.view_holiday_status_normal_tree"/>
+            <field name="arch" type="xml">
+                <!-- Add leave code column after display_name -->
+                <field name="display_name" position="after">
+                    <field name="leave_short_code" string="Code" optional="show"/>
+                    <field name="leave_attendance_category" string="Category" optional="show"/>
+                    <field name="is_mandatory" string="Mandatory Day" optional="show"/>
+                </field>
+            </field>
+        </record>
+
+        <!-- Add help/info page for leave codes -->
+        <record id="view_hr_leave_type_form_inherit_help" model="ir.ui.view">
+            <field name="name">hr.leave.type.form.inherit.help</field>
+            <field name="model">hr.leave.type</field>
+            <field name="inherit_id" ref="view_hr_leave_type_form_inherit"/>
+            <field name="arch" type="xml">
+                <field name="leave_attendance_category" position="after">
+                    <field name="is_mandatory" class="oe_inline"/>
+                    <div class="alert alert-info" role="alert" style="margin-bottom: 0px; margin-top: 8px;">
+                        <p><strong><i class="fa fa-info-circle" title="Info circle" aria-label="Info circle"/> Leave Code &amp; Category Usage:</strong></p>
+                        <ul style="margin-bottom: 0px;">
+                            <li><strong>Leave Code:</strong> Short codes appear in attendance reports to distinguish leave types (2-5 characters)</li>
+                            <li><strong>Attendance Category:</strong> Determines how this leave affects attendance statistics
+                                <ul>
+                                    <li><strong>Absence:</strong> Counts as absence (e.g., Sick Leave, Unpaid Leave)</li>
+                                    <li><strong>Worked:</strong> Counts as worked time (e.g., Training Leave, Conference)</li>
+                                </ul>
+                            </li>
+                            <li><strong>Example Codes:</strong>
+                                <ul>
+                                    <li>SL = Sick Leave (Absence)</li>
+                                    <li>PL = Paid Time Off (Absence)</li>
+                                    <li>TL = Training Leave (Worked)</li>
+                                    <li>CL = Casual Leave (Absence)</li>
+                                </ul>
+                            </li>
+                            <li><strong>Reports:</strong> Attendance sheets show separate columns for worked leave and absence leave</li>
+                        </ul>
+                    </div>
+                </field>
+            </field>
+        </record>
+
+    </data>
+</odoo>

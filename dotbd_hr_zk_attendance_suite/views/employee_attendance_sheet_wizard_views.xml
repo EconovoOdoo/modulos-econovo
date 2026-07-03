@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Employee Attendance Sheet Wizard Form View -->
+    <record id="employee_attendance_sheet_wizard_form" model="ir.ui.view">
+        <field name="name">employee.attendance.sheet.wizard.form</field>
+        <field name="model">employee.attendance.sheet.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Generate Employee Attendance Sheet">
+                <!-- Date range (overrides Month/Year when both are set) -->
+                <group string="Date Range (From / To)">
+                    <group>
+                        <field name="start_date" placeholder="e.g. 2026-03-01"/>
+                        <field name="end_date" placeholder="e.g. 2026-03-31"/>
+                    </group>
+                    <group>
+                        <label for="month" string="Or: Month / Year"/>
+                        <div>
+                            <field name="month" class="oe_inline" style="width:auto"/>
+                            <field name="year" class="oe_inline" style="width:80px; margin-left:6px"/>
+                        </div>
+                        <span class="text-muted" style="font-size:11px">
+                            Leave empty if using From/To dates above
+                        </span>
+                    </group>
+                </group>
+
+                <group>
+                    <group>
+                        <field name="report_format" widget="radio"/>
+                        <field name="sheet_type" widget="radio"/>
+                    </group>
+                    <group>
+                        <field name="device_ids" widget="many2many_tags"
+                               placeholder="Leave empty for all devices"/>
+                    </group>
+                </group>
+
+                <group string="Filter by Department (Leave empty for all departments)">
+                    <field name="department_ids" widget="many2many_tags" nolabel="1"
+                           placeholder="Leave empty for all departments"/>
+                </group>
+
+                <group string="Select Employees (overrides Department filter)">
+                    <field name="employee_ids" widget="many2many_tags" nolabel="1"
+                           placeholder="Leave empty to use Department filter or include all employees"/>
+                </group>
+
+                <!-- Problem Employee Filter -->
+                <group string="Show only employees who have...">
+                    <group>
+                        <field name="filter_late"/>
+                        <field name="filter_absent"/>
+                        <field name="filter_leave"/>
+                    </group>
+                    <group>
+                        <div class="text-muted" style="font-size:11px; margin-top:4px">
+                            Tick one or more boxes to show only those employees in the
+                            calendar grid (late / absent / time-off days visible day by day).
+                            Tolerance is applied — grace-period arrivals show as Present, not Late.
+                            A "Problem Summary" sheet with severity labels is added automatically.
+                            Leave all unticked to show all employees.
+                        </div>
+                    </group>
+                </group>
+
+                <group string="Generated Report" invisible="file_data == False">
+                    <field name="file_data" filename="file_name" invisible="1"/>
+                    <field name="file_name" invisible="1"/>
+                    <div class="alert alert-success" role="alert" style="margin-bottom: 0px;">
+                        <i class="fa fa-check-circle" title="Check circle" aria-label="Check circle"/> Report generated successfully! Click the button below to download.
+                    </div>
+                </group>
+
+                <footer>
+                    <button name="action_generate_report"
+                            string="Generate Report"
+                            type="object"
+                            class="btn-primary"
+                            icon="fa-file-excel-o"/>
+                    <button name="action_batch_pdf_wizard"
+                            string="Batch PDF (150+ Employees)"
+                            type="object"
+                            class="btn-info"
+                            icon="fa-cubes"
+                            help="Generate PDFs in smaller batches for 150+ employees"/>
+                    <button string="Cancel"
+                            class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Employee Attendance Sheet Wizard Action -->
+    <record id="employee_attendance_sheet_wizard_action" model="ir.actions.act_window">
+        <field name="name">Employee Attendance Sheet</field>
+        <field name="res_model">employee.attendance.sheet.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="model_employee_attendance_sheet_wizard"/>
+    </record>
+
+    <!-- Add Menu Item under Attendance -->
+    <menuitem id="employee_attendance_sheet_menu"
+              name="Employee Attendance Sheet"
+              action="employee_attendance_sheet_wizard_action"
+              parent="hr_attendance.menu_hr_attendance_root"
+              groups="hr_attendance.group_hr_attendance_officer"
+              sequence="25"/>
+</odoo>

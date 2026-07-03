@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Old Device Location Map action REMOVED.
+         Device locations are now part of the unified Attendance Map.
+         See: biometric_device_attendance_menus.xml → menu_attendance_map
+    -->
+</odoo>

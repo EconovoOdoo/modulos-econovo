@@ -1,0 +1,449 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         DOTBD PAYSLIP — List View
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <record id="view_dotbd_payslip_list" model="ir.ui.view">
+        <field name="name">dotbd.payslip.list</field>
+        <field name="model">dotbd.payslip</field>
+        <field name="arch" type="xml">
+            <tree string="Payslips" decoration-muted="state == 'paid'"
+                  decoration-warning="state == 'draft'"
+                  decoration-success="state == 'confirmed'"
+                  decoration-info="state == 'partial'">
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="department_id" optional="show"/>
+                <field name="month_label"/>
+                <field name="date_from" optional="hide"/>
+                <field name="date_to" optional="hide"/>
+                <field name="basic_wage" optional="show"/>
+                <field name="gross_amount"/>
+                <field name="total_deductions"/>
+                <field name="net_amount" decoration-bf="1"/>
+                <field name="paid_amount" optional="show"/>
+                <field name="remaining_amount" optional="show"/>
+                <field name="attendance_days" optional="show"/>
+                <field name="absent_days" optional="show"/>
+                <field name="late_count" optional="show"/>
+                <field name="state" widget="badge"
+                       decoration-warning="state == 'draft'"
+                       decoration-success="state == 'confirmed'"
+                       decoration-danger="state == 'partial'"
+                       decoration-info="state == 'paid'"/>
+                <field name="currency_id" column_invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         DOTBD PAYSLIP — Form View
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <record id="view_dotbd_payslip_form" model="ir.ui.view">
+        <field name="name">dotbd.payslip.form</field>
+        <field name="model">dotbd.payslip</field>
+        <field name="arch" type="xml">
+            <form string="Payslip">
+                <header>
+                    <button name="action_confirm" string="Confirm"
+                            type="object" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_register_payment" string="Register Payment"
+                            type="object" class="btn-success"
+                            invisible="state not in ('confirmed', 'partial')"/>
+                    <button name="action_mark_paid" string="Mark as Fully Paid"
+                            type="object" class="btn-success"
+                            invisible="state not in ('confirmed', 'partial')"/>
+                    <button name="action_recalculate" string="Recalculate"
+                            type="object"
+                            invisible="state != 'draft'"/>
+                    <button name="action_export_excel" string="Export Excel"
+                            type="object" icon="fa-file-excel-o"/>
+                    <button name="action_print_payslip" string="Print PDF"
+                            type="object" icon="fa-print"/>
+                    <button name="action_send_email" string="Send by Email"
+                            type="object" icon="fa-envelope-o"
+                            invisible="state == 'draft'"/>
+                    <button name="action_reset_draft" string="Reset to Draft"
+                            type="object"
+                            invisible="state in ('draft', 'paid')"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,confirmed,partial,paid"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" name="action_view_payments"
+                                type="object" icon="fa-money"
+                                invisible="payment_count == 0">
+                            <field name="payment_count" widget="statinfo" string="Payments"/>
+                        </button>
+                        <button class="oe_stat_button" name="action_view_journal_entry"
+                                type="object" icon="fa-pencil-square-o"
+                                invisible="not has_accounting or not account_move_id">
+                            <span class="o_stat_text">Journal Entry</span>
+                        </button>
+                        <field name="has_accounting" invisible="1"/>
+                        <field name="account_move_id" invisible="1"/>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+
+                    <group>
+                        <group string="Employee">
+                            <field name="employee_id" readonly="state != 'draft'"/>
+                            <field name="department_id" readonly="1"/>
+                            <field name="job_id" optional="show" readonly="1"/>
+                            <field name="employee_type" readonly="1"
+                                   widget="badge"
+                                   decoration-info="employee_type == 'employee'"
+                                   decoration-warning="employee_type in ('student', 'freelance')"
+                                   decoration-danger="employee_type == 'daily_labour'"/>
+                            <field name="employee_category_ids"
+                                   readonly="1"
+                                   widget="many2many_tags"/>
+                            <field name="salary_id" readonly="state != 'draft'"/>
+                        </group>
+                        <group string="Period">
+                            <field name="month_label" readonly="1"/>
+                            <field name="date_from" readonly="state != 'draft'"/>
+                            <field name="date_to" readonly="state != 'draft'"/>
+                            <field name="batch_id" readonly="1" optional="show"/>
+                            <field name="journal_id"
+                                   invisible="not has_accounting"
+                                   options="{'no_create': True}"
+                                   placeholder="Use default from Settings"
+                                   readonly="state != 'draft'"/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <group string="Salary">
+                            <field name="wage_type" readonly="1"
+                                   widget="badge"
+                                   decoration-info="wage_type == 'monthly'"
+                                   decoration-success="wage_type == 'fixed'"
+                                   decoration-warning="wage_type in ('daily', 'hourly')"/>
+                            <label for="basic_wage"
+                                   string="Contract Rate (Daily)"
+                                   invisible="wage_type != 'daily'"/>
+                            <label for="basic_wage"
+                                   string="Contract Rate (Hourly)"
+                                   invisible="wage_type != 'hourly'"/>
+                            <label for="basic_wage"
+                                   string="Basic Wage (Monthly)"
+                                   invisible="wage_type not in ('monthly', 'fixed', False)"/>
+                            <field name="basic_wage" readonly="1" nolabel="1"/>
+                            <field name="gross_amount" readonly="1"/>
+                            <field name="total_deductions" readonly="1"/>
+                            <field name="net_amount" readonly="1"
+                                   class="fw-bold text-success"/>
+                            <field name="currency_id" groups="base.group_multi_currency"/>
+                        </group>
+                        <group string="Payment Status">
+                            <field name="paid_amount" readonly="1"/>
+                            <field name="remaining_amount" readonly="1"
+                                   class="fw-bold"
+                                   decoration-danger="remaining_amount &gt; 0"
+                                   decoration-success="remaining_amount == 0"/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <group string="Attendance Summary">
+                            <field name="manual_override"
+                                   widget="boolean_toggle"
+                                   readonly="state != 'draft'"/>
+                            <field name="total_working_days"
+                                   readonly="state != 'draft' or not manual_override"/>
+                            <field name="attendance_days"
+                                   readonly="state != 'draft' or not manual_override"/>
+                            <field name="absent_days"
+                                   readonly="state != 'draft' or not manual_override"/>
+                            <field name="late_count"
+                                   readonly="state != 'draft' or not manual_override"/>
+                            <field name="total_late_minutes"
+                                   readonly="state != 'draft' or not manual_override"/>
+                            <field name="leave_days"
+                                   readonly="state != 'draft' or not manual_override"/>
+                            <field name="time_off_days"
+                                   readonly="state != 'draft' or not manual_override"/>
+                            <field name="public_holiday_count"
+                                   readonly="state != 'draft' or not manual_override"/>
+                            <field name="worked_hours"
+                                   readonly="state != 'draft' or not manual_override"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Earnings" name="earnings">
+                            <field name="earning_line_ids" readonly="state != 'draft'">
+                                <tree editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="code" optional="show"/>
+                                    <field name="note" optional="show"/>
+                                    <field name="amount"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                    <field name="line_type" column_invisible="1"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Deductions" name="deductions">
+                            <field name="deduction_line_ids" readonly="state != 'draft'">
+                                <tree editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="code" optional="show"/>
+                                    <field name="note" optional="show"/>
+                                    <field name="amount"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                    <field name="line_type" column_invisible="1"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="All Lines" name="all_lines">
+                            <field name="line_ids" readonly="state != 'draft'">
+                                <tree>
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="line_type" widget="badge"
+                                           decoration-success="line_type == 'earning'"
+                                           decoration-danger="line_type == 'deduction'"/>
+                                    <field name="name"/>
+                                    <field name="code" optional="show"/>
+                                    <field name="note" optional="show"/>
+                                    <field name="amount"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Payments" name="payments"
+                              invisible="state == 'draft'">
+                            <field name="payment_ids">
+                                <tree editable="bottom">
+                                    <field name="payment_date"/>
+                                    <field name="amount"/>
+                                    <field name="payment_method"/>
+                                    <field name="reference"/>
+                                    <field name="note" optional="show"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         DOTBD PAYSLIP — Search View
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <record id="view_dotbd_payslip_search" model="ir.ui.view">
+        <field name="name">dotbd.payslip.search</field>
+        <field name="model">dotbd.payslip</field>
+        <field name="arch" type="xml">
+            <search string="Search Payslips">
+                <field name="employee_id"/>
+                <field name="month_label"/>
+                <field name="department_id"/>
+                <field name="batch_id"/>
+                <filter name="draft" string="Draft" domain="[('state','=','draft')]"/>
+                <filter name="confirmed" string="Confirmed" domain="[('state','=','confirmed')]"/>
+                <filter name="partial" string="Partially Paid" domain="[('state','=','partial')]"/>
+                <filter name="paid" string="Paid" domain="[('state','=','paid')]"/>
+                <separator/>
+                <filter name="this_month" string="This Month"
+                        domain="[('date_from','&gt;=', (context_today()).strftime('%Y-%m-01')),
+                                 ('date_from','&lt;=', context_today().strftime('%Y-%m-') + str(context_today().day))]"/>
+                <separator/>
+                <filter string="Regular Employees"
+                        name="type_employee"
+                        domain="[('employee_type', '=', 'employee')]"/>
+                <filter string="Daily Labour"
+                        name="type_daily_labour"
+                        domain="[('employee_type', '=', 'daily_labour')]"/>
+                <filter string="Students / Interns"
+                        name="type_student"
+                        domain="[('employee_type', '=', 'student')]"/>
+                <filter string="Freelancers"
+                        name="type_freelance"
+                        domain="[('employee_type', '=', 'freelance')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_employee" string="Employee"
+                            context="{'group_by': 'employee_id'}"/>
+                    <filter name="group_department" string="Department"
+                            context="{'group_by': 'department_id'}"/>
+                    <filter name="group_month" string="Month"
+                            context="{'group_by': 'month_label'}"/>
+                    <filter name="group_batch" string="Batch"
+                            context="{'group_by': 'batch_id'}"/>
+                    <filter name="group_state" string="Status"
+                            context="{'group_by': 'state'}"/>
+                    <filter name="group_employee_type" string="Employee Type"
+                            context="{'group_by': 'employee_type'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         DOTBD PAYSLIP — Action
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <record id="action_dotbd_payslip" model="ir.actions.act_window">
+        <field name="name">Payslips</field>
+        <field name="res_model">dotbd.payslip</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_dotbd_payslip_search"/>
+        <field name="context">{'search_default_draft': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No payslips yet!
+            </p>
+            <p>
+                Use the <b>Generate Payslips</b> button to create monthly payslips
+                for your employees.
+            </p>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         DOTBD PAYSLIP BATCH — List View
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <record id="view_dotbd_payslip_batch_list" model="ir.ui.view">
+        <field name="name">dotbd.payslip.batch.list</field>
+        <field name="model">dotbd.payslip.batch</field>
+        <field name="arch" type="xml">
+            <tree string="Payslip Batches"
+                  decoration-muted="state == 'paid'"
+                  decoration-success="state == 'confirmed'">
+                <field name="name"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="employee_count"/>
+                <field name="total_gross"/>
+                <field name="total_deductions"/>
+                <field name="total_net" decoration-bf="1"/>
+                <field name="state" widget="badge"
+                       decoration-warning="state == 'draft'"
+                       decoration-success="state == 'confirmed'"
+                       decoration-info="state == 'paid'"/>
+                <field name="currency_id" column_invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         DOTBD PAYSLIP BATCH — Form View
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <record id="view_dotbd_payslip_batch_form" model="ir.ui.view">
+        <field name="name">dotbd.payslip.batch.form</field>
+        <field name="model">dotbd.payslip.batch</field>
+        <field name="arch" type="xml">
+            <form string="Payslip Batch">
+                <header>
+                    <button name="action_confirm" string="Confirm All"
+                            type="object" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_mark_paid" string="Mark All Paid"
+                            type="object" class="btn-success"
+                            invisible="state != 'confirmed'"/>
+                    <button name="action_export_excel" string="Export Excel"
+                            type="object" icon="fa-file-excel-o"/>
+                    <button name="action_reset_draft" string="Reset to Draft"
+                            type="object"
+                            invisible="state == 'draft' or state == 'paid'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,confirmed,paid"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+
+                    <group>
+                        <group string="Period">
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                        </group>
+                        <group string="Summary">
+                            <field name="employee_count"/>
+                            <field name="total_gross"/>
+                            <field name="total_deductions"/>
+                            <field name="total_net" class="fw-bold text-success"/>
+                            <field name="currency_id" groups="base.group_multi_currency"/>
+                        </group>
+                    </group>
+
+                    <field name="payslip_ids">
+                        <tree>
+                            <field name="name"/>
+                            <field name="employee_id"/>
+                            <field name="department_id"/>
+                            <field name="basic_wage"/>
+                            <field name="gross_amount"/>
+                            <field name="total_deductions"/>
+                            <field name="net_amount" decoration-bf="1"/>
+                            <field name="attendance_days" optional="show"/>
+                            <field name="absent_days" optional="show"/>
+                            <field name="state" widget="badge"
+                                   decoration-warning="state == 'draft'"
+                                   decoration-success="state == 'confirmed'"
+                                   decoration-info="state == 'paid'"/>
+                            <field name="currency_id" column_invisible="1"/>
+                        </tree>
+                    </field>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         DOTBD PAYSLIP BATCH — Search View
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <record id="view_dotbd_payslip_batch_search" model="ir.ui.view">
+        <field name="name">dotbd.payslip.batch.search</field>
+        <field name="model">dotbd.payslip.batch</field>
+        <field name="arch" type="xml">
+            <search string="Search Batches">
+                <field name="name"/>
+                <filter name="draft" string="Draft" domain="[('state','=','draft')]"/>
+                <filter name="confirmed" string="Confirmed" domain="[('state','=','confirmed')]"/>
+                <filter name="paid" string="Paid" domain="[('state','=','paid')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_state" string="Status"
+                            context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         DOTBD PAYSLIP BATCH — Action
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <record id="action_dotbd_payslip_batch" model="ir.actions.act_window">
+        <field name="name">Payslip Batches</field>
+        <field name="res_model">dotbd.payslip.batch</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_dotbd_payslip_batch_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No payslip batches yet!
+            </p>
+            <p>
+                Use <b>Generate Payslips</b> to create a monthly batch.
+            </p>
+        </field>
+    </record>
+
+</odoo>

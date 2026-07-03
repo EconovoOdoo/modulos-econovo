@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- ── Form View ──────────────────────────────────────────────────────── -->
+    <record id="dotbd_monthly_statement_form" model="ir.ui.view">
+        <field name="name">dotbd.monthly.statement.form</field>
+        <field name="model">dotbd.monthly.statement</field>
+        <field name="arch" type="xml">
+            <form string="Monthly Employee Statement">
+
+                <!-- Period -->
+                <group string="Period">
+                    <group>
+                        <label for="month" string="Month / Year"/>
+                        <div>
+                            <field name="month" class="oe_inline" style="width:auto"/>
+                            <field name="year" class="oe_inline" style="width:80px; margin-left:6px"/>
+                        </div>
+                        <span class="text-muted" style="font-size:11px;">
+                            Or use a custom date range below (overrides Month / Year)
+                        </span>
+                    </group>
+                    <group>
+                        <field name="date_from" placeholder="e.g. 2026-05-10"/>
+                        <field name="date_to" placeholder="e.g. 2026-05-25"/>
+                        <span class="text-muted" style="font-size:11px;">
+                            Leave empty to use Month / Year
+                        </span>
+                    </group>
+                </group>
+
+                <!-- Native Payroll Toggle — shown prominently before loading -->
+                <group string="Payroll Data Source">
+                    <field name="native_payroll_available" invisible="1"/>
+                    <group>
+                        <field name="use_native_payroll"
+                               widget="boolean_toggle"
+                               string="Auto-fill from Native Odoo Payroll"
+                               invisible="not native_payroll_available"/>
+                        <div class="alert alert-success py-2 px-3 mb-0" style="font-size:0.85em;" role="status"
+                             invisible="not native_payroll_available or not use_native_payroll">
+                            <i class="fa fa-check-circle text-success" title="Success"/>
+                            <strong>Native payroll ON.</strong>
+                            When you click Load Employees, all salary fields (Wage, Housing,
+                            Transport, Advance, Deductions, Bonus) will be <strong>auto-filled</strong>
+                            from Odoo payroll — confirmed payslips first, then contract/salary rules.
+                            You can still edit any value before printing.
+                        </div>
+                        <div class="alert alert-secondary py-2 px-3 mb-0" style="font-size:0.85em;" role="status"
+                             invisible="not native_payroll_available or use_native_payroll">
+                            <i class="fa fa-info-circle" title="Info"/>
+                            Native payroll is installed but <strong>OFF</strong>.
+                            Toggle ON to auto-fill salary from hr.payslip / hr.contract.
+                            When OFF, fields auto-fill from our own salary template system.
+                        </div>
+                        <div class="alert alert-warning py-2 px-3 mb-0" style="font-size:0.85em;" role="status"
+                             invisible="native_payroll_available">
+                            <i class="fa fa-exclamation-triangle" title="Warning"/>
+                            Native Odoo payroll (<code>hr_payroll</code>) is not installed.
+                            Salary data will be read from our own salary assignment system.
+                            Fill fields manually if no salary assignments exist.
+                        </div>
+                    </group>
+                </group>
+
+                <!-- Employee Selection -->
+                <group string="Step 1 — Select Employees">
+                    <field name="employee_ids" widget="many2many_tags"
+                           nolabel="1"
+                           placeholder="Select specific employees — OR leave empty and use Load All below"/>
+                    <div style="margin-top:6px;">
+                        <button name="action_load_selected"
+                                string="Load Selected"
+                                type="object"
+                                class="btn-secondary btn-sm"
+                                icon="fa-users"
+                                help="Load lines for the employees selected above"/>
+                        <span style="margin:0 8px; color:#888;">or</span>
+                        <button name="action_load_all"
+                                string="Load All Employees"
+                                type="object"
+                                class="btn-secondary btn-sm"
+                                icon="fa-users"
+                                help="Load all active employees"/>
+                    </div>
+                </group>
+
+                <!-- Generate Payslips — visible when native payroll is ON -->
+                <div invisible="not use_native_payroll or not native_payroll_available"
+                     style="margin-bottom:10px; padding:10px 12px; border-radius:4px; background:#e3f2fd; border-left:4px solid #1565c0;">
+                    <div style="font-size:0.9em; margin-bottom:8px;">
+                        <i class="fa fa-bolt" title="Bolt" aria-label="Bolt" style="color:#1565c0;"/>
+                        <strong>Auto-Generate Payslips</strong> — click the button below to create and compute
+                        payslips for all loaded employees in one step. No need to go to the Payroll module first.
+                        Payslips will be created, computed, and salary data will load automatically.
+                    </div>
+                    <button name="action_generate_native_payslips"
+                            string="Generate &amp; Compute All Payslips"
+                            type="object"
+                            class="btn-primary"
+                            icon="fa-cogs"
+                            help="Creates and computes hr.payslip for every loaded employee for the selected period. Salary data (Basic, HRA, Conveyance, Deductions etc.) fills automatically from the computed payslips. Run this once per period then print statements."/>
+                    <span class="text-muted" style="font-size:0.82em; margin-left:8px; vertical-align:middle;">
+                        Run once per period — then click Print Statements directly.
+                    </span>
+                </div>
+
+                <!-- ════════════════════════════════════════════════════════
+                     STEP 2  — Salary computation display changes based on
+                     whether native Odoo payroll is enabled:
+                       ON  → salary rule names exactly as shown in payslip
+                             computation tab (Basic Salary, HRA, Conveyance…)
+                       OFF → default fixed column names
+                     Same logic applies to the printed PDF.
+                     ════════════════════════════════════════════════════════ -->
+                <div class="o_horizontal_separator mt-3 mb-2">STEP 2 — REVIEW &amp; ADJUST FINANCIAL DETAILS</div>
+
+                <!-- ── NATIVE PAYROLL ON ── -->
+                <div invisible="not use_native_payroll or not native_payroll_available">
+
+                    <div style="padding:10px 12px; border-radius:4px; background:#e8f5e9; border-left:4px solid #2e7d32; margin-bottom:10px; font-size:0.85em;" role="status">
+                        <i class="fa fa-check-circle" style="color:#2e7d32;" title="Success"/>
+                        <strong>Native Odoo Payroll is ON.</strong>
+                        Salary data (Basic Salary, HRA, Conveyance, Deductions, Bonus, etc.) is loaded directly from
+                        payslips in <strong>Payroll → Payslips</strong>.
+                    </div>
+
+                    <field name="employee_line_ids" nolabel="1">
+                        <tree create="0" delete="1" edit="0" no_open="1">
+                            <field name="sequence" widget="handle"/>
+                            <field name="employee_id"/>
+                            <field name="department"/>
+                            <field name="payslip_state" string="Payslip State"
+                                   widget="badge"
+                                   decoration-success="payslip_state in ('done','paid')"
+                                   decoration-warning="payslip_state == 'waiting'"
+                                   decoration-info="payslip_state == 'draft'"
+                                   decoration-danger="payslip_state == 'none'"/>
+                            <field name="wage" string="Basic Salary"/>
+                            <field name="advance_amount" string="Advance Deduction"/>
+                            <field name="deduction_amount" string="Other Deductions"/>
+                            <field name="housing_deduction" string="Housing Allowance"/>
+                            <field name="transport_allowance" string="Conveyance Allowance"/>
+                            <field name="bonus_amount" string="Bonus / Other Allow."/>
+                        </tree>
+                    </field>
+                </div>
+
+                <!-- ── NATIVE PAYROLL OFF: default fixed-column editable table ── -->
+                <div invisible="use_native_payroll or not employee_line_ids">
+                    <div style="padding:8px 10px; border-radius:4px; background:#fff3cd; border-left:4px solid #f59e0b; margin-bottom:8px; font-size:0.85em;">
+                        <i class="fa fa-pencil" title="Pencil" aria-label="Pencil"/>
+                        Fill in the financial details for each employee.
+                        Leave as 0 if not applicable. Gross salary is <strong>never</strong> printed.
+                    </div>
+                    <field name="employee_line_ids" nolabel="1">
+                        <tree editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="employee_id" readonly="1"/>
+                            <field name="department" readonly="1"/>
+                            <field name="wage" string="Basic Salary"/>
+                            <field name="housing_deduction" string="Housing Allowance"/>
+                            <field name="transport_allowance" string="Conveyance Allowance"/>
+                            <field name="bonus_amount" string="Bonus / Other Allow."/>
+                            <field name="advance_amount" string="Advance Deduction"/>
+                            <field name="deduction_amount" string="Other Deductions"/>
+                            <field name="has_rule_lines" column_invisible="True"/>
+                        </tree>
+                    </field>
+                </div>
+
+                <!-- Show if no employees loaded yet -->
+                <div invisible="employee_line_ids"
+                     style="padding:16px; text-align:center; color:#888; font-size:0.9em; border:1px dashed #ccc; border-radius:4px; margin:8px 0;">
+                    <i class="fa fa-arrow-up" title="Arrow up" aria-label="Arrow up"/> No employees loaded yet.
+                    Use <strong>Load Selected</strong> or <strong>Load All Employees</strong> above.
+                </div>
+
+                <!-- Language Option -->
+                <group string="Print Language">
+                    <field name="print_in_arabic"/>
+                </group>
+
+                <!-- Our own payroll system advanced options (shown when native OFF) -->
+                <group string="Advanced Payroll Options"
+                       invisible="use_native_payroll">
+                    <field name="auto_fill_from_wage"
+                           string="Auto-fill from Our Salary Templates"
+                           help="When ON, loads wage and allowance amounts from our own salary template system when employees are loaded."/>
+                    <field name="auto_create_payslip"/>
+                    <field name="include_payslip_in_print"
+                           invisible="not auto_create_payslip"/>
+                    <div invisible="not auto_create_payslip" style="margin-top:6px;">
+                        <button name="action_reload_from_payroll"
+                                string="Reload from Our Payslips"
+                                type="object"
+                                class="btn-secondary btn-sm"
+                                icon="fa-refresh"
+                                help="Finds or generates dotbd payslips and fills financial fields."/>
+                    </div>
+                </group>
+
+
+                <div class="alert alert-info" role="alert" style="margin-top:6px;">
+                    <i class="fa fa-info-circle" title="Info"/>
+                    The PDF will contain <strong>one page per employee</strong>, ordered as the rows above.
+                    Each page shows: daily check-in/check-out times · required hours (243) ·
+                    actual hours (249.7) · advance (200) · deductions/allowances · signature line.
+                </div>
+
+                <!-- PDF Print Filter -->
+                <group string="PDF Print Filter — who to include">
+                    <group>
+                        <field name="pdf_include_mode" widget="radio"/>
+                        <field name="pdf_batch_size"/>
+                        <div style="font-size:0.8em; color:#888;">
+                            <i class="fa fa-info-circle" title="Info circle" aria-label="Info circle"/>
+                            The PDF is rendered in batches of this size and merged —
+                            prevents wkhtmltopdf crashing on large runs. Recommended: 20.
+                        </div>
+                    </group>
+                    <group>
+                        <div invisible="pdf_include_mode == 'all'">
+                            <strong style="font-size:0.85em;">Include payslip states:</strong><br/>
+                            <field name="pdf_filter_done" class="oe_inline"/>
+                            <label for="pdf_filter_done" string=" Done"/> &#160;&#160;
+                            <field name="pdf_filter_paid" class="oe_inline"/>
+                            <label for="pdf_filter_paid" string=" Paid"/> &#160;&#160;
+                            <field name="pdf_filter_waiting" class="oe_inline"/>
+                            <label for="pdf_filter_waiting" string=" Waiting"/> &#160;&#160;
+                            <field name="pdf_filter_draft" class="oe_inline"/>
+                            <label for="pdf_filter_draft" string=" Draft"/>
+                            <div style="font-size:0.8em; color:#888; margin-top:4px;">
+                                <i class="fa fa-info-circle" title="Info circle" aria-label="Info circle"/>
+                                Employees with no payslip are excluded when
+                                <em>payslip created only</em> is selected.
+                            </div>
+                        </div>
+                    </group>
+                </group>
+
+                <footer>
+                    <button name="action_print_pdf"
+                            string="Print Statements"
+                            type="object"
+                            class="btn-primary"
+                            icon="fa-print"/>
+                    <!-- Hidden for now: "Paid" requires a reconcilable credit account
+                         on the NET salary rule, which many installs don't configure.
+                         The normal Print Statements button now moves payslips to Done. -->
+                    <button name="action_print_pdf_paid_all"
+                            string="Print Statements (Paid All)"
+                            type="object"
+                            class="btn-primary"
+                            icon="fa-money"
+                            invisible="1"
+                            confirm="This will mark ALL linked payslips as PAID in Payroll, then download the PDF. Continue?"
+                            help="Marks every linked native payslip as Paid (verify → done → paid) before printing. Use only when payments are finalised."/>
+                    <button string="Cancel"
+                            class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+
+            </form>
+        </field>
+    </record>
+
+    <!-- ── Window Action ─────────────────────────────────────────────────── -->
+    <record id="dotbd_monthly_statement_action" model="ir.actions.act_window">
+        <field name="name">Monthly Employee Statement</field>
+        <field name="res_model">dotbd.monthly.statement</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- ── Report Action (QWeb PDF) ──────────────────────────────────────── -->
+    <record id="dotbd_monthly_statement_report" model="ir.actions.report">
+        <field name="name">Monthly Employee Statement</field>
+        <field name="model">dotbd.monthly.statement</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">dotbd_hr_zk_attendance_suite.dotbd_monthly_statement_pdf_template</field>
+        <field name="report_file">dotbd_hr_zk_attendance_suite.dotbd_monthly_statement_pdf_template</field>
+        <field name="print_report_name">'Monthly_Statement_%s_%s' % (object.month, object.year)</field>
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+    </record>
+
+    <!-- ── Menu Item (under Attendance root) ─────────────────────────────── -->
+    <menuitem id="dotbd_monthly_statement_menu"
+              name="Monthly Employee Statement"
+              action="dotbd_monthly_statement_action"
+              parent="hr_attendance.menu_hr_attendance_root"
+              groups="hr_attendance.group_hr_attendance_officer"
+              sequence="26"/>
+
+</odoo>

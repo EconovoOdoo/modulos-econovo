@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Server action: bulk auto-close at shift end (for Open Attendance list) -->
+    <record id="action_hr_attendance_auto_close_shift_end" model="ir.actions.server">
+        <field name="name">Auto-Close at Shift End</field>
+        <field name="model_id" ref="hr_attendance.model_hr_attendance"/>
+        <field name="binding_model_id" ref="hr_attendance.model_hr_attendance"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="state">code</field>
+        <field name="code">action = records.action_auto_close_at_shift_end()</field>
+    </record>
+
+    <!-- Dedicated list view for open (missing check-out) attendance records -->
+    <record id="view_attendance_open_list" model="ir.ui.view">
+        <field name="name">hr.attendance.open.list</field>
+        <field name="model">hr.attendance</field>
+        <field name="arch" type="xml">
+            <tree string="Open Attendance (Missing Check-Out)" create="false">
+                <field name="employee_id"/>
+                <field name="check_in"/>
+                <field name="late_check_in" string="Late (min)" optional="show"/>
+                <field name="attendance_source" optional="show"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_hr_attendance_open" model="ir.actions.act_window">
+        <field name="name">Open Attendance (No Check-Out)</field>
+        <field name="res_model">hr.attendance</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_attendance_open_list"/>
+        <field name="domain">[('check_out', '=', False)]</field>
+        <field name="context">{'search_default_group_by_employee': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No stuck open attendance records — well done!</p>
+            <p>This view lists check-ins that never got a matching check-out.
+               Select rows and use <b>Actions → Auto-Close at Shift End</b> to close them
+               using each employee's work schedule (or fallback window).</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_hr_attendance_open"
+              name="Open Attendance (No Check-Out)"
+              parent="hr_attendance.menu_hr_attendance_root"
+              action="action_hr_attendance_open"
+              sequence="90"/>
+
+    <!--Add late check-in fields in hr.attendance list view-->
+    <record id="view_attendance_tree" model="ir.ui.view">
+        <field name="name">hr.attendance.view.list.inherit.hr.zk.attendance</field>
+        <field name="model">hr.attendance</field>
+        <field name="inherit_id" ref="hr_attendance.view_attendance_tree"/>
+        <field name="arch" type="xml">
+            <!-- Safety-net: expose auto_punch_out so stale column_invisible
+                 expressions from uninstalled modules don't crash the JS renderer -->
+            <field name="employee_id" position="before">
+                <field name="auto_punch_out" column_invisible="1"/>
+            </field>
+            <field name="check_out" position="after">
+                <!-- Source badge — colored icon showing ZK/Mobile/Web/Manual -->
+                <field name="attendance_source_icon" string="Source" optional="show" widget="html"/>
+                <field name="attendance_source" string="Source (filter)" optional="show"
+                       widget="badge" decoration-info="attendance_source == 'biometric'"
+                       decoration-success="attendance_source == 'mobile_app'"
+                       decoration-warning="attendance_source == 'web'"
+                       decoration-muted="attendance_source == 'manual'"/>
+
+                <!-- Actual late time (without tolerance) -->
+                <field name="late_check_in" string="Actual Late (min)" optional="hide"/>
+
+                <!-- Counted late time (after tolerance) -->
+                <field name="tolerance_late_time" string="Counted Late (min)" optional="show"/>
+
+                <!-- Within tolerance indicator -->
+                <field name="is_within_tolerance" string="Within Tolerance" optional="show"/>
+
+                <!-- Distance from nearest device -->
+                <field name="checkin_distance" string="Distance (m)" optional="hide"
+                       decoration-danger="checkin_distance > 500"
+                       decoration-warning="checkin_distance > 200 and checkin_distance &lt;= 500"
+                       decoration-success="checkin_distance &lt;= 200"/>
+
+                <!-- GPS Location indicators -->
+                <field name="has_checkin_location" string="📍 Check-in GPS" optional="hide"/>
+                <field name="has_checkout_location" string="📍 Check-out GPS" optional="hide"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Search view: add filters by attendance source, GPS, distance -->
+    <record id="view_attendance_search_inherit" model="ir.ui.view">
+        <field name="name">hr.attendance.view.search.inherit.hr.zk.attendance</field>
+        <field name="model">hr.attendance</field>
+        <field name="inherit_id" ref="hr_attendance.hr_attendance_view_filter"/>
+        <field name="arch" type="xml">
+            <search position="inside">
+                <separator/>
+                <filter name="filter_biometric" string="🔐 ZK Device"
+                        domain="[('attendance_source', '=', 'biometric')]"/>
+                <filter name="filter_mobile_app" string="📱 Mobile App"
+                        domain="[('attendance_source', '=', 'mobile_app')]"/>
+                <filter name="filter_web" string="🌐 Web"
+                        domain="[('attendance_source', '=', 'web')]"/>
+                <filter name="filter_manual" string="✏️ Manual"
+                        domain="[('attendance_source', '=', 'manual')]"/>
+                <separator/>
+                <filter name="filter_has_gps" string="📍 Has GPS"
+                        domain="['|', ('has_checkin_location', '=', True), ('has_checkout_location', '=', True)]"/>
+                <filter name="filter_no_gps" string="⚠️ No GPS"
+                        domain="[('has_checkin_location', '=', False), ('has_checkout_location', '=', False)]"/>
+                <separator/>
+                <filter name="filter_far_away" string="📏 Far from Office (>500m)"
+                        domain="[('checkin_distance', '>', 500)]"/>
+                <group expand="0" string="Group By">
+                    <filter name="groupby_source" string="Source"
+                            context="{'group_by': 'attendance_source'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Inherit attendance form view to add extra ZK/GPS fields after check_out_group -->
+    <record id="view_attendance_form_gps" model="ir.ui.view">
+        <field name="name">hr.attendance.view.form.inherit.gps</field>
+        <field name="model">hr.attendance</field>
+        <field name="inherit_id" ref="hr_attendance.hr_attendance_view_form"/>
+        <field name="arch" type="xml">
+            <!-- Odoo 17 has no named check_out_group — append inside the outer sheet group -->
+            <xpath expr="//form/sheet/group" position="inside">
+                <separator string="Attendance Source &amp; Distance"/>
+                <group colspan="2">
+                    <group>
+                        <field name="attendance_source_icon" string="Source" widget="html"/>
+                        <field name="attendance_source"/>
+                        <field name="checkin_distance" string="Distance from Office (m)"
+                               widget="integer"/>
+                    </group>
+                    <group>
+                        <field name="has_checkin_location" invisible="1"/>
+                        <field name="has_checkout_location" invisible="1"/>
+                        <div class="alert alert-success" role="alert"
+                             invisible="not has_checkin_location"
+                             style="margin-bottom:0;">
+                            <i class="fa fa-map-marker" title="Map marker" aria-label="Map marker"/> Check-in GPS recorded
+                        </div>
+                        <div class="alert alert-warning" role="alert"
+                             invisible="has_checkin_location"
+                             style="margin-bottom:0;">
+                            <i class="fa fa-exclamation-triangle" title="Exclamation triangle" aria-label="Exclamation triangle"/> No GPS data for check-in.
+                        </div>
+                        <div class="alert alert-success" role="alert"
+                             invisible="not has_checkout_location"
+                             style="margin-bottom:0;">
+                            <i class="fa fa-map-marker" title="Map marker" aria-label="Map marker"/> Check-out GPS recorded
+                        </div>
+                        <div class="alert alert-warning" role="alert"
+                             invisible="has_checkout_location"
+                             style="margin-bottom:0;">
+                            <i class="fa fa-exclamation-triangle" title="Exclamation triangle" aria-label="Exclamation triangle"/> No GPS data for check-out.
+                        </div>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>
