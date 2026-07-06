@@ -1045,7 +1045,7 @@ def _build_summary_sheet(ws, cs, cur, usd,
         row += 1  # blank separator
 
     # ── Byproducts by Category section ──────────────────────────────────────
-    bp_categories = cs.get("byproduct_categories", [])
+    bp_categories = cs.get("byproductCategories", [])
     if bp_categories:
         _write_section_header(ws, row, "▶  Byproducts by Category", col_count)
         row += 1
@@ -1471,7 +1471,14 @@ class BomCostSummaryXlsxController(http.Controller):
         report_model = request.env[
             "report.econovo_mrp_bom_cost_summary.report_cost_summary"
         ]
-        cost_summary = report_model._compute_cost_summary(bom_lines, secondary)
+        # Reuse the summary computed server-side and attached by
+        # ReportBomStructure._get_report_data (single source of truth shared
+        # with the interactive UI and the PDF). Fall back only if missing.
+        cost_summary = bom_lines.get("cost_summary")
+        if cost_summary is None:
+            cost_summary = report_model._compute_cost_summary(
+                bom_lines, secondary
+            )
         if not cost_summary:
             return request.make_response(
                 "No cost data available for this BOM.", status=204

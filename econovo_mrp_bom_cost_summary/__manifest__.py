@@ -1,6 +1,6 @@
 {
     'name': 'Econovo MRP BOM Cost Summary',
-    'version': '17.0.1.1.0',
+    'version': '17.0.1.2.0',
     'category': 'Manufacturing',
     'summary': 'Collapsible cost breakdown summary in BOM Overview report',
     'description': """

@@ -456,6 +456,15 @@ export function enrichByproductProdCostPct(nodes, totalProdCost) {
  * @returns {Object|false} The costSummary object, or false if nothing to show
  */
 export function computeCostSummary(data, secondaryCurrency) {
+    // Single source of truth: when the server has already computed the cost
+    // summary (attached to the BOM tree root by ReportBomStructure.
+    // _get_report_data), consume it directly so the interactive UI, the PDF
+    // and the Excel export always display identical figures.  The client-side
+    // aggregation below is kept as a fallback for consumers whose server data
+    // does not carry a precomputed summary (e.g. the MO Overview reuse).
+    if (data && "cost_summary" in data) {
+        return data.cost_summary;
+    }
     const categoryMap = {};
     const workcenterMap = {};
     const byproductCategoryMap = {};

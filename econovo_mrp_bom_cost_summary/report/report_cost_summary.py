@@ -62,9 +62,15 @@ class ReportEconovoBomCostSummary(models.AbstractModel):
                 )
                 bom_lines = raw.get("lines", {})
                 secondary = raw.get("secondary_currency", False)
-                cost_summary = self._compute_cost_summary(
-                    bom_lines, secondary
-                )
+                # Reuse the summary computed server-side and attached by
+                # ReportBomStructure._get_report_data (single source of truth
+                # shared with the interactive UI). Fall back to an on-the-fly
+                # computation only if it is missing.
+                cost_summary = bom_lines.get("cost_summary")
+                if cost_summary is None:
+                    cost_summary = self._compute_cost_summary(
+                        bom_lines, secondary
+                    )
                 docs.append(
                     {
                         "bom": bom,
@@ -138,8 +144,13 @@ class ReportEconovoBomCostSummary(models.AbstractModel):
         # Gross BoM = all costs before byproduct deduction.
         total_bom = total_components + total_operations + total_subcontracting
         net_bom = total_bom - total_byproducts
-        total_prod = total_prod_cost + total_operations
-        net_prod = total_prod - total_byproducts_prod_cost
+        # Product Cost (grand total) = standard_price of the FINISHED product
+        # (native Odoo BOM Overview semantics), NOT the rolled-up material cost.
+        # Mirrors ``rootProdCost`` in bom_cost_summary_utils.js so the UI, PDF
+        # and Excel all display the same figure.
+        root_prod_cost = data.get("prod_cost") or 0.0
+        total_prod = root_prod_cost
+        net_prod = root_prod_cost - total_byproducts_prod_cost
 
         self._enrich_category_tree(categories, rate, total_components)
         # bom_cost-based % for byproducts (0 when cost_share=0).
@@ -180,7 +191,7 @@ class ReportEconovoBomCostSummary(models.AbstractModel):
         return {
             "categories": categories,
             "workcenters": workcenters,
-            "byproduct_categories": byproduct_categories,
+            "byproductCategories": byproduct_categories,
             "subcontracting": subcontracting,
             "totals": {
                 "components": total_components,
@@ -215,14 +226,96 @@ class ReportEconovoBomCostSummary(models.AbstractModel):
         }
 
     @api.model
+    def _add_component_entry(
+        self, category_map, comp, bom_cost, prod_cost,
+        parent_name, parent_product_id, parent_route_info,
+    ):
+        """Insert or merge a component entry into the category map.
+
+        Shared by leaf components and sub-BOM-level prod_cost entries.
+        Mirrors ``_addComponentEntry`` in bom_cost_summary_utils.js.
+        """
+        cat_id = comp.get("categ_id") or 0
+        cat_name = comp.get("categ_name") or _("Uncategorized")
+        if cat_id not in category_map:
+            category_map[cat_id] = {
+                "id": cat_id,
+                "name": cat_name,
+                "total": 0.0,
+                "prod_cost_total": 0.0,
+                "products": {},
+                "ancestors": comp.get("categ_ancestors")
+                or [{"id": cat_id, "name": cat_name}],
+            }
+        cat = category_map[cat_id]
+        cat["total"] += bom_cost
+        cat["prod_cost_total"] += prod_cost
+
+        prod_id = comp.get("product_id")
+        if prod_id not in cat["products"]:
+            cat["products"][prod_id] = {
+                "product_id": prod_id,
+                "name": comp.get("name", ""),
+                "link_id": comp.get("link_id") or prod_id,
+                "link_model": comp.get("link_model", "product.product"),
+                "total": 0.0,
+                "prod_cost_total": 0.0,
+                "usages": [],
+                # Availability: stock levels for this component product.
+                # All usages share the same stock data, captured once.
+                "quantity_available": comp.get("quantity_available", False),
+                "quantity_on_hand": comp.get("quantity_on_hand", False),
+                "availability_state": comp.get("availability_state") or False,
+                "availability_display": comp.get("availability_display") or "",
+            }
+        product = cat["products"][prod_id]
+        product["total"] += bom_cost
+        product["prod_cost_total"] += prod_cost
+
+        existing_usage = next(
+            (
+                u for u in product["usages"]
+                if u["parent_product_id"] == parent_product_id
+            ),
+            None,
+        )
+        if existing_usage:
+            existing_usage["quantity"] += comp.get("quantity") or 0.0
+            existing_usage["total"] += bom_cost
+            existing_usage["prod_cost"] += prod_cost
+        else:
+            product["usages"].append({
+                "parent_product_id": parent_product_id,
+                "parent_name": parent_name,
+                "quantity": comp.get("quantity") or 0.0,
+                "uom_name": comp.get("uom_name", ""),
+                "total": bom_cost,
+                "prod_cost": prod_cost,
+                "lead_time": comp.get("lead_time", False),
+                "route_name": comp.get("route_name", ""),
+                "route_detail": comp.get("route_detail", ""),
+                "route_type": comp.get("route_type", ""),
+                "bom_id": comp.get("bom_id", False),
+                "parent_route_name": parent_route_info["route_name"],
+                "parent_route_detail": parent_route_info["route_detail"],
+                "parent_route_type": parent_route_info["route_type"],
+                "parent_bom_id": parent_route_info["bom_id"],
+            })
+
+    @api.model
     def _collect_costs(
         self, node, category_map, workcenter_map, ancestor_cost_share=1.0,
         byproduct_category_map=None, subcontracting_map=None,
+        skip_prod_cost=False,
     ):
         """
         Recursively walk the BOM tree collecting leaf component, operation,
         byproduct, and subcontracting costs.
         Mirrors ``collectCosts`` in bom_cost_summary_utils.js.
+
+        :param bool skip_prod_cost: True when recursing inside a sub-BOM;
+            prevents double-counting the sub-BOM's own prod_cost in the leaf
+            entries (native Odoo Product Cost semantics).
         """
         parent_name = node.get("name", "")
         parent_product_id = node.get("product_id")
@@ -237,6 +330,14 @@ class ReportEconovoBomCostSummary(models.AbstractModel):
         if node_cost_share is None:
             node_cost_share = 1.0
         effective_cost_share = ancestor_cost_share * node_cost_share
+
+        # Build a component->operation lookup for this BOM level so each
+        # operation item can carry its own components (expandable rows in the
+        # UI).  Mirrors ``compsByOpId`` in bom_cost_summary_utils.js.
+        comps_by_op_id = {}
+        for comp in node.get("components", []):
+            op_id = comp.get("operation_id") or None
+            comps_by_op_id.setdefault(op_id, []).append(comp)
 
         # Collect operations at this BOM level
         for op in node.get("operations", []):
@@ -258,6 +359,7 @@ class ReportEconovoBomCostSummary(models.AbstractModel):
                 {
                     "name": op.get("operation_name") or op.get("name", ""),
                     "link_id": op.get("link_id", False),
+                    "link_model": "mrp.routing.workcenter",
                     "duration": op_duration,
                     "total": adjusted_cost,
                     "parent_name": parent_name,
@@ -268,6 +370,8 @@ class ReportEconovoBomCostSummary(models.AbstractModel):
                     "route_type": node.get("route_type", ""),
                     "bom_id": node.get("bom_id", False),
                     "parent_qty": node.get("quantity") or 1,
+                    "parent_uom_name": node.get("uom_name", ""),
+                    "components": comps_by_op_id.get(op.get("link_id"), []),
                 }
             )
 
@@ -367,87 +471,42 @@ class ReportEconovoBomCostSummary(models.AbstractModel):
                         }
                     )
 
-        # Process components
+        # Process components.
+        #
+        # BoM Cost  -> always recurse to collect real manufacturing costs from
+        #              leaves, scaled by the effective cost_share of this level.
+        # Product Cost -> native Odoo semantics (mirrors JS ``collectCosts``):
+        #   * Direct leaf component: use its own prod_cost (standard_price x qty).
+        #   * Sub-BOM component: add ONE entry for the sub-product using its own
+        #     prod_cost, then recurse with skip_prod_cost=True so the internal
+        #     leaves contribute bom_cost only.
         for comp in node.get("components", []):
             if comp.get("type") == "bom" and comp.get("components"):
-                # Sub-BOM: recurse
+                # Sub-BOM: capture prod_cost at this level (native semantics).
+                if not skip_prod_cost:
+                    self._add_component_entry(
+                        category_map, comp,
+                        0.0,  # bom_cost comes from the recursed leaves below
+                        comp.get("prod_cost") or 0.0,
+                        parent_name, parent_product_id, parent_route_info,
+                    )
+                # Recurse for the full BoM Cost breakdown; skip prod_cost to
+                # avoid double-counting the sub-BOM's standard_price.
                 self._collect_costs(
                     comp, category_map, workcenter_map, effective_cost_share,
                     byproduct_category_map=byproduct_category_map,
                     subcontracting_map=subcontracting_map,
+                    skip_prod_cost=True,
                 )
             else:
-                # Leaf component
-                cat_id = comp.get("categ_id") or 0
-                cat_name = comp.get("categ_name") or _("Uncategorized")
-                if cat_id not in category_map:
-                    category_map[cat_id] = {
-                        "id": cat_id,
-                        "name": cat_name,
-                        "total": 0.0,
-                        "prod_cost_total": 0.0,
-                        "products": {},
-                        "ancestors": comp.get("categ_ancestors")
-                        or [{"id": cat_id, "name": cat_name}],
-                    }
-                adjusted_cost = (
-                    (comp.get("bom_cost") or 0.0) * effective_cost_share
+                # Leaf component: bom_cost scaled by cost_share; prod_cost
+                # native (unscaled), 0 when inside a sub-BOM.
+                self._add_component_entry(
+                    category_map, comp,
+                    (comp.get("bom_cost") or 0.0) * effective_cost_share,
+                    0.0 if skip_prod_cost else (comp.get("prod_cost") or 0.0),
+                    parent_name, parent_product_id, parent_route_info,
                 )
-                adjusted_prod_cost = (
-                    (comp.get("prod_cost") or 0.0) * effective_cost_share
-                )
-                cat = category_map[cat_id]
-                cat["total"] += adjusted_cost
-                cat["prod_cost_total"] += adjusted_prod_cost
-
-                prod_id = comp.get("product_id")
-                if prod_id not in cat["products"]:
-                    cat["products"][prod_id] = {
-                        "product_id": prod_id,
-                        "name": comp.get("name", ""),
-                        "link_id": comp.get("link_id") or prod_id,
-                        "link_model": comp.get("link_model", "product.product"),
-                        "total": 0.0,
-                        "prod_cost_total": 0.0,
-                        "usages": [],
-                    }
-                product = cat["products"][prod_id]
-                product["total"] += adjusted_cost
-                product["prod_cost_total"] += adjusted_prod_cost
-
-                # Aggregate usages by parent product
-                existing_usage = next(
-                    (
-                        u
-                        for u in product["usages"]
-                        if u["parent_product_id"] == parent_product_id
-                    ),
-                    None,
-                )
-                if existing_usage:
-                    existing_usage["quantity"] += comp.get("quantity") or 0.0
-                    existing_usage["total"] += adjusted_cost
-                    existing_usage["prod_cost"] += adjusted_prod_cost
-                else:
-                    product["usages"].append(
-                        {
-                            "parent_product_id": parent_product_id,
-                            "parent_name": parent_name,
-                            "quantity": comp.get("quantity") or 0.0,
-                            "uom_name": comp.get("uom_name", ""),
-                            "total": adjusted_cost,
-                            "prod_cost": adjusted_prod_cost,
-                            "lead_time": comp.get("lead_time", False),
-                            "route_name": comp.get("route_name", ""),
-                            "route_detail": comp.get("route_detail", ""),
-                            "route_type": comp.get("route_type", ""),
-                            "bom_id": comp.get("bom_id", False),
-                            "parent_route_name": parent_route_info["route_name"],
-                            "parent_route_detail": parent_route_info["route_detail"],
-                            "parent_route_type": parent_route_info["route_type"],
-                            "parent_bom_id": parent_route_info["bom_id"],
-                        }
-                    )
 
     @api.model
     def _build_category_tree(self, category_map):

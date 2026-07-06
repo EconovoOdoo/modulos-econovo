@@ -1,4 +1,8 @@
+import logging
+
 from odoo import _, api, fields, models
+
+_logger = logging.getLogger(__name__)
 
 
 class ReportBomStructure(models.AbstractModel):
@@ -46,6 +50,24 @@ class ReportBomStructure(models.AbstractModel):
                 'rate': rate,
             }
         res['secondary_currency'] = secondary_currency
+        # Single source of truth: compute the cost summary server-side and
+        # attach it to the lines tree so the interactive UI (get_html), the PDF
+        # and the Excel export all consume the exact same aggregation instead
+        # of each recomputing it (which caused UI/Excel figures to drift).
+        # Guarded so a computation error degrades gracefully (the section is
+        # hidden) rather than breaking the whole BOM Overview screen; the
+        # dedicated PDF/Excel exports call _compute_cost_summary directly and
+        # therefore still surface any real error.
+        if res.get('lines'):
+            try:
+                res['lines']['cost_summary'] = self.env[
+                    'report.econovo_mrp_bom_cost_summary.report_cost_summary'
+                ]._compute_cost_summary(res['lines'], secondary_currency)
+            except Exception:  # noqa: BLE001 - protect the core overview screen
+                _logger.exception(
+                    "BOM cost summary computation failed for bom_id=%s", bom_id,
+                )
+                res['lines']['cost_summary'] = False
         return res
 
     @api.model

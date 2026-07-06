@@ -323,7 +323,7 @@
                             </t>
 
                             <!-- ── Byproducts by Category ── -->
-                            <t t-if="cs['byproduct_categories']">
+                            <t t-if="cs['byproductCategories']">
                                 <h4 class="mt-4">Byproducts by Category</h4>
                                 <table class="table table-sm table-bordered o_table">
                                     <thead class="bg-light">
@@ -351,7 +351,7 @@
                                     </thead>
                                     <tbody>
                                         <t t-call="econovo_mrp_bom_cost_summary.report_cost_summary_bp_cat_rows">
-                                            <t t-set="nodes" t-value="cs['byproduct_categories']"/>
+                                            <t t-set="nodes" t-value="cs['byproductCategories']"/>
                                             <t t-set="cur" t-value="cur"/>
                                             <t t-set="usd" t-value="usd"/>
                                         </t>
@@ -430,7 +430,7 @@
                                             </td>
                                         </t>
                                     </tr>
-                                    <t t-if="cs['byproduct_categories']">
+                                    <t t-if="cs['byproductCategories']">
                                         <!-- Row 2: (−) Recoverable byproduct value -->
                                         <tr class="table-success">
                                             <td>(&#x2212;) Recoverable byproduct value</td>
