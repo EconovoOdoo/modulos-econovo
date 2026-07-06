@@ -71,6 +71,9 @@ class ReportEconovoBomCostSummary(models.AbstractModel):
                     cost_summary = self._compute_cost_summary(
                         bom_lines, secondary
                     )
+                # Show direct-USD figures (dolarization) when available so the
+                # PDF matches the interactive UI's USD columns.
+                cost_summary = self._prefer_direct_usd(cost_summary)
                 docs.append(
                     {
                         "bom": bom,
@@ -224,6 +227,41 @@ class ReportEconovoBomCostSummary(models.AbstractModel):
             },
             "currency_id": data.get("currency_id"),
         }
+
+    @api.model
+    def _prefer_direct_usd(self, summary):
+        """Overwrite the exchange-rate USD fields (``*_usd``) with the
+        direct-USD values (``*_usd_direct``) when an extension has provided
+        them, so the PDF and Excel exports show the same USD figures as the
+        interactive UI (which displays the direct-USD columns).
+
+        No-op when no direct-USD data is present (e.g. the dolarization bridge
+        module is not installed).  Applied to the summary right before
+        rendering the PDF or building the Excel workbook.
+        """
+        if not summary or summary.get("totals", {}).get(
+            "total_usd_direct"
+        ) is None:
+            return summary
+        self._apply_direct_usd(summary)
+        return summary
+
+    @api.model
+    def _apply_direct_usd(self, obj):
+        """Recursively replace ``<x>_usd`` values with ``<x>_usd_direct`` when
+        the direct sibling exists.  Skips the raw ``components`` sub-nodes
+        carried on operation items (not part of the summary USD data)."""
+        if isinstance(obj, dict):
+            for key in list(obj.keys()):
+                if key.endswith("_usd") and (key + "_direct") in obj:
+                    obj[key] = obj[key + "_direct"]
+            for name, value in obj.items():
+                if name == "components":
+                    continue
+                self._apply_direct_usd(value)
+        elif isinstance(obj, list):
+            for item in obj:
+                self._apply_direct_usd(item)
 
     @api.model
     def _add_component_entry(

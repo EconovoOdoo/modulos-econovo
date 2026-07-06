@@ -443,16 +443,28 @@ def _tw_row(ws, row_idx, vals, bg, outline=0, bold=False, fg="000000"):
         ws.row_dimensions[row_idx].outline_level = min(outline, 7)
 
 
-def _tree_costs(vals, ci, cur, usd, has_usd, rate, bom_cost, prod_cost):
-    """Fill BOM Cost and Product Cost columns for a tree row in-place."""
+def _tree_costs(vals, ci, cur, usd, has_usd, rate, bom_cost, prod_cost,
+                bom_usd_direct=None, prod_usd_direct=None):
+    """Fill BOM Cost and Product Cost columns for a tree row in-place.
+
+    Prefers the direct-USD values (``*_usd_direct``, dolarization) when
+    provided, so the tree sheet matches the Cost Summary sheet and the UI;
+    falls back to the exchange-rate conversion otherwise.
+    """
     if "BOM Cost (%s)" % cur in ci:
         vals[ci["BOM Cost (%s)" % cur] - 1] = _flt(bom_cost)
-    if has_usd and "BOM Cost (%s)" % usd in ci and bom_cost not in (None, False, "") and rate:
-        vals[ci["BOM Cost (%s)" % usd] - 1] = _flt(bom_cost * rate)
+    if has_usd and "BOM Cost (%s)" % usd in ci:
+        if bom_usd_direct is not None:
+            vals[ci["BOM Cost (%s)" % usd] - 1] = _flt(bom_usd_direct)
+        elif bom_cost not in (None, False, "") and rate:
+            vals[ci["BOM Cost (%s)" % usd] - 1] = _flt(bom_cost * rate)
     if "Product Cost (%s)" % cur in ci:
         vals[ci["Product Cost (%s)" % cur] - 1] = _flt(prod_cost)
-    if has_usd and "Product Cost (%s)" % usd in ci and prod_cost not in (None, False, "") and rate:
-        vals[ci["Product Cost (%s)" % usd] - 1] = _flt(prod_cost * rate)
+    if has_usd and "Product Cost (%s)" % usd in ci:
+        if prod_usd_direct is not None:
+            vals[ci["Product Cost (%s)" % usd] - 1] = _flt(prod_usd_direct)
+        elif prod_cost not in (None, False, "") and rate:
+            vals[ci["Product Cost (%s)" % usd] - 1] = _flt(prod_cost * rate)
 
 
 def _write_tree_node(ws, row, node, ci, cur, usd, rate,
@@ -494,6 +506,7 @@ def _write_tree_node(ws, row, node, ci, cur, usd, rate,
         _tree_costs(
             vals, ci, cur, usd, has_usd, rate,
             node.get("bom_cost"), node.get("prod_cost"),
+            node.get("bom_cost_usd_direct"), node.get("prod_cost_usd_direct"),
         )
     if not is_sub_bom and not is_root:
         # Availability only for leaf components and their parent sub-BOM rows
@@ -532,10 +545,16 @@ def _write_tree_node(ws, row, node, ci, cur, usd, rate,
             ops_vals[ci["UoM"] - 1] = "min"
             if show_costs and "BOM Cost (%s)" % cur in ci:
                 ops_vals[ci["BOM Cost (%s)" % cur] - 1] = _flt(ops_cost)
-                if has_usd and "BOM Cost (%s)" % usd in ci and rate:
-                    ops_vals[ci["BOM Cost (%s)" % usd] - 1] = _flt(
-                        ops_cost * rate
-                    )
+                if has_usd and "BOM Cost (%s)" % usd in ci:
+                    ops_usd_direct = [o.get("bom_cost_usd_direct") for o in ops]
+                    if any(v is not None for v in ops_usd_direct):
+                        ops_vals[ci["BOM Cost (%s)" % usd] - 1] = _flt(
+                            sum(v or 0 for v in ops_usd_direct)
+                        )
+                    elif rate:
+                        ops_vals[ci["BOM Cost (%s)" % usd] - 1] = _flt(
+                            ops_cost * rate
+                        )
             _tw_row(ws, row, ops_vals, _C["tree_ops"],
                     outline=child_outline, bold=True)
             row += 1
@@ -551,11 +570,17 @@ def _write_tree_node(ws, row, node, ci, cur, usd, rate,
                     op_vals[ci["BOM Cost (%s)" % cur] - 1] = _flt(
                         op.get("bom_cost")
                     )
-                    if has_usd and "BOM Cost (%s)" % usd in ci and rate:
-                        oc = op.get("bom_cost") or 0
-                        op_vals[ci["BOM Cost (%s)" % usd] - 1] = (
-                            _flt(oc * rate) if oc else ""
-                        )
+                    if has_usd and "BOM Cost (%s)" % usd in ci:
+                        op_direct = op.get("bom_cost_usd_direct")
+                        if op_direct is not None:
+                            op_vals[ci["BOM Cost (%s)" % usd] - 1] = _flt(
+                                op_direct
+                            )
+                        elif rate:
+                            oc = op.get("bom_cost") or 0
+                            op_vals[ci["BOM Cost (%s)" % usd] - 1] = (
+                                _flt(oc * rate) if oc else ""
+                            )
                 _tw_row(ws, row, op_vals, _C["tree_op"],
                         outline=child_outline + 1)
                 row += 1
@@ -572,11 +597,15 @@ def _write_tree_node(ws, row, node, ci, cur, usd, rate,
         sc_vals[ci["UoM"] - 1] = _str(sc.get("uom", ""))
         if show_costs and "BOM Cost (%s)" % cur in ci:
             sc_vals[ci["BOM Cost (%s)" % cur] - 1] = _flt(sc.get("bom_cost"))
-            if has_usd and "BOM Cost (%s)" % usd in ci and rate:
-                sc_cost = sc.get("bom_cost") or 0
-                sc_vals[ci["BOM Cost (%s)" % usd] - 1] = (
-                    _flt(sc_cost * rate) if sc_cost else ""
-                )
+            if has_usd and "BOM Cost (%s)" % usd in ci:
+                sc_direct = sc.get("bom_cost_usd_direct")
+                if sc_direct is not None:
+                    sc_vals[ci["BOM Cost (%s)" % usd] - 1] = _flt(sc_direct)
+                elif rate:
+                    sc_cost = sc.get("bom_cost") or 0
+                    sc_vals[ci["BOM Cost (%s)" % usd] - 1] = (
+                        _flt(sc_cost * rate) if sc_cost else ""
+                    )
             if "Product Cost (%s)" % cur in ci:
                 sc_vals[ci["Product Cost (%s)" % cur] - 1] = _flt(sc.get("prod_cost"))
         _tw_row(ws, row, sc_vals, _C["tree_sc"], outline=child_outline, bold=True)
@@ -593,8 +622,14 @@ def _write_tree_node(ws, row, node, ci, cur, usd, rate,
         )
         if show_costs and "BOM Cost (%s)" % cur in ci:
             bp_vals[ci["BOM Cost (%s)" % cur] - 1] = _flt(bp_cost)
-            if has_usd and "BOM Cost (%s)" % usd in ci and rate:
-                bp_vals[ci["BOM Cost (%s)" % usd] - 1] = _flt(bp_cost * rate)
+            if has_usd and "BOM Cost (%s)" % usd in ci:
+                bp_usd_direct = [b.get("bom_cost_usd_direct") for b in bps]
+                if any(v is not None for v in bp_usd_direct):
+                    bp_vals[ci["BOM Cost (%s)" % usd] - 1] = _flt(
+                        sum(v or 0 for v in bp_usd_direct)
+                    )
+                elif rate:
+                    bp_vals[ci["BOM Cost (%s)" % usd] - 1] = _flt(bp_cost * rate)
         _tw_row(ws, row, bp_vals, _C["tree_bp"],
                 outline=child_outline, bold=True)
         row += 1
@@ -610,6 +645,8 @@ def _write_tree_node(ws, row, node, ci, cur, usd, rate,
                 _tree_costs(
                     bp_item_vals, ci, cur, usd, has_usd, rate,
                     bp.get("bom_cost"), bp.get("prod_cost"),
+                    bp.get("bom_cost_usd_direct"),
+                    bp.get("prod_cost_usd_direct"),
                 )
             _tw_row(ws, row, bp_item_vals, _C["tree_bp_item"],
                     outline=child_outline + 1)
@@ -1483,6 +1520,9 @@ class BomCostSummaryXlsxController(http.Controller):
             return request.make_response(
                 "No cost data available for this BOM.", status=204
             )
+        # Show direct-USD figures (dolarization) when available so the Excel
+        # Cost Summary sheet matches the interactive UI's USD columns.
+        report_model._prefer_direct_usd(cost_summary)
 
         currency_name = bom.company_id.currency_id.name
         usd_name = secondary.get("name", "USD") if secondary else ""

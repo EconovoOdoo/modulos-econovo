@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Econovo - BOM Cost Summary (Dolarization)',
-    'version': '17.0.1.2.0',
+    'version': '17.0.1.3.0',
     'category': 'Manufacturing',
     'summary': (
         'Bridge module: adds direct-USD columns (from standard_price_usd) '
