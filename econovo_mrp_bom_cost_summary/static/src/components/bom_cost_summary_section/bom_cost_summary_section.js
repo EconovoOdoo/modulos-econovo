@@ -828,7 +828,9 @@ export class BomCostSummarySection extends Component {
             "grand_total": {
                 title: T("Gross totals before byproduct recovery"),
                 lines: [
-                    T("BOM Cost = \u03a3 Components (bom_cost) + \u03a3 Operations"),
+                    T("BOM Cost = \u03a3 Components + \u03a3 Operations + \u03a3 Subcontracting"),
+                    T("(same composition as the PDF/Excel \u2018Total (Components + Operations"),
+                    T("+ Subcontracting)\u2019 row \u2014 both are the same server-computed total)"),
                     T("Product Cost = standard_price of the finished product \u00d7 quantity"),
                     T("Identical to native Odoo BOM Overview \u2018Product Cost\u2019 column"),
                     T("Note: does not equal the sum of body section subtotals (those show"),
