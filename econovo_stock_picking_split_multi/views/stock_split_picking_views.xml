@@ -14,15 +14,20 @@
                     Select a single transfer to use the split by count mode.
                 </div>
                 <field name="split_detail_ids" invisible="mode != 'counter'" nolabel="1" colspan="2">
-                    <tree editable="bottom">
+                    <tree>
                         <field name="sequence" string="Split #" />
                         <field name="user_id" />
                         <field name="scheduled_date" />
                     </tree>
                     <form>
+                        <group>
+                            <field name="sequence" string="Split #" readonly="1" />
+                            <field name="user_id" />
+                            <field name="scheduled_date" />
+                        </group>
                         <field name="line_ids">
                             <tree editable="bottom">
-                                <field name="move_id" column_invisible="1" />
+                                <field name="move_id" column_invisible="1" force_save="1" />
                                 <field name="product_id" readonly="1" />
                                 <field name="product_uom" readonly="1" groups="uom.group_uom" />
                                 <field name="quantity" />
