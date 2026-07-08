@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_stock_split_picking_form_counter" model="ir.ui.view">
+        <field name="name">stock.split.picking.form.counter</field>
+        <field name="model">stock.split.picking</field>
+        <field name="inherit_id" ref="stock_split_picking.view_stock_split_picking" />
+        <field name="arch" type="xml">
+            <field name="move_ids" position="after">
+                <field name="counter" invisible="mode != 'counter'" required="mode == 'counter'" />
+                <field name="valid_split_details" invisible="1" />
+                <field name="picking_count" invisible="1" />
+                <div class="alert alert-warning" role="alert"
+                     invisible="mode != 'counter' or picking_count == 1">
+                    Select a single transfer to use the split by count mode.
+                </div>
+                <field name="split_detail_ids" invisible="mode != 'counter'" nolabel="1" colspan="2">
+                    <tree editable="bottom">
+                        <field name="sequence" string="Split #" />
+                        <field name="user_id" />
+                        <field name="scheduled_date" />
+                    </tree>
+                    <form>
+                        <field name="line_ids">
+                            <tree editable="bottom">
+                                <field name="product_id" readonly="1" />
+                                <field name="product_uom" readonly="1" groups="uom.group_uom" />
+                                <field name="quantity" />
+                            </tree>
+                        </field>
+                    </form>
+                </field>
+            </field>
+            <button name="action_apply" position="attributes">
+                <attribute name="invisible">mode == 'counter' and (not valid_split_details or counter &lt; 2)</attribute>
+            </button>
+        </field>
+    </record>
+</odoo>
