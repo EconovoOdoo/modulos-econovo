@@ -8,7 +8,7 @@ many transfers (#) to split into, quantities are auto-distributed per product an
 stay editable, along with an optional responsible user and scheduled date for each
 resulting transfer.
 """,
-    "version": "17.0.1.0.0",
+    "version": "17.0.1.0.1",
     "category": "Inventory",
     "author": "Jose D. Leonett",
     "website": "https://github.com/josedleonett",
