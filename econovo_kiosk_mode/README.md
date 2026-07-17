@@ -127,15 +127,14 @@ reverted it back when unticking it. `target` is a core, shared field on
   fully uninstalled and browser data cleared - it is not a browser
   cache at all, the leftover value lives server-side, on that action's
   `target` column.
-- `migrations/17.0.1.0.2/post-migrate.py` automatically resets `target`
-  back to normal for any action with `kiosk_enabled=True` still stuck
-  on `fullscreen`, the next time this module is upgraded (Odoo only
-  runs migration scripts on an upgrade of an already-installed module,
-  never on a fresh install). If an action was left stuck AFTER fully
-  uninstalling this module, the migration cannot reach it anymore (the
-  `kiosk_enabled` field is gone by then) - fix it manually instead:
-  Settings > Technical > Actions > Actions > Window Actions, open the
-  affected action, set **Target** back to *Current Window*, save.
+- No automated migration is shipped for this (an upgrade-only Odoo
+  mechanism would never run here anyway: production never had the
+  buggy version installed, and any environment where it was installed
+  and then fully uninstalled is treated as a fresh install on
+  reinstall, not an upgrade). Fix any action left stuck manually
+  instead: Settings > Technical > Actions > Actions > Window Actions,
+  open the affected action, set **Target** back to *Current Window*,
+  save.
 
 ## Known limitations / possible future refinements
 
