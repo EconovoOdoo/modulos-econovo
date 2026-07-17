@@ -13,6 +13,17 @@ const KIOSK_SAFETY_INTERVAL_MS = 5 * 60 * 1000;
 // import on the watched model) triggers at most one reload.
 const KIOSK_REFRESH_DEBOUNCE_MS = 2000;
 const KIOSK_BODY_CLASS = "o_kiosk_mode";
+// Independent of kiosk_refresh_mode/kiosk_refresh_interval: always
+// re-checks the live kiosk_enabled/mode on this fixed, short cadence.
+// This is deliberately NOT tied to ACTION_MANAGER:UI-UPDATED alone,
+// because that event only fires on navigation/doAction - disabling
+// Kiosk Mode on the action record does not by itself trigger anything
+// (only writes on the model the action *watches* notify the bus, see
+// ir_actions_act_window.py `_kiosk_notify`). Without this poll, a
+// long-lived idle kiosk screen could keep applying kiosk chrome/refresh
+// for as long as its data-refresh cadence (up to the 5 min safety net
+// in realtime mode) after being turned off.
+const KIOSK_STATE_POLL_MS = 10 * 1000;
 
 /**
  * Generic kiosk "chrome + refresh" controller. Reacts to whichever
@@ -36,15 +47,17 @@ export const kioskChromeService = {
         let refreshTimer = null;
         let safetyTimer = null;
         let debounceTimer = null;
+        let pollTimer = null;
         let subscribedModel = null;
         let updateToken = 0;
-        // Local mirror of the freshly-read kiosk fields for whichever
-        // action is on screen - only what this service needs to decide
-        // on refresh. `kiosk_state.js` separately exposes only what
-        // chat_window_patch.js needs.
-        let live = { actionId: null, enabled: false, refreshMode: null };
+        // Signature of the last APPLIED kiosk config, used to avoid
+        // tearing down and recreating the data-refresh timer/bus
+        // subscription on every poll tick when nothing actually changed
+        // (that would otherwise prevent e.g. a 30s interval from ever
+        // completing a cycle, since the poll runs every 10s).
+        let lastSignature = null;
 
-        const clearTimers = () => {
+        const clearDataTimers = () => {
             browser.clearInterval(refreshTimer);
             browser.clearInterval(safetyTimer);
             browser.clearTimeout(debounceTimer);
@@ -61,9 +74,11 @@ export const kioskChromeService = {
         };
 
         const reset = () => {
-            clearTimers();
+            clearDataTimers();
             unsubscribeModel();
-            live = { actionId: null, enabled: false, refreshMode: null };
+            browser.clearInterval(pollTimer);
+            pollTimer = null;
+            lastSignature = null;
             kioskState.actionId = null;
             kioskState.hideChat = false;
             document.body.classList.remove(KIOSK_BODY_CLASS);
@@ -85,26 +100,67 @@ export const kioskChromeService = {
 
         // Custom notification type sent by `ir.actions.act_window._kiosk_notify`.
         bus_service.subscribe("kiosk_refresh", (payload) => {
-            const currentAction = action.currentController?.action;
             if (
-                live.enabled &&
-                live.refreshMode === "realtime" &&
-                currentAction?.id === live.actionId &&
-                payload?.model === currentAction.res_model
+                kioskState.actionId &&
+                subscribedModel &&
+                payload?.model === subscribedModel &&
+                action.currentController?.action?.id === kioskState.actionId
             ) {
-                scheduleReload(live.actionId);
+                scheduleReload(kioskState.actionId);
             }
         });
         // Bus reconnected (e.g. after a worker restart): a message could
         // have been missed while offline, so refresh defensively.
         bus_service.addEventListener("reconnect", () => {
-            if (live.enabled && live.refreshMode === "realtime") {
-                scheduleReload(live.actionId);
+            if (subscribedModel && kioskState.actionId) {
+                scheduleReload(kioskState.actionId);
             }
         });
 
-        env.bus.addEventListener("ACTION_MANAGER:UI-UPDATED", () => {
-            clearTimers();
+        /** Apply a freshly-read kiosk state; cheap parts (body class,
+         * kioskState) always run, but the data-refresh timers/bus
+         * subscription are only rebuilt when the relevant config
+         * actually changed since the last check. */
+        const applyState = (actionId, resModel, fresh) => {
+            const enabled = Boolean(fresh?.kiosk_enabled);
+            kioskState.actionId = actionId;
+            kioskState.hideChat = Boolean(enabled && fresh?.kiosk_hide_chat_window);
+            document.body.classList.toggle(KIOSK_BODY_CLASS, enabled);
+
+            const signature = JSON.stringify({
+                actionId,
+                resModel,
+                enabled,
+                refreshMode: fresh?.kiosk_refresh_mode,
+                refreshInterval: fresh?.kiosk_refresh_interval,
+            });
+            if (signature === lastSignature) {
+                return;
+            }
+            lastSignature = signature;
+
+            clearDataTimers();
+            if (!enabled) {
+                unsubscribeModel();
+                return;
+            }
+            if (fresh.kiosk_refresh_mode === "interval") {
+                unsubscribeModel();
+                const seconds = fresh.kiosk_refresh_interval || 30;
+                refreshTimer = browser.setInterval(() => reload(actionId), seconds * 1000);
+            } else if (fresh.kiosk_refresh_mode === "realtime") {
+                if (subscribedModel !== resModel) {
+                    unsubscribeModel();
+                    subscribedModel = resModel;
+                    bus_service.addChannel(`kiosk_refresh-${subscribedModel}`);
+                }
+                safetyTimer = browser.setInterval(() => reload(actionId), KIOSK_SAFETY_INTERVAL_MS);
+            } else {
+                unsubscribeModel();
+            }
+        };
+
+        const checkNow = () => {
             const token = ++updateToken;
             const currentAction = action.currentController?.action;
 
@@ -116,36 +172,9 @@ export const kioskChromeService = {
             orm.call("ir.actions.act_window", "get_kiosk_state", [currentAction.id])
                 .then((fresh) => {
                     if (token !== updateToken) {
-                        return; // superseded by a newer action change, ignore
+                        return; // superseded by a newer check, ignore
                     }
-                    live = {
-                        actionId: currentAction.id,
-                        enabled: Boolean(fresh?.kiosk_enabled),
-                        refreshMode: fresh?.kiosk_refresh_mode,
-                    };
-                    kioskState.actionId = currentAction.id;
-                    kioskState.hideChat = Boolean(live.enabled && fresh?.kiosk_hide_chat_window);
-
-                    document.body.classList.toggle(KIOSK_BODY_CLASS, live.enabled);
-                    if (!live.enabled) {
-                        unsubscribeModel();
-                        return;
-                    }
-                    if (live.refreshMode === "interval") {
-                        unsubscribeModel();
-                        const seconds = fresh?.kiosk_refresh_interval || 30;
-                        refreshTimer = browser.setInterval(() => reload(currentAction.id), seconds * 1000);
-                    } else if (live.refreshMode === "realtime") {
-                        if (subscribedModel !== currentAction.res_model) {
-                            unsubscribeModel();
-                            subscribedModel = currentAction.res_model;
-                            bus_service.addChannel(`kiosk_refresh-${subscribedModel}`);
-                        }
-                        safetyTimer = browser.setInterval(
-                            () => reload(currentAction.id),
-                            KIOSK_SAFETY_INTERVAL_MS
-                        );
-                    }
+                    applyState(currentAction.id, currentAction.res_model, fresh);
                 })
                 .catch(() => {
                     // Fail safe: if we can't confirm the kiosk state (e.g.
@@ -155,9 +184,20 @@ export const kioskChromeService = {
                         reset();
                     }
                 });
+        };
+
+        env.bus.addEventListener("ACTION_MANAGER:UI-UPDATED", () => {
+            browser.clearInterval(pollTimer);
+            const currentAction = action.currentController?.action;
+            pollTimer =
+                currentAction?.type === "ir.actions.act_window" && currentAction.id
+                    ? browser.setInterval(checkNow, KIOSK_STATE_POLL_MS)
+                    : null;
+            checkNow();
         });
     },
 };
 
 registry.category("services").add("kiosk_chrome", kioskChromeService);
+
 

@@ -91,6 +91,15 @@ As a safety net (a screen can stay open unattended for many hours), a
 kiosk screen in Real Time mode also force-refreshes every 5 minutes and
 whenever the bus reconnects, in case a notification was ever missed.
 
+Separately, the kiosk client re-checks the live `kiosk_enabled` /
+`kiosk_refresh_mode` / `kiosk_refresh_interval` values every 10 seconds
+(via `get_kiosk_state`), regardless of refresh mode. This is
+intentionally decoupled from the data-refresh cadence above: disabling
+Kiosk Mode on the action record does not itself notify the bus (only
+writes on the *watched model* do), so without this fast, independent
+check a screen could keep showing kiosk chrome for as long as its data-
+refresh interval (or the 5 minute safety net) after being turned off.
+
 ## Uninstalling
 
 Automated Actions created by this module are tagged via
