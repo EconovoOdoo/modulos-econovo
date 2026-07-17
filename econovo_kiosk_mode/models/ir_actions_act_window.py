@@ -46,6 +46,13 @@ class IrActionsActWindow(models.Model):
              "kiosk screen is active, so an incoming message to the "
              "logged-in kiosk user is never displayed on the wall screen.",
     )
+    kiosk_sound_alert = fields.Boolean(
+        string="Sound Alert",
+        help="Play a short sound (reusing Discuss' own notification sound, "
+             "no new audio asset needed) whenever this screen refreshes "
+             "because of a Real Time bus notification. Only applies to "
+             "'Real Time' refresh mode.",
+    )
     kiosk_url = fields.Char(
         string="Kiosk URL",
         compute='_compute_kiosk_url',
@@ -74,7 +81,7 @@ class IrActionsActWindow(models.Model):
         # only kept readable here for convenience/debugging.
         return super()._get_readable_fields() | {
             'kiosk_enabled', 'kiosk_refresh_mode', 'kiosk_refresh_interval',
-            'kiosk_hide_chat_window', 'kiosk_url',
+            'kiosk_hide_chat_window', 'kiosk_url', 'kiosk_sound_alert',
         }
 
     @api.model
@@ -94,6 +101,7 @@ class IrActionsActWindow(models.Model):
             'kiosk_refresh_mode': action.kiosk_refresh_mode,
             'kiosk_refresh_interval': action.kiosk_refresh_interval,
             'kiosk_hide_chat_window': action.kiosk_hide_chat_window,
+            'kiosk_sound_alert': action.kiosk_sound_alert,
         }
 
     @api.constrains('kiosk_enabled', 'kiosk_refresh_mode', 'kiosk_refresh_interval')

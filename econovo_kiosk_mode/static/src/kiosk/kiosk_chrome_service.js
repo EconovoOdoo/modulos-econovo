@@ -42,14 +42,18 @@ const KIOSK_STATE_POLL_MS = 10 * 1000;
  * `kiosk_enabled` had been unchecked, until a full page reload.
  */
 export const kioskChromeService = {
-    dependencies: ["action", "bus_service", "orm"],
-    start(env, { action, bus_service, orm }) {
+    dependencies: ["action", "bus_service", "orm", "mail.sound_effects"],
+    start(env, { action, bus_service, orm, "mail.sound_effects": soundEffects }) {
         let refreshTimer = null;
         let safetyTimer = null;
         let debounceTimer = null;
         let pollTimer = null;
         let subscribedModel = null;
         let updateToken = 0;
+        // Whether the currently displayed action wants a sound played on
+        // genuine bus-triggered refreshes (kiosk_sound_alert); kept in
+        // sync by applyState(), read by the bus subscription below.
+        let soundAlertEnabled = false;
         // Signature of the last APPLIED kiosk config, used to avoid
         // tearing down and recreating the data-refresh timer/bus
         // subscription on every poll tick when nothing actually changed
@@ -79,22 +83,31 @@ export const kioskChromeService = {
             browser.clearInterval(pollTimer);
             pollTimer = null;
             lastSignature = null;
+            soundAlertEnabled = false;
             kioskState.actionId = null;
             kioskState.hideChat = false;
             document.body.classList.remove(KIOSK_BODY_CLASS);
         };
 
-        const reload = (actionId) => {
+        const reload = (actionId, { withSound = false } = {}) => {
             debounceTimer = null;
             // Only reload if that action is still the one on screen.
             if (action.currentController?.action?.id === actionId) {
+                if (withSound) {
+                    // Reuses Discuss' own notification sound - no new
+                    // audio asset needed. Autoplay may be silently
+                    // blocked by the browser if the kiosk tab never had
+                    // a user gesture; that's a launcher/deployment
+                    // concern (see README), not something to handle here.
+                    soundEffects.play("new-message");
+                }
                 action.doAction(actionId, { clearBreadcrumbs: true });
             }
         };
 
-        const scheduleReload = (actionId) => {
+        const scheduleReload = (actionId, options) => {
             if (!debounceTimer) {
-                debounceTimer = browser.setTimeout(() => reload(actionId), KIOSK_REFRESH_DEBOUNCE_MS);
+                debounceTimer = browser.setTimeout(() => reload(actionId, options), KIOSK_REFRESH_DEBOUNCE_MS);
             }
         };
 
@@ -106,11 +119,13 @@ export const kioskChromeService = {
                 payload?.model === subscribedModel &&
                 action.currentController?.action?.id === kioskState.actionId
             ) {
-                scheduleReload(kioskState.actionId);
+                scheduleReload(kioskState.actionId, { withSound: soundAlertEnabled });
             }
         });
         // Bus reconnected (e.g. after a worker restart): a message could
-        // have been missed while offline, so refresh defensively.
+        // have been missed while offline, so refresh defensively. No
+        // sound here - a reconnect is not evidence that anything new
+        // actually happened, only genuine kiosk_refresh signals are.
         bus_service.addEventListener("reconnect", () => {
             if (subscribedModel && kioskState.actionId) {
                 scheduleReload(kioskState.actionId);
@@ -125,6 +140,9 @@ export const kioskChromeService = {
             const enabled = Boolean(fresh?.kiosk_enabled);
             kioskState.actionId = actionId;
             kioskState.hideChat = Boolean(enabled && fresh?.kiosk_hide_chat_window);
+            soundAlertEnabled = Boolean(
+                enabled && fresh?.kiosk_refresh_mode === "realtime" && fresh?.kiosk_sound_alert
+            );
             document.body.classList.toggle(KIOSK_BODY_CLASS, enabled);
 
             const signature = JSON.stringify({

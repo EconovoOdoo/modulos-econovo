@@ -15,6 +15,8 @@
                             <field name="kiosk_refresh_interval"
                                    invisible="not kiosk_enabled or kiosk_refresh_mode != 'interval'"/>
                             <field name="kiosk_hide_chat_window" invisible="not kiosk_enabled"/>
+                            <field name="kiosk_sound_alert"
+                                   invisible="not kiosk_enabled or kiosk_refresh_mode != 'realtime'"/>
                         </group>
                         <group name="kiosk_access" string="Acceso">
                             <field name="kiosk_url" invisible="not kiosk_enabled" widget="CopyClipboardURL"/>

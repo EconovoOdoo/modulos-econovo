@@ -25,6 +25,11 @@ development needed per view or model.
   kiosk screen is active (`kiosk_hide_chat_window`, on by default), so
   an incoming private message to the logged-in kiosk user is never
   shown on the shared wall screen.
+- Optionally plays a short sound (`kiosk_sound_alert`, only shown for
+  Real Time mode) whenever the screen refreshes because of a genuine
+  bus notification - reuses Discuss' own "new message" sound effect, no
+  new audio asset bundled. Does not play on the periodic safety-net
+  refresh or on bus reconnects, only on an actual `kiosk_refresh` signal.
 - Hides the top menu bar, breadcrumbs, pager and the cog/action menu
   (bulk actions like Export/Archive/Delete) while in kiosk mode - purely
   via CSS (`static/src/kiosk/kiosk_mode.scss`), the action's own
@@ -64,12 +69,24 @@ development needed per view or model.
    - If *Interval*, set **Refresh Interval (seconds)**.
    - Leave **Hide Chat Window** ticked unless this specific screen
      should still show Discuss popups.
+   - Tick **Sound Alert** (Real Time only) to play a short sound on
+     every genuine bus-triggered refresh.
 4. Copy the **Kiosk URL** field's value.
 5. In the kiosk PC's browser (already logged in as the dedicated kiosk
    user, in its own browser profile), open that URL in kiosk/full-screen
    mode. Everything from that point on (window management, autostart,
    monitor placement) is handled by the existing PowerToys + scheduled
    task setup - out of scope for this module.
+
+**About Sound Alert and browser autoplay**: browsers may silently block
+audio playback in a tab that never received a user gesture (a click,
+a keypress) - exactly the situation of an unattended kiosk tab opened
+by a launcher script. If the sound never plays, this is a browser
+autoplay policy setting to adjust on the kiosk PC/browser profile
+(e.g. Chrome's `--autoplay-policy` flag or site-level autoplay
+permission), not something this module's code can force - the failure
+is silent by design (same behavior as Discuss' own sound effects).
+
 
 ## Real-time refresh - how it works under the hood
 
