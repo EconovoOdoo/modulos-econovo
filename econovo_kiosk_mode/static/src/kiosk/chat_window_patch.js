@@ -2,6 +2,7 @@
 
 import { patch } from "@web/core/utils/patch";
 import { ThreadService } from "@mail/core/common/thread_service";
+import { kioskState } from "./kiosk_state";
 
 /**
  * Kiosk mode: a kiosk screen has no menu/systray/Discuss sidebar to act
@@ -14,11 +15,16 @@ import { ThreadService } from "@mail/core/common/thread_service";
  *
  * The underlying message is still received and stored as usual; only
  * the disruptive/potentially private floating popup is skipped.
+ *
+ * Reads `kioskState` (kept fresh by kiosk_chrome_service.js) rather than
+ * `currentController.action.kiosk_hide_chat_window` directly, since the
+ * latter is cached by the web client and can go stale - see
+ * kiosk_state.js for the full explanation.
  */
 patch(ThreadService.prototype, {
     notifyMessageToUser(thread, message) {
         const controller = this.env.services.action.currentController;
-        if (controller?.action?.kiosk_hide_chat_window) {
+        if (controller?.action?.id === kioskState.actionId && kioskState.hideChat) {
             return;
         }
         super.notifyMessageToUser(...arguments);

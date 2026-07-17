@@ -25,6 +25,12 @@ development needed per view or model.
   kiosk screen is active (`kiosk_hide_chat_window`, on by default), so
   an incoming private message to the logged-in kiosk user is never
   shown on the shared wall screen.
+- Hides breadcrumbs, pager and the cog/action menu (bulk actions like
+  Export/Archive/Delete) while in kiosk mode. The search bar
+  (omnisearch: filters, group by, favorites) is intentionally left
+  visible, and no custom font size or color scheme is applied - the
+  view looks like standard Odoo, just without navigation/bulk-action
+  chrome.
 
 ## What this module deliberately does NOT do
 
@@ -89,18 +95,29 @@ whenever the bus reconnects, in case a notification was ever missed.
 
 Automated Actions created by this module are tagged via
 `base.automation.kiosk_managed_model` and are cleaned up automatically
-as soon as no kiosk action needs them (including when this module is
-uninstalled and its `ir.actions.act_window` fields disappear, which
-implicitly disables every kiosk action).
-
-## Known limitations / possible future refinements
-
-- Breadcrumbs/search bar/pager are hidden via CSS
+as soon as no pager/cog-menu are hidden via CSS
   (`static/src/kiosk/kiosk_mode.scss`) rather than by not rendering
   them at all. Functionally equivalent for the end user, but a future
   refinement could instead drive Odoo's own `display.controlPanel` /
   `env.config.noBreadcrumbs` mechanisms for a "cleaner" hide.
 - Dynamic/user-dependent domains or contexts (`uid`, current company,
+  etc.) on a kiosk action behave according to whichever user is
+  actually logged into the kiosk browser - review the action's
+  domain/context before enabling kiosk mode on it.
+- `ir.actions.act_window` has no `company_id` of its own; in a
+  multi-company database, make sure the action's own domain already
+  scopes the data correctly for the kiosk's logged-in user.
+- The web client caches the loaded action definition per browser tab
+  (`action_service.js` `actionCache`) until a full page reload. Any
+  `ir.actions.act_window` field OTHER than the kiosk_* ones (e.g.
+  `res_model`, `domain`) can therefore go stale in a tab that already
+  displayed that action if it is edited afterwards - a hard reload of
+  that tab is the only fix. The kiosk_* fields themselves are exempt
+  from this: they are always re-read fresh through the
+  `get_kiosk_state` RPC (see `ir_actions_act_window.py` and
+  `kiosk_chrome_service.js`), specifically to avoid a kiosk screen (or
+  an admin testing in their own tab) getting stuck applying kiosk
+  chrome/refresh after `kiosk_enabled` was uncheckednt company,
   etc.) on a kiosk action behave according to whichever user is
   actually logged into the kiosk browser - review the action's
   domain/context before enabling kiosk mode on it.

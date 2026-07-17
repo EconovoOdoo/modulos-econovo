@@ -63,9 +63,37 @@ class IrActionsActWindow(models.Model):
         # /web/action/load filters the action dict through this allow-list
         # (see web/controllers/utils.py `clean_action`). Any real stored
         # field not listed here would silently never reach the browser.
+        #
+        # NOTE: the web client caches the action dict in memory per browser
+        # tab (action_service.js `actionCache`, keyed by action id) until a
+        # full page reload. So these values, once read from
+        # `currentController.action`, can go stale if the action record is
+        # edited afterwards in that same tab. JS code must NOT rely on them
+        # for live kiosk-state decisions - use the `get_kiosk_state` method
+        # below (called fresh on every action update) instead. These are
+        # only kept readable here for convenience/debugging.
         return super()._get_readable_fields() | {
             'kiosk_enabled', 'kiosk_refresh_mode', 'kiosk_refresh_interval',
             'kiosk_hide_chat_window', 'kiosk_url',
+        }
+
+    @api.model
+    def get_kiosk_state(self, action_id):
+        """Always-fresh read of the kiosk fields for a given action id,
+        bypassing both ir.model.access (via sudo, mirroring what the core
+        `/web/action/load` controller already does for action definitions)
+        and the web client's own action cache. Called by the kiosk JS
+        client on every action update instead of trusting the (cacheable)
+        `currentController.action` fields.
+        """
+        action = self.sudo().browse(int(action_id)).exists()
+        if not action:
+            return False
+        return {
+            'kiosk_enabled': action.kiosk_enabled,
+            'kiosk_refresh_mode': action.kiosk_refresh_mode,
+            'kiosk_refresh_interval': action.kiosk_refresh_interval,
+            'kiosk_hide_chat_window': action.kiosk_hide_chat_window,
         }
 
     @api.constrains('kiosk_enabled', 'kiosk_refresh_mode', 'kiosk_refresh_interval')
