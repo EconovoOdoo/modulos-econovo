@@ -1,0 +1,28 @@
+// Wall-display styling for kiosk actions. `target="fullscreen"` (forced
+// automatically when Kiosk Mode is enabled, see ir_actions_act_window.py)
+// already removes the top NavBar/systray; this only needs to deal with
+// what the ControlPanel still shows (breadcrumbs, search, pager) and
+// apply a "readable from across the room" look.
+.o_kiosk_mode {
+    .o_control_panel {
+        .o_control_panel_breadcrumbs,
+        .o_cp_searchview,
+        .o_search_panel,
+        .o_cp_pager,
+        .o_cp_action_menus {
+            display: none !important;
+        }
+    }
+
+    font-size: 1.35rem;
+    background-color: #111;
+    color: #fff;
+
+    .o_kanban_record {
+        font-size: 1.15em;
+    }
+
+    .o_list_table > thead {
+        font-size: 1.1em;
+    }
+}

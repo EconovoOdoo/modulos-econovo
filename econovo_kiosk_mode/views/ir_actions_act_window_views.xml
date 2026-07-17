@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_window_action_form_inherit_kiosk" model="ir.ui.view">
+        <field name="name">ir.actions.act_window.form.inherit.kiosk</field>
+        <field name="model">ir.actions.act_window</field>
+        <field name="inherit_id" ref="base.view_window_action_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='security']" position="after">
+                <page name="kiosk" string="Kiosco" groups="base.group_system">
+                    <group>
+                        <group name="kiosk_settings" string="Configuración">
+                            <field name="kiosk_enabled"/>
+                            <field name="kiosk_refresh_mode" invisible="not kiosk_enabled"/>
+                            <field name="kiosk_refresh_interval"
+                                   invisible="not kiosk_enabled or kiosk_refresh_mode != 'interval'"/>
+                            <field name="kiosk_hide_chat_window" invisible="not kiosk_enabled"/>
+                        </group>
+                        <group name="kiosk_access" string="Acceso">
+                            <field name="kiosk_url" invisible="not kiosk_enabled" widget="CopyClipboardURL"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
