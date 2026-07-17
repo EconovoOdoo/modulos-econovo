@@ -25,12 +25,14 @@ development needed per view or model.
   kiosk screen is active (`kiosk_hide_chat_window`, on by default), so
   an incoming private message to the logged-in kiosk user is never
   shown on the shared wall screen.
-- Hides breadcrumbs, pager and the cog/action menu (bulk actions like
-  Export/Archive/Delete) while in kiosk mode. The search bar
-  (omnisearch: filters, group by, favorites) is intentionally left
-  visible, and no custom font size or color scheme is applied - the
-  view looks like standard Odoo, just without navigation/bulk-action
-  chrome.
+- Hides the top menu bar, breadcrumbs, pager and the cog/action menu
+  (bulk actions like Export/Archive/Delete) while in kiosk mode - purely
+  via CSS (`static/src/kiosk/kiosk_mode.scss`), the action's own
+  `target` field is never modified (see "Upgrading from 17.0.1.0.1 or
+  earlier" below for why this matters). The search bar (omnisearch:
+  filters, group by, favorites) is intentionally left visible, and no
+  custom font size or color scheme is applied - the view looks like
+  standard Odoo, just without navigation/bulk-action chrome.
 
 ## What this module deliberately does NOT do
 
@@ -55,8 +57,9 @@ development needed per view or model.
    duplicate an existing one first, if you don't want to alter the
    original action used for normal navigation/menus).
 3. Open the new **Kiosco** tab:
-   - Tick **Kiosk Mode** (this also forces the action's *Target* to
-     *Fullscreen*, which hides the top menu bar).
+   - Tick **Kiosk Mode** (the full-screen look is applied purely via
+     CSS on the client - the action's *Target* field itself is left
+     untouched).
    - Choose **Refresh Mode**: *Real Time* (default) or *Interval*.
    - If *Interval*, set **Refresh Interval (seconds)**.
    - Leave **Hide Chat Window** ticked unless this specific screen
@@ -104,7 +107,39 @@ refresh interval (or the 5 minute safety net) after being turned off.
 
 Automated Actions created by this module are tagged via
 `base.automation.kiosk_managed_model` and are cleaned up automatically
-as soon as no pager/cog-menu are hidden via CSS
+as soon as no kiosk action needs them (including when this module is
+uninstalled and its `ir.actions.act_window` fields disappear, which
+implicitly disables every kiosk action).
+
+## Upgrading from 17.0.1.0.1 or earlier
+
+Versions up to `17.0.1.0.1` forced `target='fullscreen'` on the action
+record itself (via an onchange) when Kiosk Mode was ticked, and never
+reverted it back when unticking it. `target` is a core, shared field on
+`ir.actions.act_window` - not one this module defines - so:
+
+- Unticking **Kiosk Mode** on those versions did NOT undo the
+  full-screen look; the action stayed stuck with a hidden top menu bar.
+- **Uninstalling this module did not undo it either**: uninstalling
+  only removes the fields/behavior this module itself defines, it does
+  not roll back values it previously wrote into a core field. This is
+  why the top menu bar can appear to "stay cached" even with the module
+  fully uninstalled and browser data cleared - it is not a browser
+  cache at all, the leftover value lives server-side, on that action's
+  `target` column.
+- `migrations/17.0.1.0.2/post-migrate.py` automatically resets `target`
+  back to normal for any action with `kiosk_enabled=True` still stuck
+  on `fullscreen`, the next time this module is upgraded (Odoo only
+  runs migration scripts on an upgrade of an already-installed module,
+  never on a fresh install). If an action was left stuck AFTER fully
+  uninstalling this module, the migration cannot reach it anymore (the
+  `kiosk_enabled` field is gone by then) - fix it manually instead:
+  Settings > Technical > Actions > Actions > Window Actions, open the
+  affected action, set **Target** back to *Current Window*, save.
+
+## Known limitations / possible future refinements
+
+- Breadcrumbs/pager/cog-menu/navbar are hidden via CSS
   (`static/src/kiosk/kiosk_mode.scss`) rather than by not rendering
   them at all. Functionally equivalent for the end user, but a future
   refinement could instead drive Odoo's own `display.controlPanel` /
@@ -126,10 +161,5 @@ as soon as no pager/cog-menu are hidden via CSS
   `get_kiosk_state` RPC (see `ir_actions_act_window.py` and
   `kiosk_chrome_service.js`), specifically to avoid a kiosk screen (or
   an admin testing in their own tab) getting stuck applying kiosk
-  chrome/refresh after `kiosk_enabled` was uncheckednt company,
-  etc.) on a kiosk action behave according to whichever user is
-  actually logged into the kiosk browser - review the action's
-  domain/context before enabling kiosk mode on it.
-- `ir.actions.act_window` has no `company_id` of its own; in a
-  multi-company database, make sure the action's own domain already
-  scopes the data correctly for the kiosk's logged-in user.
+  chrome/refresh after `kiosk_enabled` was unchecked.
+

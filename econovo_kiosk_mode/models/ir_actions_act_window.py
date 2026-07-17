@@ -108,10 +108,17 @@ class IrActionsActWindow(models.Model):
                     "The Kiosk refresh interval must be a positive number of seconds."
                 ))
 
-    @api.onchange('kiosk_enabled')
-    def _onchange_kiosk_enabled(self):
-        if self.kiosk_enabled and self.target != 'fullscreen':
-            self.target = 'fullscreen'
+    # NOTE: earlier versions of this module forced `target='fullscreen'`
+    # here via an onchange when Kiosk Mode was enabled, and never
+    # reverted it back on toggle-off. `target` is a core, shared field:
+    # that left actions permanently stuck full-screen even after
+    # kiosk_enabled was unchecked, and even after this module was
+    # uninstalled (uninstalling only removes the fields THIS module
+    # defines, not values it previously wrote into core fields). See
+    # migrations/17.0.1.0.2/post-migrate.py for the one-time cleanup.
+    # The full-screen look is now achieved purely through CSS
+    # (static/src/kiosk/kiosk_mode.scss hides `.o_navbar`), so this
+    # module never has to write to `target` at all.
 
     @api.model_create_multi
     def create(self, vals_list):

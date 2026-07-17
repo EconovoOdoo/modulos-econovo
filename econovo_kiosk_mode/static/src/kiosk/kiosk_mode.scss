@@ -1,13 +1,22 @@
-// Wall-display chrome for kiosk actions. `target="fullscreen"` (forced
-// automatically when Kiosk Mode is enabled, see ir_actions_act_window.py)
-// already removes the top NavBar/systray; this only needs to deal with
-// what the ControlPanel still shows on top of that: breadcrumbs, pager
-// and the cog/action menu (bulk actions like Export/Archive/Delete have
-// no place on an unattended wall screen). The search bar (omnisearch)
-// is intentionally left visible/untouched, and no custom typography or
+// Wall-display chrome for kiosk actions. Hides the top NavBar (menu +
+// systray) plus, within the ControlPanel, breadcrumbs, pager and the
+// cog/action menu (bulk actions like Export/Archive/Delete have no
+// place on an unattended wall screen). The search bar (omnisearch) is
+// intentionally left visible/untouched, and no custom typography or
 // color scheme is applied - kept as close as possible to the standard
 // Odoo look.
+//
+// Deliberately CSS-only: this module never writes to the action's own
+// `target` field to get a "fullscreen" look (an earlier version did,
+// via target='fullscreen', but that is a core/shared field with no
+// revert-on-toggle-off or revert-on-uninstall - see
+// migrations/17.0.1.0.2/post-migrate.py for the one-time cleanup of
+// actions left stuck that way).
 .o_kiosk_mode {
+    .o_navbar {
+        display: none !important;
+    }
+
     .o_control_panel {
         .o_control_panel_breadcrumbs,
         .o_cp_pager,
