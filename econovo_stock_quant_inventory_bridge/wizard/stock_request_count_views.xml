@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="stock_request_count_view_form" model="ir.ui.view">
+        <field name="name">stock.request.count.view.form.inherit.econovo_stock_quant_inventory_bridge</field>
+        <field name="model">stock.request.count</field>
+        <field name="inherit_id" ref="stock.stock_inventory_request_count_form_view"/>
+        <field name="arch" type="xml">
+            <field name="set_count" position="after">
+                <field name="assign_mode" widget="radio"/>
+                <field
+                    name="new_inventory_name"
+                    invisible="assign_mode != 'new'"
+                    placeholder="e.g. Inventory - Warehouse A"
+                />
+                <field
+                    name="inventory_id"
+                    invisible="assign_mode != 'existing'"
+                    options="{'no_create': True}"
+                />
+            </field>
+        </field>
+    </record>
+</odoo>
