@@ -24,6 +24,15 @@ import { kioskState } from "./kiosk_state";
 patch(ThreadService.prototype, {
     notifyMessageToUser(thread, message) {
         const controller = this.env.services.action.currentController;
+        // TEMPORARY diagnostic (2026-07): remove once the "chat still
+        // shows in kiosk mode" report is confirmed fixed. Check via the
+        // browser console when reproducing.
+        console.debug("[econovo_kiosk_mode] notifyMessageToUser check", {
+            currentActionId: controller?.action?.id,
+            currentActionType: controller?.action?.type,
+            kioskStateActionId: kioskState.actionId,
+            kioskStateHideChat: kioskState.hideChat,
+        });
         if (controller?.action?.id === kioskState.actionId && kioskState.hideChat) {
             return;
         }

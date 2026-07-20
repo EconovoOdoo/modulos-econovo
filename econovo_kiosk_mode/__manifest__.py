@@ -2,7 +2,7 @@
 
 {
     'name': "Econovo - Kiosk Mode for Window Actions",
-    'version': '17.0.1.1.0',
+    'version': '17.0.1.1.1',
     'category': 'Technical',
     'summary': "Generic full-screen, auto-refreshing kiosk mode for any window action",
     'description': """
