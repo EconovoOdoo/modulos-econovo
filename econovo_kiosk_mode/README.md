@@ -24,7 +24,13 @@ development needed per view or model.
 - Optionally hides the floating Discuss chat window popups while a
   kiosk screen is active (`kiosk_hide_chat_window`, on by default), so
   an incoming private message to the logged-in kiosk user is never
-  shown on the shared wall screen.
+  shown on the shared wall screen - covers both a genuine new message
+  (which would otherwise also trigger a native OS-level desktop
+  notification, also suppressed) AND mail's own cross-tab chat window
+  sync, which mirrors a chat window opened/used in any of the user's
+  OTHER tabs (e.g. the manager's normal work window on the same PC)
+  into the kiosk tab too - a deliberate Odoo multi-tab feature, not a
+  bug, that a kiosk screen should never show regardless of its cause.
 - Optionally plays a short sound (`kiosk_sound_alert`, only shown for
   Real Time mode) whenever the screen refreshes because of a genuine
   bus notification - reuses Discuss' own "new message" sound effect, no

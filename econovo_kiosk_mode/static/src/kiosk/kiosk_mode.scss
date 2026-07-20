@@ -9,9 +9,8 @@
 // Deliberately CSS-only: this module never writes to the action's own
 // `target` field to get a "fullscreen" look (an earlier version did,
 // via target='fullscreen', but that is a core/shared field with no
-// revert-on-toggle-off or revert-on-uninstall - see
-// migrations/17.0.1.0.2/post-migrate.py for the one-time cleanup of
-// actions left stuck that way).
+// revert-on-toggle-off or revert-on-uninstall - see the "Upgrading"
+// section of the README for that history).
 .o_kiosk_mode {
     .o_navbar {
         display: none !important;
@@ -23,6 +22,20 @@
         .o_cp_action_menus {
             display: none !important;
         }
+    }
+
+    // Belt-and-suspenders with chat_window_patch.js: that patch only
+    // stops a chat window auto-opening because of a genuine incoming
+    // message (notifyMessageToUser). It does NOT stop mail's own
+    // cross-tab sync (discuss.Thread/fold_state bus channel), which
+    // mirrors chat windows the user opens/interacts with in any of
+    // their OTHER open tabs/windows (e.g. the manager's normal work
+    // window on the same PC) into this one too - a deliberate Odoo
+    // multi-tab UX feature, not a bug, that we don't want on a kiosk
+    // screen. Hiding the container outright catches that path (and any
+    // other one) regardless of what triggered it.
+    .o-mail-ChatWindowContainer {
+        display: none !important;
     }
 }
 

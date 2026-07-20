@@ -18,8 +18,3 @@ export const kioskState = {
     hideChat: false,
 };
 
-// Debugging aid: inspect live via the browser console with
-// `window.__econovoKioskState` while reproducing an issue - avoids
-// guessing whether the state was actually applied correctly.
-window.__econovoKioskState = kioskState;
-

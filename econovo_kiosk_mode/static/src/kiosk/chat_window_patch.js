@@ -5,16 +5,22 @@ import { ThreadService } from "@mail/core/common/thread_service";
 import { kioskState } from "./kiosk_state";
 
 /**
- * Kiosk mode: a kiosk screen has no menu/systray/Discuss sidebar to act
- * on a chat window anyway, so the only real trigger left is an incoming
- * message auto-opening a popup for the logged-in kiosk user - which is
- * exactly what `notifyMessageToUser` decides. Suppressing it here (and
- * only here) is enough: every other place that opens a chat window
- * requires a UI affordance (messaging menu, Discuss sidebar, ...) that
- * doesn't exist in the kiosk's chromeless full-screen shell.
+ * Kiosk mode: suppresses the chat window popup AND the native OS-level
+ * desktop notification (see `outOfFocusService.notify()` inside the
+ * original `notifyMessageToUser`) that would otherwise fire when a new
+ * message arrives for the logged-in kiosk user.
+ *
+ * This only covers messages genuinely addressed to the user - it does
+ * NOT stop mail's own cross-tab chat window sync (the
+ * `discuss.Thread/fold_state` bus channel mirrors chat windows opened
+ * in any of the user's OTHER tabs/windows into this one too, by
+ * design). That second path is instead handled purely with CSS
+ * (`.o-mail-ChatWindowContainer` hidden in kiosk_mode.scss), since it's
+ * simpler and more robust to hide the container outright than to chase
+ * every internal mechanism that can insert a chat window.
  *
  * The underlying message is still received and stored as usual; only
- * the disruptive/potentially private floating popup is skipped.
+ * the popup/notification is skipped.
  *
  * Reads `kioskState` (kept fresh by kiosk_chrome_service.js) rather than
  * `currentController.action.kiosk_hide_chat_window` directly, since the
@@ -24,15 +30,6 @@ import { kioskState } from "./kiosk_state";
 patch(ThreadService.prototype, {
     notifyMessageToUser(thread, message) {
         const controller = this.env.services.action.currentController;
-        // TEMPORARY diagnostic (2026-07): remove once the "chat still
-        // shows in kiosk mode" report is confirmed fixed. Check via the
-        // browser console when reproducing.
-        console.debug("[econovo_kiosk_mode] notifyMessageToUser check", {
-            currentActionId: controller?.action?.id,
-            currentActionType: controller?.action?.type,
-            kioskStateActionId: kioskState.actionId,
-            kioskStateHideChat: kioskState.hideChat,
-        });
         if (controller?.action?.id === kioskState.actionId && kioskState.hideChat) {
             return;
         }
