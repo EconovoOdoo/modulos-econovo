@@ -49,6 +49,12 @@ class StockRequestCount(models.TransientModel):
                     'message': '\n'.join(messages),
                     'type': 'success',
                     'sticky': False,
+                    # Close the wizard dialog after showing the toast,
+                    # matching stock's own product_replenish wizard pattern
+                    # (launch_replenishment) - otherwise returning a client
+                    # action instead of True/False skips the client's
+                    # default "close the dialog" behavior.
+                    'next': {'type': 'ir.actions.act_window_close'},
                 },
             }
         return True

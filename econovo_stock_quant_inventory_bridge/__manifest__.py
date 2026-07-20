@@ -2,7 +2,7 @@
 # Part of Econovo. See LICENSE file for full copyright and licensing details.
 {
     'name': 'Stock Quant / Inventory Adjustment Bridge',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     'summary': 'Keeps the classic Physical Inventory menu active alongside '
                'OCA Inventory Adjustment Groups, and allows assigning '
                'selected stock quants to a group from the Request a Count '
