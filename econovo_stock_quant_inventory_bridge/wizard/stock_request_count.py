@@ -77,7 +77,10 @@ class StockRequestCount(models.TransientModel):
 
         if self.assign_mode == 'new':
             inventory = self.env['stock.inventory']._bridge_create_from_quants(
-                quants, name=self.new_inventory_name
+                quants,
+                name=self.new_inventory_name,
+                responsible_id=self.user_id.id,
+                date=fields.Datetime.to_datetime(self.inventory_date),
             )
         else:
             if not self.inventory_id:
@@ -85,7 +88,7 @@ class StockRequestCount(models.TransientModel):
                     'Select an existing Inventory Adjustment Group.'
                 ))
             inventory = self.inventory_id
-            inventory._bridge_assign_quants(quants)
+            inventory._bridge_assign_quants(quants, requested_user=self.user_id)
 
         message = _(
             '%(count)s quant(s) assigned to %(name)s.',

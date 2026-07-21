@@ -48,6 +48,22 @@ Inventory Adjustment Group.
   (`to_do`, `user_id`, `inventory_date`, `current_inventory_id`) so the
   quants immediately show up as pending in that group's count screen.
 - Every assignment is logged in the Inventory Adjustment Group's chatter.
+- **Field mapping / responsible ("Assigned to") handling**: mirrors the
+  design of `stock.picking.batch` (see `stock.picking.to.batch` and
+  `stock.picking.assign_batch_user`), where the batch's own responsible is
+  authoritative once it exists:
+  - **New group**: the wizard's "Assigned to" (`user_id`) and "Inventory
+    Date" (`inventory_date`) are copied onto the new group's
+    `responsible_id`/`date`, exactly like `stock.picking.to.batch` copies
+    its own "Responsible" field only when creating a *new* batch.
+  - **Existing group**: the wizard's "Assigned to" is intentionally
+    **not** applied - the existing group keeps its own `responsible_id`
+    (just like joining an existing picking batch adopts the batch's
+    current `user_id`, not whatever the picking/wizard had). If the
+    wizard's assignee differs from the group's, this is only noted in the
+    chatter message for traceability, never silently overwritten and
+    never blocking.
+
 
 ## Installation
 

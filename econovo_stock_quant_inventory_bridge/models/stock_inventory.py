@@ -36,9 +36,16 @@ class StockInventory(models.Model):
             or self.category_id or self.lot_ids
         )
 
-    def _bridge_create_from_quants(self, quants, name=None):
+    def _bridge_create_from_quants(self, quants, name=None, responsible_id=None, date=None):
         """Create a new draft Inventory Adjustment Group from arbitrary
-        stock.quant records selected in the classic quant list view."""
+        stock.quant records selected in the classic quant list view.
+
+        ``responsible_id``/``date`` mirror the wizard's own "Assigned to"/
+        "Inventory Date" onto the new group (like stock.picking.to.batch
+        does for a NEW batch's user_id) - only relevant here since the
+        group doesn't exist yet; once it does, it becomes the authoritative
+        source (see ``_bridge_assign_quants``).
+        """
         companies = quants.company_id
         if len(companies) > 1:
             raise UserError(_(
@@ -47,7 +54,7 @@ class StockInventory(models.Model):
                 'time.',
                 names=', '.join(companies.mapped('name')),
             ))
-        return self.create({
+        vals = {
             'name': name or _(
                 'Inventory - %(date)s', date=fields.Date.context_today(self)
             ),
@@ -56,12 +63,25 @@ class StockInventory(models.Model):
             'preselected_quant_ids': [(6, 0, quants.ids)],
             'location_ids': [(6, 0, quants.location_id.ids)],
             'exclude_sublocation': True,
-        })
+        }
+        if responsible_id:
+            vals['responsible_id'] = responsible_id
+        if date:
+            vals['date'] = date
+        return self.create(vals)
 
-    def _bridge_assign_quants(self, quants):
+    def _bridge_assign_quants(self, quants, requested_user=None):
         """Assign existing stock.quant records to this Inventory Adjustment
         Group, without forcing a state change (draft stays draft, in
-        progress stays in progress)."""
+        progress stays in progress).
+
+        Mirrors stock.picking.batch's design: once a group exists, its own
+        ``responsible_id`` is authoritative (like ``stock.picking.batch
+        .user_id`` is pushed onto every picking that joins a batch via
+        ``assign_batch_user``) - a different "Assigned to" chosen in the
+        wizard (``requested_user``) is never used to overwrite an existing
+        group's responsible, only logged on the chatter for traceability.
+        """
         self.ensure_one()
         if self.state in ('done', 'cancel'):
             raise UserError(_(
@@ -125,8 +145,16 @@ class StockInventory(models.Model):
                 'exclude_sublocation': True,
             })
         self.write(values)
-        self.message_post(body=_(
+        note = _(
             '%(count)s stock quant(s) assigned by %(user)s via the '
             'Request a Count bridge.',
             count=len(quants), user=self.env.user.name,
-        ))
+        )
+        if requested_user and requested_user != self.responsible_id:
+            note = '%s %s' % (note, _(
+                'Note: the wizard requested "%(requested)s" as assignee, '
+                'but this group keeps its own responsible "%(current)s".',
+                requested=requested_user.name,
+                current=self.responsible_id.name if self.responsible_id else _('Nobody'),
+            ))
+        self.message_post(body=note)
