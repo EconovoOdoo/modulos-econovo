@@ -488,20 +488,24 @@ class CurrencyRateSource(models.Model):
     )
     last_sync_date = fields.Datetime(
         string='Last Sync',
-        readonly=True
+        readonly=True,
+        copy=False
     )
     last_rate = fields.Float(
         string='Last Rate',
         readonly=True,
-        digits=(16, 6)
+        digits=(16, 6),
+        copy=False
     )
     last_raw_value = fields.Char(
         string='Last Raw Value',
-        readonly=True
+        readonly=True,
+        copy=False
     )
     last_error = fields.Text(
         string='Last Error',
-        readonly=True
+        readonly=True,
+        copy=False
     )
     last_status = fields.Selection(
         [
@@ -511,11 +515,13 @@ class CurrencyRateSource(models.Model):
         ],
         string='Last Status',
         readonly=True,
+        copy=False,
         help='Status of the last synchronization attempt'
     )
     last_http_response = fields.Text(
         string='Last HTTP Response',
         readonly=True,
+        copy=False,
         help='Stored for debugging purposes'
     )
 
@@ -523,17 +529,20 @@ class CurrencyRateSource(models.Model):
     execution_count = fields.Integer(
         string='Total Executions',
         readonly=True,
-        default=0
+        default=0,
+        copy=False
     )
     success_count = fields.Integer(
         string='Successful Executions',
         readonly=True,
-        default=0
+        default=0,
+        copy=False
     )
     error_count = fields.Integer(
         string='Failed Executions',
         readonly=True,
-        default=0
+        default=0,
+        copy=False
     )
     success_rate = fields.Float(
         string='Success Rate (%)',
@@ -550,7 +559,8 @@ class CurrencyRateSource(models.Model):
     log_ids = fields.One2many(
         'currency.rate.log',
         'source_id',
-        string='Execution Logs'
+        string='Execution Logs',
+        copy=False
     )
     log_count = fields.Integer(
         string='Log Count',
@@ -618,12 +628,10 @@ class CurrencyRateSource(models.Model):
         for record in self:
             record.log_count = len(record.log_ids)
 
-    @api.depends('last_error', 'last_sync_date', 'auto_update')
+    @api.depends('last_error', 'last_sync_date')
     def _compute_state(self):
         for record in self:
-            if not record.auto_update:
-                record.state = 'draft'
-            elif record.last_error:
+            if record.last_error:
                 record.state = 'error'
             elif record.last_sync_date:
                 record.state = 'active'
@@ -1649,6 +1657,18 @@ class CurrencyRateSource(models.Model):
             if record.cron_id:
                 record._delete_source_cron()
         return super().unlink()
+
+    def copy(self, default=None):
+        """Override copy to avoid violating the unique name SQL constraint.
+
+        Without this, duplicating any source fails with "Source name must be
+        unique!" since ORM copy() keeps the original name by default.
+        """
+        self.ensure_one()
+        default = dict(default or {})
+        if 'name' not in default:
+            default['name'] = _('%s (copy)', self.name)
+        return super().copy(default)
 
     # Keep legacy method for backward compatibility (deprecated)
     @api.model

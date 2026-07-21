@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Currency Rate Custom Providers',
-    'version': '17.0.1.1.0',
+    'version': '17.0.1.1.2',
     'category': 'Accounting/Accounting',
     'summary': 'Automatically update currency rates from custom api/web sources',
     'description': """
