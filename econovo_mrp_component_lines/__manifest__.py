@@ -2,7 +2,7 @@
 # Part of Econovo. See LICENSE file for full copyright and licensing details.
 {
     'name': 'Econovo MRP Component Lines',
-    'version': '17.0.1.0.1',
+    'version': '17.0.1.0.2',
     'category': 'Manufacturing',
     'summary': 'List view of component (raw material) lines across all Manufacturing Orders',
     'description': """
@@ -23,6 +23,9 @@ Key Features:
   exposed as a related ``production_plan_id`` field)
 * Quick filters for Pending, Consumed, Done and Cancelled lines
 * Totals (sum) on Quantity To Consume and Consumed columns
+* Buttons to open the transfer that supplied the component to its source
+  location (e.g. the "Choose components" transfer), in form view or
+  directly in the Barcode app, reusing stock_barcode's own actions
 * Read-only view: use the Manufacturing Order itself to register consumption
 
     """,
@@ -32,6 +35,7 @@ Key Features:
     'depends': [
         'mrp',
         'gg_automatic_mrp_schedule',
+        'stock_barcode',
     ],
     'data': [
         'views/stock_move_views.xml',

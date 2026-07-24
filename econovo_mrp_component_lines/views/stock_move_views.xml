@@ -13,8 +13,11 @@
                 <field name="name" string="Description" optional="hide"/>
                 <field name="location_usage" column_invisible="True"/>
                 <field name="location_dest_usage" column_invisible="True"/>
+                <field name="move_orig_ids" column_invisible="True"/>
                 <field name="location_id" string="From" options="{'no_create': True}" groups="stock.group_stock_multi_locations" optional="show" decoration-muted="location_usage not in ('internal', 'transit')"/>
                 <field name="location_dest_id" string="To" options="{'no_create': True}" groups="stock.group_stock_multi_locations" optional="hide" decoration-muted="location_dest_usage not in ('internal', 'transit')"/>
+                <button name="action_open_supply_picking" type="object" icon="fa-truck" title="Open the supply transfer" invisible="not move_orig_ids" string="EC"/>
+                <button name="action_open_supply_picking_barcode" type="object" icon="fa-barcode" title="Open the supply transfer in Barcode" invisible="not move_orig_ids"/>
                 <field name="product_uom_qty" string="To Consume" sum="To Consume"/>
                 <field name="quantity" string="Consumed" sum="Consumed"
                     decoration-danger="(location_usage in ('internal', 'transit')) and (location_dest_usage not in ('internal', 'transit'))"

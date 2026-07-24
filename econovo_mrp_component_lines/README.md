@@ -25,6 +25,10 @@ view, reusing the existing `stock.move` model and its
 * Quick filters: To Consume, Consumed, Done, Cancelled
 * Group By: Manufacturing Order, Production Plan, Component, Status,
   Operation, Source Location
+* Buttons to open the transfer that supplied the component to its source
+  location (e.g. the "EC"/"Choose components" transfer, found via
+  `move_orig_ids.picking_id`), either in its normal form view or directly
+  in the Barcode app, so it can be delivered/validated from this list
 * Read-only (`create`/`edit`/`delete` disabled): use the Manufacturing Order
   itself to register consumption; this view is for consultation/reporting
   only
@@ -37,5 +41,10 @@ view, reusing the existing `stock.move` model and its
   (`related='raw_material_production_id.plan_id', store=True`), to expose
   the `mrp.plan` ("Plan de Producción") added by `gg_automatic_mrp_schedule`
   as a column/group-by without duplicating that module's logic.
-* Depends on `mrp` and `gg_automatic_mrp_schedule` (the latter only for the
-  `mrp.production.plan_id` field used above).
+* The "open supply transfer" buttons do not add any new field: they resolve
+  `move_orig_ids[:1].picking_id` on click and delegate to `stock.picking`'s
+  own native `action_open_picking()` / `action_open_picking_client_action()`
+  methods (from `stock`/`stock_barcode`), the exact same actions Odoo's own
+  kanban view uses to open a transfer or jump into the Barcode app.
+* Depends on `mrp`, `gg_automatic_mrp_schedule` (for `plan_id`) and
+  `stock_barcode` (for the "open in Barcode" button).
