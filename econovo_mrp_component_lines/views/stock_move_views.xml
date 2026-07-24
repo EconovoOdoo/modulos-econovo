@@ -5,21 +5,28 @@
         <field name="name">stock.move.component.lines.tree</field>
         <field name="model">stock.move</field>
         <field name="arch" type="xml">
-            <tree string="Manufacturing Components" create="0" edit="0" delete="0"
-                decoration-success="state == 'done'"
-                decoration-muted="state == 'cancel'">
+            <tree string="Manufacturing Components" create="0" edit="0" delete="0">
                 <field name="raw_material_production_id" string="Manufacturing Order"/>
                 <field name="production_plan_id" string="Production Plan" optional="show"/>
                 <field name="date" string="Scheduled Date" optional="show"/>
                 <field name="product_id" string="Component"/>
                 <field name="name" string="Description" optional="hide"/>
-                <field name="location_id" string="From" groups="stock.group_stock_multi_locations" optional="show"/>
-                <field name="location_dest_id" string="To" groups="stock.group_stock_multi_locations" optional="hide"/>
+                <field name="location_usage" column_invisible="True"/>
+                <field name="location_dest_usage" column_invisible="True"/>
+                <field name="location_id" string="From" options="{'no_create': True}" groups="stock.group_stock_multi_locations" optional="show" decoration-muted="location_usage not in ('internal', 'transit')"/>
+                <field name="location_dest_id" string="To" options="{'no_create': True}" groups="stock.group_stock_multi_locations" optional="hide" decoration-muted="location_dest_usage not in ('internal', 'transit')"/>
                 <field name="product_uom_qty" string="To Consume" sum="To Consume"/>
-                <field name="quantity" string="Consumed" sum="Consumed"/>
-                <field name="product_uom" string="UoM" groups="uom.group_uom"/>
+                <field name="quantity" string="Consumed" sum="Consumed"
+                    decoration-danger="(location_usage in ('internal', 'transit')) and (location_dest_usage not in ('internal', 'transit'))"
+                    decoration-success="(location_usage not in ('internal', 'transit')) and (location_dest_usage in ('internal', 'transit'))"/>
+                <field name="product_uom" string="Unit" options="{'no_open': True, 'no_create': True}" groups="uom.group_uom"/>
                 <field name="picked" string="Done"/>
-                <field name="state"/>
+                <field name="state" widget="badge"
+                    decoration-danger="state == 'cancel'"
+                    decoration-info="state == 'assigned'"
+                    decoration-muted="state == 'draft'"
+                    decoration-success="state == 'done'"
+                    decoration-warning="state not in ('draft', 'cancel', 'done', 'assigned')"/>
                 <field name="operation_id" string="Operation" groups="mrp.group_mrp_routings" optional="hide"/>
                 <field name="workorder_id" string="Work Order" groups="mrp.group_mrp_routings" optional="hide"/>
                 <field name="origin" string="Source Document" optional="hide"/>
