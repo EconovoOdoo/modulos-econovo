@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="stock_move_component_lines_view_tree" model="ir.ui.view">
+        <field name="name">stock.move.component.lines.tree</field>
+        <field name="model">stock.move</field>
+        <field name="arch" type="xml">
+            <tree string="Manufacturing Components" create="0" edit="0" delete="0"
+                decoration-success="state == 'done'"
+                decoration-muted="state == 'cancel'">
+                <field name="raw_material_production_id" string="Manufacturing Order"/>
+                <field name="production_plan_id" string="Production Plan" optional="show"/>
+                <field name="date" string="Scheduled Date" optional="show"/>
+                <field name="product_id" string="Component"/>
+                <field name="name" string="Description" optional="hide"/>
+                <field name="location_id" string="From" groups="stock.group_stock_multi_locations" optional="show"/>
+                <field name="location_dest_id" string="To" groups="stock.group_stock_multi_locations" optional="hide"/>
+                <field name="product_uom_qty" string="To Consume" sum="To Consume"/>
+                <field name="quantity" string="Consumed" sum="Consumed"/>
+                <field name="product_uom" string="UoM" groups="uom.group_uom"/>
+                <field name="picked" string="Done"/>
+                <field name="state"/>
+                <field name="operation_id" string="Operation" groups="mrp.group_mrp_routings" optional="hide"/>
+                <field name="workorder_id" string="Work Order" groups="mrp.group_mrp_routings" optional="hide"/>
+                <field name="origin" string="Source Document" optional="hide"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="stock_move_component_lines_view_search" model="ir.ui.view">
+        <field name="name">stock.move.component.lines.search</field>
+        <field name="model">stock.move</field>
+        <field name="arch" type="xml">
+            <search string="Search Manufacturing Components">
+                <field name="product_id" string="Component"/>
+                <field name="raw_material_production_id" string="Manufacturing Order"/>
+                <field name="production_plan_id" string="Production Plan"/>
+                <field name="origin"/>
+                <filter string="To Consume" name="filter_pending" domain="[('state', 'not in', ('done', 'cancel'))]"/>
+                <filter string="Consumed" name="filter_picked" domain="[('picked', '=', True)]"/>
+                <filter string="Done" name="filter_done" domain="[('state', '=', 'done')]"/>
+                <filter string="Cancelled" name="filter_cancel" domain="[('state', '=', 'cancel')]"/>
+                <separator/>
+                <filter string="Scheduled Date" name="filter_date" date="date"/>
+                <group expand="0" string="Group By">
+                    <filter string="Manufacturing Order" name="group_by_production" context="{'group_by': 'raw_material_production_id'}"/>
+                    <filter string="Production Plan" name="group_by_plan" context="{'group_by': 'production_plan_id'}"/>
+                    <filter string="Component" name="group_by_product" context="{'group_by': 'product_id'}"/>
+                    <filter string="Status" name="group_by_state" context="{'group_by': 'state'}"/>
+                    <filter string="Operation" name="group_by_operation" context="{'group_by': 'operation_id'}" groups="mrp.group_mrp_routings"/>
+                    <filter string="Source Location" name="group_by_location" context="{'group_by': 'location_id'}" groups="stock.group_stock_multi_locations"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="stock_move_component_lines_action" model="ir.actions.act_window">
+        <field name="name">Manufacturing Order Lines</field>
+        <field name="res_model">stock.move</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="stock_move_component_lines_view_tree"/>
+        <field name="search_view_id" ref="stock_move_component_lines_view_search"/>
+        <field name="domain">[('raw_material_production_id', '!=', False)]</field>
+        <field name="context">{'search_default_filter_pending': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No component lines found.
+            </p><p>
+                This view lists every component (raw material) line consumed or to be
+                consumed across all Manufacturing Orders, instead of browsing them
+                order by order.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_stock_move_component_lines"
+        action="stock_move_component_lines_action"
+        parent="mrp.menu_mrp_manufacturing"
+        sequence="2"/>
+
+</odoo>
