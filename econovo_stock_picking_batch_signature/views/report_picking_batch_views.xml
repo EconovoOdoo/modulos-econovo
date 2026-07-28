@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_picking_batch_inherit_signature"
+              inherit_id="stock_picking_batch.report_picking_batch">
+        <xpath expr="//div[hasclass('page')]" position="inside">
+            <div t-if="o.signature" class="mt32 ml64 mr4" name="batch_signature">
+                <div class="offset-8">
+                    <strong>Signature</strong>
+                </div>
+                <div class="offset-8">
+                    <img t-att-src="image_data_uri(o.signature)" style="max-height: 4cm; max-width: 8cm;"/>
+                </div>
+                <div t-if="o.signed_by" class="offset-8 text-center">
+                    <p t-esc="o.signed_by">John Doe</p>
+                </div>
+                <div t-if="o.signature_date_display" class="offset-8 text-center">
+                    <small t-esc="o.signature_date_display"/>
+                </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>

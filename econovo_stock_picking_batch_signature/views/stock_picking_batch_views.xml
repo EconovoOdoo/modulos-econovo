@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="stock_picking_batch_form_inherit_signature" model="ir.ui.view">
+        <field name="name">stock.picking.batch.view.form.inherit.signature</field>
+        <field name="model">stock.picking.batch</field>
+        <field name="inherit_id" ref="stock_picking_batch.stock_picking_batch_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/field[@name='state']" position="before">
+                <widget name="signature_signer" string="Firmar" highlight="1"
+                        invisible="not id or state != 'done'"
+                        signed_by_field="signed_by" groups="stock.group_stock_sign_delivery"/>
+                <widget name="signature_signer" string="Firmar"
+                        invisible="not id or state in ('done', 'cancel')"
+                        signed_by_field="signed_by" groups="stock.group_stock_sign_delivery"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
