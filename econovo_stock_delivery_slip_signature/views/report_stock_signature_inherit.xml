@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Traditional and Standard already show the signature image; just add
+         signed_by (falling back to the customer's name, same as before). -->
+    <template id="report_stock_traditional_inherit_signed_by"
+              inherit_id="base_advanced_report_templates.report_stock_traditional_document">
+        <xpath expr="//div[@name='signature']/div[@class='offset-8 text-center']/p[@t-field='o.partner_id.name']"
+               position="replace">
+            <p t-if="o.signed_by" t-esc="o.signed_by"/>
+            <p t-elif="o.partner_id.name" t-field="o.partner_id.name"/>
+        </xpath>
+    </template>
+
+    <template id="report_stock_standard_inherit_signed_by"
+              inherit_id="base_advanced_report_templates.report_stock_standard_document">
+        <xpath expr="//div[@name='signature']/div[@class='offset-8 text-center']/p[@t-field='o.partner_id.name']"
+               position="replace">
+            <p t-if="o.signed_by" t-esc="o.signed_by"/>
+            <p t-elif="o.partner_id.name" t-field="o.partner_id.name"/>
+        </xpath>
+    </template>
+
+    <!-- Modern and Attractive have no signature block at all. -->
+    <template id="report_stock_modern_inherit_signature"
+              inherit_id="base_advanced_report_templates.report_stock_modern_document">
+        <xpath expr="//div[hasclass('page')][last()]" position="inside">
+            <div t-if="o.signature" class="mt32 ml64 mr4" name="signature">
+                <div class="offset-8">
+                    <strong>Signature</strong>
+                </div>
+                <div class="offset-8">
+                    <img t-att-src="image_data_uri(o.signature)" style="max-height: 4cm; max-width: 8cm;"/>
+                </div>
+                <div class="offset-8 text-center">
+                    <p t-if="o.signed_by" t-esc="o.signed_by"/>
+                    <p t-elif="o.partner_id.name" t-field="o.partner_id.name"/>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <template id="report_stock_attractive_inherit_signature"
+              inherit_id="base_advanced_report_templates.report_stock_attractive_document">
+        <xpath expr="//div[hasclass('page')][last()]" position="inside">
+            <div t-if="o.signature" class="mt32 ml64 mr4" name="signature">
+                <div class="offset-8">
+                    <strong>Signature</strong>
+                </div>
+                <div class="offset-8">
+                    <img t-att-src="image_data_uri(o.signature)" style="max-height: 4cm; max-width: 8cm;"/>
+                </div>
+                <div class="offset-8 text-center">
+                    <p t-if="o.signed_by" t-esc="o.signed_by"/>
+                    <p t-elif="o.partner_id.name" t-field="o.partner_id.name"/>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- Preimpreso (gg_lot_data) is an absolute-positioned overlay meant for
+         pre-printed paper, so it has no signature block either. The
+         top/left coordinates below are a best-effort placement near the
+         bottom of the page (the observations field sits at top: 200mm) -
+         adjust them to match the actual pre-printed paper's signature
+         line/box if needed. -->
+    <template id="report_stock_preimpreso_inherit_signature"
+              inherit_id="gg_lot_data.report_stock_preimpreso_document">
+        <xpath expr="//div[hasclass('page')][last()]" position="inside">
+            <div t-if="o.signature" t-attf-style="position: absolute; top: 230mm; left: 15mm;">
+                <img t-att-src="image_data_uri(o.signature)" style="max-height: 3cm; max-width: 6cm;"/>
+                <div t-if="o.signed_by" t-esc="o.signed_by"/>
+                <div t-elif="o.partner_id.name" t-esc="o.partner_id.name"/>
+            </div>
+        </xpath>
+    </template>
+</odoo>
