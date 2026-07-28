@@ -18,12 +18,19 @@ without leaving the scanning screen.
   carrier picking up several orders, possibly for different customers), not
   a proof of delivery per customer
 - Reuses the native web signature dialog, the same one used by
-  `stock.picking`'s own "Sign" widget — no extra dependency required
+  `stock.picking`'s own "Sign" widget
 - Non-invasive implementation using OWL patches and template inheritance
+- The typed signer name is also captured into `signed_by`, so it can be
+  shown on printed documents alongside the signature image
 
 ## Requirements
 
 - Module `stock_barcode` (Enterprise) must be installed
+- Module `econovo_remito_digital` (provides the `signed_by` field on
+  `stock.picking`)
+- Module `econovo_stock_picking_batch_signature` (provides `signature` /
+  `signed_by` on `stock.picking.batch`, with the cascade to every transfer
+  in the batch)
 
 ## Configuration
 

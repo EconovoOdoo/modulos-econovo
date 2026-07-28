@@ -10,8 +10,13 @@ import { patch } from "@web/core/utils/patch";
  *
  * BarcodePickingBatchModel (module stock_barcode_picking_batch) extends this
  * same class, so a Batch Transfer inherits this behavior without any extra
- * code: `resModel` is then 'stock.picking.batch' and `signaturePickingIds`
- * returns every underlying transfer instead of a single one.
+ * code: `resModel`/`resId` are then 'stock.picking.batch' and the batch's
+ * own id. econovo_stock_picking_batch_signature adds signature/signed_by to
+ * stock.picking.batch and cascades them to every transfer it contains (a
+ * single custody handoff, e.g. a carrier picking up several orders,
+ * possibly for different customers, rather than a proof of delivery per
+ * customer), so writing directly on `resModel` works uniformly for both a
+ * single Transfer and a Batch Transfer.
  */
 patch(BarcodePickingModel.prototype, {
     get displaySignButton() {
@@ -22,27 +27,12 @@ patch(BarcodePickingModel.prototype, {
         );
     },
 
-    /**
-     * IDs of the stock.picking records the signature must be written on.
-     * A Batch Transfer has no signature field of its own: the same
-     * signature is stored on every transfer it contains, representing a
-     * single custody handoff (e.g. a carrier picking up several orders,
-     * possibly for different customers) rather than a proof of delivery
-     * per customer.
-     */
-    get signaturePickingIds() {
-        if (this.resModel === 'stock.picking.batch') {
-            return this.record.picking_ids;
+    async uploadSignature(name, signatureData) {
+        const vals = { signature: signatureData };
+        if (name) {
+            vals.signed_by = name;
         }
-        return [this.resId];
-    },
-
-    async uploadSignature(signatureData) {
-        const pickingIds = this.signaturePickingIds;
-        if (!pickingIds || !pickingIds.length) {
-            return;
-        }
-        await this.orm.write('stock.picking', pickingIds, { signature: signatureData });
+        await this.orm.write(this.resModel, [this.resId], vals);
         this.notification(_t("Signature saved"), { type: "success" });
     },
 });

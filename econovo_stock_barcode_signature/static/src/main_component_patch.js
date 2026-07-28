@@ -18,7 +18,8 @@ patch(MainComponent.prototype, {
                 displaySignatureRatio: 3,
                 signatureType: "signature",
             },
-            uploadSignature: ({ signatureImage }) => this.env.model.uploadSignature(signatureImage[1]),
+            uploadSignature: ({ name, signatureImage }) =>
+                this.env.model.uploadSignature(name, signatureImage[1]),
         };
         this.dialog.add(SignatureDialog, dialogProps);
     },

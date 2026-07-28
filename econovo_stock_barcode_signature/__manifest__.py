@@ -26,6 +26,9 @@ Features:
 * Reuses the native web signature dialog (the same one used by
   stock.picking's own "Sign" widget), no new dependency required
 * Non-invasive implementation using OWL patches and template inheritance
+* The typed signer name is also captured into signed_by (provided by
+  econovo_remito_digital / econovo_stock_picking_batch_signature), so it can
+  be shown on printed documents alongside the signature image
 
 Usage:
 ------
@@ -39,9 +42,13 @@ Usage:
     'author': "Jose D. Leonett",
     'website': 'https://github.com/josedleonett',
     'category': 'Inventory/Inventory',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.1.0',
     'license': 'AGPL-3',
-    'depends': ['stock_barcode'],
+    'depends': [
+        'stock_barcode',
+        'econovo_remito_digital',
+        'econovo_stock_picking_batch_signature',
+    ],
     'data': [
         'views/stock_picking_type_views.xml',
     ],
