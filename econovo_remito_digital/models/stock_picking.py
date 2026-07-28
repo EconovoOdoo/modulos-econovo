@@ -15,6 +15,8 @@ class StockPicking(models.Model):
 
     signature_date = fields.Datetime('Signature Date', copy=False)
     signature_date_display = fields.Char(compute='_compute_signature_date_display')
+    signed_by = fields.Char('Signed By', copy=False, help='Name typed by the '
+                             'person signing, captured from the Sign dialog.')
 
     @api.depends('signature_date')
     def _compute_signature_date_display(self):

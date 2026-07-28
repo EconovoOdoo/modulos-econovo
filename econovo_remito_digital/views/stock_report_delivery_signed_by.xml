@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Fallback path: pickings without a digital book render the native
+         stock.report_delivery_document (see StockPicking._attach_sign() and
+         do_print_voucher() overrides). Show signed_by there too, so the
+         signer's typed name is not lost just because no book is assigned. -->
+    <template id="report_delivery_document_inherit_signed_by"
+              inherit_id="stock.report_delivery_document">
+        <xpath expr="//div[@name='signature']/div[@t-if='o.partner_id.name']" position="replace">
+            <div t-if="o.signed_by or o.partner_id.name" class="offset-8 text-center">
+                <p t-if="o.signed_by" t-esc="o.signed_by">John Doe</p>
+                <p t-elif="o.partner_id.name" t-field="o.partner_id.name">John Doe</p>
+            </div>
+        </xpath>
+    </template>
+</odoo>

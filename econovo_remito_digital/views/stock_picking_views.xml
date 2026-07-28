@@ -5,16 +5,30 @@
         <field name="model">stock.picking</field>
         <field name="inherit_id" ref="stock.view_picking_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//widget[@name='signature'][last()]" position="after">
+            <!-- Swap the 2 native "signature" widgets (outgoing) for our own
+                 "signature_signer" widget, which additionally captures the
+                 typed signer name into signed_by. Repeating the same [1]
+                 expression is intentional: after each transform, that widget
+                 no longer matches @name='signature', so the next [1] match
+                 is the next remaining native one, in document order. -->
+            <xpath expr="//widget[@name='signature'][1]" position="attributes">
+                <attribute name="name">signature_signer</attribute>
+                <attribute name="signed_by_field">signed_by</attribute>
+            </xpath>
+            <xpath expr="//widget[@name='signature'][1]" position="attributes">
+                <attribute name="name">signature_signer</attribute>
+                <attribute name="signed_by_field">signed_by</attribute>
+            </xpath>
+            <xpath expr="//widget[@name='signature_signer'][last()]" position="after">
                 <!-- Signature button for internal transfers (traslados entre sucursales, etc.)
                      The native signature widget is limited to outgoing pickings; this adds
                      the same functionality for internal operations that use a remito book. -->
-                <widget name="signature" string="Firmar" highlight="1"
+                <widget name="signature_signer" string="Firmar" highlight="1"
                         invisible="not id or picking_type_code != 'internal' or state != 'done'"
-                        full_name="partner_id" groups="stock.group_stock_sign_delivery"/>
-                <widget name="signature" string="Firmar"
+                        full_name="partner_id" signed_by_field="signed_by" groups="stock.group_stock_sign_delivery"/>
+                <widget name="signature_signer" string="Firmar"
                         invisible="not id or picking_type_code != 'internal' or state == 'done'"
-                        full_name="partner_id" groups="stock.group_stock_sign_delivery"/>
+                        full_name="partner_id" signed_by_field="signed_by" groups="stock.group_stock_sign_delivery"/>
             </xpath>
         </field>
     </record>

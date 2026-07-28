@@ -310,8 +310,8 @@
                                         <td class="remito-firma-sello-col" style="text-align:center;">
                                             <img t-att-src="image_data_uri(o.signature)"
                                                  style="max-height:18mm; max-width:50mm; display:block; margin:0 auto;"/>
-                                            <t t-if="o.partner_id">
-                                                <div style="font-size:7pt; text-align:center;" t-out="o.partner_id.name"/>
+                                            <t t-if="o.signed_by or o.partner_id">
+                                                <div style="font-size:7pt; text-align:center;" t-out="o.signed_by or o.partner_id.name"/>
                                             </t>
                                             <div class="remito-firma-label">Firma y Sello del Destinatario</div>
                                         </td>
