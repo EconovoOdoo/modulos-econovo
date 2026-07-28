@@ -84,7 +84,14 @@
 
                         <!-- Center: R badge + number block -->
                         <td class="remito-badge-cell">
-                            <div class="remito-r-badge">R</div>
+                            <div class="remito-r-badge">
+                                <!-- Without a book assigned there is no real
+                                     CAI/sequence behind this document: show X
+                                     instead of R so it cannot be mistaken for
+                                     a valid fiscal remito if printed by error. -->
+                                <t t-if="book">R</t>
+                                <t t-else="">X</t>
+                            </div>
                             <div class="remito-codigo">
                                 Código Nº 91<br/>
                                 DOCUMENTO<br/>

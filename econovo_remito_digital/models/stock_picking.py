@@ -128,6 +128,36 @@ class StockPicking(models.Model):
             'econovo_remito_digital.action_report_remito_digital'
         ).report_action(self)
 
+    def assign_numbers(self, estimated_number_of_pages, book):
+        """Block assigning voucher numbers beyond the AFIP-authorized range.
+
+        stock_voucher's base implementation only pulls the next number(s)
+        from book.sequence_id (a plain ir.sequence, which never stops on its
+        own); it never checks book.sequence_end ("Nro. Hasta"). Without this
+        guard, a book could silently keep emitting remito numbers past what
+        AFIP actually authorized for that CAI/range.
+        """
+        if book.sequence_end:
+            try:
+                last_authorized = int(book.sequence_end)
+            except (TypeError, ValueError):
+                last_authorized = None
+            if last_authorized is not None:
+                first_number = book.next_number
+                last_number = first_number + estimated_number_of_pages - 1
+                if last_number > last_authorized:
+                    raise UserError(_(
+                        'Cannot assign voucher number(s) %(first)s to '
+                        '%(last)s: book "%(book)s" is only authorized up to '
+                        '%(limit)s (Nro. Hasta). Assign a new book/range '
+                        'before continuing.',
+                        first=first_number,
+                        last=last_number,
+                        book=book.name,
+                        limit=last_authorized,
+                    ))
+        return super().assign_numbers(estimated_number_of_pages, book)
+
     def _get_remito_digital_grouped_lines(self):
         """Return move lines grouped by product with lot data for the digital
         remito template.

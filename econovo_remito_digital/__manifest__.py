@@ -1,6 +1,6 @@
 {
     'name': 'Econovo Remito Digital',
-    'version': '17.0.1.6.0',
+    'version': '17.0.1.7.0',
     'summary': 'Remito digital A4 para Argentina (talonarios digitalizados con CAI)',
     'category': 'Inventory',
     'author': 'Jose D. Leonett',
