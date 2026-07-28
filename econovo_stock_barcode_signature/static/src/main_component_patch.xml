@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!--
+        Add a dedicated "Sign" icon to the Barcode app top navigation bar,
+        right before the settings (gear) icon. Only visible when the current
+        transfer's operation type requires a signature (see
+        stock.picking.type.barcode_require_signature) and it is not
+        cancelled. Works the same way for a single Transfer and for a Batch
+        Transfer since BarcodePickingBatchModel extends BarcodePickingModel.
+    -->
+    <t t-name="econovo_stock_barcode_signature.MainComponentSignButton" t-inherit="stock_barcode.MainComponent" t-inherit-mode="extension">
+        <xpath expr="//button[hasclass('o_barcode_actions')]" position="before">
+            <button t-if="env.model.displaySignButton" t-on-click="onClickSign"
+                    class="o_sign_transfer btn nav-link">
+                <i class="fa fa-pencil-square-o"/>
+            </button>
+        </xpath>
+    </t>
+
+</templates>

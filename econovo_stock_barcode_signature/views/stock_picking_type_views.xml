@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="stock_picking_type_view_form_inherit_signature" model="ir.ui.view">
+        <field name="name">stock.picking.type.view.form.inherit.econovo.stock.barcode.signature</field>
+        <field name="model">stock.picking.type</field>
+        <field name="inherit_id" ref="stock_barcode.stock_barcode_view_picking_type_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='barcode_validation']" position="after">
+                <group name="barcode_signature" string="Signature">
+                    <field name="barcode_require_signature"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>
