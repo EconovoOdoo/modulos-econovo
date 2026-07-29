@@ -2,7 +2,7 @@
 # For copyright and license notices, see __manifest__.py file in module root
 # directory
 ##############################################################################
-from odoo import api, fields, models
+from odoo import _, api, fields, models
 from odoo.tools import format_date
 
 
@@ -53,6 +53,20 @@ class StockBook(models.Model):
         help='Activar para usar el template digital A4 al imprimir este talonario. '
              'Fuerza autoprinted=True automáticamente.',
     )
+    copies_mode = fields.Selection(
+        selection=[
+            ('original', 'Solo Original'),
+            ('duplicate', 'Original + Duplicado'),
+            ('triplicate', 'Original, Duplicado y Triplicado'),
+            ('quadruplicate', 'Original, Duplicado, Triplicado y Cuadruplicado'),
+        ],
+        string='Copias a Imprimir',
+        default='original',
+        required=True,
+        help='Cantidad de copias que se generarán en el PDF del remito digital, '
+             'cada una identificada con su leyenda (ORIGINAL, DUPLICADO, etc.) '
+             'siguiendo el estilo de los comprobantes oficiales de AFIP.',
+    )
     sequence_start = fields.Char(
         string='Nro. Desde',
         help='Número inicial del rango autorizado por AFIP (ej. 00000101)',
@@ -95,3 +109,24 @@ class StockBook(models.Model):
     def _onchange_is_digital(self):
         if self.is_digital:
             self.autoprinted = True
+
+    def _get_remito_copies_labels(self):
+        """Return the ordered list of copy legends to print in the PDF.
+
+        Mirrors the AFIP style used on official printed vouchers (e.g.
+        'ORIGINAL', 'DUPLICADO'): every copy gets its own full set of pages,
+        each one bearing the corresponding legend. Controlled by
+        copies_mode. Safe to call on an empty recordset (falls back to a
+        single 'ORIGINAL' copy, e.g. when no book is assigned yet).
+        """
+        all_labels = [_('ORIGINAL'), _('DUPLICADO'), _('TRIPLICADO'), _('CUADRUPLICADO')]
+        if not self:
+            return all_labels[:1]
+        self.ensure_one()
+        copies_by_mode = {
+            'original': 1,
+            'duplicate': 2,
+            'triplicate': 3,
+            'quadruplicate': 4,
+        }
+        return all_labels[:copies_by_mode.get(self.copies_mode, 1)]

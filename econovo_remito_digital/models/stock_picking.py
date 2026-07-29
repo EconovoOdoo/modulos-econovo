@@ -215,11 +215,16 @@ class StockPicking(models.Model):
 
         return list(grouped.values())
 
-    # Calibration constants for A4 at 8pt/96dpi with 4mm inner padding
-    _REMITO_AVAILABLE_HEIGHT_MM = 118.0   # product rows area per page
-    _REMITO_LINE_HEIGHT_MM = 5.5          # base row height (normal line)
-    _REMITO_LOT_ENTRY_HEIGHT_MM = 3.5     # each extra lot entry beyond the first
-    _REMITO_DETAIL_WRAP_CHARS = 50        # chars before product name wraps
+    # Calibration constants for A4 at 9.5pt/96dpi with 4mm inner padding.
+    # Recalibrated after the 2026-07 +1pt font-size bump and the new
+    # per-copy legend line added to the header badge cell (repeats on every
+    # page), both of which reduce the vertical space left for product rows.
+    # Re-validate visually against a real multi-page remito if fonts/layout
+    # change again.
+    _REMITO_AVAILABLE_HEIGHT_MM = 112.0   # product rows area per page
+    _REMITO_LINE_HEIGHT_MM = 6.0          # base row height (normal line)
+    _REMITO_LOT_ENTRY_HEIGHT_MM = 3.8     # each extra lot entry beyond the first
+    _REMITO_DETAIL_WRAP_CHARS = 46        # chars before product name wraps
 
     def _remito_line_visual_weight(self, group):
         """Estimate rendered height in mm for one product group row.

@@ -4,8 +4,8 @@
 
 $remito-border: 1px solid #333;
 $remito-green: #2e7d32;
-$remito-font-size: 9.5pt;
-$remito-label-font-size: 9pt;
+$remito-font-size: 10.5pt;
+$remito-label-font-size: 10pt;
 
 /* ---- Page blocks (Odoo native footer pattern) ----
    The footer is in <div class="footer"> which Odoo extracts and passes to
@@ -135,6 +135,15 @@ $remito-label-font-size: 9pt;
     margin: 0 auto 2mm auto;
     border: 3px solid #333;
     display: block;
+}
+
+.remito-copy-legend {
+    font-size: 9pt;
+    font-weight: bold;
+    text-align: center;
+    letter-spacing: 0.5pt;
+    text-transform: uppercase;
+    margin-bottom: 1.5mm;
 }
 
 .remito-codigo {
@@ -284,7 +293,7 @@ $remito-label-font-size: 9pt;
     border-right: $remito-border;
     border-bottom: $remito-border;
     height: 6mm;
-    font-size: 7.5pt;
+    font-size: 8.5pt;
 }
 
 .remito-transport-table td:last-child {
@@ -347,7 +356,7 @@ $remito-label-font-size: 9pt;
 .remito-products-table th {
     background-color: $remito-green;
     color: #fff;
-    font-size: 9pt;
+    font-size: 10pt;
     font-weight: bold;
     padding: 2mm 2mm;
     border-right: 1px solid rgba(255, 255, 255, 0.35);
@@ -363,7 +372,7 @@ $remito-label-font-size: 9pt;
     border-right: $remito-border;
     border-bottom: 1px solid #ddd;
     vertical-align: top;
-    font-size: 8.5pt;
+    font-size: 9.5pt;
 }
 
 .remito-products-table td:last-child {
@@ -373,7 +382,7 @@ $remito-label-font-size: 9pt;
 .col-code   { width: 1%; white-space: nowrap; }
 .col-qty    { width: 1%; white-space: nowrap; text-align: left; }
 .col-detail { }
-.col-lots   { width: 25%; font-size: 7pt; vertical-align: top; }
+.col-lots   { width: 25%; font-size: 8pt; vertical-align: top; }
 
 .remito-empty-row td {
     height: 5.5mm;
@@ -565,7 +574,8 @@ $remito-label-font-size: 9pt;
 }
 
 .remito-page-num {
-    font-size: 7pt;
-    color: #666;
+    font-size: $remito-label-font-size;
+    font-weight: bold;
+    color: #222;
     margin-top: 2mm;
 }

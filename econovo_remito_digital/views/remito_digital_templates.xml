@@ -9,6 +9,8 @@
         <t t-set="pages" t-value="o._get_remito_digital_grouped_pages()"/>
         <t t-set="has_lots" t-value="any(bool(line['lots_text']) for page in pages for line in page)"/>
         <t t-set="remito_primary_color" t-value="company.primary_color or '#2e7d32'"/>
+        <t t-set="copy_labels" t-value="book._get_remito_copies_labels()"/>
+        <t t-foreach="copy_labels" t-as="copy_label">
         <t t-foreach="pages" t-as="page_lines">
             <t t-set="page_num" t-value="page_lines_index + 1"/>
             <t t-set="page_total" t-value="len(pages)"/>
@@ -21,7 +23,7 @@
                  unreliable in wkhtmltopdf 0.12.x because body style overflow:hidden
                  in minimal_layout clips position:fixed/absolute elements. -->
             <div class="article"
-                 t-att-style="'' if page_lines_last else 'page-break-after: always;'"
+                 t-att-style="'' if (copy_label_last and page_lines_last) else 'page-break-after: always;'"
                  t-att-data-oe-model="o._name"
                  t-att-data-oe-id="o.id"
                  t-att-data-oe-lang="o.env.context.get('lang')">
@@ -92,6 +94,7 @@
                                 <t t-if="book">R</t>
                                 <t t-else="">X</t>
                             </div>
+                            <div class="remito-copy-legend" t-out="copy_label"/>
                             <div class="remito-codigo">
                                 Código Nº 91<br/>
                                 DOCUMENTO<br/>
@@ -409,6 +412,7 @@
             </div><!-- end footer -->
 
         </t><!-- foreach page -->
+        </t><!-- foreach copy -->
     </t><!-- foreach doc -->
     </t><!-- web.html_container -->
 </template>

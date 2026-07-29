@@ -108,6 +108,7 @@
                        widget="boolean_toggle"
                        invisible="not is_digital"
                        readonly="not active"/>
+                <field name="copies_mode" invisible="not is_digital" readonly="not active"/>
                 <field name="printer_id" invisible="not is_digital" readonly="not active"/>
                 <field name="print_date" invisible="not is_digital" readonly="not active"/>
             </field>
