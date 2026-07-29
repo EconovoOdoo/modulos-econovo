@@ -6,35 +6,32 @@
         <t t-set="book" t-value="o.book_id"/>
         <t t-set="company" t-value="o.company_id"/>
         <t t-set="partner" t-value="o.partner_id"/>
-        <t t-set="pages" t-value="o._get_remito_digital_grouped_pages()"/>
-        <t t-set="has_lots" t-value="any(bool(line['lots_text']) for page in pages for line in page)"/>
+        <t t-set="lines" t-value="o._get_remito_digital_grouped_lines()"/>
+        <t t-set="has_lots" t-value="any(bool(line['lots_text']) for line in lines)"/>
         <t t-set="remito_primary_color" t-value="company.primary_color or '#2e7d32'"/>
-        <t t-set="copy_labels" t-value="book._get_remito_copies_labels()"/>
-        <t t-foreach="copy_labels" t-as="copy_label">
-        <t t-foreach="pages" t-as="page_lines">
-            <t t-set="page_num" t-value="page_lines_index + 1"/>
-            <t t-set="page_total" t-value="len(pages)"/>
-            <!-- Odoo official footer pattern:
-                 * div.article is extracted by _prepare_html() into per-page bodies
-                 * div.footer is extracted and passed to wkhtmltopdf as the footer-html
-                   CLI flag, which renders it within the bottom margin of EVERY page.
-                 * The paper format reserves the footer height via margin_bottom (~35mm).
-                 This is THE Odoo way to pin a footer to the bottom; CSS positioning is
-                 unreliable in wkhtmltopdf 0.12.x because body style overflow:hidden
-                 in minimal_layout clips position:fixed/absolute elements. -->
-            <div class="article"
-                 t-att-style="'' if (copy_label_last and page_lines_last) else 'page-break-after: always;'"
-                 t-att-data-oe-model="o._name"
-                 t-att-data-oe-id="o.id"
-                 t-att-data-oe-lang="o.env.context.get('lang')">
+        <t t-set="copy_label" t-value="o.env.context.get('econovo_copy_label') or (book._get_remito_copies_labels()[0] if book else 'ORIGINAL')"/>
+
+            <!-- ============================================================ -->
+            <!-- HEADER — Odoo official pattern: div.header is extracted by    -->
+            <!-- _prepare_html() and passed to wkhtmltopdf as header-html,   -->
+            <!-- which renders it automatically on EVERY physical page (same   -->
+            <!-- native mechanism already used below for div.footer). Moving  -->
+            <!-- this block here means Python no longer needs to know the     -->
+            <!-- page count in advance — wkhtmltopdf repeats it on its own,   -->
+            <!-- instead of Python pre-splitting product lines into discrete  -->
+            <!-- pages just so this block could be duplicated once per page. -->
+            <!-- ============================================================ -->
+            
+            <div class="header">
 
                 <!-- ============================================================ -->
                 <!-- HEADER BLOCK                                                  -->
                 <!-- ============================================================ -->
+                
                 <div class="remito-header-block">
 
                 <!-- ============================================================ -->
-                <!-- HEADER                                                        -->
+                <!-- HEADER                                                       -->
                 <!-- ============================================================ -->
                 <table class="remito-header-table">
                     <tr>
@@ -122,11 +119,12 @@
                                             </div>
                                         </div>
                                         <div class="remito-picking-name-under-barcode" t-out="o.name"/>
-                                        <t t-if="page_total > 1">
-                                            <div class="remito-page-num">
-                                                Hoja <t t-out="page_num"/> de <t t-out="page_total"/>
-                                            </div>
-                                        </t>
+                                        <div class="remito-page-num">
+                                            <!-- wkhtmltopdf native page-counter placeholders
+                                                 (substituted after real rendering, always
+                                                 accurate — no Python estimation involved). -->
+                                            Hoja <span class="page"/> de <span class="topage"/>
+                                        </div>
                                     </td>
                                 </tr>
                             </table>
@@ -231,6 +229,18 @@
 
                 </div><!-- end remito-header-block -->
 
+            </div><!-- end header -->
+
+            <!-- ============================================================ -->
+            <!-- ARTICLE — flowing content; wkhtmltopdf paginates this table   -->
+            <!-- naturally across as many physical pages as needed (no more   -->
+            <!-- Python-side height estimation/pre-splitting). -->
+            <!-- ============================================================ -->
+            <div class="article"
+                 t-att-data-oe-model="o._name"
+                 t-att-data-oe-id="o.id"
+                 t-att-data-oe-lang="o.env.context.get('lang')">
+
                 <!-- ============================================================ -->
                 <!-- PRODUCTS BLOCK                                                -->
                 <!-- ============================================================ -->
@@ -249,7 +259,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr t-foreach="page_lines" t-as="line">
+                        <tr t-foreach="lines" t-as="line">
                             <td class="col-code" t-out="line['code']"/>
                             <td class="col-qty">
                                 <t t-out="'%.2f' % line['qty_total']"/>
@@ -268,9 +278,9 @@
                 </table>
 
                 <!-- ============================================================ -->
-                <!-- OBSERVATIONS (solo en última página)                         -->
+                <!-- OBSERVATIONS                                                  -->
                 <!-- ============================================================ -->
-                <t t-if="page_lines_last and o._has_remito_observations()">
+                <t t-if="o._has_remito_observations()">
                     <div class="remito-observations">
                         <div class="remito-observations-header"
                              t-attf-style="background-color: {{remito_primary_color}};">Observaciones</div>
@@ -415,9 +425,7 @@
                 </div><!-- end remito-page-footer -->
             </div><!-- end footer -->
 
-        </t><!-- foreach page -->
-        </t><!-- foreach copy -->
-    </t><!-- foreach doc -->
+        </t><!-- foreach doc -->
     </t><!-- web.html_container -->
 </template>
 </odoo>
