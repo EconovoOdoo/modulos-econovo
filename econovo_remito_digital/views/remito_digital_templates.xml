@@ -122,6 +122,11 @@
                                             </div>
                                         </div>
                                         <div class="remito-picking-name-under-barcode" t-out="o.name"/>
+                                        <t t-if="page_total > 1">
+                                            <div class="remito-page-num">
+                                                Hoja <t t-out="page_num"/> de <t t-out="page_total"/>
+                                            </div>
+                                        </t>
                                     </td>
                                 </tr>
                             </table>
@@ -252,7 +257,11 @@
                                     <small> <t t-out="line['uom']"/></small>
                                 </t>
                             </td>
-                            <td class="col-detail" t-out="line['product'].name or ''"/>
+                            <td class="col-detail">
+                                <t t-if="line['product']">
+                                    <span t-field="line['product'].name" t-options="{'widget': 'text'}"/>
+                                </t>
+                            </td>
                             <td class="col-lots" t-if="has_lots" t-raw="line['lots_text']"/>
                         </tr>
                     </tbody>
@@ -397,11 +406,6 @@
                                 <div class="remito-cai-due">
                                     VTO.
                                     <t t-out="book.l10n_ar_cai_due.strftime('%d/%m/%Y')"/>
-                                </div>
-                            </t>
-                            <t t-if="page_total > 1">
-                                <div class="remito-page-num">
-                                    Hoja <t t-out="page_num"/> de <t t-out="page_total"/>
                                 </div>
                             </t>
                         </td>
