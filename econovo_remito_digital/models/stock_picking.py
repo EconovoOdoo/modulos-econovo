@@ -2,6 +2,7 @@
 # For copyright and license notices, see __manifest__.py file in module root
 # directory
 ##############################################################################
+import math
 from collections import defaultdict
 
 from markupsafe import Markup
@@ -181,6 +182,10 @@ class StockPicking(models.Model):
           - uom: unit of measure display name
           - lots: list of stock.lot records
           - lots_text: pre-built HTML (joined by ';<br/>') for t-raw display
+          - lots_entry_lengths: plain-text length of each lot entry (HTML
+            tags excluded), used by _remito_line_visual_weight() to
+            estimate how many visual lines each entry wraps into in the
+            narrow lots column
         """
         self.ensure_one()
         grouped = defaultdict(lambda: {
@@ -190,6 +195,7 @@ class StockPicking(models.Model):
             'uom': '',
             'lots': [],
             'lots_text': '',
+            'lots_entry_lengths': [],
         })
 
         for ml in self.move_line_ids:
@@ -206,7 +212,9 @@ class StockPicking(models.Model):
                 tracking = group['product'].tracking if group['product'] else 'none'
                 label = 'Serie' if tracking == 'serial' else 'Lote'
                 entries = []
+                entry_lengths = []
                 for lot in group['lots']:
+                    plain_parts = ['%s: %s' % (label, lot.name or '')]
                     html_parts = ['<strong>%s:</strong> %s' % (label, self._remito_safe_text(lot.name))]
                     # Extra fields from gg_lot_data if installed
                     for fname, flabel in [
@@ -220,10 +228,106 @@ class StockPicking(models.Model):
                     ]:
                         if fname in lot._fields and getattr(lot, fname, False):
                             value = getattr(lot, fname)
+                            plain_parts.append('%s: %s' % (flabel, value))
                             html_parts.append('<strong>%s:</strong> %s' % (flabel, self._remito_safe_text(value)))
                     if 'marca_equipo' in lot._fields and lot.marca_equipo:
+                        plain_parts.append('Marca de Equipo: %s' % lot.marca_equipo.name)
                         html_parts.append('<strong>Marca de Equipo:</strong> %s' % self._remito_safe_text(lot.marca_equipo.name))
                     entries.append(', '.join(html_parts))
+                    entry_lengths.append(len(', '.join(plain_parts)))
                 group['lots_text'] = ';<br/>'.join(entries)
+                group['lots_entry_lengths'] = entry_lengths
 
         return list(grouped.values())
+
+    # Calibration constants for A4 at 11.5pt/96dpi with 4mm inner padding.
+    # Derived from actual page geometry rather than trial and error:
+    #   A4 height 297mm - margin_top 5mm - margin_bottom 55mm = 237mm usable.
+    #   ~99mm of that is consumed, on EVERY page, by: header-block top
+    #   padding (4mm) + the tallest header-table column (company info /
+    #   R-badge+copy legend / REMITO Nº+barcode+page-num, ~31mm) + the
+    #   DESTINATARIO table (4 field-rows, ~28mm at this font size) + the
+    #   TRANSPORTE table (3 rows, ~19mm) + the products table <thead>
+    #   (~9mm) + inter-table borders/safety buffer (~8mm).
+    #   237mm - 99mm ~= 138mm; kept a bit under that as a safety margin.
+    # This is a calibrated ESTIMATE, not a measurement — re-validate
+    # visually against a real multi-page remito whenever fonts/layout
+    # change again (a too-generous value risks rows colliding with the
+    # fixed wkhtmltopdf footer; a too-conservative one just wastes space).
+    _REMITO_AVAILABLE_HEIGHT_MM = 130.0       # product rows area per page
+    _REMITO_LINE_HEIGHT_MM = 7.2              # base row height (normal line)
+    _REMITO_LOT_ENTRY_HEIGHT_MM = 4.2          # height of one wrapped lot-entry line
+    _REMITO_DETAIL_WRAP_CHARS = 42            # .col-detail chars/line, no lots column
+    _REMITO_DETAIL_WRAP_CHARS_WITH_LOTS = 32  # .col-detail chars/line, lots column present
+    _REMITO_LOT_WRAP_CHARS = 26               # .col-lots chars/line (narrow, ~25% width)
+
+    def _remito_estimate_line_count(self, text, max_chars):
+        """Estimate how many visual lines `text` wraps into at `max_chars`
+        characters per line. Any embedded newline forces an extra break on
+        top of natural character-width wrapping — matches what nl2br()
+        actually renders (see _remito_safe_text() and the product name's
+        t-field widget='text' in the template).
+        """
+        if not text:
+            return 1
+        return sum(
+            max(1, math.ceil(len(segment) / max_chars)) if segment else 1
+            for segment in text.split('\n')
+        )
+
+    def _remito_line_visual_weight(self, group):
+        """Estimate rendered height in mm for one product group row.
+
+        The code/qty/detail/lots columns render side by side in one <tr>,
+        so the real row height is the MAX of whichever column wraps to the
+        most lines (not a sum) — mirrors plain HTML table row behavior.
+        The detail column's wrap threshold is narrower when the lots
+        column is also present (it takes ~25% of the table width away from
+        detail). Each lot entry is measured by its own plain-text length so
+        a single long entry (e.g. several gg_lot_data attributes
+        concatenated) that wraps to 2-3 lines is weighted accordingly,
+        instead of assuming every entry is exactly one line.
+        """
+        has_lots = bool(group['lots'])
+        detail_wrap_chars = (
+            self._REMITO_DETAIL_WRAP_CHARS_WITH_LOTS if has_lots
+            else self._REMITO_DETAIL_WRAP_CHARS
+        )
+        name = (group['product'].name or '') if group['product'] else ''
+        name_lines = self._remito_estimate_line_count(name, detail_wrap_chars)
+        height = self._REMITO_LINE_HEIGHT_MM * name_lines
+
+        if has_lots:
+            lots_lines = sum(
+                max(1, math.ceil(length / self._REMITO_LOT_WRAP_CHARS))
+                for length in group['lots_entry_lengths']
+            )
+            height = max(height, self._REMITO_LOT_ENTRY_HEIGHT_MM * lots_lines)
+
+        return max(height, self._REMITO_LINE_HEIGHT_MM)
+
+    def _get_remito_digital_grouped_pages(self):
+        """Paginate grouped lines using estimated visual height per row.
+
+        Accumulates rows until the available height for the content area
+        would be exceeded, then starts a new page.
+        """
+        self.ensure_one()
+        lines = self._get_remito_digital_grouped_lines()
+        if not lines:
+            return [[]]
+        pages = []
+        current_page = []
+        current_height = 0.0
+        for group in lines:
+            weight = self._remito_line_visual_weight(group)
+            if current_page and current_height + weight > self._REMITO_AVAILABLE_HEIGHT_MM:
+                pages.append(current_page)
+                current_page = [group]
+                current_height = weight
+            else:
+                current_page.append(group)
+                current_height += weight
+        if current_page:
+            pages.append(current_page)
+        return pages
