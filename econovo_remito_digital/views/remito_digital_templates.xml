@@ -13,7 +13,7 @@
 
             <!-- ============================================================ -->
             <!-- HEADER — Odoo official pattern: div.header is extracted by    -->
-            <!-- _prepare_html() and passed to wkhtmltopdf as --header-html,   -->
+            <!-- _prepare_html() and passed to wkhtmltopdf as header-html,      -->
             <!-- repeated automatically on EVERY physical page. Deliberately   -->
             <!-- kept to a single line of plain text (mirrors Odoo's own       -->
             <!-- web.internal_layout header): an earlier attempt put the FULL  -->
