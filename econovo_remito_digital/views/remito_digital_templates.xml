@@ -6,24 +6,49 @@
         <t t-set="book" t-value="o.book_id"/>
         <t t-set="company" t-value="o.company_id"/>
         <t t-set="partner" t-value="o.partner_id"/>
-        <t t-set="pages" t-value="o._get_remito_digital_grouped_pages()"/>
-        <t t-set="has_lots" t-value="any(bool(line['lots_text']) for page in pages for line in page)"/>
+        <t t-set="lines" t-value="o._get_remito_digital_grouped_lines()"/>
+        <t t-set="has_lots" t-value="any(bool(line['lots_text']) for line in lines)"/>
         <t t-set="remito_primary_color" t-value="company.primary_color or '#2e7d32'"/>
-        <t t-set="copy_labels" t-value="book._get_remito_copies_labels()"/>
-        <t t-foreach="copy_labels" t-as="copy_label">
-        <t t-foreach="pages" t-as="page_lines">
-            <t t-set="page_num" t-value="page_lines_index + 1"/>
-            <t t-set="page_total" t-value="len(pages)"/>
-            <!-- Odoo official footer pattern:
-                 * div.article is extracted by _prepare_html() into per-page bodies
-                 * div.footer is extracted and passed to wkhtmltopdf as the footer-html
-                   CLI flag, which renders it within the bottom margin of EVERY page.
-                 * The paper format reserves the footer height via margin_bottom (~35mm).
-                 This is THE Odoo way to pin a footer to the bottom; CSS positioning is
-                 unreliable in wkhtmltopdf 0.12.x because body style overflow:hidden
-                 in minimal_layout clips position:fixed/absolute elements. -->
+        <t t-set="copy_label" t-value="o.env.context.get('econovo_copy_label') or (book._get_remito_copies_labels()[0] if book else 'ORIGINAL')"/>
+
+            <!-- ============================================================ -->
+            <!-- HEADER — Odoo official pattern: div.header is extracted by    -->
+            <!-- _prepare_html() and passed to wkhtmltopdf as --header-html,   -->
+            <!-- repeated automatically on EVERY physical page. Deliberately   -->
+            <!-- kept to a single line of plain text (mirrors Odoo's own       -->
+            <!-- web.internal_layout header): an earlier attempt put the FULL  -->
+            <!-- letterhead (logo, barcode, tables) in here and it rendered    -->
+            <!-- fine in the HTML/browser preview but came out garbled in the  -->
+            <!-- real PDF — wkhtmltopdf's header/footer rendering pass is a    -->
+            <!-- separate, more limited context than the main body, reliable   -->
+            <!-- only for trivial content. The full letterhead lives in        -->
+            <!-- div.article instead (prints once, on page 1 only — like       -->
+            <!-- Odoo's own invoice report keeps its address blocks out of     -->
+            <!-- div.header too). -->
+            <!-- ============================================================ -->
+            <div class="header">
+                <table class="remito-running-header">
+                    <tr>
+                        <td class="remito-running-header-number">
+                            REMITO Nº <t t-out="o.voucher_ids and o.voucher_ids[0].name or o.name"/>
+                        </td>
+                        <td class="remito-page-num">
+                            <!-- wkhtmltopdf native page-counter placeholders,
+                                 substituted after real rendering — always
+                                 accurate, no Python estimation involved. -->
+                            Hoja <span class="page"/> de <span class="topage"/>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- ============================================================ -->
+            <!-- ARTICLE — flowing content; wkhtmltopdf paginates the products -->
+            <!-- table naturally across as many physical pages as needed (no   -->
+            <!-- Python-side height estimation/pre-splitting). The letterhead  -->
+            <!-- below only prints once, at the top of page 1. -->
+            <!-- ============================================================ -->
             <div class="article"
-                 t-att-style="'' if (copy_label_last and page_lines_last) else 'page-break-after: always;'"
                  t-att-data-oe-model="o._name"
                  t-att-data-oe-id="o.id"
                  t-att-data-oe-lang="o.env.context.get('lang')">
@@ -125,9 +150,6 @@
                                     </td>
                                 </tr>
                             </table>
-                            <div class="remito-page-num">
-                                Hoja <t t-out="page_num"/> de <t t-out="page_total"/>
-                            </div>
                         </td>
                     </tr>
                 </table>
@@ -247,7 +269,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr t-foreach="page_lines" t-as="line">
+                        <tr t-foreach="lines" t-as="line">
                             <td class="col-code" t-out="line['code']"/>
                             <td class="col-qty">
                                 <t t-out="'%.2f' % line['qty_total']"/>
@@ -268,7 +290,7 @@
                 <!-- ============================================================ -->
                 <!-- OBSERVATIONS (solo en última página)                         -->
                 <!-- ============================================================ -->
-                <t t-if="page_lines_last and o._has_remito_observations()">
+                <t t-if="o._has_remito_observations()">
                     <div class="remito-observations">
                         <div class="remito-observations-header"
                              t-attf-style="background-color: {{remito_primary_color}};">Observaciones</div>
@@ -413,8 +435,6 @@
                 </div><!-- end remito-page-footer -->
             </div><!-- end footer -->
 
-        </t><!-- foreach page -->
-        </t><!-- foreach copy -->
     </t><!-- foreach doc -->
     </t><!-- web.html_container -->
 </template>

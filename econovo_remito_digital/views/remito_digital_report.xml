@@ -17,7 +17,19 @@
         <field name="page_height">0</field>
         <field name="page_width">0</field>
         <field name="orientation">Portrait</field>
-        <field name="margin_top">5</field>
+        <!-- margin_top reserves the space where wkhtmltopdf renders the
+             header-html block (Odoo extracts div.header and passes it via
+             the wkhtmltopdf --header-html flag, repeating it automatically on
+             EVERY physical page). The header is DELIBERATELY kept to a single
+             plain-text row (REMITO Nº + Hoja X de Y) - a previous attempt put
+             the full letterhead (logo, barcode, tables) here and it rendered
+             fine in the HTML/browser preview but came out garbled in the real
+             PDF, because wkhtmltopdf's header/footer rendering pass is a
+             separate, more limited context than the main body (confirmed by
+             comparing against Odoo's own div.header usage in
+             web.internal_layout, which is likewise a single trivial text row).
+             15mm comfortably fits one bold text line + padding. -->
+        <field name="margin_top">15</field>
         <!-- margin_bottom reserves the space where wkhtmltopdf renders the
              footer-html block (Odoo extracts div.footer and passes it via
              the wkhtmltopdf footer-html flag). Total footer content height:

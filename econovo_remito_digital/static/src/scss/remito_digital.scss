@@ -573,10 +573,22 @@ $remito-label-font-size: 11pt;
     margin-top: 1mm;
 }
 
+.remito-running-header {
+    width: 100%;
+    padding: 2mm 4mm 0;
+    font-family: Arial, sans-serif;
+    border-collapse: collapse;
+}
+
+.remito-running-header-number {
+    font-size: $remito-label-font-size;
+    font-weight: bold;
+    text-align: left;
+}
+
 .remito-page-num {
     font-size: $remito-label-font-size;
     font-weight: bold;
     color: #222;
-    margin-top: 2mm;
     text-align: right;
 }
