@@ -2,6 +2,7 @@
 # For copyright and license notices, see __manifest__.py file in module root
 # directory
 ##############################################################################
+import math
 from collections import defaultdict
 
 from markupsafe import Markup
