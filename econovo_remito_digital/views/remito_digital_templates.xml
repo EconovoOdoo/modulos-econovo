@@ -96,7 +96,12 @@
                             </div>
                             <div class="remito-copy-legend" t-out="copy_label"/>
                             <div class="remito-codigo">
-                                Código Nº 91<br/>
+                                <!-- Document type codes per AFIP/ARCA Resolución
+                                     General 1415/2003 and Odoo's own core
+                                     l10n_ar data (l10n_latam.document.type.csv):
+                                     dc_r_r (letter "R") = code 91,
+                                     dc_remito_x (letter "X") = code 94. -->
+                                Código Nº <t t-if="book">91</t><t t-else="">94</t><br/>
                                 DOCUMENTO<br/>
                                 NO VALIDO<br/>
                                 COMO<br/>
