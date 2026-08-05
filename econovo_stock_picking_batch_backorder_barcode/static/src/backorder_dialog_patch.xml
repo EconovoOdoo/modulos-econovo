@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="econovo_stock_picking_batch_backorder_barcode.BackorderDialog"
+       t-inherit="stock_barcode.BackorderDialog" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('container')]" position="inside">
+            <div class="o_econovo_backorder_batch form-check mt-4" t-if="backorderBatch.show">
+                <input type="checkbox" class="form-check-input" id="econovo_backorder_batch"
+                    t-att-checked="backorderBatch.create"
+                    t-on-change="toggleBackorderBatch"/>
+                <label class="form-check-label" for="econovo_backorder_batch">
+                    Create a new batch with the backorders
+                </label>
+            </div>
+        </xpath>
+    </t>
+
+</templates>

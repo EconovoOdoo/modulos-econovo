@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="stock_picking_batch_view_form" model="ir.ui.view">
+        <field name="name">stock.picking.batch.view.form.inherit.econovo_stock_picking_batch_backorder</field>
+        <field name="model">stock.picking.batch</field>
+        <field name="inherit_id" ref="stock_picking_batch.stock_picking_batch_form"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                <button name="action_view_backorder_batches" type="object"
+                    class="oe_stat_button" icon="fa-refresh"
+                    invisible="not backorder_batch_count">
+                    <field name="backorder_batch_count" widget="statinfo" string="Backorder Batches"/>
+                </button>
+            </div>
+            <field name="picking_type_id" position="after">
+                <field name="origin_batch_id" invisible="not origin_batch_id"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>
