@@ -37,7 +37,7 @@ Requirements:
     'author': "Jose D. Leonett",
     'website': 'https://github.com/josedleonett',
     'category': 'Inventory/Inventory',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     'license': 'AGPL-3',
     'depends': [
         'stock_picking_batch',

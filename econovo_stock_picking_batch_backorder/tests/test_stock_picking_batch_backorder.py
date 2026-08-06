@@ -83,6 +83,28 @@ class TestStockPickingBatchBackorder(TransactionCase):
         self.assertFalse(new_batch.is_wave)
         self.assertEqual(batch.backorder_batch_count, 1)
 
+    def test_backorder_batch_includes_fully_untouched_pickings(self):
+        """A transfer with literally nothing picked is detached from the batch
+        WITHOUT ever being validated (same record, no backorder created for
+        it) - it must still join the new batch alongside the backorders of
+        its siblings, matching the reported scenario (a transfer left with 0
+        delivered items was missing from the resulting batch).
+        """
+        picked_pickings = self._create_delivery() | self._create_delivery()
+        untouched_picking = self._create_delivery()
+        batch = self._create_batch(picked_pickings | untouched_picking)
+        self._pick_partially(picked_pickings)
+
+        self._process_backorder_wizard(batch.action_done())
+
+        self.assertEqual(untouched_picking.state, 'assigned')
+        self.assertFalse(untouched_picking.backorder_ids)
+        new_batch = picked_pickings.backorder_ids.batch_id
+        self.assertEqual(len(new_batch), 1)
+        self.assertEqual(untouched_picking.batch_id, new_batch)
+        self.assertEqual(new_batch.origin_batch_id, batch)
+        self.assertEqual(len(new_batch.picking_ids), 3)
+
     def test_backorder_batch_not_created_when_disabled(self):
         """Unticking the option keeps the legacy behavior."""
         pickings = self._create_delivery() | self._create_delivery()

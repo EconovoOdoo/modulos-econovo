@@ -37,25 +37,29 @@ class StockPickingBatch(models.Model):
             action['domain'] = [('id', 'in', self.backorder_batch_ids.ids)]
         return action
 
-    def _create_backorder_batch(self, backorders):
-        """Create the batch transfer grouping `backorders` under this batch."""
+    def _create_backorder_batch(self, pickings):
+        """Create the batch transfer grouping `pickings` under this batch.
+
+        `pickings` can mix newly created backorders and transfers that were
+        never validated at all (nothing was picked on them).
+        """
         self.ensure_one()
         new_batch = self.env['stock.picking.batch'].with_company(self.company_id).create(
-            self._prepare_backorder_batch_values(backorders))
+            self._prepare_backorder_batch_values(pickings))
         if self.picking_type_id.backorder_batch_state == 'in_progress':
             new_batch.action_confirm()
         self.message_post(body=Markup("%s %s") % (
-            _("The backorders have been grouped into the batch transfer"),
+            _("The pending transfers have been grouped into the batch transfer"),
             new_batch._get_html_link()))
         return new_batch
 
-    def _prepare_backorder_batch_values(self, backorders):
+    def _prepare_backorder_batch_values(self, pickings):
         self.ensure_one()
         return {
             'company_id': self.company_id.id,
             'is_wave': self.is_wave,
             'origin_batch_id': self.id,
-            'picking_ids': [Command.set(backorders.ids)],
+            'picking_ids': [Command.set(pickings.ids)],
             'picking_type_id': self.picking_type_id.id,
             'user_id': self.user_id.id,
         }
