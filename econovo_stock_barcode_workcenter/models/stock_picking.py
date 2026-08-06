@@ -14,7 +14,7 @@ class StockPicking(models.Model):
         return fields
 
     def _get_stock_barcode_data(self):
-        """Include mrp.workcenter records in the barcode data cache."""
+        """Include mrp.workcenter and mrp.plan records in the barcode data cache."""
         data = super()._get_stock_barcode_data()
         if 'x_studio_workcenter_id' in self._fields:
             workcenter_ids = self.mapped('x_studio_workcenter_id')
@@ -24,4 +24,7 @@ class StockPicking(models.Model):
                 )
             else:
                 data['records']['mrp.workcenter'] = []
+        plans = self.move_ids.production_plan_id
+        data['records']['mrp.plan'] = plans.read(['name'], load=False) if plans else []
         return data
+

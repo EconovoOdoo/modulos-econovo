@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Econovo - Stock Barcode Workcenter Display",
-    "version": "17.0.1.0.0",
+    "version": "17.0.1.1.0",
     "category": "Inventory/Inventory",
     "summary": "Display the assigned workcenter in the Barcode app picking view",
     "description": """
@@ -11,6 +11,10 @@ application's picking detail view.
 The workcenter is shown in the header area, below the picking reference name,
 only when the picking has an assigned workcenter.
 
+When viewing a Batch Transfer, each line also shows its own transfer's
+Production Plan and workcenter (below the origin transfer reference, above the
+destination location), since a batch mixes lines from different transfers.
+
 Requires the Studio field x_studio_workcenter_id on stock.picking.
     """,
     "author": "Jose D. Leonett",
@@ -18,7 +22,9 @@ Requires the Studio field x_studio_workcenter_id on stock.picking.
     "license": "AGPL-3",
     "depends": [
         "stock_barcode",
+        "stock_barcode_picking_batch",
         "mrp",
+        "econovo_mrp_component_lines",
     ],
     "data": [],
     "assets": {
