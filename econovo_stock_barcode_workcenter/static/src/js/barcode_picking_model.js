@@ -6,10 +6,10 @@ import { patch } from "@web/core/utils/patch";
 patch(BarcodePickingModel.prototype, {
     _getModelRecord() {
         const record = super._getModelRecord(...arguments);
-        if (record.x_studio_workcenter_id) {
+        if (record.workcenter_id) {
             try {
-                record.x_studio_workcenter_id = this.cache.getRecord(
-                    'mrp.workcenter', record.x_studio_workcenter_id
+                record.workcenter_id = this.cache.getRecord(
+                    'mrp.workcenter', record.workcenter_id
                 );
             } catch {
                 // Field or record not available, keep the raw ID.

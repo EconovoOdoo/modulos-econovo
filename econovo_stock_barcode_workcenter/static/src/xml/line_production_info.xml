@@ -1,16 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
 
-    <t t-name="econovo_stock_barcode_workcenter.BatchLineProductionInfo"
+    <t t-name="econovo_stock_barcode_workcenter.LineProductionInfo"
        t-inherit="stock_barcode.LineDestinationLocation" t-inherit-mode="extension">
         <xpath expr="//div[@name='destination_location']" position="before">
-            <div t-if="env.model.resModel == 'stock.picking.batch' and line.production_plan_id"
-                 name="production_plan">
+            <div t-if="line.production_plan_id" name="production_plan">
                 <i class="fa fa-fw fa-calendar-check-o"/>
                 <span class="o_line_production_plan fst-italic text-muted" t-esc="line.production_plan_id.name"/>
             </div>
-            <div t-if="env.model.resModel == 'stock.picking.batch' and line.workcenter_id"
-                 name="line_workcenter">
+            <div t-if="line.workcenter_id" name="line_workcenter">
                 <i class="fa fa-fw fa-industry"/>
                 <span class="o_line_workcenter fst-italic text-muted" t-esc="line.workcenter_id.name"/>
             </div>

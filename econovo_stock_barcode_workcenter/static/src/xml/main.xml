@@ -5,10 +5,10 @@
        t-inherit="stock_barcode.MainComponent"
        t-inherit-mode="extension">
         <xpath expr="//div[hasclass('o_barcode_header')]//div[hasclass('navbar')]" position="after">
-            <div t-if="env.model.record and env.model.record.x_studio_workcenter_id and env.model.record.x_studio_workcenter_id.name"
+            <div t-if="env.model.record and env.model.record.workcenter_id and env.model.record.workcenter_id.name"
                  class="d-flex align-items-center justify-content-center py-1 bg-info bg-opacity-25 text-info-emphasis">
                 <i class="fa fa-fw fa-industry me-1"/>
-                <span class="fw-bold small" t-esc="env.model.record.x_studio_workcenter_id.name"/>
+                <span class="fw-bold small" t-esc="env.model.record.workcenter_id.name"/>
             </div>
         </xpath>
     </t>
