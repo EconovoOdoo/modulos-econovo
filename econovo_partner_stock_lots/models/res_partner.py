@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from odoo import _, fields, models
-from odoo.tools.safe_eval import safe_eval
 
 
 class ResPartner(models.Model):
@@ -29,15 +28,14 @@ class ResPartner(models.Model):
         action = self.env['ir.actions.act_window']._for_xml_id(
             'stock.action_production_lot_form'
         )
-        action_context = action.get('context') or {}
-        if isinstance(action_context, str):
-            action_context = safe_eval(action_context)
-        action_context.update({
-            'default_last_delivery_partner_id': self.id,
-        })
         action.update({
             'name': _('Lots & Serial Numbers'),
             'domain': [('last_delivery_partner_id', 'child_of', self.id)],
-            'context': action_context,
+            'context': {
+                'search_default_group_by_product': 1,
+                'display_complete': True,
+                'default_company_id': self.env.company.id,
+                'default_last_delivery_partner_id': self.id,
+            },
         })
         return action
