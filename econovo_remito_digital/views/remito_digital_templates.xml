@@ -261,8 +261,8 @@
                                 </t>
                             </td>
                             <td class="col-detail">
-                                <t t-if="line['product']">
-                                    <span t-field="line['product'].name" t-options="{'widget': 'text'}"/>
+                                <t t-if="line['description']">
+                                    <span t-raw="line['description_html']"/>
                                 </t>
                             </td>
                             <td class="col-lots" t-if="has_lots" t-raw="line['lots_text']"/>

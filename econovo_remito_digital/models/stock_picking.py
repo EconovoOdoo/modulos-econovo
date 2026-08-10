@@ -180,6 +180,12 @@ class StockPicking(models.Model):
           - code: internal reference string
           - qty_total: total done/reserved quantity (float)
           - uom: unit of measure display name
+          - description: plain-text stock.move.description_picking of the
+            first move found for this product (falls back to the product
+            name when blank), used for display and for the pagination
+            height estimate
+          - description_html: HTML-safe version of `description` (see
+            _remito_safe_text()) for t-raw display, preserving line breaks
           - lots: list of stock.lot records
           - lots_text: pre-built HTML (joined by ';<br/>') for t-raw display
           - lots_entry_lengths: plain-text length of each lot entry (HTML
@@ -193,6 +199,8 @@ class StockPicking(models.Model):
             'code': '',
             'qty_total': 0.0,
             'uom': '',
+            'description': '',
+            'description_html': '',
             'lots': [],
             'lots_text': '',
             'lots_entry_lengths': [],
@@ -204,10 +212,17 @@ class StockPicking(models.Model):
             grouped[pid]['code'] = ml.product_id.default_code or ''
             grouped[pid]['qty_total'] += ml.quantity or 0.0
             grouped[pid]['uom'] = ml.product_uom_id.name if ml.product_uom_id else ''
+            # A product can span several moves; keep the first non-blank
+            # description_picking rather than whichever move line is last.
+            if not grouped[pid]['description'] and ml.move_id.description_picking:
+                grouped[pid]['description'] = ml.move_id.description_picking.strip()
             if ml.lot_id and ml.lot_id not in grouped[pid]['lots']:
                 grouped[pid]['lots'].append(ml.lot_id)
 
         for group in grouped.values():
+            if not group['description'] and group['product']:
+                group['description'] = group['product'].name
+            group['description_html'] = self._remito_safe_text(group['description'])
             if group['lots']:
                 tracking = group['product'].tracking if group['product'] else 'none'
                 label = 'Serie' if tracking == 'serial' else 'Lote'
@@ -265,8 +280,8 @@ class StockPicking(models.Model):
         """Estimate how many visual lines `text` wraps into at `max_chars`
         characters per line. Any embedded newline forces an extra break on
         top of natural character-width wrapping — matches what nl2br()
-        actually renders (see _remito_safe_text() and the product name's
-        t-field widget='text' in the template).
+        actually renders (see _remito_safe_text() and the detail column's
+        description_html in the template).
         """
         if not text:
             return 1
@@ -293,9 +308,8 @@ class StockPicking(models.Model):
             self._REMITO_DETAIL_WRAP_CHARS_WITH_LOTS if has_lots
             else self._REMITO_DETAIL_WRAP_CHARS
         )
-        name = (group['product'].name or '') if group['product'] else ''
-        name_lines = self._remito_estimate_line_count(name, detail_wrap_chars)
-        height = self._REMITO_LINE_HEIGHT_MM * name_lines
+        description_lines = self._remito_estimate_line_count(group['description'], detail_wrap_chars)
+        height = self._REMITO_LINE_HEIGHT_MM * description_lines
 
         if has_lots:
             lots_lines = sum(
