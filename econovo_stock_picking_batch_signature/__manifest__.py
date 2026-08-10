@@ -25,20 +25,31 @@ Features:
   stock.picking it contains
 * The Batch Transfer PDF report (stock_picking_batch.report_picking_batch)
   now shows the registered signature, signer name and date
+* The same report also shows, hidden when there are none, the Purchase
+  Order(s) behind a "Resupply Subcontractor" transfer: once printed and
+  sent along with the components, the subcontractor can reference the
+  exact PO on their return shipment, so it can be matched to the right
+  order on receipt
 
 Requirements:
 -------------
 * Module `stock_picking_batch` (core)
 * Module `econovo_remito_digital` (provides the signature_signer widget)
+* Module `mrp_subcontracting` (Enterprise, provides the subcontracting MO
+  <-> incoming shipment link)
+* Module `purchase_stock` (provides the incoming shipment <-> Purchase
+  Order link)
     """,
     'author': "Jose D. Leonett",
     'website': 'https://github.com/josedleonett',
     'category': 'Inventory/Inventory',
-    'version': '17.0.1.0.0',
+    'version': '17.0.2.0.0',
     'license': 'AGPL-3',
     'depends': [
         'stock_picking_batch',
         'econovo_remito_digital',
+        'mrp_subcontracting',
+        'purchase_stock',
     ],
     'data': [
         'views/stock_picking_batch_views.xml',

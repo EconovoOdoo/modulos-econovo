@@ -2,6 +2,22 @@
 <odoo>
     <template id="report_picking_batch_inherit_signature"
               inherit_id="stock_picking_batch.report_picking_batch">
+        <!-- Batch header (Summary section): Purchase Order(s) of every transfer in the batch. -->
+        <xpath expr="//div[@t-if='o.user_id'][1]" position="after">
+            <t t-set="batch_purchase_orders" t-value="o.picking_ids.move_ids._get_subcontracting_purchase_orders()"/>
+            <div t-if="batch_purchase_orders">
+                <strong>Purchase Order(s):</strong>
+                <span t-esc="', '.join(batch_purchase_orders.mapped('name'))"/>
+            </div>
+        </xpath>
+        <!-- Components by location header: Purchase Order(s) of that location group's transfers. -->
+        <xpath expr="//td[@style='background-color:lightgrey']" position="inside">
+            <t t-set="location_purchase_orders" t-value="move_lines.move_id._get_subcontracting_purchase_orders()"/>
+            <p t-if="location_purchase_orders" style="margin:0px">
+                <strong>Purchase Order(s):</strong>
+                <span t-esc="', '.join(location_purchase_orders.mapped('name'))"/>
+            </p>
+        </xpath>
         <xpath expr="//div[hasclass('page')]" position="inside">
             <div t-if="o.signature" class="mt32 ml64 mr4" name="batch_signature">
                 <div class="offset-8">

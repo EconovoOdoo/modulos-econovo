@@ -19,11 +19,22 @@ form, which has no signing capability at all natively (unlike
   contains
 - The Batch Transfer PDF report now shows the registered signature, signer
   name and date
+- The same report also shows the Purchase Order(s) behind a "Resupply
+  Subcontractor" transfer, both in the batch header (all transfers) and in
+  each "components by location" group header (that group's transfers only),
+  hidden when there are none. Meant for the "Resupply Subcontractor on
+  Order" workflow: this document travels with the components to the
+  subcontractor, so their return shipment can reference the exact PO,
+  making it unambiguous which order to receive against
 
 ## Requirements
 
 - Module `stock_picking_batch` (core)
 - Module `econovo_remito_digital` (provides the `signature_signer` widget)
+- Module `mrp_subcontracting` (Enterprise, provides the subcontracting MO
+  <-> incoming shipment link)
+- Module `purchase_stock` (provides the incoming shipment <-> Purchase Order
+  link)
 
 ## Configuration
 
