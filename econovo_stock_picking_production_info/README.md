@@ -20,14 +20,15 @@ module (a view referencing a field that doesn't exist yet fails to install).
 
 ## Solution
 
-* `production_plan_id` (`related='group_id.mrp_production_ids.plan_id'`,
-  stored): the MO sharing the transfer's procurement group, mirroring the
-  Studio field it replaces - a plain related field, so it stays correct
-  automatically (no manual recompute dependencies to maintain).
-* `workcenter_id` (`mrp.workcenter`): a proper, module-owned field replacing
-  `x_studio_workcenter_id`. On install, its value is copied from the Studio
-  field if present (`post_init_hook`), so no data is lost - the Studio field
-  can then be safely deleted.
+Both fields are plain `related=` fields (`store=True`), faithfully mirroring
+the Studio fields they replace (same relation, same related path) - so they
+stay correct automatically, with no manual recompute dependencies to
+maintain and no data migration needed:
+
+* `production_plan_id`: `related='group_id.mrp_production_ids.plan_id'`,
+  mirroring the Studio field `x_studio_group_id_mo_plan_id`.
+* `workcenter_id`: `related='group_id.mrp_production_ids.workorder_ids.workcenter_id'`,
+  mirroring the Studio field `x_studio_workcenter_id`.
 
 Both fields are shown:
 
@@ -40,3 +41,4 @@ Both fields are shown:
 
 * `mrp` (provides `mrp.workcenter`)
 * `gg_automatic_mrp_schedule` (provides `mrp.plan`)
+

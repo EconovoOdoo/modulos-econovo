@@ -20,9 +20,11 @@ replaces.
 
 This module adds a proper **Production Plan** field
 (``related='group_id.mrp_production_ids.plan_id'``) and a proper
-**Workcenter** field (``workcenter_id``) on ``stock.picking`` - replacing the
-Studio fields it used to rely on, whose workcenter value is copied over on
-install - and shows both, on:
+**Workcenter** field
+(``related='group_id.mrp_production_ids.workorder_ids.workcenter_id'``) on
+``stock.picking`` - faithful, module-owned copies of the Studio fields they
+replace (same relation, same related path, same store=True) - and shows
+both, on:
 
 * The transfer form view, right after "Source Document"
 * The transfers list view (Inventory > Transfers and, since a Batch
@@ -37,7 +39,7 @@ Requirements:
     'author': "Jose D. Leonett",
     'website': 'https://github.com/josedleonett',
     'category': 'Inventory/Inventory',
-    'version': '17.0.2.0.0',
+    'version': '17.0.2.1.0',
     'license': 'AGPL-3',
     'depends': [
         'mrp',
@@ -46,7 +48,6 @@ Requirements:
     'data': [
         'views/stock_picking_views.xml',
     ],
-    'post_init_hook': 'post_init_hook',
     'installable': True,
     'auto_install': False,
     'application': False,

@@ -25,7 +25,7 @@ class TestStockPickingProductionInfo(TransactionCase):
             'bom_line_ids': [(0, 0, {'product_id': cls.component.id, 'product_qty': 1.0})],
         })
 
-    def test_production_plan_id_via_procurement_group(self):
+    def test_production_plan_and_workcenter_via_procurement_group(self):
         """The supply transfer's own move is never linked to the MO
         directly (no move_dest_ids/move_orig_ids chain at all in this
         Econovo install's replenishment-to-workcenter routes): the only
@@ -41,6 +41,12 @@ class TestStockPickingProductionInfo(TransactionCase):
         })
         production.action_confirm()
         self.assertTrue(production.procurement_group_id)
+        self.env['mrp.workorder'].create({
+            'name': 'Test Operation',
+            'production_id': production.id,
+            'workcenter_id': self.workcenter.id,
+            'product_uom_id': self.bom_product.uom_id.id,
+        })
 
         supply_picking = self.env['stock.picking'].create({
             'location_id': stock_location.id,
@@ -63,4 +69,5 @@ class TestStockPickingProductionInfo(TransactionCase):
         self.assertFalse(supply_move.move_orig_ids)
 
         self.assertEqual(supply_picking.production_plan_id, self.plan)
+        self.assertEqual(supply_picking.workcenter_id, self.workcenter)
 
