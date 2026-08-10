@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Econovo - Stock Barcode Workcenter Display",
-    "version": "17.0.2.0.0",
+    "version": "17.0.2.1.0",
     "category": "Inventory/Inventory",
     "summary": "Display the assigned workcenter in the Barcode app picking view",
     "description": """
@@ -23,7 +23,6 @@ The same is shown on a regular (non-batch) transfer's lines.
         "stock_barcode",
         "stock_barcode_picking_batch",
         "mrp",
-        "econovo_mrp_component_lines",
         "econovo_stock_picking_production_info",
     ],
     "data": [],

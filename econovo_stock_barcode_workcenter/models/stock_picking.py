@@ -15,7 +15,7 @@ class StockPicking(models.Model):
         data = super()._get_stock_barcode_data()
         workcenters = self.mapped('workcenter_id')
         data['records']['mrp.workcenter'] = workcenters.read(['name', 'code'], load=False) if workcenters else []
-        plans = self.move_ids._get_supply_production().plan_id
+        plans = self.move_line_ids.mapped('production_plan_id')
         data['records']['mrp.plan'] = plans.read(['name'], load=False) if plans else []
         return data
 

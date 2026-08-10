@@ -10,16 +10,19 @@ Stock Picking Production Info
 ==============================
 
 ``stock.picking`` has no native way to know which Manufacturing Order's
-Production Plan a transfer supplies components for: the only related data
-lives on ``stock.move`` (``production_plan_id``, added by
-``econovo_mrp_component_lines``), and it isn't linked directly on a
-"Choose Components" transfer's own move - only on the actual MO consumption
-move further down the destination chain.
+Production Plan a transfer supplies components for. A "Choose Components"
+transfer's own move is never linked to its MO directly (no
+raw_material_production_id, no move_dest_ids/move_orig_ids chain in this
+Econovo install's replenishment-to-workcenter routes) - the only real link
+is the procurement group (``group_id``) shared with the MO, exactly like
+the existing Studio field ``x_studio_group_id_mo_plan_id`` this module
+replaces.
 
-This module adds a computed **Production Plan** field and a proper
+This module adds a proper **Production Plan** field
+(``related='group_id.mrp_production_ids.plan_id'``) and a proper
 **Workcenter** field (``workcenter_id``) on ``stock.picking`` - replacing the
-Studio field ``x_studio_workcenter_id`` it used to rely on, whose value is
-copied over on install - and shows both, on:
+Studio fields it used to rely on, whose workcenter value is copied over on
+install - and shows both, on:
 
 * The transfer form view, right after "Source Document"
 * The transfers list view (Inventory > Transfers and, since a Batch
@@ -28,15 +31,17 @@ copied over on install - and shows both, on:
 
 Requirements:
 -------------
-* Module `econovo_mrp_component_lines` (provides `_get_supply_production`)
+* Module `mrp` (provides `mrp.workcenter`)
+* Module `gg_automatic_mrp_schedule` (provides `mrp.plan`)
     """,
     'author': "Jose D. Leonett",
     'website': 'https://github.com/josedleonett',
     'category': 'Inventory/Inventory',
-    'version': '17.0.1.0.0',
+    'version': '17.0.2.0.0',
     'license': 'AGPL-3',
     'depends': [
-        'econovo_mrp_component_lines',
+        'mrp',
+        'gg_automatic_mrp_schedule',
     ],
     'data': [
         'views/stock_picking_views.xml',

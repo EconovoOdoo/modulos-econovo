@@ -2,7 +2,7 @@
 # Part of Econovo. See LICENSE file for full copyright and licensing details.
 {
     'name': 'Econovo MRP Component Lines',
-    'version': '17.0.1.0.3',
+    'version': '17.0.1.0.5',
     'category': 'Manufacturing',
     'summary': 'List view of component (raw material) lines across all Manufacturing Orders',
     'description': """

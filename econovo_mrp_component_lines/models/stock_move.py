@@ -22,25 +22,6 @@ class StockMove(models.Model):
         self.ensure_one()
         return self.move_orig_ids[:1].picking_id
 
-    def _get_supply_production(self):
-        """Return the Manufacturing Order(s) the moves in `self` supply
-        components for.
-
-        The move of a "Choose components" transfer isn't linked to the MO
-        directly: only the actual consumption move further down the
-        destination chain has `raw_material_production_id` set. This follows
-        `move_dest_ids` until finding one that does, for every move in `self`.
-        """
-        productions = self.env['mrp.production']
-        for move in self:
-            current = move
-            seen = self.browse()
-            while current and not current.raw_material_production_id and current not in seen:
-                seen |= current
-                current = current.move_dest_ids[:1]
-            productions |= current.raw_material_production_id
-        return productions
-
     def action_open_supply_picking(self):
         """Open the form view of the transfer that supplied this component,
         reusing stock_barcode's own action_open_picking so it behaves

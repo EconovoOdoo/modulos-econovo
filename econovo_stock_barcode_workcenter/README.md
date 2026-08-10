@@ -23,10 +23,9 @@ Transfers.
 - Module `stock_barcode` (Enterprise) must be installed
 - Module `stock_barcode_picking_batch` (Enterprise) must be installed
 - Module `mrp` must be installed
-- Module `econovo_mrp_component_lines` must be installed (provides
-  `_get_supply_production`)
 - Module `econovo_stock_picking_production_info` must be installed (provides
-  `stock.picking.workcenter_id` / `production_plan_id`)
+  `stock.picking.workcenter_id` / `production_plan_id`, and their
+  `stock.move.line` equivalents)
 
 ## Configuration
 
