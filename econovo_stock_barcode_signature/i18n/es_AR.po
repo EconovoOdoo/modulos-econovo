@@ -30,7 +30,7 @@ msgstr ""
 #. module: econovo_stock_barcode_signature
 #: model:ir.model,name:econovo_stock_barcode_signature.model_stock_picking_type
 msgid "Picking Type"
-msgstr "Tipo de albarán"
+msgstr "Tipo de recolección"
 
 #. module: econovo_stock_barcode_signature
 #: model:ir.model.fields,field_description:econovo_stock_barcode_signature.field_stock_picking_type__barcode_require_signature
