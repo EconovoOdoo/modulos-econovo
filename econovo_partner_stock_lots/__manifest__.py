@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Econovo - Partner Delivered Lots & Serial Numbers',
-    'version': '17.0.1.0.2',
+    'version': '17.0.1.0.3',
     'category': 'Inventory/Inventory',
     'summary': (
         'Expose delivered lots and serial numbers per contact using '
