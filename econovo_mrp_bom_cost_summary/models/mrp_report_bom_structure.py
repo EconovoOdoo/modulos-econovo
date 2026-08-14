@@ -142,9 +142,11 @@ class ReportBomStructure(models.AbstractModel):
             product, bom, bom_quantity, level, total, index,
         )
         for bp in byproducts:
-            categ = (
-                self.env['mrp.bom.byproduct'].browse(bp['id']).product_id.categ_id
-            )
+            byproduct = self.env['mrp.bom.byproduct'].browse(bp['id'])
+            categ = byproduct.product_id.categ_id
+            # The native byproduct dict links to the template; the cost shown is
+            # the variant's, so expose the variant for grouping and navigation.
+            bp['product_id'] = byproduct.product_id.id
             bp['categ_id'] = categ.id
             bp['categ_name'] = categ.name or _("Uncategorized")
             bp['categ_ancestors'] = self._get_categ_ancestors(categ)

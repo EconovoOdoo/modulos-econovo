@@ -311,7 +311,7 @@ class ReportEconovoBomCostSummaryDirectUsd(models.AbstractModel):
     def _collect_direct_usd_byproducts(self, node, bp_direct_map):
         for bp in node.get("byproducts", []):
             cat_id = bp.get("categ_id") or 0
-            prod_id = bp.get("link_id") or bp.get("id")
+            prod_id = bp.get("product_id") or bp.get("id")
             parent_prod_id = node.get("product_id")
             entry = bp_direct_map.setdefault(cat_id, {}).setdefault(
                 prod_id, {},

@@ -539,7 +539,9 @@ class ReportEconovoBomCostSummary(models.AbstractModel):
                 cat["total"] += adjusted_cost
                 cat["prod_cost_total"] += adjusted_prod_cost
 
-                prod_key = bp.get("link_id") or bp.get("id")
+                # Keyed by variant: native's link_id mixes template and variant
+                # ids depending on the variant count, which can collide.
+                prod_key = bp.get("product_id") or bp.get("id")
                 if prod_key not in cat["products"]:
                     cat["products"][prod_key] = {
                         "product_id": prod_key,

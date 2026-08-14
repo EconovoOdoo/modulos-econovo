@@ -66,7 +66,8 @@ patch(BomCostSummarySection.prototype, {
                 lines: [
                     _t("Calculated using product.standard_price_usd"),
                     _t("= BoM Cost (ARS) \u00d7 (standard_price_usd \u00f7 standard_price_ars)"),
-                    _t("Reflects the USD catalogue price on the product, not the exchange rate"),
+                    _t("The USD cost is stored per company and frozen at the rate of its last update"),
+                    _t("On purchases in USD it is the vendor's own price, not a re-conversion"),
                 ],
             },
             ops_bom_cost_usd_direct: {
@@ -82,8 +83,9 @@ patch(BomCostSummarySection.prototype, {
                 title: _t("Product Cost USD (direct price)"),
                 lines: [
                     _t("= Quantity \u00d7 product.standard_price_usd"),
-                    _t("Catalogue USD price stored directly on the product"),
-                    _t("Independent of the company exchange rate"),
+                    _t("USD cost stored on the variant, for the active company"),
+                    _t("Frozen at the rate of its last update: it does not follow today's quotation"),
+                    _t("A gap with the exchange-rate column means the cost is outdated"),
                 ],
             },
             bom_cost_usd_exchange: {
