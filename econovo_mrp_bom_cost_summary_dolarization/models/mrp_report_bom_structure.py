@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 from odoo import api, fields, models
 
+from odoo.addons.econovo_mrp_bom_cost_summary.report.report_cost_summary import (
+    GROUP_SHOW_COST,
+)
+
 
 class ReportBomStructure(models.AbstractModel):
     """Extend BOM structure report to include direct USD costs.
@@ -18,9 +22,16 @@ class ReportBomStructure(models.AbstractModel):
 
     These values are then picked up by the JS side
     (``bom_cost_dolarization.js``) to populate the new columns.
+
+    Every injection is skipped for users outside the "Show Product Cost"
+    group so no USD amount reaches them, not even in the raw RPC payload.
     """
 
     _inherit = 'report.mrp.report_bom_structure'
+
+    @api.model
+    def _can_show_costs_usd(self):
+        return self.env.user.has_group(GROUP_SHOW_COST)
 
     @api.model
     def _get_component_data(
@@ -32,6 +43,8 @@ class ReportBomStructure(models.AbstractModel):
             line_quantity, level, index, product_info,
             ignore_stock=ignore_stock,
         )
+        if not self._can_show_costs_usd():
+            return res
 
         product = bom_line.product_id
         std_usd = getattr(product, 'standard_price_usd', 0.0) or 0.0
@@ -69,6 +82,8 @@ class ReportBomStructure(models.AbstractModel):
         byproducts, byproduct_cost_portion = super()._get_byproducts_lines(
             product, bom, bom_quantity, level, total, index,
         )
+        if not self._can_show_costs_usd():
+            return byproducts, byproduct_cost_portion
         for bp in byproducts:
             byproduct_obj = self.env['mrp.bom.byproduct'].browse(bp['id'])
             prod = byproduct_obj.product_id
@@ -106,6 +121,8 @@ class ReportBomStructure(models.AbstractModel):
         mrp_workorder is not installed.
         """
         operations = super()._get_operation_line(product, bom, qty, level, index)
+        if not self._can_show_costs_usd():
+            return operations
         bom_ops = bom.operation_ids.filtered(
             lambda o: not product or not o._skip_operation_line(product)
         )
@@ -141,6 +158,8 @@ class ReportBomStructure(models.AbstractModel):
         subcontracted item costs in USD.
         """
         res = super()._get_subcontracting_line(bom, seller, level, bom_quantity)
+        if not self._can_show_costs_usd():
+            return res
         usd_currency = self.env.ref('base.USD', raise_if_not_found=False)
         if not usd_currency:
             res['bom_cost_usd_direct'] = 0.0
@@ -180,7 +199,10 @@ class ReportEconovoBomCostSummaryDirectUsd(models.AbstractModel):
     @api.model
     def _compute_cost_summary(self, data, secondary_currency):
         summary = super()._compute_cost_summary(data, secondary_currency)
-        if summary:
+        # ``show_costs`` is False for users outside the "Show Product Cost"
+        # group; the base module already stripped every amount, so adding the
+        # direct-USD figures back would defeat that restriction.
+        if summary and summary.get("show_costs"):
             self._augment_with_direct_usd(summary, data)
         return summary
 

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from odoo.exceptions import AccessError
 from odoo.tests import tagged
 from odoo.tests.common import TransactionCase
 
@@ -22,6 +23,11 @@ class TestBomCostSummarySingleSource(TransactionCase):
             "report.econovo_mrp_bom_cost_summary.report_cost_summary"
         ]
         cls.uom_unit = cls.env.ref("uom.product_uom_unit")
+        cls.group_show_cost = cls.env.ref(
+            "hide_product_price_cost."
+            "hide_product_price_cost_group_user_show_product_cost"
+        )
+        cls.env.user.groups_id |= cls.group_show_cost
 
         # Raw material C, sub-assembly B, finished product A.
         cls.product_c = cls.env["product.product"].create({
@@ -115,3 +121,31 @@ class TestBomCostSummarySingleSource(TransactionCase):
         OWL component, the PDF template and the Excel export all agree."""
         summary = self._get_summary_from_ui_path()
         self.assertIn("byproductCategories", summary)
+
+    def test_costs_hidden_without_group(self):
+        """Users outside "Show Product Cost" get the structure but no amount,
+        and the PDF is denied outright."""
+        self.env.user.groups_id -= self.group_show_cost
+
+        summary = self._get_summary_from_ui_path()
+        self.assertFalse(summary["show_costs"])
+        self.assertFalse(summary["totals"]["total"])
+        self.assertFalse(summary["totals"]["components"])
+        self.assertFalse(summary["totals"]["total_prod"])
+        self.assertFalse(summary["categories"][0]["total"])
+        # Structure survives so quantities / lead times stay usable.
+        self.assertTrue(summary["categories"])
+        self.assertTrue(summary["categories"][0]["products"][0]["usages"])
+
+        with self.assertRaises(AccessError):
+            self.summary_model._get_report_values([self.bom_a.id])
+
+    def test_raw_tree_is_not_mutated_when_costs_hidden(self):
+        """Stripping the summary must never touch the native BOM tree nodes
+        that operation items reference through ``components``."""
+        self.env.user.groups_id -= self.group_show_cost
+
+        raw = self.report.get_html(bom_id=self.bom_a.id, searchQty=1)
+        self.assertAlmostEqual(
+            raw["lines"]["components"][0]["bom_cost"], 600.0, places=2,
+        )

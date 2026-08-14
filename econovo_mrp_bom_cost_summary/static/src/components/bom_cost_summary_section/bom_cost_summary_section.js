@@ -252,7 +252,10 @@ export class BomCostSummarySection extends Component {
     }
 
     get showCosts() {
-        return this.props.showOptions.costs;
+        // `show_costs` is set server-side from the "Show Product Cost" group;
+        // when false every monetary value has already been stripped from the
+        // payload, so hiding the columns here just avoids empty cells.
+        return this.props.showOptions.costs && this.data.show_costs !== false;
     }
 
     get col1Label() {

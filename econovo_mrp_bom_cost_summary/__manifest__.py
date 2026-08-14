@@ -1,6 +1,6 @@
 {
     'name': 'Econovo MRP BOM Cost Summary',
-    'version': '17.0.1.3.1',
+    'version': '17.0.1.4.0',
     'category': 'Manufacturing',
     'summary': 'Collapsible cost breakdown summary in BOM Overview report',
     'description': """
@@ -8,8 +8,14 @@ Adds a cost summary section at the bottom of the BOM Overview (mrp_bom_report)
 that displays component costs grouped by product category, operation costs
 grouped by work center, and subcontracting costs grouped by vendor,
 with 3-level drill-down, dual currency (ARS + USD) and grand total.
+
+All monetary columns (company currency and USD alike) are restricted to the
+"Show Product Cost" group provided by ``hide_product_price_cost``.  Users
+without that group still get the structural breakdown (categories, products,
+quantities, lead times, availability) but no amounts, and the PDF / Excel
+exports are denied outright.
     """,
-    'depends': ['mrp', 'product'],
+    'depends': ['mrp', 'product', 'hide_product_price_cost'],
     'author': 'Jose D. Leonett',
     'website': 'https://github.com/josedleonett',
     'license': 'AGPL-3',

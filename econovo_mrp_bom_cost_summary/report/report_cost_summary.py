@@ -2,11 +2,71 @@
 # pylint: disable=missing-function-docstring,too-many-locals
 
 from odoo import api, models, _
+from odoo.exceptions import AccessError
+
+#: Users must belong to this group to see any monetary value in the cost
+#: summary (company currency and USD alike).
+GROUP_SHOW_COST = (
+    "hide_product_price_cost.hide_product_price_cost_group_user_show_product_cost"
+)
+
+#: Summary keys holding a monetary amount, blanked out for users that are not
+#: allowed to see costs.  Keys whose value is a dict or a list are recursed
+#: into instead of being blanked, so structural keys that collide with a
+#: totals key (``components``, ``operations``, ``subcontracting``,
+#: ``byproducts``) keep working.
+_COST_KEY_NAMES = frozenset({
+    "bom_cost", "byproducts", "byproducts_prod_cost", "byproducts_total",
+    "components", "net_bom", "net_prod", "operations", "prod_cost",
+    "prod_cost_total", "real_cost", "real_cost_total", "subcontracting",
+    "subcontracting_prod_cost", "total", "total_prod",
+})
+_COST_KEY_SUFFIXES = ("_cost", "_usd", "_usd_direct")
 
 
 class ReportEconovoBomCostSummary(models.AbstractModel):
     _name = "report.econovo_mrp_bom_cost_summary.report_cost_summary"
     _description = "BOM Cost Summary PDF Report"
+
+    # ------------------------------------------------------------------
+    # Access control
+    # ------------------------------------------------------------------
+
+    @api.model
+    def _can_show_costs(self):
+        """Whether the current user may see monetary values in the summary."""
+        return self.env.user.has_group(GROUP_SHOW_COST)
+
+    @api.model
+    def _check_show_costs(self):
+        """Raise for surfaces that are meaningless without costs (PDF/Excel)."""
+        if not self._can_show_costs():
+            raise AccessError(_(
+                "You are not allowed to see product costs. "
+                "Ask your administrator for the \"Show Product Cost\" access."
+            ))
+
+    @api.model
+    def _strip_cost_values(self, node):
+        """Recursively blank every monetary value of a computed summary.
+
+        Structure (categories, products, usages, quantities, durations,
+        lead times, percentages) is preserved so the section stays useful
+        without disclosing any amount.
+        """
+        if isinstance(node, dict):
+            for key, value in node.items():
+                if isinstance(value, (dict, list)):
+                    # Operation items carry references to the raw BOM tree
+                    # nodes under 'components'; mutating them would corrupt
+                    # the native BOM Overview data (same objects).
+                    if key != "components":
+                        self._strip_cost_values(value)
+                elif key in _COST_KEY_NAMES or key.endswith(_COST_KEY_SUFFIXES):
+                    node[key] = False
+        elif isinstance(node, list):
+            for item in node:
+                self._strip_cost_values(item)
 
     # ------------------------------------------------------------------
     # Report entry point
@@ -26,6 +86,7 @@ class ReportEconovoBomCostSummary(models.AbstractModel):
           - lead_times  : str     - "false" to hide lead-time column
           - all_variants: str     - "1" to print every variant
         """
+        self._check_show_costs()
         data = data or {}
         docs = []
 
@@ -191,7 +252,7 @@ class ReportEconovoBomCostSummary(models.AbstractModel):
                 item["total_usd"] = item["total"] * rate if rate else False
                 item["prod_cost_usd"] = item["prod_cost"] * rate if rate else False
 
-        return {
+        summary = {
             "categories": categories,
             "workcenters": workcenters,
             "byproductCategories": byproduct_categories,
@@ -227,6 +288,14 @@ class ReportEconovoBomCostSummary(models.AbstractModel):
             },
             "currency_id": data.get("currency_id"),
         }
+        # Single choke point for cost visibility: the interactive UI, the PDF
+        # and the Excel export all consume this result, so stripping here
+        # guarantees no amount ever reaches an unauthorised user - not even in
+        # the raw RPC payload.
+        summary["show_costs"] = self._can_show_costs()
+        if not summary["show_costs"]:
+            self._strip_cost_values(summary)
+        return summary
 
     @api.model
     def _prefer_direct_usd(self, summary):

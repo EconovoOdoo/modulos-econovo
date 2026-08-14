@@ -1455,6 +1455,14 @@ class BomCostSummaryXlsxController(http.Controller):
         **_kw,
     ):
         """Generate and return a .xlsx for the BOM Cost Summary."""
+        report_model = request.env[
+            "report.econovo_mrp_bom_cost_summary.report_cost_summary"
+        ]
+        if not report_model._can_show_costs():
+            return request.make_response(
+                "You are not allowed to see product costs.", status=403
+            )
+
         try:
             from openpyxl import Workbook  # noqa: PLC0415
         except ImportError:
@@ -1505,9 +1513,6 @@ class BomCostSummaryXlsxController(http.Controller):
         secondary = raw.get("secondary_currency", False)
         rate = secondary.get("rate", 0) if secondary else 0
 
-        report_model = request.env[
-            "report.econovo_mrp_bom_cost_summary.report_cost_summary"
-        ]
         # Reuse the summary computed server-side and attached by
         # ReportBomStructure._get_report_data (single source of truth shared
         # with the interactive UI and the PDF). Fall back only if missing.

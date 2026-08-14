@@ -22,6 +22,11 @@ class TestDolarizationDirectUsd(TransactionCase):
             "report.econovo_mrp_bom_cost_summary.report_cost_summary"
         ]
         cls.uom_unit = cls.env.ref("uom.product_uom_unit")
+        cls.group_show_cost = cls.env.ref(
+            "hide_product_price_cost."
+            "hide_product_price_cost_group_user_show_product_cost"
+        )
+        cls.env.user.groups_id |= cls.group_show_cost
 
         cls.comp = cls.env["product.product"].create({
             "name": "Direct USD Component",
@@ -73,4 +78,17 @@ class TestDolarizationDirectUsd(TransactionCase):
         self.assertEqual(totals["total_usd"], totals["total_usd_direct"])
         self.assertEqual(
             totals["components_usd"], totals["components_usd_direct"],
+        )
+
+    def test_direct_usd_absent_without_group(self):
+        """No direct-USD value may reach a user outside "Show Product Cost",
+        neither in the summary nor in the raw tree."""
+        self.env.user.groups_id -= self.group_show_cost
+
+        raw = self.report.get_html(bom_id=self.bom.id, searchQty=1)
+        self.assertNotIn(
+            "bom_cost_usd_direct", raw["lines"]["components"][0],
+        )
+        self.assertNotIn(
+            "total_usd_direct", raw["lines"]["cost_summary"]["totals"],
         )
