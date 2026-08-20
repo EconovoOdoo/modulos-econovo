@@ -144,20 +144,22 @@
 
     <!-- Action -->
     <record id="comex_operation_product_line_action" model="ir.actions.act_window">
-        <field name="name">Product Lines</field>
-        <field name="res_model">comex.operation.product.line</field>
-        <field name="view_mode">tree,form</field>
+        <field name="name">COMEX Line Analysis</field>
+        <field name="res_model">comex.operation.report.line</field>
+        <field name="view_mode">tree,pivot,graph</field>
+        <field name="search_view_id" ref="comex_operation_report_line_view_search"/>
         <field name="context">{}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
-                No product lines found
+                No COMEX lines found
             </p>
             <p>
-                Product lines are automatically synchronized from purchase and sale orders
-                linked to COMEX operations. This is a read-only view that updates in real-time.
+                This read-only analysis shows one row per COMEX product line, with the
+                details of the parent import/export operation repeated on every row.
             </p>
             <p>
-                To add products, create or modify purchase/sale orders associated with operations.
+                Operations without product lines are shown as a single greyed-out row so
+                they are not lost from the analysis.
             </p>
         </field>
     </record>

@@ -4,6 +4,39 @@
 from odoo import api, fields, models
 
 
+class SaleOrderLine(models.Model):
+    """Extend sale.order.line to trigger COMEX product line sync."""
+
+    _inherit = 'sale.order.line'
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        """Trigger product line sync when creating SO lines."""
+        lines = super().create(vals_list)
+        operations = lines.order_id.sudo().comex_operation_id
+        if operations:
+            self.env['comex.operation.product.line']._sync_operations(operations)
+        return lines
+
+    def write(self, vals):
+        """Trigger product line sync when updating SO lines."""
+        res = super().write(vals)
+        sync_fields = {'product_id', 'product_uom_qty', 'product_uom', 'qty_delivered', 'price_unit', 'name'}
+        if sync_fields & set(vals.keys()):
+            operations = self.order_id.sudo().comex_operation_id
+            if operations:
+                self.env['comex.operation.product.line']._sync_operations(operations)
+        return res
+
+    def unlink(self):
+        """Trigger product line sync when deleting SO lines."""
+        operations = self.order_id.sudo().comex_operation_id
+        res = super().unlink()
+        if operations:
+            self.env['comex.operation.product.line']._sync_operations(operations)
+        return res
+
+
 class SaleOrder(models.Model):
     """Extend sale.order to link with COMEX operations."""
 

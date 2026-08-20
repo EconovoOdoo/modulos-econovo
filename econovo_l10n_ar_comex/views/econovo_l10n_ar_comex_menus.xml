@@ -33,7 +33,7 @@
               sequence="30"/>
 
     <menuitem id="menu_comex_operation_product_lines"
-              name="Product Lines"
+              name="Line Analysis"
               parent="menu_comex_operations"
               action="comex_operation_product_line_action"
               sequence="40"/>

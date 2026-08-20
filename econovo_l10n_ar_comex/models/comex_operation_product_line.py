@@ -3,6 +3,7 @@
 
 import logging
 from odoo import _, api, fields, models
+from odoo.tools import float_compare
 
 _logger = logging.getLogger(__name__)
 
@@ -20,6 +21,13 @@ class ComexOperationProductLine(models.Model):
     _name = 'comex.operation.product.line'
     _description = 'COMEX Operation Product Line'
     _order = 'operation_id, sequence, id'
+
+    _sql_constraints = [
+        ('purchase_line_uniq', 'unique(purchase_line_id)',
+         'A purchase order line can only be linked to one COMEX product line.'),
+        ('sale_line_uniq', 'unique(sale_line_id)',
+         'A sale order line can only be linked to one COMEX product line.'),
+    ]
 
     # -------------------------------------------------------------------------
     # FIELDS
@@ -213,152 +221,6 @@ class ComexOperationProductLine(models.Model):
     # -------------------------------------------------------------------------
     # CRUD METHODS
     # -------------------------------------------------------------------------
-    @api.model
-    def web_search_read(self, domain=None, specification=None, offset=0, limit=None, order=None, count_limit=None):
-        """Override web_search_read to auto-sync before displaying in views.
-        
-        This is the method actually called by Odoo web client when loading list views.
-        """
-        # Prevent infinite recursion during sync
-        if not self.env.context.get('skip_product_line_sync'):
-            _logger.info("=== PRODUCT LINES WEB_SEARCH_READ CALLED ===")
-            _logger.info(f"Domain: {domain}")
-            
-            # Trigger synchronization for all operations (with context flag)
-            self.with_context(skip_product_line_sync=True)._sync_all_operations()
-        
-        # Call parent method
-        result = super().web_search_read(domain=domain, specification=specification, offset=offset, 
-                                        limit=limit, order=order, count_limit=count_limit)
-        
-        # Log result
-        if not self.env.context.get('skip_product_line_sync'):
-            record_count = result.get('length', 0) if isinstance(result, dict) else 0
-            _logger.info(f"web_search_read returned {record_count} records")
-        
-        return result
-    
-    @api.model
-    def search(self, domain, offset=0, limit=None, order=None, count=False):
-        """Override search to auto-sync product lines before displaying results.
-        
-        This ensures that when accessing the Product Lines view directly,
-        all PO/SO lines are synchronized before showing the list.
-        """
-        # Prevent infinite recursion during sync
-        if not self.env.context.get('skip_product_line_sync'):
-            _logger.info("=== PRODUCT LINES SEARCH CALLED ===")
-            _logger.info(f"Domain: {domain}")
-            
-            # Trigger synchronization for all operations (with context flag)
-            self.with_context(skip_product_line_sync=True)._sync_all_operations()
-        
-        # Execute normal search (count parameter is handled by search_count method)
-        if count:
-            result = super().search_count(domain)
-        else:
-            result = super().search(domain, offset=offset, limit=limit, order=order)
-        _logger.info(f"Search result count: {len(result) if not count else result}")
-        
-        return result
-
-    @api.model
-    def _sync_operations(self, operations):
-        """Synchronize product lines for specific COMEX operations.
-        
-        Args:
-            operations: comex.operation recordset
-        """
-        for operation in operations:
-            self._sync_operation(operation)
-
-    @api.model
-    def _sync_all_operations(self):
-        """Synchronize product lines for all COMEX operations.
-        
-        This method is called automatically before each search to ensure
-        the view always shows up-to-date data from PO/SO lines.
-        """
-        _logger.info("=== Starting sync for all operations ===")
-        
-        # Get all operations with purchase orders
-        operations = self.env['comex.operation'].search([
-            ('purchase_order_ids', '!=', False)
-        ])
-        
-        _logger.info(f"Found {len(operations)} operations with purchase orders")
-        
-        self._sync_operations(operations)
-
-    @api.model
-    def _sync_operation(self, operation):
-        """Synchronize product lines for a single operation.
-        
-        Args:
-            operation: comex.operation recordset
-        """
-        _logger.info(f"Syncing operation {operation.name} (ID: {operation.id})")
-        
-        # Get existing product lines for this operation (skip sync to avoid recursion)
-        existing_lines = self.with_context(skip_product_line_sync=True).search([
-            ('operation_id', '=', operation.id)
-        ])
-        _logger.info(f"  Existing lines: {len(existing_lines)}")
-        
-        existing_po_lines = {line.purchase_line_id.id: line for line in existing_lines if line.purchase_line_id}
-        
-        # Get all PO lines from operation's purchase orders (only confirmed POs with active comex link)
-        confirmed_pos = operation.purchase_order_ids.filtered(
-            lambda po: po.state in ['purchase', 'done'] and po.comex_operation_id == operation
-        )
-        current_po_lines = confirmed_pos.mapped('order_line')
-        _logger.info(f"  Current PO lines: {len(current_po_lines)} from {len(confirmed_pos)} confirmed POs")
-        
-        current_po_line_ids = set(current_po_lines.ids)
-        
-        # Lines to create (new PO lines not in database)
-        lines_to_create = []
-        for po_line in current_po_lines:
-            if po_line.id not in existing_po_lines:
-                lines_to_create.append({
-                    'operation_id': operation.id,
-                    'product_id': po_line.product_id.id,
-                    'name': po_line.name,
-                    'product_qty': po_line.product_qty,
-                    'product_uom': po_line.product_uom.id,
-                    'price_unit': po_line.price_unit,
-                    'qty_received': po_line.qty_received,
-                    'origin_type': 'purchase',
-                    'purchase_line_id': po_line.id,
-                })
-        
-        # Create new lines (use sudo for automated sync)
-        if lines_to_create:
-            _logger.info(f"  Creating {len(lines_to_create)} new product lines")
-            self.sudo().create(lines_to_create)
-        
-        # Update existing lines with latest data (use sudo for automated sync)
-        updates = 0
-        for po_line in current_po_lines:
-            if po_line.id in existing_po_lines:
-                existing_po_lines[po_line.id].sudo().write({
-                    'product_qty': po_line.product_qty,
-                    'qty_received': po_line.qty_received,
-                    'price_unit': po_line.price_unit,
-                })
-                updates += 1
-        
-        if updates > 0:
-            _logger.info(f"  Updated {updates} existing lines")
-        
-        # Delete obsolete lines (PO lines that no longer exist, use sudo for automated sync)
-        lines_to_delete = existing_lines.filtered(
-            lambda l: l.purchase_line_id and l.purchase_line_id.id not in current_po_line_ids
-        )
-        if lines_to_delete:
-            _logger.info(f"  Deleting {len(lines_to_delete)} obsolete lines")
-            lines_to_delete.sudo().unlink()
-
     @api.model_create_multi
     def create(self, vals_list):
         """Ensure product name is set on creation."""
@@ -367,6 +229,161 @@ class ComexOperationProductLine(models.Model):
                 product = self.env['product.product'].browse(vals['product_id'])
                 vals['name'] = product.display_name
         return super().create(vals_list)
+
+    # -------------------------------------------------------------------------
+    # SYNCHRONIZATION METHODS
+    # -------------------------------------------------------------------------
+    @api.model
+    def _sync_operations(self, operations):
+        """Reconcile the product lines of the given COMEX operations.
+
+        Entry point used by the purchase/sale order triggers and by the daily
+        cron. Synchronisation is never triggered by a read operation.
+        """
+        if self.env.context.get('comex_skip_line_sync'):
+            return
+        product_lines = self.sudo().with_context(comex_skip_line_sync=True)
+        for operation in operations:
+            product_lines._sync_operation(operation)
+
+    @api.model
+    def _sync_operation(self, operation):
+        """Reconcile the product lines of a single COMEX operation."""
+        source_values = self._prepare_sync_values(operation)
+
+        existing_lines = self.search([
+            ('operation_id', '=', operation.id),
+            ('origin_type', 'in', ('purchase', 'sale')),
+        ])
+        existing_by_key = {line._get_sync_key(): line for line in existing_lines}
+
+        obsolete_keys = set(existing_by_key) - set(source_values)
+        if obsolete_keys:
+            obsolete_lines = self.browse([existing_by_key[key].id for key in obsolete_keys])
+            _logger.info(
+                "COMEX %s: removing %s obsolete product lines",
+                operation.name, len(obsolete_lines),
+            )
+            obsolete_lines.unlink()
+
+        lines_to_create = []
+        for key, values in source_values.items():
+            line = existing_by_key.get(key)
+            if line:
+                line._write_sync_values(values)
+            else:
+                lines_to_create.append(dict(values, operation_id=operation.id))
+
+        if lines_to_create:
+            _logger.info(
+                "COMEX %s: creating %s product lines",
+                operation.name, len(lines_to_create),
+            )
+            self.create(lines_to_create)
+
+    @api.model
+    def _prepare_sync_values(self, operation):
+        """Build the expected product lines of an operation, keyed by source.
+
+        Override to add new line sources. The key must uniquely identify the
+        origin record so lines can be matched, updated and removed.
+        """
+        source_values = self._prepare_purchase_sync_values(operation)
+        source_values.update(self._prepare_sale_sync_values(operation))
+        return source_values
+
+    @api.model
+    def _prepare_purchase_sync_values(self, operation):
+        """Expected product lines coming from the operation purchase orders."""
+        orders = operation.purchase_order_ids.filtered(
+            lambda order: order.state in self._get_purchase_sync_states()
+            and order.comex_operation_id == operation
+        )
+        return {
+            ('purchase', order_line.id): {
+                'product_id': order_line.product_id.id,
+                'name': order_line.name,
+                'product_qty': order_line.product_qty,
+                'product_uom': order_line.product_uom.id,
+                'price_unit': order_line.price_unit,
+                'qty_received': order_line.qty_received,
+                'qty_delivered': 0.0,
+                'origin_type': 'purchase',
+                'purchase_line_id': order_line.id,
+                'sale_line_id': False,
+            }
+            for order_line in orders.order_line.filtered(lambda line: not line.display_type)
+        }
+
+    @api.model
+    def _prepare_sale_sync_values(self, operation):
+        """Expected product lines coming from the operation sale orders."""
+        orders = operation.sale_order_ids.filtered(
+            lambda order: order.state in self._get_sale_sync_states()
+            and order.comex_operation_id == operation
+        )
+        return {
+            ('sale', order_line.id): {
+                'product_id': order_line.product_id.id,
+                'name': order_line.name,
+                'product_qty': order_line.product_uom_qty,
+                'product_uom': order_line.product_uom.id,
+                'price_unit': order_line.price_unit,
+                'qty_received': 0.0,
+                'qty_delivered': order_line.qty_delivered,
+                'origin_type': 'sale',
+                'purchase_line_id': False,
+                'sale_line_id': order_line.id,
+            }
+            for order_line in orders.order_line.filtered(lambda line: not line.display_type)
+        }
+
+    @api.model
+    def _get_purchase_sync_states(self):
+        """Purchase order states whose lines are mirrored as product lines."""
+        return ('purchase', 'done')
+
+    @api.model
+    def _get_sale_sync_states(self):
+        """Sale order states whose lines are mirrored as product lines."""
+        return ('sale', 'done')
+
+    def _get_sync_key(self):
+        """Return the source identifier used to match a line during sync."""
+        self.ensure_one()
+        if self.origin_type == 'purchase':
+            return ('purchase', self.purchase_line_id.id)
+        if self.origin_type == 'sale':
+            return ('sale', self.sale_line_id.id)
+        return ('manual', self.id)
+
+    def _write_sync_values(self, values):
+        """Write only the values that actually differ, to avoid useless writes."""
+        self.ensure_one()
+        changes = {}
+        for field_name, value in values.items():
+            field = self._fields[field_name]
+            current = self[field_name]
+            if field.type == 'many2one':
+                current = current.id
+            if field.type == 'float':
+                if float_compare(current or 0.0, value or 0.0, precision_digits=6):
+                    changes[field_name] = value
+            elif current != value:
+                changes[field_name] = value
+        if changes:
+            self.write(changes)
+
+    @api.model
+    def _cron_sync_all_operations(self):
+        """Daily safety net: resynchronise every operation with orders linked."""
+        operations = self.env['comex.operation'].with_context(active_test=False).search([
+            '|',
+            ('purchase_order_ids', '!=', False),
+            ('sale_order_ids', '!=', False),
+        ])
+        _logger.info("COMEX product line cron: synchronising %s operations", len(operations))
+        self._sync_operations(operations)
 
     # -------------------------------------------------------------------------
     # ACTION METHODS

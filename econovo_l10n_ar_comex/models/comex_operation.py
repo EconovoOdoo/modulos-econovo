@@ -254,6 +254,15 @@ class ComexOperation(models.Model):
         default=lambda self: self.env.ref('base.USD', raise_if_not_found=False),
         tracking=True,
     )
+    currency_rate = fields.Float(
+        string="Currency Rate",
+        compute='_compute_currency_rate',
+        compute_sudo=True,
+        store=True,
+        readonly=True,
+        digits=(12, 6),
+        help="Ratio between the operation currency and the company currency.",
+    )
     
     # Payment Terms (COMEX-specific: Instrument + Timing)
     payment_instrument_id = fields.Many2one(
@@ -556,6 +565,17 @@ class ComexOperation(models.Model):
     def _compute_amount_cif(self):
         for record in self:
             record.amount_cif = record.amount_fob + record.amount_freight + record.amount_insurance
+
+    @api.depends('currency_id', 'company_id', 'date_operation')
+    def _compute_currency_rate(self):
+        """Rate used to express operation amounts in the company currency."""
+        for record in self:
+            record.currency_rate = self.env['res.currency']._get_conversion_rate(
+                record.company_id.currency_id,
+                record.currency_id,
+                record.company_id,
+                record.date_operation,
+            )
 
     @api.depends('customs_clearance_ids.vep_amount')
     def _compute_vep_amount(self):
@@ -1210,70 +1230,9 @@ class ComexOperation(models.Model):
             record.container_total_count = len(record.shipment_ids.mapped('package_ids'))
 
     def _compute_product_line_count(self):
-        """Calculate number of product lines (triggers sync if needed)."""
-        # Ensure product lines are synced before computing count
-        operations_to_sync = self.filtered('purchase_order_ids')
-        if operations_to_sync:
-            self.env['comex.operation.product.line'].sudo()._sync_operations(operations_to_sync)
-        
+        """Calculate number of product lines."""
         for record in self:
             record.product_line_count = len(record.product_line_ids)
-
-    # -------------------------------------------------------------------------
-    # PRODUCT LINE SYNCHRONIZATION (Manual trigger)
-    # -------------------------------------------------------------------------
-    def _sync_product_lines_from_purchase(self):
-        """Synchronize product lines from purchase order lines.
-        
-        Creates/updates product lines when PO lines are added/modified.
-        This method should be called when purchase orders change.
-        """
-        ProductLine = self.env['comex.operation.product.line']
-        
-        for operation in self:
-            # Get existing product lines from purchase orders
-            existing_lines = operation.product_line_ids.filtered(
-                lambda l: l.origin_type == 'purchase' and l.purchase_line_id
-            )
-            existing_po_lines = existing_lines.mapped('purchase_line_id')
-            
-            # Get all PO lines from operation's purchase orders
-            current_po_lines = operation.purchase_order_ids.mapped('order_line')
-            
-            # Lines to create (new PO lines not yet in product_line_ids)
-            lines_to_create = current_po_lines - existing_po_lines
-            
-            # Lines to delete (product lines whose PO line no longer exists)
-            lines_to_delete = existing_lines.filtered(
-                lambda l: l.purchase_line_id not in current_po_lines
-            )
-            
-            # Create new product lines
-            for po_line in lines_to_create:
-                ProductLine.create({
-                    'operation_id': operation.id,
-                    'product_id': po_line.product_id.id,
-                    'name': po_line.name,
-                    'product_qty': po_line.product_qty,
-                    'product_uom': po_line.product_uom.id,
-                    'price_unit': po_line.price_unit,
-                    'qty_received': po_line.qty_received,
-                    'origin_type': 'purchase',
-                    'purchase_line_id': po_line.id,
-                })
-            
-            # Delete obsolete lines
-            if lines_to_delete:
-                lines_to_delete.unlink()
-            
-            # Update existing lines with latest PO data
-            for product_line in existing_lines - lines_to_delete:
-                po_line = product_line.purchase_line_id
-                product_line.write({
-                    'product_qty': po_line.product_qty,
-                    'qty_received': po_line.qty_received,
-                    'price_unit': po_line.price_unit,
-                })
 
     # -------------------------------------------------------------------------
     # STAGE SYNCHRONIZATION
@@ -1686,16 +1645,14 @@ class ComexOperation(models.Model):
         Forces immediate sync of this operation's product lines.
         """
         self.ensure_one()
-        # Use the product line model's sync method
-        ProductLine = self.env['comex.operation.product.line']
-        ProductLine._sync_operation(self)
+        self.env['comex.operation.product.line']._sync_operations(self)
         
         return {
             'type': 'ir.actions.client',
             'tag': 'display_notification',
             'params': {
                 'title': _('Product Lines Refreshed'),
-                'message': _('Product lines have been refreshed from purchase orders.'),
+                'message': _('Product lines have been refreshed from purchase and sale orders.'),
                 'type': 'success',
                 'sticky': False,
             }

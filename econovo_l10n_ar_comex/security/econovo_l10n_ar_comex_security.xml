@@ -62,5 +62,29 @@
             <field name="groups" eval="[(4, ref('base.group_user'))]"/>
         </record>
 
+        <!-- COMEX Operation Product Line: Company Rule -->
+        <record id="comex_operation_product_line_rule_company" model="ir.rule">
+            <field name="name">COMEX Operation Product Line: Company</field>
+            <field name="model_id" ref="model_comex_operation_product_line"/>
+            <field name="domain_force">[
+                '|',
+                ('company_id', '=', False),
+                ('company_id', 'in', company_ids)
+            ]</field>
+            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        </record>
+
+        <!-- COMEX Operation Line Analysis: Company Rule -->
+        <record id="comex_operation_report_line_rule_company" model="ir.rule">
+            <field name="name">COMEX Operation Line Analysis: Company</field>
+            <field name="model_id" ref="model_comex_operation_report_line"/>
+            <field name="domain_force">[
+                '|',
+                ('company_id', '=', False),
+                ('company_id', 'in', company_ids)
+            ]</field>
+            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        </record>
+
     </data>
 </odoo>

@@ -2,6 +2,7 @@
 # Part of Econovo. See LICENSE file for full copyright and licensing details.
 
 from . import models
+from . import report
 
 
 def _create_comex_sequences(env):

@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Tree View -->
+    <record id="comex_operation_report_line_view_tree" model="ir.ui.view">
+        <field name="name">comex.operation.report.line.view.tree</field>
+        <field name="model">comex.operation.report.line</field>
+        <field name="arch" type="xml">
+            <tree string="COMEX Line Analysis"
+                  create="false"
+                  edit="false"
+                  delete="false"
+                  decoration-muted="not has_product_line">
+                <field name="has_product_line" column_invisible="1"/>
+                <field name="operation_type" column_invisible="1"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="currency_ars_id" column_invisible="1"/>
+                <field name="company_currency_id" column_invisible="1"/>
+                <field name="color" widget="color_picker" string=" " optional="show"/>
+                <field name="operation_name" decoration-bf="1"/>
+                <field name="product_id" optional="show"/>
+                <field name="product_qty" sum="Total Quantity" optional="show"/>
+                <field name="product_uom_id" optional="hide"/>
+                <field name="qty_received" sum="Total Received" optional="hide"/>
+                <field name="qty_delivered" sum="Total Delivered" optional="hide"/>
+                <field name="price_unit" optional="hide"/>
+                <field name="price_subtotal" optional="show"/>
+                <field name="price_subtotal_company" sum="Total Subtotal" optional="show"/>
+                <field name="origin_type" optional="hide"/>
+                <field name="purchase_order_id" optional="hide"/>
+                <field name="sale_order_id" optional="hide"/>
+                <field name="partner_id"/>
+                <field name="stage_id" widget="badge" optional="show"/>
+                <field name="date_operation" optional="show"/>
+                <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}" optional="show"/>
+                <field name="date_etd" optional="show"/>
+                <field name="date_eta" optional="show"/>
+                <field name="date_arrival" optional="show"/>
+                <field name="transport_mode" optional="show"/>
+                <field name="origin_country_id" optional="show"/>
+                <field name="container_total_count" optional="show"/>
+                <field name="shipment_ids"
+                       widget="many2many_tags"
+                       string="BL Numbers"
+                       options="{'no_create': True, 'limit': 5}"
+                       optional="show"/>
+                <field name="bl_numbers" optional="hide"/>
+                <field name="payment_terms_display" optional="show"/>
+                <field name="nominated_bank_id" optional="show"/>
+                <field name="dispatch_invoice_numbers" optional="show"/>
+                <field name="vep_amount" optional="show"/>
+                <field name="vep_amount_share" sum="Total VEP" optional="hide"/>
+                <field name="amount_fob" optional="hide"/>
+                <field name="amount_cif" optional="hide"/>
+                <field name="amount_fob_share_company" sum="Total FOB" optional="hide"/>
+                <field name="amount_cif_share_company" sum="Total CIF" optional="hide"/>
+                <field name="line_share" optional="hide"/>
+                <field name="commercial_payment_status"
+                       widget="badge"
+                       optional="show"
+                       decoration-success="commercial_payment_status == 'paid'"
+                       decoration-info="commercial_payment_status == 'in_payment'"
+                       decoration-warning="commercial_payment_status == 'partial'"
+                       decoration-danger="commercial_payment_status == 'not_paid'"/>
+                <field name="customs_payment_status"
+                       widget="badge"
+                       optional="show"
+                       decoration-success="customs_payment_status == 'paid'"
+                       decoration-info="customs_payment_status == 'in_payment'"
+                       decoration-warning="customs_payment_status == 'partial'"
+                       decoration-danger="customs_payment_status == 'not_paid'"/>
+                <field name="purchase_order_payment_status"
+                       widget="badge"
+                       optional="show"
+                       invisible="operation_type != 'import'"
+                       decoration-success="purchase_order_payment_status == 'paid'"
+                       decoration-info="purchase_order_payment_status == 'in_payment'"
+                       decoration-warning="purchase_order_payment_status == 'partial'"
+                       decoration-danger="purchase_order_payment_status == 'not_paid'"/>
+                <field name="sale_order_payment_status"
+                       widget="badge"
+                       optional="show"
+                       invisible="operation_type != 'export'"
+                       decoration-success="sale_order_payment_status == 'paid'"
+                       decoration-info="sale_order_payment_status == 'in_payment'"
+                       decoration-warning="sale_order_payment_status == 'partial'"
+                       decoration-danger="sale_order_payment_status == 'not_paid'"/>
+                <field name="company_id" groups="base.group_multi_company" optional="show"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="comex_operation_report_line_view_search" model="ir.ui.view">
+        <field name="name">comex.operation.report.line.view.search</field>
+        <field name="model">comex.operation.report.line</field>
+        <field name="arch" type="xml">
+            <search string="COMEX Line Analysis">
+                <field name="operation_name"/>
+                <field name="partner_id"/>
+                <field name="product_id"/>
+                <field name="purchase_order_id"/>
+                <field name="sale_order_id"/>
+                <field name="bl_numbers"/>
+                <field name="origin_country_id"/>
+
+                <filter name="filter_import" string="Imports"
+                        domain="[('operation_type', '=', 'import')]"/>
+                <filter name="filter_export" string="Exports"
+                        domain="[('operation_type', '=', 'export')]"/>
+                <separator/>
+                <filter name="filter_from_purchase" string="From Purchase Orders"
+                        domain="[('origin_type', '=', 'purchase')]"/>
+                <filter name="filter_from_sale" string="From Sale Orders"
+                        domain="[('origin_type', '=', 'sale')]"/>
+                <filter name="filter_without_lines" string="Without Product Lines"
+                        domain="[('has_product_line', '=', False)]"/>
+                <separator/>
+                <filter name="filter_eta_this_month" string="ETA This Month"
+                        domain="[('date_eta', '&gt;=', (context_today() + relativedelta(day=1)).strftime('%Y-%m-%d')),
+                                 ('date_eta', '&lt;=', (context_today() + relativedelta(day=31)).strftime('%Y-%m-%d'))]"/>
+                <filter name="filter_not_arrived" string="Not Arrived"
+                        domain="[('date_arrival', '=', False)]"/>
+                <separator/>
+                <filter name="filter_archived" string="Archived"
+                        domain="[('active', '=', False)]"/>
+
+                <group expand="0" string="Group By">
+                    <filter name="group_operation" string="Operation"
+                            context="{'group_by': 'operation_id'}"/>
+                    <filter name="group_partner" string="Supplier/Customer"
+                            context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_product" string="Product"
+                            context="{'group_by': 'product_id'}"/>
+                    <filter name="group_stage" string="Stage"
+                            context="{'group_by': 'stage_id'}"/>
+                    <filter name="group_operation_type" string="Operation Type"
+                            context="{'group_by': 'operation_type'}"/>
+                    <filter name="group_transport_mode" string="Transport Mode"
+                            context="{'group_by': 'transport_mode'}"/>
+                    <filter name="group_origin_country" string="Origin Country"
+                            context="{'group_by': 'origin_country_id'}"/>
+                    <filter name="group_currency" string="Currency"
+                            context="{'group_by': 'currency_id'}"/>
+                    <filter name="group_company" string="Company"
+                            groups="base.group_multi_company"
+                            context="{'group_by': 'company_id'}"/>
+                    <filter name="group_date_operation" string="Operation Date"
+                            context="{'group_by': 'date_operation:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Pivot View -->
+    <record id="comex_operation_report_line_view_pivot" model="ir.ui.view">
+        <field name="name">comex.operation.report.line.view.pivot</field>
+        <field name="model">comex.operation.report.line</field>
+        <field name="arch" type="xml">
+            <pivot string="COMEX Line Analysis" sample="1">
+                <field name="partner_id" type="row"/>
+                <field name="date_operation" interval="month" type="col"/>
+                <field name="price_subtotal_company" type="measure"/>
+                <field name="product_qty" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Graph View -->
+    <record id="comex_operation_report_line_view_graph" model="ir.ui.view">
+        <field name="name">comex.operation.report.line.view.graph</field>
+        <field name="model">comex.operation.report.line</field>
+        <field name="arch" type="xml">
+            <graph string="COMEX Line Analysis" type="bar" sample="1">
+                <field name="date_operation" interval="month"/>
+                <field name="price_subtotal_company" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+</odoo>
