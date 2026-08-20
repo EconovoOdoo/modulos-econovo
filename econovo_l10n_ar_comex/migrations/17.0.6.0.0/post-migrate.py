@@ -25,3 +25,9 @@ def migrate(cr, version):
 
     cr.execute("SELECT COUNT(*) FROM stock_move WHERE comex_product_line_id IS NOT NULL")
     _logger.info("COMEX migration: %s stock moves linked to a product line.", cr.fetchone()[0])
+
+    # The sortable columns are materialised, so they start empty.
+    all_lines = env['comex.operation.product.line'].search([])
+    _logger.info("COMEX migration: locating %s product lines.", len(all_lines))
+    all_lines._refresh_stock_position_cache()
+    all_lines.flush_recordset()

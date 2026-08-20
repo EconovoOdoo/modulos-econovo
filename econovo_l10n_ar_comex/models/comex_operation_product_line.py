@@ -193,7 +193,30 @@ class ComexOperationProductLine(models.Model):
     )
     current_location_display = fields.Char(
         string="Current Location",
-        compute='_compute_stock_position',
+        compute='_compute_stock_position_cache',
+        store=True,
+        readonly=True,
+        help="Sortable text version of the current locations.\n"
+             "Materialised: refreshed when the stock moves that touch these units are "
+             "validated and by the daily COMEX cron.",
+    )
+    lot_name_display = fields.Char(
+        string="Serial Numbers",
+        compute='_compute_stock_position_cache',
+        store=True,
+        readonly=True,
+        help="Sortable text version of the lots/serial numbers of this line.",
+    )
+    last_delivery_partner_id = fields.Many2one(
+        'res.partner',
+        string="Last Delivery Contact",
+        compute='_compute_stock_position_cache',
+        store=True,
+        readonly=True,
+        help="Contact of the last validated transfer of these units. Unlike "
+             "stock.lot.last_delivery_partner_id, which only looks at outgoing "
+             "transfers, this also covers internal transfers such as the ones to a "
+             "dealer location.",
     )
     stock_status = fields.Selection(
         selection='_selection_stock_status',
@@ -263,13 +286,58 @@ class ComexOperationProductLine(models.Model):
         position = self._get_stock_position()
         for line in self:
             line_position = position[line.id]
-            locations = line_position['locations']
             line.lot_ids = line_position['lots']
-            line.current_location_ids = locations
-            line.current_location_display = ', '.join(locations.mapped('complete_name'))
+            line.current_location_ids = line_position['locations']
             line.stock_status = self._get_stock_status(
-                locations, line_position['has_moves'], line_position['returned'],
+                line_position['locations'],
+                line_position['has_moves'],
+                line_position['returned'],
             )
+
+    def _compute_stock_position_cache(self):
+        """Materialise the sortable version of the stock position.
+
+        These columns have no `depends`: stock does not change through the line
+        itself, so they are refreshed explicitly by `_refresh_stock_position_cache`.
+        """
+        position = self._get_stock_position()
+        partners = self._get_last_delivery_partners(position)
+        for line in self:
+            line_position = position[line.id]
+            line.current_location_display = ', '.join(
+                sorted(line_position['locations'].mapped('complete_name'))
+            )
+            line.lot_name_display = ', '.join(sorted(line_position['lots'].mapped('name')))
+            line.last_delivery_partner_id = partners.get(line.id, False)
+
+    def _refresh_stock_position_cache(self):
+        """Queue the materialised stock position columns for recomputation."""
+        for field_name in ('current_location_display', 'lot_name_display',
+                           'last_delivery_partner_id'):
+            self.env.add_to_compute(self._fields[field_name], self)
+
+    def _get_last_delivery_partners(self, position):
+        """Return {line_id: partner} of the last validated transfer of each line."""
+        partners = {}
+        moves_by_line = self._get_done_moves_by_line()
+        for line in self:
+            move_lines = self.env['stock.move.line'].sudo()
+            lots = position[line.id]['lots']
+            if lots:
+                move_lines = move_lines.search([
+                    ('lot_id', 'in', lots.ids),
+                    ('state', '=', 'done'),
+                    ('move_id.picking_id.partner_id', '!=', False),
+                ], order='date desc', limit=1)
+            if not move_lines:
+                candidates = moves_by_line[line.id].filtered(
+                    lambda move: move.picking_id.partner_id
+                ).sorted('date', reverse=True)
+                if candidates:
+                    partners[line.id] = candidates[0].picking_id.partner_id.id
+                continue
+            partners[line.id] = move_lines.move_id.picking_id.partner_id.id
+        return partners
 
     def _get_stock_position(self):
         """Return {line_id: {'lots', 'locations', 'has_moves', 'returned'}}."""
@@ -503,6 +571,7 @@ class ComexOperationProductLine(models.Model):
             )
             if to_assign:
                 to_assign.sudo().write({'comex_product_line_id': line.id})
+        self._refresh_stock_position_cache()
 
     # -------------------------------------------------------------------------
     # ONCHANGE METHODS
@@ -685,6 +754,7 @@ class ComexOperationProductLine(models.Model):
         ])
         _logger.info("COMEX product line cron: synchronising %s operations", len(operations))
         self._sync_operations(operations)
+        self.search([('operation_id', 'in', operations.ids)])._refresh_stock_position_cache()
 
     # -------------------------------------------------------------------------
     # ACTION METHODS

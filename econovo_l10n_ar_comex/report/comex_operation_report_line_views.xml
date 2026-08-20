@@ -39,16 +39,18 @@
                        widget="many2many_tags"
                        options="{'no_create': True}"
                        optional="show"/>
+                <field name="current_location_display" optional="hide"/>
                 <field name="stock_status" widget="badge" optional="show"
                        decoration-info="stock_status == 'internal'"
                        decoration-success="stock_status == 'delivered'"
                        decoration-warning="stock_status in ('partial', 'returned')"
                        decoration-muted="stock_status in ('pending', 'unknown')"/>
+                <field name="lot_name_display" optional="show"/>
+                <field name="last_delivery_partner_id" optional="show"/>
                 <field name="lot_ids"
                        widget="many2many_tags"
                        options="{'no_create': True}"
                        optional="hide"/>
-                <field name="current_location_display" optional="hide"/>
                 <field name="partner_id"/>
                 <field name="stage_id" widget="badge" optional="show"/>
                 <field name="date_operation" optional="show"/>
@@ -124,6 +126,9 @@
                 <field name="bl_numbers"/>
                 <field name="origin_country_id"/>
                 <field name="current_location_ids"/>
+                <field name="current_location_display"/>
+                <field name="lot_name_display"/>
+                <field name="last_delivery_partner_id"/>
                 <field name="lot_ids"/>
 
                 <filter name="filter_import" string="Imports"
@@ -170,6 +175,10 @@
                             context="{'group_by': 'origin_country_id'}"/>
                     <filter name="group_currency" string="Currency"
                             context="{'group_by': 'currency_id'}"/>
+                    <filter name="group_current_location" string="Current Location"
+                            context="{'group_by': 'current_location_display'}"/>
+                    <filter name="group_last_delivery_partner" string="Last Delivery Contact"
+                            context="{'group_by': 'last_delivery_partner_id'}"/>
                     <filter name="group_company" string="Company"
                             groups="base.group_multi_company"
                             context="{'group_by': 'company_id'}"/>

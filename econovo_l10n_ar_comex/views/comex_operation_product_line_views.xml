@@ -23,11 +23,14 @@
                 <field name="package_id" optional="hide"/>
                 <field name="container_number" optional="show"/>
                 <field name="current_location_ids" widget="many2many_tags" options="{'no_create': True}" optional="show"/>
+                <field name="current_location_display" optional="hide"/>
                 <field name="stock_status" widget="badge" optional="show"
                        decoration-info="stock_status == 'internal'"
                        decoration-success="stock_status == 'delivered'"
                        decoration-warning="stock_status in ('partial', 'returned')"
                        decoration-muted="stock_status in ('pending', 'unknown')"/>
+                <field name="lot_name_display" optional="show"/>
+                <field name="last_delivery_partner_id" optional="show"/>
                 <field name="lot_ids" widget="many2many_tags" options="{'no_create': True}" optional="hide"/>
                 <field name="company_id" column_invisible="1"/>
             </tree>
@@ -109,6 +112,7 @@
                         <field name="container_number"/>
                         <field name="stock_status"/>
                         <field name="current_location_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                        <field name="last_delivery_partner_id"/>
                         <field name="lot_ids" widget="many2many_tags" options="{'no_create': True}"/>
                     </group>
                 </sheet>

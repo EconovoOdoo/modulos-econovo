@@ -54,7 +54,20 @@ class TestComexProductLineStockPosition(TransactionCase):
             'origin_type': 'manual',
         })
 
-    def _make_move(self, line, source, destination, qty=2.0, lot=None):
+    def _make_move(self, line, source, destination, qty=2.0, lot=None, partner=None):
+        picking = self.env['stock.picking']
+        if partner:
+            picking_type = self.env['stock.picking.type'].search([
+                ('code', '=', 'internal'),
+                ('company_id', '=', self.company.id),
+            ], limit=1)
+            picking = picking.create({
+                'picking_type_id': picking_type.id,
+                'location_id': source.id,
+                'location_dest_id': destination.id,
+                'partner_id': partner.id,
+                'company_id': self.company.id,
+            })
         move = self.env['stock.move'].create({
             'name': line.product_id.display_name,
             'product_id': line.product_id.id,
@@ -63,6 +76,7 @@ class TestComexProductLineStockPosition(TransactionCase):
             'location_id': source.id,
             'location_dest_id': destination.id,
             'company_id': self.company.id,
+            'picking_id': picking.id,
             'comex_operation_id': line.operation_id.id,
             'comex_product_line_id': line.id,
         })
@@ -245,6 +259,58 @@ class TestComexProductLineStockPosition(TransactionCase):
         ])
 
         self.assertIn(line, found)
+
+    def test_location_display_is_stored_and_sortable(self):
+        """The location text is materialised, so the column can be sorted."""
+        operation = self._create_operation()
+        line = self._create_line(operation, self.product)
+        self._make_move(line, self.supplier_location, self.transit_location)
+
+        self.assertEqual(line.current_location_display, self.transit_location.complete_name)
+        # A stored column can be used in an ORDER BY.
+        self.assertIn(
+            line,
+            self.env['comex.operation.product.line'].search(
+                [('id', '=', line.id)], order='current_location_display asc',
+            ),
+        )
+
+    def test_serial_names_column(self):
+        """The serial numbers are also exposed as a sortable text column."""
+        operation = self._create_operation()
+        line = self._create_line(operation, self.serial_product, qty=1.0)
+        serial = self._create_serial('COMEX-SERIAL-05')
+
+        self._make_move(line, self.supplier_location, self.stock_location,
+                        qty=1.0, lot=serial)
+
+        self.assertEqual(line.lot_name_display, 'COMEX-SERIAL-05')
+
+    def test_last_delivery_partner_covers_internal_transfers(self):
+        """The contact of the last transfer is kept, even for internal moves.
+
+        stock.lot.last_delivery_partner_id only looks at outgoing transfers, so
+        it stays empty when a machine is sent to a dealer location.
+        """
+        dealer = self.env['res.partner'].create({'name': 'COMEX Test Dealer'})
+        dealer_location = self.env['stock.location'].create({
+            'name': 'COMEX Test Dealer Location',
+            'usage': 'internal',
+            'location_id': self.stock_location.location_id.id,
+            'company_id': self.company.id,
+        })
+        operation = self._create_operation()
+        line = self._create_line(operation, self.serial_product, qty=1.0)
+        serial = self._create_serial('COMEX-SERIAL-06')
+        self._make_move(line, self.supplier_location, self.stock_location,
+                        qty=1.0, lot=serial)
+
+        self._make_move(line, self.stock_location, dealer_location,
+                        qty=1.0, lot=serial, partner=dealer)
+
+        self.assertEqual(line.current_location_ids, dealer_location)
+        self.assertEqual(line.last_delivery_partner_id, dealer)
+        self.assertFalse(serial.last_delivery_partner_id)
 
     def test_purchase_qty_received_is_not_inflated_by_the_chain(self):
         """Guard: the COMEX chain must never be counted as received quantity."""

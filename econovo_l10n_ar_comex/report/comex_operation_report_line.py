@@ -32,7 +32,8 @@ class ComexOperationReportLine(models.Model):
             'operation_id', 'sequence', 'product_id', 'product_tmpl_id',
             'product_uom', 'product_qty', 'qty_received', 'qty_delivered',
             'price_unit', 'price_subtotal', 'origin_type', 'purchase_order_id',
-            'sale_order_id',
+            'sale_order_id', 'current_location_display', 'lot_name_display',
+            'last_delivery_partner_id',
         ],
         'comex.shipment': ['operation_id', 'name', 'active'],
         'res.company': ['currency_id'],
@@ -214,7 +215,15 @@ class ComexOperationReportLine(models.Model):
     )
     current_location_display = fields.Char(
         string="Current Location",
-        related='product_line_id.current_location_display',
+        readonly=True,
+    )
+    lot_name_display = fields.Char(
+        string="Serial Numbers",
+        readonly=True,
+    )
+    last_delivery_partner_id = fields.Many2one(
+        'res.partner',
+        string="Last Delivery Contact",
         readonly=True,
     )
     lot_ids = fields.Many2many(
@@ -474,6 +483,9 @@ class ComexOperationReportLine(models.Model):
                 line.origin_type AS origin_type,
                 line.purchase_order_id AS purchase_order_id,
                 line.sale_order_id AS sale_order_id,
+                line.current_location_display AS current_location_display,
+                line.lot_name_display AS lot_name_display,
+                line.last_delivery_partner_id AS last_delivery_partner_id,
                 {share} AS line_share,
                 operation.vep_amount AS vep_amount,
                 operation.vep_amount * {share} AS vep_amount_share,
@@ -540,6 +552,9 @@ class ComexOperationReportLine(models.Model):
                 NULL::varchar AS origin_type,
                 NULL::integer AS purchase_order_id,
                 NULL::integer AS sale_order_id,
+                NULL::varchar AS current_location_display,
+                NULL::varchar AS lot_name_display,
+                NULL::integer AS last_delivery_partner_id,
                 1.0::numeric AS line_share,
                 operation.vep_amount AS vep_amount,
                 operation.vep_amount AS vep_amount_share,

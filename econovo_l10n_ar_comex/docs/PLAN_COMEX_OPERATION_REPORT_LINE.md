@@ -718,8 +718,10 @@ report free of heavy SQL and makes the same information available in the operati
 | `move_ids` | One2many(`stock.move`, `comex_product_line_id`) | The whole chain of this line |
 | `current_location_ids` | Many2many(`stock.location`), compute + **search** | Every location where the line's units currently are |
 | `lot_ids` | Many2many(`stock.lot`), compute | Serial/lot numbers received for this line |
-| `stock_status` | Selection, compute | `pending` / `internal` / `delivered` / `returned` / `partial` |
-| `current_location_display` | Char, compute | Comma-separated locations, for export and grouping |
+| `stock_status` | Selection, compute + **search** | `pending` / `internal` / `partial` / `delivered` / `returned` / `unknown` |
+| `current_location_display` | Char, **stored** (materialised) | Sortable, groupable and exportable text version of the locations |
+| `lot_name_display` | Char, **stored** (materialised) | Sortable text version of the serial numbers |
+| `last_delivery_partner_id` | Many2one(`res.partner`), **stored** | Contact of the last validated transfer |
 
 **`current_location_ids` algorithm** (batched, never one query per row):
 
@@ -788,6 +790,8 @@ column is filterable (D8). Support at least `in`, `not in`, `=`, `!=`, `child_of
 | 44 | **User edits `stock.lot.location_id` by hand** | That field is `store=True, readonly=False` with an inverse (`stock/models/stock_lot.py:55,143`). Writing it calls `quants.move_quants(...)` → `_get_inventory_move_values` with **`is_inventory=True`** (`stock_quant.py:1285`): real moves, with no picking and **without** `comex_product_line_id`. Handled by reading the **quants**, never `lot.location_id`, so the relocation is reflected immediately. Note the inverse **raises `UserError`** when the lot sits in more than one location, which is precisely why `lot.location_id` cannot be used as a source |
 | 45 | Untracked goods moved outside the COMEX chain (inventory adjustment, manual transfer) | The chain balance alone would keep pointing at the old location. Mitigated by a reality check: a location is only reported if `stock.quant` still holds stock of that product there; otherwise the line falls to `stock_status = 'unknown'` |
 | 46 | Lines whose historical moves were never linked | Automatic fallback matching moves by `(comex_operation_id, product_id)`, so the 705 untracked units already in Depósito Fiscal are located without a full backfill (resolves open question 7) |
+| 47 | **Sorting by location** | A Many2many is never sortable and a non-stored compute cannot be ordered (`fields.py:882`). Solved by materialising `current_location_display`, `lot_name_display` and `last_delivery_partner_id`: stored columns on the line, selected as **real SQL columns** by the report view. Refreshed by `stock.move._action_done()` (including the inventory moves of a manual lot relocation), by `_assign_stock_moves()` and by the daily cron |
+| 48 | Contact of the current location | `stock.lot.last_delivery_partner_id` only considers **outgoing** transfers (`_get_outgoing_domain`, `stock_lot.py:245`), so it stays empty when a machine is sent to a dealer through an internal transfer. The line field falls back to the partner of the last validated transfer, covering dealers and customers alike |
 
 ## 16. Implementation phases
 

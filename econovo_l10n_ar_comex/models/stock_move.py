@@ -44,6 +44,33 @@ class StockMove(models.Model):
         """Never merge moves belonging to different COMEX product lines."""
         return super()._prepare_merge_moves_distinct_fields() + ['comex_product_line_id']
 
+    def _action_done(self, cancel_backorder=False):
+        """Refresh the located stock of the COMEX lines these units belong to."""
+        moves = super()._action_done(cancel_backorder=cancel_backorder)
+        moves._refresh_comex_stock_position()
+        return moves
+
+    def _refresh_comex_stock_position(self):
+        """Find the COMEX lines impacted by these moves and refresh their position.
+
+        Lots are looked up as well, so a manual relocation through
+        `stock.lot.location_id` or a delivery booked outside the COMEX chain is
+        picked up too.
+        """
+        ProductLine = self.env['comex.operation.product.line'].sudo()
+        lines = self.sudo().comex_product_line_id
+
+        lots = self.sudo().move_line_ids.lot_id
+        if lots and ProductLine.search_count([('product_id', 'in', lots.product_id.ids)], limit=1):
+            tracked_move_lines = self.env['stock.move.line'].sudo().search([
+                ('lot_id', 'in', lots.ids),
+                ('move_id.comex_product_line_id', '!=', False),
+            ])
+            lines |= tracked_move_lines.move_id.comex_product_line_id
+
+        if lines:
+            lines._refresh_stock_position_cache()
+
     def _assign_picking(self):
         """Override to propagate COMEX fields to the picking."""
         result = super()._assign_picking()
