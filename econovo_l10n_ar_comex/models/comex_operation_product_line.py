@@ -213,10 +213,13 @@ class ComexOperationProductLine(models.Model):
         compute='_compute_stock_position_cache',
         store=True,
         readonly=True,
-        help="Contact of the last validated transfer of these units. Unlike "
-             "stock.lot.last_delivery_partner_id, which only looks at outgoing "
-             "transfers, this also covers internal transfers such as the ones to a "
-             "dealer location.",
+        help="Contact of the last transfer that handed these units over, either to a "
+             "customer or to a dealer.\n"
+             "Empty while the goods are still in the COMEX circuit or in own stock: "
+             "receipts and COMEX chain transfers carry the supplier as contact, which "
+             "says nothing about who holds the goods.\n"
+             "Unlike stock.lot.last_delivery_partner_id it also covers internal "
+             "transfers, so a dealer is reported too.",
     )
     stock_status = fields.Selection(
         selection='_selection_stock_status',
@@ -317,26 +320,34 @@ class ComexOperationProductLine(models.Model):
             self.env.add_to_compute(self._fields[field_name], self)
 
     def _get_last_delivery_partners(self, position):
-        """Return {line_id: partner} of the last validated transfer of each line."""
+        """Return {line_id: partner} of the last transfer that handed the units over.
+
+        Inbound logistics is excluded: a receipt and the COMEX chain transfers
+        carry the supplier as contact, which says nothing about who holds the
+        goods now.
+        """
         partners = {}
         moves_by_line = self._get_done_moves_by_line()
         for line in self:
-            move_lines = self.env['stock.move.line'].sudo()
             lots = position[line.id]['lots']
             if lots:
-                move_lines = move_lines.search([
+                move_line = self.env['stock.move.line'].sudo().search([
                     ('lot_id', 'in', lots.ids),
                     ('state', '=', 'done'),
                     ('move_id.picking_id.partner_id', '!=', False),
+                    ('move_id.picking_id.picking_type_id.code', '!=', 'incoming'),
+                    ('move_id.picking_id.picking_type_id.is_comex_import', '=', False),
                 ], order='date desc', limit=1)
-            if not move_lines:
-                candidates = moves_by_line[line.id].filtered(
-                    lambda move: move.picking_id.partner_id
-                ).sorted('date', reverse=True)
-                if candidates:
-                    partners[line.id] = candidates[0].picking_id.partner_id.id
-                continue
-            partners[line.id] = move_lines.move_id.picking_id.partner_id.id
+                if move_line:
+                    partners[line.id] = move_line.move_id.picking_id.partner_id.id
+                    continue
+            candidates = moves_by_line[line.id].filtered(
+                lambda move: move.picking_id.partner_id
+                and move.picking_id.picking_type_id.code != 'incoming'
+                and not move.picking_id.picking_type_id.is_comex_import
+            ).sorted('date', reverse=True)
+            if candidates:
+                partners[line.id] = candidates[0].picking_id.partner_id.id
         return partners
 
     def _get_stock_position(self):

@@ -54,13 +54,15 @@ class TestComexProductLineStockPosition(TransactionCase):
             'origin_type': 'manual',
         })
 
-    def _make_move(self, line, source, destination, qty=2.0, lot=None, partner=None):
+    def _make_move(self, line, source, destination, qty=2.0, lot=None, partner=None,
+                   picking_type=None):
         picking = self.env['stock.picking']
         if partner:
-            picking_type = self.env['stock.picking.type'].search([
-                ('code', '=', 'internal'),
-                ('company_id', '=', self.company.id),
-            ], limit=1)
+            if not picking_type:
+                picking_type = self.env['stock.picking.type'].search([
+                    ('code', '=', 'internal'),
+                    ('company_id', '=', self.company.id),
+                ], limit=1)
             picking = picking.create({
                 'picking_type_id': picking_type.id,
                 'location_id': source.id,
@@ -311,6 +313,36 @@ class TestComexProductLineStockPosition(TransactionCase):
         self.assertEqual(line.current_location_ids, dealer_location)
         self.assertEqual(line.last_delivery_partner_id, dealer)
         self.assertFalse(serial.last_delivery_partner_id)
+
+    def test_last_delivery_partner_ignores_comex_inbound(self):
+        """Goods still travelling the COMEX chain have no delivery contact.
+
+        The receipt and the chained transfers carry the supplier as contact, and
+        reporting it would wrongly suggest the goods were handed to someone.
+        """
+        supplier = self.env['res.partner'].create({'name': 'COMEX Test Supplier'})
+        receipt_type = self.env['stock.picking.type'].search([
+            ('code', '=', 'incoming'),
+            ('company_id', '=', self.company.id),
+        ], limit=1)
+        chain_type = self.env['stock.picking.type'].create({
+            'name': 'COMEX Test Chain',
+            'code': 'internal',
+            'sequence_code': 'COMEX/TEST',
+            'company_id': self.company.id,
+            'warehouse_id': self.warehouse.id,
+            'is_comex_import': True,
+        })
+        operation = self._create_operation()
+        line = self._create_line(operation, self.product)
+
+        self._make_move(line, self.supplier_location, self.transit_location,
+                        partner=supplier, picking_type=receipt_type)
+        self._make_move(line, self.transit_location, self.stock_location,
+                        partner=supplier, picking_type=chain_type)
+
+        self.assertEqual(line.current_location_ids, self.stock_location)
+        self.assertFalse(line.last_delivery_partner_id)
 
     def test_purchase_qty_received_is_not_inflated_by_the_chain(self):
         """Guard: the COMEX chain must never be counted as received quantity."""
