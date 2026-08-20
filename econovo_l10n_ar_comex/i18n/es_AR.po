@@ -4028,8 +4028,16 @@ msgstr "Recuento de líneas de producto"
 
 #. module: econovo_l10n_ar_comex
 #: model:ir.actions.act_window,name:econovo_l10n_ar_comex.comex_operation_product_line_action
-#: model:ir.model.fields,field_description:econovo_l10n_ar_comex.field_comex_operation__product_line_ids
+msgid "COMEX Line Analysis"
+msgstr "Análisis de líneas COMEX"
+
+#. module: econovo_l10n_ar_comex
 #: model:ir.ui.menu,name:econovo_l10n_ar_comex.menu_comex_operation_product_lines
+msgid "Line Analysis"
+msgstr "Análisis de líneas"
+
+#. module: econovo_l10n_ar_comex
+#: model:ir.model.fields,field_description:econovo_l10n_ar_comex.field_comex_operation__product_line_ids
 msgid "Product Lines"
 msgstr "Líneas de producto"
 
