@@ -197,6 +197,10 @@
                                 invisible="product_line_count == 0">
                             <field name="product_line_count" widget="statinfo" string="Products"/>
                         </button>
+                        <button name="action_view_lots" type="object" class="oe_stat_button" icon="fa-barcode"
+                                invisible="lot_count == 0">
+                            <field name="lot_count" widget="statinfo" string="Serial Numbers"/>
+                        </button>
                         <button name="action_view_shipments" type="object" class="oe_stat_button" icon="fa-ship"
                                 invisible="shipment_count == 0">
                             <field name="shipment_count" widget="statinfo" string="Shipments"/>

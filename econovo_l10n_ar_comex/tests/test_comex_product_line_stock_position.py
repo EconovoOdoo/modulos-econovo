@@ -344,6 +344,29 @@ class TestComexProductLineStockPosition(TransactionCase):
         self.assertEqual(line.current_location_ids, self.stock_location)
         self.assertFalse(line.last_delivery_partner_id)
 
+    def test_operation_aggregates_lots_for_the_smart_button(self):
+        """The operation exposes the lots of its lines for the smart button."""
+        operation = self._create_operation()
+        first_line = self._create_line(operation, self.serial_product, qty=1.0)
+        second_line = self._create_line(operation, self.serial_product, qty=1.0)
+        first_serial = self._create_serial('COMEX-SERIAL-07')
+        second_serial = self._create_serial('COMEX-SERIAL-08')
+
+        self._make_move(first_line, self.supplier_location, self.stock_location,
+                        qty=1.0, lot=first_serial)
+        self._make_move(second_line, self.supplier_location, self.stock_location,
+                        qty=1.0, lot=second_serial)
+        operation.invalidate_recordset()
+
+        self.assertEqual(operation.lot_ids, first_serial | second_serial)
+        self.assertEqual(operation.lot_count, 2)
+        action = operation.action_view_lots()
+        self.assertEqual(action['res_model'], 'stock.lot')
+        self.assertEqual(
+            sorted(action['domain'][0][2]),
+            sorted((first_serial | second_serial).ids),
+        )
+
     def test_purchase_qty_received_is_not_inflated_by_the_chain(self):
         """Guard: the COMEX chain must never be counted as received quantity."""
         operation = self._create_operation()

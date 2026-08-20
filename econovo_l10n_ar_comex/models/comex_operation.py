@@ -245,6 +245,16 @@ class ComexOperation(models.Model):
         string="Product Line Count",
         compute='_compute_product_line_count',
     )
+    lot_ids = fields.Many2many(
+        'stock.lot',
+        string="Lots/Serial Numbers",
+        compute='_compute_lot_ids',
+        help="Lots and serial numbers received for this operation.",
+    )
+    lot_count = fields.Integer(
+        string="Lot Count",
+        compute='_compute_lot_ids',
+    )
 
     # Container/Package Count
     container_total_count = fields.Integer(
@@ -1246,6 +1256,13 @@ class ComexOperation(models.Model):
         for record in self:
             record.current_location_ids = record.product_line_ids.current_location_ids
 
+    def _compute_lot_ids(self):
+        """Aggregate the lots/serial numbers of every product line."""
+        for record in self:
+            lots = record.product_line_ids.lot_ids
+            record.lot_ids = lots
+            record.lot_count = len(lots)
+
     # -------------------------------------------------------------------------
     # STAGE SYNCHRONIZATION
     # -------------------------------------------------------------------------
@@ -1610,6 +1627,22 @@ class ComexOperation(models.Model):
                 default_partner_id=self.partner_id.id if self.partner_id else False,
             ),
         }
+
+    def action_view_lots(self):
+        """Open the lots/serial numbers received for this operation."""
+        self.ensure_one()
+        action = {
+            'type': 'ir.actions.act_window',
+            'name': _('Lots/Serial Numbers'),
+            'res_model': 'stock.lot',
+            'view_mode': 'tree,form',
+            'domain': [('id', 'in', self.lot_ids.ids)],
+            'context': {'create': False},
+        }
+        if len(self.lot_ids) == 1:
+            action['view_mode'] = 'form'
+            action['res_id'] = self.lot_ids.id
+        return action
 
     def action_view_containers(self):
         """Open all containers/packages from shipments."""
