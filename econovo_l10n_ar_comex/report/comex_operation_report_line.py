@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # Part of Econovo. See LICENSE file for full copyright and licensing details.
 
-from odoo import api, fields, models
+from odoo import _, api, fields, models
 
 
 class ComexOperationReportLine(models.Model):
@@ -57,7 +57,7 @@ class ComexOperationReportLine(models.Model):
         readonly=True,
         help="Unchecked on operations that have no product line at all.",
     )
-    sequence = fields.Integer(readonly=True)
+    sequence = fields.Integer(readonly=True, group_operator=None)
     active = fields.Boolean(readonly=True)
 
     # Operation header
@@ -81,6 +81,8 @@ class ComexOperationReportLine(models.Model):
     color = fields.Integer(
         string="Color Index",
         readonly=True,
+        group_operator=None,
+        help="Color of the parent operation. Read-only here: open the operation to change it.",
     )
     partner_id = fields.Many2one(
         'res.partner',
@@ -121,6 +123,10 @@ class ComexOperationReportLine(models.Model):
     container_total_count = fields.Integer(
         string="Total Containers",
         readonly=True,
+        group_operator=None,
+        help="Container count of the parent operation, repeated on every line of that "
+             "operation. Not aggregated, since summing it would multiply it by the "
+             "number of lines.",
     )
     bl_numbers = fields.Char(
         string="BL Numbers",
@@ -251,16 +257,23 @@ class ComexOperationReportLine(models.Model):
         string="Unit Price",
         digits='Product Price',
         readonly=True,
+        group_operator=None,
     )
     price_subtotal = fields.Monetary(
         string="Subtotal",
         currency_field='currency_id',
         readonly=True,
+        group_operator=None,
+        help="Line subtotal in the operation currency. Not aggregated, because "
+             "operations may use different currencies. Use Subtotal (Company Currency) "
+             "to add up amounts.",
     )
     price_subtotal_company = fields.Monetary(
         string="Subtotal (Company Currency)",
         currency_field='company_currency_id',
         readonly=True,
+        help="Formula: price_subtotal / operation currency rate. Expressed in the "
+             "currency of the operation company, so it can be safely summed.",
     )
     origin_type = fields.Selection(
         selection=[
@@ -287,42 +300,83 @@ class ComexOperationReportLine(models.Model):
         string="Line Share",
         digits=(16, 6),
         readonly=True,
-        help="Weight of this line within its operation, based on the line subtotal. "
-             "Header amounts multiplied by this ratio add up to the header amount.",
+        group_operator=None,
+        help="Weight of this line inside its operation, used to prorate the operation "
+             "amounts.\n"
+             "Formula: line subtotal / total subtotal of the operation.\n"
+             "If that total is zero or negative, the split is equal: 1 / number of "
+             "lines of the operation.\n"
+             "An operation without lines has a single row with a share of 1.\n"
+             "The shares of one operation always add up to 1.",
     )
     vep_amount = fields.Monetary(
         string="VEP Amount",
         currency_field='currency_ars_id',
         readonly=True,
-        help="Operation VEP amount, repeated on every line. Do not sum it.",
+        group_operator=None,
+        help="VEP amount of the parent operation, repeated on every line of that "
+             "operation. Not aggregated, since summing it would multiply it by the "
+             "number of lines. Use VEP Amount (Prorated) to add up amounts.",
     )
     vep_amount_share = fields.Monetary(
         string="VEP Amount (Prorated)",
         currency_field='currency_ars_id',
         readonly=True,
+        help="Share of the operation VEP allocated to this line, in ARS.\n"
+             "Formula: operation VEP amount x line share.\n"
+             "Summing it over a whole operation gives back the operation VEP amount.",
     )
     amount_fob = fields.Monetary(
         string="FOB Amount",
         currency_field='currency_id',
         readonly=True,
-        help="Operation FOB amount, repeated on every line. Do not sum it.",
+        group_operator=None,
+        help="FOB amount of the parent operation, repeated on every line of that "
+             "operation. Not aggregated, since summing it would multiply it by the "
+             "number of lines. Use FOB Prorated (Company Currency) to add up amounts.",
     )
     amount_cif = fields.Monetary(
         string="CIF Amount",
         currency_field='currency_id',
         readonly=True,
-        help="Operation CIF amount, repeated on every line. Do not sum it.",
+        group_operator=None,
+        help="CIF amount of the parent operation, repeated on every line of that "
+             "operation. Not aggregated, since summing it would multiply it by the "
+             "number of lines. Use CIF Prorated (Company Currency) to add up amounts.",
     )
     amount_fob_share_company = fields.Monetary(
         string="FOB Prorated (Company Currency)",
         currency_field='company_currency_id',
         readonly=True,
+        help="Share of the operation FOB amount allocated to this line.\n"
+             "Formula: (operation FOB amount x line share) / operation currency rate.\n"
+             "Summing it over a whole operation gives back the operation FOB amount "
+             "converted to the company currency.",
     )
     amount_cif_share_company = fields.Monetary(
         string="CIF Prorated (Company Currency)",
         currency_field='company_currency_id',
         readonly=True,
+        help="Share of the operation CIF amount allocated to this line.\n"
+             "Formula: (operation CIF amount x line share) / operation currency rate.\n"
+             "Summing it over a whole operation gives back the operation CIF amount "
+             "converted to the company currency.",
     )
+
+    # -------------------------------------------------------------------------
+    # ACTION METHODS
+    # -------------------------------------------------------------------------
+    def action_open_operation(self):
+        """Open the parent COMEX operation of this line."""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _("COMEX Operation"),
+            'res_model': 'comex.operation',
+            'res_id': self.operation_id.id,
+            'view_mode': 'form',
+            'target': 'current',
+        }
 
     # -------------------------------------------------------------------------
     # SQL VIEW

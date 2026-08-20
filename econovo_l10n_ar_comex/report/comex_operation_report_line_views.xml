@@ -17,14 +17,20 @@
                 <field name="currency_ars_id" column_invisible="1"/>
                 <field name="company_currency_id" column_invisible="1"/>
                 <field name="color" widget="color_picker" string=" " optional="show"/>
-                <field name="operation_name" decoration-bf="1"/>
+                <field name="operation_id" string="COMEX Reference" optional="show"/>
+                <button name="action_open_operation"
+                        type="object"
+                        icon="fa-external-link"
+                        title="Open COMEX Operation"
+                        class="btn-link"/>
+                <field name="operation_name" optional="hide"/>
                 <field name="product_id" optional="show"/>
                 <field name="product_qty" sum="Total Quantity" optional="show"/>
                 <field name="product_uom_id" optional="hide"/>
                 <field name="qty_received" sum="Total Received" optional="hide"/>
                 <field name="qty_delivered" sum="Total Delivered" optional="hide"/>
                 <field name="price_unit" optional="hide"/>
-                <field name="price_subtotal" optional="show"/>
+                <field name="price_subtotal" optional="hide"/>
                 <field name="price_subtotal_company" sum="Total Subtotal" optional="show"/>
                 <field name="origin_type" optional="hide"/>
                 <field name="purchase_order_id" optional="hide"/>
