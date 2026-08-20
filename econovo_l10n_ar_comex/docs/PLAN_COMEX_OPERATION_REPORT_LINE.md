@@ -599,7 +599,7 @@ Get-Content D:\Odoo\ODOO-SRC\odoo-17\odoo\odoo.log -Tail 200 | Select-String -Pa
 # Part 2 — Stock location traceability per line
 
 > **Scope extension** requested on 2026-08-20. Target version: **`17.0.6.0.0`**.
-> **Status**: designed and approved, not implemented.
+> **Status**: **implemented**, 22/22 unit tests green on the local database.
 
 ## 10. Goal
 
@@ -785,6 +785,9 @@ column is filterable (D8). Support at least `in`, `not in`, `=`, `!=`, `child_of
 | 41 | Performance on 4 426 lines | Batched computes (one `read_group` per model for the whole recordset), `index='btree_not_null'` on the new field |
 | 42 | Report rows without a product line (synthetic) | Related fields are empty — correct |
 | 43 | Multi-company record rules | The computes must run on the line's company; use `sudo()` only where the existing COMEX fields already require it |
+| 44 | **User edits `stock.lot.location_id` by hand** | That field is `store=True, readonly=False` with an inverse (`stock/models/stock_lot.py:55,143`). Writing it calls `quants.move_quants(...)` → `_get_inventory_move_values` with **`is_inventory=True`** (`stock_quant.py:1285`): real moves, with no picking and **without** `comex_product_line_id`. Handled by reading the **quants**, never `lot.location_id`, so the relocation is reflected immediately. Note the inverse **raises `UserError`** when the lot sits in more than one location, which is precisely why `lot.location_id` cannot be used as a source |
+| 45 | Untracked goods moved outside the COMEX chain (inventory adjustment, manual transfer) | The chain balance alone would keep pointing at the old location. Mitigated by a reality check: a location is only reported if `stock.quant` still holds stock of that product there; otherwise the line falls to `stock_status = 'unknown'` |
+| 46 | Lines whose historical moves were never linked | Automatic fallback matching moves by `(comex_operation_id, product_id)`, so the 705 untracked units already in Depósito Fiscal are located without a full backfill (resolves open question 7) |
 
 ## 16. Implementation phases
 
@@ -818,11 +821,12 @@ column is filterable (D8). Support at least `in`, `not in`, `=`, `!=`, `child_of
 
 ## 18. Open questions for Part 2
 
-7. **Untracked historical lines (edge case 30)**: with backfill restricted to serial products, the
-   705 units of spare parts currently in Depósito Fiscal would show **no location** until they move
-   again. Recommended mitigation: when `comex_product_line_id` is empty, fall back to matching
-   moves by `(comex_operation_id, product_id)`. Confirm whether to implement this fallback.
+7. **Untracked historical lines (edge case 30)**: **resolved** — implemented as the automatic
+   fallback by `(operation, product)` described in edge case 46, on top of the serial-only backfill.
 8. **`stock_status` labels**: confirm the Spanish wording (`Pendiente`, `En stock propio`,
-   `Entregado`, `Devuelto`, `Parcial`).
-9. **Operation header**: confirm whether the existing `current_location_id` should be replaced by
-   the new aggregated `current_location_ids` or kept side by side.
+   `Entregado`, `Devuelto`, `Parcial`, `Sin determinar`).
+9. **Operation header**: `current_location_id` (manual) and `current_location_ids` (computed) are
+   currently shown side by side; confirm whether the manual one should be dropped.
+10. **Pending chain vs. actual location**: if a user relocates a lot manually while COMEX steps are
+    still pending, those pickings become inconsistent. Not surfaced today; a `has_pending_chain`
+    indicator is the natural follow-up.

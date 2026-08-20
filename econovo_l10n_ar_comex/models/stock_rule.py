@@ -39,4 +39,8 @@ class StockRule(models.Model):
         if operation:
             values['comex_operation_id'] = operation.id
 
+        # Product line: only present on COMEX moves, so non-COMEX flows are untouched
+        if move_sudo.comex_product_line_id:
+            values['comex_product_line_id'] = move_sudo.comex_product_line_id.id
+
         return values

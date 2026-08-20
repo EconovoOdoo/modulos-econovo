@@ -35,6 +35,20 @@
                 <field name="origin_type" optional="hide"/>
                 <field name="purchase_order_id" optional="hide"/>
                 <field name="sale_order_id" optional="hide"/>
+                <field name="current_location_ids"
+                       widget="many2many_tags"
+                       options="{'no_create': True}"
+                       optional="show"/>
+                <field name="stock_status" widget="badge" optional="show"
+                       decoration-info="stock_status == 'internal'"
+                       decoration-success="stock_status == 'delivered'"
+                       decoration-warning="stock_status in ('partial', 'returned')"
+                       decoration-muted="stock_status in ('pending', 'unknown')"/>
+                <field name="lot_ids"
+                       widget="many2many_tags"
+                       options="{'no_create': True}"
+                       optional="hide"/>
+                <field name="current_location_display" optional="hide"/>
                 <field name="partner_id"/>
                 <field name="stage_id" widget="badge" optional="show"/>
                 <field name="date_operation" optional="show"/>
@@ -109,6 +123,8 @@
                 <field name="sale_order_id"/>
                 <field name="bl_numbers"/>
                 <field name="origin_country_id"/>
+                <field name="current_location_ids"/>
+                <field name="lot_ids"/>
 
                 <filter name="filter_import" string="Imports"
                         domain="[('operation_type', '=', 'import')]"/>
@@ -128,9 +144,15 @@
                 <filter name="filter_not_arrived" string="Not Arrived"
                         domain="[('date_arrival', '=', False)]"/>
                 <separator/>
+                <filter name="filter_stock_own" string="In Own Stock"
+                        domain="[('stock_status', '=', 'internal')]"/>
+                <filter name="filter_stock_delivered" string="Delivered"
+                        domain="[('stock_status', 'in', ('delivered', 'partial'))]"/>
+                <filter name="filter_stock_returned" string="Returned"
+                        domain="[('stock_status', '=', 'returned')]"/>
+                <separator/>
                 <filter name="filter_archived" string="Archived"
                         domain="[('active', '=', False)]"/>
-
                 <group expand="0" string="Group By">
                     <filter name="group_operation" string="Operation"
                             context="{'group_by': 'operation_id'}"/>

@@ -205,6 +205,30 @@ class ComexOperationReportLine(models.Model):
         readonly=True,
     )
 
+    # Stock position (computed on the product line, exposed here)
+    current_location_ids = fields.Many2many(
+        'stock.location',
+        string="Current Locations",
+        related='product_line_id.current_location_ids',
+        readonly=True,
+    )
+    current_location_display = fields.Char(
+        string="Current Location",
+        related='product_line_id.current_location_display',
+        readonly=True,
+    )
+    lot_ids = fields.Many2many(
+        'stock.lot',
+        string="Lots/Serial Numbers",
+        related='product_line_id.lot_ids',
+        readonly=True,
+    )
+    stock_status = fields.Selection(
+        related='product_line_id.stock_status',
+        string="Stock Status",
+        readonly=True,
+    )
+
     # Currencies
     currency_id = fields.Many2one(
         'res.currency',

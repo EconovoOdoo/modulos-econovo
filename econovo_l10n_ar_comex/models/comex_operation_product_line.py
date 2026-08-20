@@ -2,8 +2,10 @@
 # Part of Econovo. See LICENSE file for full copyright and licensing details.
 
 import logging
+from collections import defaultdict
+
 from odoo import _, api, fields, models
-from odoo.tools import float_compare
+from odoo.tools import float_compare, float_is_zero
 
 _logger = logging.getLogger(__name__)
 
@@ -164,6 +166,43 @@ class ComexOperationProductLine(models.Model):
         related='package_id.comex_container_number',
     )
 
+    # Stock position
+    move_ids = fields.One2many(
+        'stock.move',
+        'comex_product_line_id',
+        string="Stock Moves",
+        readonly=True,
+        help="Stock moves of this line along the whole COMEX chain.",
+    )
+    lot_ids = fields.Many2many(
+        'stock.lot',
+        string="Lots/Serial Numbers",
+        compute='_compute_stock_position',
+        help="Lots or serial numbers received for this line.",
+    )
+    current_location_ids = fields.Many2many(
+        'stock.location',
+        string="Current Locations",
+        compute='_compute_stock_position',
+        search='_search_current_location_ids',
+        help="Locations where the units of this line currently are.\n"
+             "For tracked products it is read from the stock of their lots/serial numbers, "
+             "so it stays correct after a manual relocation, a delivery or a return.\n"
+             "For untracked products it is derived from the COMEX chain of stock moves and "
+             "stops once the goods are nationalised and merged with the regular stock.",
+    )
+    current_location_display = fields.Char(
+        string="Current Location",
+        compute='_compute_stock_position',
+    )
+    stock_status = fields.Selection(
+        selection='_selection_stock_status',
+        string="Stock Status",
+        compute='_compute_stock_position',
+        search='_search_stock_status',
+        help="Where the units of this line stand, derived from the location usage.",
+    )
+
     # -------------------------------------------------------------------------
     # COMPUTE METHODS
     # -------------------------------------------------------------------------
@@ -204,6 +243,266 @@ class ComexOperationProductLine(models.Model):
         
         # Return domain matching lines with those products in this operation
         return [('product_id', 'in', product_ids)]
+
+    # -------------------------------------------------------------------------
+    # STOCK POSITION
+    # -------------------------------------------------------------------------
+    @api.model
+    def _selection_stock_status(self):
+        return [
+            ('pending', _("Pending")),
+            ('internal', _("In Own Stock")),
+            ('partial', _("Partially Delivered")),
+            ('delivered', _("Delivered")),
+            ('returned', _("Returned")),
+            ('unknown', _("Not Traceable")),
+        ]
+
+    def _compute_stock_position(self):
+        """Locate the units of each line, in a single batched pass."""
+        position = self._get_stock_position()
+        for line in self:
+            line_position = position[line.id]
+            locations = line_position['locations']
+            line.lot_ids = line_position['lots']
+            line.current_location_ids = locations
+            line.current_location_display = ', '.join(locations.mapped('complete_name'))
+            line.stock_status = self._get_stock_status(
+                locations, line_position['has_moves'], line_position['returned'],
+            )
+
+    def _get_stock_position(self):
+        """Return {line_id: {'lots', 'locations', 'has_moves', 'returned'}}."""
+        lots = self.env['stock.lot']
+        locations = self.env['stock.location']
+        position = {
+            line.id: {
+                'lots': lots,
+                'locations': locations,
+                'has_moves': False,
+                'returned': False,
+            }
+            for line in self
+        }
+        if not self:
+            return position
+
+        moves_by_line = self._get_done_moves_by_line()
+        for line_id, moves in moves_by_line.items():
+            position[line_id]['has_moves'] = bool(moves)
+
+        self._fill_tracked_position(position, moves_by_line)
+        self._fill_untracked_position(position, moves_by_line)
+        return position
+
+    def _get_done_moves_by_line(self):
+        """Return the done stock moves of each line, keyed by line id.
+
+        Lines whose historical moves were never linked fall back to matching by
+        operation and product, which is the best attribution available for them.
+        """
+        moves_by_line = {line.id: self.env['stock.move'] for line in self}
+        linked_moves = self.env['stock.move'].sudo().search([
+            ('comex_product_line_id', 'in', self.ids),
+            ('state', '=', 'done'),
+        ])
+        for move in linked_moves:
+            moves_by_line[move.comex_product_line_id.id] |= move
+
+        unlinked_lines = self.filtered(lambda line: not moves_by_line[line.id])
+        if not unlinked_lines:
+            return moves_by_line
+
+        fallback_moves = self.env['stock.move'].sudo().search([
+            ('comex_operation_id', 'in', unlinked_lines.operation_id.ids),
+            ('product_id', 'in', unlinked_lines.product_id.ids),
+            ('comex_product_line_id', '=', False),
+            ('state', '=', 'done'),
+        ])
+        moves_by_key = defaultdict(lambda: self.env['stock.move'])
+        for move in fallback_moves:
+            moves_by_key[(move.comex_operation_id.id, move.product_id.id)] |= move
+        for line in unlinked_lines:
+            moves_by_line[line.id] = moves_by_key[(line.operation_id.id, line.product_id.id)]
+        return moves_by_line
+
+    def _fill_tracked_position(self, position, moves_by_line):
+        """Locate tracked lines from the stock of their lots/serial numbers."""
+        tracked_lines = self.filtered(
+            lambda line: line.product_id.tracking in ('serial', 'lot')
+        )
+        if not tracked_lines:
+            return
+
+        line_by_move = {}
+        for line in tracked_lines:
+            for move in moves_by_line[line.id]:
+                line_by_move[move.id] = line.id
+
+        move_lines = self.env['stock.move.line'].sudo().search([
+            ('move_id', 'in', list(line_by_move)),
+            ('lot_id', '!=', False),
+            ('state', '=', 'done'),
+        ])
+        if not move_lines:
+            return
+
+        lines_by_lot = defaultdict(set)
+        for move_line in move_lines:
+            line_id = line_by_move[move_line.move_id.id]
+            position[line_id]['lots'] |= move_line.lot_id
+            lines_by_lot[move_line.lot_id.id].add(line_id)
+
+        all_lots = self.env['stock.lot'].browse(list(lines_by_lot))
+        # Quants are the only reliable source: they follow manual relocations,
+        # deliveries and returns, and unlike stock.lot.location_id they also
+        # describe a lot split across several locations.
+        quants = self.env['stock.quant'].sudo().search([
+            ('lot_id', 'in', all_lots.ids),
+            ('quantity', '>', 0),
+        ])
+        for quant in quants:
+            for line_id in lines_by_lot[quant.lot_id.id]:
+                position[line_id]['locations'] |= quant.location_id
+
+        returned_move_lines = self.env['stock.move.line'].sudo().search([
+            ('lot_id', 'in', all_lots.ids),
+            ('move_id.origin_returned_move_id', '!=', False),
+            ('state', '=', 'done'),
+        ])
+        for move_line in returned_move_lines:
+            for line_id in lines_by_lot[move_line.lot_id.id]:
+                position[line_id]['returned'] = True
+
+    def _fill_untracked_position(self, position, moves_by_line):
+        """Locate untracked lines from the net balance of their COMEX moves."""
+        untracked_lines = self.filtered(
+            lambda line: line.product_id.tracking not in ('serial', 'lot')
+        )
+        if not untracked_lines:
+            return
+
+        balances = defaultdict(lambda: defaultdict(float))
+        for line in untracked_lines:
+            for move in moves_by_line[line.id]:
+                balances[line.id][move.location_dest_id.id] += move.quantity
+                balances[line.id][move.location_id.id] -= move.quantity
+
+        candidate_ids = {
+            location_id
+            for line_balances in balances.values()
+            for location_id, quantity in line_balances.items()
+            if float_compare(quantity, 0.0, precision_digits=6) > 0
+        }
+        if not candidate_ids:
+            return
+
+        available = self._get_available_quantities(untracked_lines, candidate_ids)
+        for line in untracked_lines:
+            for location_id, quantity in balances[line.id].items():
+                if float_compare(quantity, 0.0, precision_digits=6) <= 0:
+                    continue
+                # Drop locations that no longer hold stock: the goods were moved
+                # away by an inventory adjustment or a non-COMEX transfer.
+                key = (line.company_id.id, line.product_id.id, location_id)
+                if float_is_zero(available.get(key, 0.0), precision_digits=6):
+                    continue
+                position[line.id]['locations'] |= self.env['stock.location'].browse(location_id)
+
+    @api.model
+    def _get_available_quantities(self, lines, location_ids):
+        """Return {(company, product, location): quantity} for the given scope."""
+        groups = self.env['stock.quant'].sudo().read_group(
+            [
+                ('company_id', 'in', lines.company_id.ids),
+                ('product_id', 'in', lines.product_id.ids),
+                ('location_id', 'in', list(location_ids)),
+            ],
+            ['quantity:sum'],
+            ['company_id', 'product_id', 'location_id'],
+            lazy=False,
+        )
+        return {
+            (group['company_id'][0], group['product_id'][0], group['location_id'][0]):
+                group['quantity']
+            for group in groups
+            if group['company_id'] and group['product_id'] and group['location_id']
+        }
+
+    @api.model
+    def _get_stock_status(self, locations, has_moves, returned):
+        """Classify a position using the location usage, without naming stages."""
+        if returned:
+            return 'returned'
+        if not locations:
+            return 'unknown' if has_moves else 'pending'
+
+        usages = set(locations.mapped('usage'))
+        own = usages & {'internal', 'transit'}
+        delivered = 'customer' in usages
+        if own and delivered:
+            return 'partial'
+        if delivered:
+            return 'delivered'
+        if own == usages:
+            return 'internal'
+        return 'unknown'
+
+    def _search_current_location_ids(self, operator, value):
+        """Filter lines by where their units currently are."""
+        lines = self.search([])
+        positions = lines._get_stock_position()
+        target_ids = set(self.env['stock.location']._search([('id', operator, value)]))
+        matching_ids = [
+            line_id
+            for line_id, position in positions.items()
+            if target_ids & set(position['locations'].ids)
+        ]
+        return [('id', 'in', matching_ids)]
+
+    def _search_stock_status(self, operator, value):
+        """Filter lines by stock status."""
+        if operator not in ('=', '!=', 'in', 'not in'):
+            raise NotImplementedError(
+                _("Unsupported operator %s on the stock status.", operator)
+            )
+        values = value if isinstance(value, (list, tuple)) else [value]
+        lines = self.search([])
+        positions = lines._get_stock_position()
+        matching_ids = [
+            line.id
+            for line in lines
+            if self._get_stock_status(
+                positions[line.id]['locations'],
+                positions[line.id]['has_moves'],
+                positions[line.id]['returned'],
+            ) in values
+        ]
+        if operator in ('!=', 'not in'):
+            return [('id', 'not in', matching_ids)]
+        return [('id', 'in', matching_ids)]
+
+    def _assign_stock_moves(self):
+        """Link the stock moves of each line, including the already existing chain.
+
+        Moves that already belong to another line are never reassigned, so
+        historical merged moves cannot be stolen from their line.
+        """
+        for line in self:
+            origin_moves = line.purchase_line_id.move_ids | line.sale_line_id.move_ids
+            if not origin_moves:
+                continue
+            chain = origin_moves
+            frontier = origin_moves
+            while frontier:
+                frontier = frontier.move_dest_ids - chain
+                chain |= frontier
+            to_assign = chain.filtered(
+                lambda move: not move.comex_product_line_id
+                and move.product_id == line.product_id
+            )
+            if to_assign:
+                to_assign.sudo().write({'comex_product_line_id': line.id})
 
     # -------------------------------------------------------------------------
     # ONCHANGE METHODS
@@ -280,6 +579,8 @@ class ComexOperationProductLine(models.Model):
                 operation.name, len(lines_to_create),
             )
             self.create(lines_to_create)
+
+        self.search([('operation_id', '=', operation.id)])._assign_stock_moves()
 
     @api.model
     def _prepare_sync_values(self, operation):

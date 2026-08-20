@@ -26,10 +26,24 @@ class StockMove(models.Model):
         index=True,
         help="COMEX operation this move belongs to. Propagated through push rules.",
     )
+    comex_product_line_id = fields.Many2one(
+        'comex.operation.product.line',
+        string="COMEX Product Line",
+        copy=True,
+        index='btree_not_null',
+        ondelete='set null',
+        help="COMEX product line these units belong to. Propagated through push rules "
+             "so the stock can be located per line along the whole COMEX chain.",
+    )
 
     # -------------------------------------------------------------------------
     # BUSINESS METHODS
     # -------------------------------------------------------------------------
+    @api.model
+    def _prepare_merge_moves_distinct_fields(self):
+        """Never merge moves belonging to different COMEX product lines."""
+        return super()._prepare_merge_moves_distinct_fields() + ['comex_product_line_id']
+
     def _assign_picking(self):
         """Override to propagate COMEX fields to the picking."""
         result = super()._assign_picking()

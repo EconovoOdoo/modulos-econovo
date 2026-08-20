@@ -76,6 +76,13 @@ class ComexOperation(models.Model):
         help="Current location where goods are located in the COMEX transit chain. "
              "Can be a transit or internal location.",
     )
+    current_location_ids = fields.Many2many(
+        'stock.location',
+        string="Located Stock",
+        compute='_compute_current_location_ids',
+        help="Every location where the stock of this operation currently is, "
+             "aggregated from its product lines.",
+    )
     color = fields.Integer(
         string="Color Index",
         default=0,
@@ -1233,6 +1240,11 @@ class ComexOperation(models.Model):
         """Calculate number of product lines."""
         for record in self:
             record.product_line_count = len(record.product_line_ids)
+
+    def _compute_current_location_ids(self):
+        """Aggregate the located stock of every product line."""
+        for record in self:
+            record.current_location_ids = record.product_line_ids.current_location_ids
 
     # -------------------------------------------------------------------------
     # STAGE SYNCHRONIZATION
