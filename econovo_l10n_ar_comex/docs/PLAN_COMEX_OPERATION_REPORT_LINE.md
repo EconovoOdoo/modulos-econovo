@@ -592,3 +592,237 @@ Get-Content D:\Odoo\ODOO-SRC\odoo-17\odoo\odoo.log -Tail 200 | Select-String -Pa
    accepted as out of scope here.
 6. **Deployment window**: the upgrade rewrites action 1883 and runs a dedup migration; confirm the
    staging → production sequence and who validates.
+
+---
+---
+
+# Part 2 — Stock location traceability per line
+
+> **Scope extension** requested on 2026-08-20. Target version: **`17.0.6.0.0`**.
+> **Status**: designed and approved, not implemented.
+
+## 10. Goal
+
+The end user must be able to answer, for the units of a given COMEX line: **where is this stock
+right now?** — through the whole COMEX chain and, for machines, also after nationalisation
+(own warehouse, dealer, customer, return).
+
+## 11. Verified facts (staging audit, 2026-08-20)
+
+### 11.1 The COMEX stock circuit
+
+Built by `res.company._create_comex_stock_infrastructure()` (`models/res_company.py`):
+
+```
+Supplier → [COMEX/IN] → En Viaje → [COMEX/ARR] → En Puerto → [COMEX/FIS] → Depósito Fiscal → [COMEX/NAC] → WH/Stock
+```
+
+- 4 picking types per company (`is_comex_import = True`), chained by **push rules** with
+  `auto = 'manual'` (each step is triggered by hand).
+- Each company owns its **own** `COMEX Transit` location tree (ids 62310/62312 for one company,
+  62316 and 62320 for the others) — **the location names repeat across companies**.
+- Hundreds of pickings in use, with many `waiting` (27-30 per type) and `cancel` (10-12 per type).
+
+### 11.2 Traceability reality
+
+| Fact | Value | Consequence |
+|---|---|---|
+| Product catalogue by tracking | **36 145 `none` / 414 `serial` / 7 `lot`** | Lot-based tracking alone covers ~1 % of products |
+| Quants in COMEX locations | 96, of which **only 6 carry a lot**, none carries a package | `stock.lot.location_id` cannot be the primary mechanism |
+| Machines (compactadores, cargadores, palas) | **`tracking = 'serial'`** | The high-value COMEX goods *are* traceable per unit |
+| Stock currently in COMEX locations | En Viaje 6 u · Depósito Fiscal 705 u | Untracked spare parts are the bulk of the volume |
+| Dealer locations `AGROV/Conce/<DEALER>` | `usage = 'internal'` | Machines at dealers are still own stock → quants locate them exactly |
+| Chained moves (ARR/FIS/NAC) | `purchase_line_id = False`, but carry `comex_operation_id` (`index=True`) and `move_orig_ids` | Attribution needs a dedicated link |
+| Merged moves | Observed (`move_orig_ids: [291120, 379033]`) | A chained move can aggregate several origins |
+
+### 11.3 Core extension points confirmed
+
+| Point | Location | Use |
+|---|---|---|
+| `stock.rule._push_prepare_move_copy_values` | already overridden in `models/stock_rule.py` | Propagate the new field through the push chain |
+| `stock.move._prepare_merge_moves_distinct_fields()` | `stock/models/stock_move.py:1002` | Prevent merging moves of different lines |
+| `stock.lot.location_id` | `stock/models/stock_lot.py:55,138` | Non-stored compute, `False` when the lot sits in several locations |
+| `stock.picking.return_id` / `return_ids` | `stock/models/stock_picking.py:410` | Identify returns |
+| `stock.move.origin_returned_move_id` | `stock/models/stock_move.py:143` | Identify return moves at move level |
+
+## 12. Decisions taken (confirmed with the user)
+
+| # | Decision |
+|---|---|
+| D7 | **Mechanisms**: current location through the move chain (**A**) + lot/serial location (**C**). Quantity-per-stage columns (**B**) are **rejected**: they would hardcode the COMEX stages and break when new stages are added. Container-based (**D**) rejected: almost no packages in use. |
+| D8 | **Multiple locations are shown as tags**, like `comex.operation.shipment_ids` in the operation form (`widget="many2many_tags"`), and the field must be **filterable**. |
+| D9 | **Attribution**: dedicated **`stock.move.comex_product_line_id`**. Reusing `purchase_line_id` is rejected (see §13). |
+| D10 | **Backfill**: only for **serial-tracked products**. |
+| D11 | **Returned** is defined by the existence of a **return picking/move** for that serial, not by location. |
+| D12 | **Location tags include every location**, internal and customer/supplier, plus a status column derived from the location `usage`. |
+| D13 | **Untracked products** stop at nationalisation (last internal location reached). |
+| D14 | **Exports**: left blank for now, separate scope. |
+| D15 | **Exposure**: line analysis report, product lines tab of the operation, search filters/group by, and operation header summary. |
+
+## 13. Rejected: propagating `purchase_line_id` to the chained moves
+
+The user asked to evaluate this. **It must not be done.**
+
+`purchase.order.line.move_ids` is `One2many('stock.move', 'purchase_line_id')`
+(`purchase_stock/models/purchase_order_line.py:26`) and `_compute_qty_received` sums over that
+One2many (`:50-75`). The COMEX chain has **4 steps**, so a line of 2 units would report
+`qty_received = 8` once ARR/FIS/NAC are validated. That corrupts:
+
+- purchase invoicing on received quantities and `qty_to_invoice`;
+- the 3-way match;
+- `line_pickings` (`:182`), which filters `move_ids.picking_id` by destination usage.
+
+And `_push_prepare_move_copy_values` runs for **every** push rule in the database, not only COMEX,
+so the damage would not be contained to this module.
+
+**Replacement**: a dedicated field, propagated by the same already-COMEX-scoped override.
+
+## 14. Target design
+
+### 14.1 `stock.move.comex_product_line_id` (new)
+
+```python
+comex_product_line_id = fields.Many2one(
+    'comex.operation.product.line',
+    string="COMEX Product Line",
+    copy=True,
+    index='btree_not_null',
+    ondelete='set null',
+    help="COMEX product line these units belong to. Propagated through push rules.",
+)
+```
+
+Assignment and propagation:
+
+1. **Origin moves**: `comex.operation.product.line._assign_stock_moves()`, called at the end of
+   `_sync_operation()`, writes the field on `purchase_line_id.move_ids` / `sale_line_id.move_ids`
+   that do not have it yet, and then walks `move_dest_ids` forward to cover moves that already
+   exist.
+2. **New chained moves**: add the field to the existing
+   `stock_rule._push_prepare_move_copy_values()` override, next to `comex_operation_id`. It is only
+   written when the source move has it, so **non-COMEX flows are untouched**.
+3. **Merging**: override `stock.move._prepare_merge_moves_distinct_fields()` to append
+   `'comex_product_line_id'`, so moves belonging to different lines are never merged.
+4. **Backorders / copies**: `copy=True` propagates automatically.
+
+`ondelete='set null'` matters because the synchronisation **unlinks obsolete product lines**;
+`_assign_stock_moves()` re-links on the next sync.
+
+### 14.2 `comex.operation.product.line` — where the logic lives
+
+The real model owns the computation; the SQL report only exposes `related` fields. This keeps the
+report free of heavy SQL and makes the same information available in the operation form.
+
+| Field | Type | Content |
+|---|---|---|
+| `move_ids` | One2many(`stock.move`, `comex_product_line_id`) | The whole chain of this line |
+| `current_location_ids` | Many2many(`stock.location`), compute + **search** | Every location where the line's units currently are |
+| `lot_ids` | Many2many(`stock.lot`), compute | Serial/lot numbers received for this line |
+| `stock_status` | Selection, compute | `pending` / `internal` / `delivered` / `returned` / `partial` |
+| `current_location_display` | Char, compute | Comma-separated locations, for export and grouping |
+
+**`current_location_ids` algorithm** (batched, never one query per row):
+
+1. If the product is tracked (`tracking in ('serial', 'lot')`) **and** the line has lots →
+   locations of `stock.quant` of those lots with `quantity > 0`. This follows the units anywhere:
+   COMEX transit, own warehouse, `AGROV/Conce/<DEALER>` (internal), customer locations, and back
+   after a return.
+2. Otherwise → net position from the **done** moves of `move_ids`: per location,
+   `sum(quantity moved in) - sum(quantity moved out)`, keeping only locations with a positive
+   balance. For untracked products this naturally stops at the warehouse location reached on
+   nationalisation (D13).
+3. No done move → empty, `stock_status = 'pending'`.
+
+Nothing in this algorithm names a COMEX stage: it derives the locations from the data, so adding a
+new stage to the circuit later requires **no code change** (D7).
+
+**`stock_status`** is derived from `location.usage` only (generic, no hardcoded names), except
+`returned`, which uses the core return linkage (D11): a `done` `stock.move.line` for one of the
+line's lots whose `move_id.origin_returned_move_id` is set (equivalently, whose picking has
+`return_id`).
+
+| Value | Condition |
+|---|---|
+| `pending` | No done move yet |
+| `internal` | All units in `internal` (or company `transit`) locations |
+| `delivered` | All units in `customer` locations |
+| `partial` | Units split between internal and customer/supplier locations |
+| `returned` | A return move exists for its lots and the units are internal again |
+
+**`_search_current_location_ids`** must translate a domain leaf into a search over
+`stock.quant` (tracked) / `stock.move` (untracked) and return `[('id', 'in', line_ids)]`, so the
+column is filterable (D8). Support at least `in`, `not in`, `=`, `!=`, `child_of`.
+
+### 14.3 Exposure (D15)
+
+| Place | Change |
+|---|---|
+| `comex.operation.report.line` | `current_location_ids`, `lot_ids`, `stock_status` as **non-stored `related`** through `product_line_id`. Tags widget, `optional="show"` for locations and status, `optional="hide"` for lots. No `_depends` entry needed (related fields are not SQL columns). |
+| `comex_operation_product_line_view_tree` / `_view_form` | Same three fields |
+| `comex_operation_report_line_view_search` | Search field on `current_location_ids`, filters by `stock_status`, group by `stock_status` |
+| `comex.operation` form | `current_location_ids` computed as the union of its product lines' locations, shown as tags next to the existing `current_location_id` |
+
+## 15. Edge cases and required handling
+
+| # | Edge case | Handling |
+|---|---|---|
+| 25 | Chained moves lose `purchase_line_id` | Dedicated `comex_product_line_id` propagated by the push-rule override (§14.1) |
+| 26 | Propagating `purchase_line_id` would inflate `qty_received` ×4 | Rejected, documented in §13 |
+| 27 | Merged moves with several origins | `comex_product_line_id` added to `_prepare_merge_moves_distinct_fields()` |
+| 28 | Product lines are deleted and recreated by the sync | `ondelete='set null'` + re-link in `_assign_stock_moves()` |
+| 29 | Same product in two lines of the same operation | Solved exactly by the dedicated field (this was the main reason to add it) |
+| 30 | **Untracked historical lines have no backfill (D10)** | They show **no location** until a new move is generated. See §18 open question 7 — a fallback by `(operation, product)` is recommended |
+| 31 | Cancelled moves/pickings (10-12 per type) | Excluded: only `state = 'done'` counts for the net position |
+| 32 | Units split across stages (2 at port, 1 in fiscal) | Several tags, one per location (D8) |
+| 33 | A serial sitting in several locations | `stock.lot.location_id` returns `False` in that case — do **not** use it; compute from `stock.quant` directly |
+| 34 | Location names repeat across companies | Display `complete_name` and always filter by the line `company_id` |
+| 35 | Machine delivered to a dealer | `AGROV/Conce/...` is `internal` → tag shows the dealer, `stock_status = 'internal'` |
+| 36 | Machine delivered to a real customer | Customer-usage location tag, `stock_status = 'delivered'` (D12) |
+| 37 | Machine returned | `stock_status = 'returned'` via the core return linkage (D11) |
+| 38 | Untracked goods after nationalisation | Last internal location reached; no further tracking (D13) — documented limitation |
+| 39 | Export operations | Left empty (D14) |
+| 40 | Manual lines (`origin_type = 'manual'`) | No PO/SO line → no moves → empty |
+| 41 | Performance on 4 426 lines | Batched computes (one `read_group` per model for the whole recordset), `index='btree_not_null'` on the new field |
+| 42 | Report rows without a product line (synthetic) | Related fields are empty — correct |
+| 43 | Multi-company record rules | The computes must run on the line's company; use `sudo()` only where the existing COMEX fields already require it |
+
+## 16. Implementation phases
+
+1. **Model**: `stock.move.comex_product_line_id` + `_prepare_merge_moves_distinct_fields` override
+   + `_push_prepare_move_copy_values` propagation.
+2. **Assignment**: `comex.operation.product.line._assign_stock_moves()` wired into `_sync_operation()`.
+3. **Computes**: `move_ids`, `current_location_ids` (+ `_search_...`), `lot_ids`, `stock_status`,
+   `current_location_display`.
+4. **Views**: product line tree/form, report tree, report search, operation form.
+5. **Migration `17.0.6.0.0`**: backfill `comex_product_line_id` for **serial-tracked products only**
+   (D10), walking `move_orig_ids` back to the move that still has `purchase_line_id`, then mapping
+   it to the product line. Log how many moves were linked and how many could not be resolved.
+6. **Tests** (see §17).
+7. **Local validation** + staging validation with the real machines.
+
+## 17. Tests to add
+
+1. A line whose moves reached "Depósito Fiscal" reports exactly that location.
+2. A line split across two stages reports **both** locations.
+3. A serial-tracked line delivered to a dealer (`internal`) reports the dealer location and
+   `stock_status = 'internal'`.
+4. A serial-tracked line delivered to a customer reports `stock_status = 'delivered'`.
+5. A returned serial reports `stock_status = 'returned'`.
+6. An untracked line stops at the warehouse location after nationalisation.
+7. A cancelled chain does not contribute any location.
+8. **`qty_received` regression**: after validating the full COMEX chain, `purchase.order.line.qty_received`
+   equals the received quantity **once** (guards §13).
+9. Two lines of the same operation with the same product report their own locations independently.
+10. `_search_current_location_ids` returns the expected lines for `in` / `child_of`.
+11. Batched compute: reading 50 lines does not issue one query per line.
+
+## 18. Open questions for Part 2
+
+7. **Untracked historical lines (edge case 30)**: with backfill restricted to serial products, the
+   705 units of spare parts currently in Depósito Fiscal would show **no location** until they move
+   again. Recommended mitigation: when `comex_product_line_id` is empty, fall back to matching
+   moves by `(comex_operation_id, product_id)`. Confirm whether to implement this fallback.
+8. **`stock_status` labels**: confirm the Spanish wording (`Pendiente`, `En stock propio`,
+   `Entregado`, `Devuelto`, `Parcial`).
+9. **Operation header**: confirm whether the existing `current_location_id` should be replaced by
+   the new aggregated `current_location_ids` or kept side by side.

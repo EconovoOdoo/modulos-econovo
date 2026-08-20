@@ -231,6 +231,7 @@
                             <field name="partner_id" context="{'show_vat': True}"/>
                             <field name="current_location_id"/>
                             <field name="priority" widget="priority"/>
+                            <field name="color" widget="color_picker"/>
                             <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color', 'no_create_edit': True}"/>
                         </group>
                         <group name="main_right">
