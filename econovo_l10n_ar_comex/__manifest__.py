@@ -2,7 +2,7 @@
 # Part of Econovo. See LICENSE file for full copyright and licensing details.
 {
     'name': 'Argentina COMEX Operations',
-    'version': '17.0.6.2.0',
+    'version': '17.0.6.3.0',
     'category': 'Inventory/Purchase',
     'summary': 'Manage import/export operations for Argentina with automatic tribute tax calculation',
     'description': """
@@ -99,6 +99,7 @@ for Argentina with full regulatory compliance and automated tax calculation.
         'views/sale_order_views.xml',
         'views/stock_picking_views.xml',
         'views/stock_picking_type_views.xml',
+        'views/stock_lot_views.xml',
         'views/stock_quant_package_views.xml',
         'views/res_partner_views.xml',
         'views/comex_tribute_product_mapping_views.xml',

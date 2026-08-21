@@ -367,6 +367,22 @@ class TestComexProductLineStockPosition(TransactionCase):
             sorted((first_serial | second_serial).ids),
         )
 
+    def test_lot_links_back_to_its_comex_operation(self):
+        """From a serial number the COMEX operation is reachable as well."""
+        operation = self._create_operation()
+        line = self._create_line(operation, self.serial_product, qty=1.0)
+        serial = self._create_serial('COMEX-SERIAL-09')
+
+        self._make_move(line, self.supplier_location, self.stock_location,
+                        qty=1.0, lot=serial)
+        serial.invalidate_recordset()
+
+        self.assertEqual(serial.comex_operation_ids, operation)
+        self.assertEqual(serial.comex_operation_count, 1)
+        action = serial.action_view_comex_operations()
+        self.assertEqual(action['res_model'], 'comex.operation')
+        self.assertEqual(action['res_id'], operation.id)
+
     def test_purchase_qty_received_is_not_inflated_by_the_chain(self):
         """Guard: the COMEX chain must never be counted as received quantity."""
         operation = self._create_operation()
