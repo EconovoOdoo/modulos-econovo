@@ -10,7 +10,8 @@ purchase_request/
 econovo_payment_batch_approval/
 # Deprecated: replaced by econovo_mrp_plm_enforce_eco
 econovo_mrp_plm_controlled_editor/
-
+# Source code for module to migrate from TS to Odoo 17
+docs/control-de-avances-de-produccion/
 
 econovo_dymo_labels/__pycache__/
 # Python bytecode files
