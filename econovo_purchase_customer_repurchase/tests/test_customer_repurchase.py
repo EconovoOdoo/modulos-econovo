@@ -93,18 +93,13 @@ class TestCustomerRepurchase(TransactionCase):
         return sum(quants.mapped('quantity'))
 
     def _purchase_receipt_validation_is_supported(self):
-        """False when an installed third-party addon breaks every purchase receipt.
+        """False on a build predating `stock.move._get_currency_convert_date()`.
 
-        `gg_cost_dolarization` calls `stock.move._get_currency_convert_date()`, which it
-        does not declare as a dependency and which is provided by
-        `gg_document_dolarization`. When the latter is missing from the addons path,
-        validating *any* purchase receipt raises, repurchase or not.
+        `purchase_stock` gained that method in a point release. On an older build any
+        addon calling it makes *every* purchase receipt validation raise, repurchase
+        or not, which is unrelated to what this test asserts.
         """
-        installed = self.env['ir.module.module'].sudo().search_count([
-            ('name', '=', 'gg_cost_dolarization'),
-            ('state', '=', 'installed'),
-        ])
-        return not installed or hasattr(self.env['stock.move'], '_get_currency_convert_date')
+        return hasattr(self.env['stock.move'], '_get_currency_convert_date')
 
     def test_repurchase_receipt_sources_from_customer_location(self):
         order = self._create_confirmed_purchase(self.repurchase_type)
@@ -135,7 +130,8 @@ class TestCustomerRepurchase(TransactionCase):
         """Full round trip: sell a serial, buy it back, sell it again."""
         if not self._purchase_receipt_validation_is_supported():
             self.skipTest(
-                "Incomplete addons path: no purchase receipt can be validated in this database.")
+                "Odoo build predates stock.move._get_currency_convert_date(): "
+                "no purchase receipt can be validated in this database.")
         lot = self.env['stock.lot'].create({
             'name': 'TEST-SN-REPURCHASE',
             'product_id': self.product.id,
