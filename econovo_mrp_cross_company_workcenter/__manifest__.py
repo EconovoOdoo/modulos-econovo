@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'MRP Cross-Company Workcenter Employee',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.1.0',
     'category': 'Manufacturing/Manufacturing',
     'summary': "Let an employee whose HR record lives in another company start a work order, without duplicating their employee record.",
     'description': """
@@ -30,12 +30,14 @@ it.
 **What this module does**
 
 * Overrides ``mrp.workorder.button_start()``: only when the user has NO
-  employee record in the current active company, it looks for one in
-  ANOTHER company the user is already allowed into
-  (``res.users.company_ids``), and lets that employee be used for this one
-  call. No new access is granted: the employee record
-  used must already belong to a company the user was explicitly given
-  access to.
+  employee record in the current active company, it looks for one HR
+  already linked to this same user in another company
+  (``hr.employee.user_id``), and lets that employee be used for this one
+  call. This deliberately does NOT grant ``res.users.company_ids`` (multi-
+  company access): that would also expose every other record of that
+  company the user's groups can read, and show the company switcher in the
+  top bar, neither of which this needs -- the only fact that authorizes
+  this is that HR already linked that employee record to this user.
 * Relaxes the "Allowed Employees" field domain on the Work Center form
   (``mrp.workcenter.employee_ids``), which otherwise only lets you pick
   employees from the work center's own company, for work centers that use

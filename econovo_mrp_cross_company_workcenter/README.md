@@ -32,15 +32,22 @@ reports) for no real reason — this module exists specifically to avoid it.
 ## The fix
 
 * Overrides `mrp.workorder.button_start()`: only when the user has no
-  employee record in the current active company, it looks for one in
-  **another** company the user is already allowed into
-  (`res.users.company_ids`), and lets that employee be used for this one
-  call (by seeding the ORM cache for `res.users.employee_id`, then
+  employee record in the current active company, it looks for one HR
+  already linked to this same user in **another** company
+  (`hr.employee.user_id`), and lets that employee be used for this one call
+  (by seeding the ORM cache for `res.users.employee_id`, then
   restoring it right after). The active company itself is never switched,
   so every other multi-company check triggered by the same call (e.g. on
   the resulting stock moves) keeps seeing the same companies as before.
-  **No new access is granted** — the employee record used must already
-  belong to a company the user was explicitly given access to.
+  **This deliberately does NOT grant `res.users.company_ids`** (multi-company
+  access): that would also expose every other record of that company the
+  user's groups can read, and show the company switcher in the top bar,
+  neither of which this needs — the only fact that authorizes this is that
+  HR already linked that employee record to this user. Neither
+  `mrp.workorder.employee_ids` nor `mrp.workcenter.productivity.employee_id`
+  are `check_company`-constrained (verified in core/`mrp_workorder` source),
+  so recording that employee on another company's documents isn't blocked
+  at the ORM level either.
 * Relaxes the "Allowed Employees" domain on the Work Center form
   (`mrp.workcenter.employee_ids`, otherwise restricted to the work center's
   own company), for work centers that use that optional restriction.

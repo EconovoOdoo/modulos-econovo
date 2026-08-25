@@ -28,12 +28,12 @@ class TestMrpWorkorderCrossCompanyEmployee(TransactionCase):
             'name': 'Cross Company Operator',
             'login': 'cross_company_operator',
             'company_id': cls.env.company.id,
-            'company_ids': [(6, 0, (cls.env.company | cls.company_other).ids)],
             'groups_id': [(6, 0, groups.ids)],
         })
         # The operator has NO hr.employee in the session's active company
-        # (cls.env.company): only in the other company they are also
-        # allowed into.
+        # (cls.env.company), only in another company -- and deliberately no
+        # company_ids access to it either (this must work without granting
+        # multi-company access).
         cls.employee_other_company = cls.env['hr.employee'].create({
             'name': 'Cross Company Operator',
             'user_id': cls.operator.id,
@@ -84,8 +84,12 @@ class TestMrpWorkorderCrossCompanyEmployee(TransactionCase):
 
     def test_button_start_finds_employee_in_another_allowed_company(self):
         """ button_start() must succeed and record the operator's employee
-        from the OTHER allowed company, instead of only ever looking for one
-        in the session's active company. """
+        from the OTHER company, instead of only ever looking for one in the
+        session's active company -- without granting the operator any
+        multi-company access (company_ids) to that other company. """
+        self.assertEqual(
+            self.operator.company_ids, self.env.company,
+            "This must work without granting the operator company_ids access to the other company.")
         workorder = self.production.workorder_ids[0]
         wo_as_operator = workorder.with_user(self.operator)
         # Core's employee check only runs within an actual HTTP request
@@ -95,4 +99,4 @@ class TestMrpWorkorderCrossCompanyEmployee(TransactionCase):
             wo_as_operator.button_start()
         self.assertIn(
             self.employee_other_company, workorder.employee_ids,
-            "The workorder should record the operator's employee from the other allowed company.")
+            "The workorder should record the operator's employee from the other company.")
