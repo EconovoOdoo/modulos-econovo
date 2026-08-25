@@ -31,14 +31,16 @@ reports) for no real reason — this module exists specifically to avoid it.
 
 ## The fix
 
-* Overrides `mrp.workorder.button_start()`: only when the user has no
-  employee record in the current active company, it looks for one HR
+* Overrides `mrp.workorder.button_start()`, `action_mark_as_done()` and
+  `_set_default_time_log()` (the finish/time-log actions repeat the same
+  employee lookup) through one shared context manager: only when the user
+  has no employee record in the current active company, it looks for one HR
   already linked to this same user in **another** company
-  (`hr.employee.user_id`), and lets that employee be used for this one call
-  (by seeding the ORM cache for `res.users.employee_id`, then
-  restoring it right after). The active company itself is never switched,
-  so every other multi-company check triggered by the same call (e.g. on
-  the resulting stock moves) keeps seeing the same companies as before.
+  (`hr.employee.user_id`), and lets that employee be used for the call (by
+  seeding the ORM cache for `res.users.employee_id`, then restoring it right
+  after). The active company itself is never switched, so every other
+  multi-company check triggered by the same call (e.g. on the resulting
+  stock moves) keeps seeing the same companies as before.
   **This deliberately does NOT grant `res.users.company_ids`** (multi-company
   access): that would also expose every other record of that company the
   user's groups can read, and show the company switcher in the top bar,
@@ -48,6 +50,15 @@ reports) for no real reason — this module exists specifically to avoid it.
   are `check_company`-constrained (verified in core/`mrp_workorder` source),
   so recording that employee on another company's documents isn't blocked
   at the ORM level either.
+* `hr.employee` also carries its own standalone, global multi-company
+  `ir.rule` (independent of `check_company`), which would otherwise reject
+  the very next plain (non-`sudo()`) read core code makes on that employee
+  record (e.g. reading `active` while updating `employee_ids`). The same
+  context manager also warms that field into the ORM cache via a narrowly
+  scoped `sudo()` read on that one record, so the rule is never hit for it
+  — this is deliberately much narrower than `sudo()`-ing the whole method,
+  which would also bypass rules on unrelated records touched by the same
+  call (e.g. stock moves/production).
 * Relaxes the "Allowed Employees" domain on the Work Center form
   (`mrp.workcenter.employee_ids`, otherwise restricted to the work center's
   own company), for work centers that use that optional restriction.
@@ -57,3 +68,4 @@ reports) for no real reason — this module exists specifically to avoid it.
 * Depends only on `mrp_workorder` (Enterprise Shop Floor).
 * No new models, fields, security rules or data. No `hr.employee` records
   are created, merged or modified.
+

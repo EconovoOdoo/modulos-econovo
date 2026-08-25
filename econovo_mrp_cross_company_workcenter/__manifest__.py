@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'MRP Cross-Company Workcenter Employee',
-    'version': '17.0.1.1.0',
+    'version': '17.0.1.2.0',
     'category': 'Manufacturing/Manufacturing',
     'summary': "Let an employee whose HR record lives in another company start a work order, without duplicating their employee record.",
     'description': """
@@ -10,7 +10,8 @@ requires the logged in user to have an ``hr.employee`` record whose
 ``company_id`` matches the CURRENTLY ACTIVE company: ``res.users.employee_id``
 is computed per active company (``hr/models/res_users.py``
 ``_compute_company_employee``, scoped by ``self.env.company``), not per
-allowed company.
+allowed company. The same check is repeated in ``action_mark_as_done()``
+and ``_set_default_time_log()`` (finish/time-log actions).
 
 This blocks a common multi-company group scenario: an employee hired/paid
 through one company (e.g. Agrovial) who physically operates work centers
@@ -29,15 +30,19 @@ it.
 
 **What this module does**
 
-* Overrides ``mrp.workorder.button_start()``: only when the user has NO
-  employee record in the current active company, it looks for one HR
-  already linked to this same user in another company
-  (``hr.employee.user_id``), and lets that employee be used for this one
-  call. This deliberately does NOT grant ``res.users.company_ids`` (multi-
-  company access): that would also expose every other record of that
-  company the user's groups can read, and show the company switcher in the
-  top bar, neither of which this needs -- the only fact that authorizes
-  this is that HR already linked that employee record to this user.
+* Overrides ``mrp.workorder.button_start()``, ``action_mark_as_done()`` and
+  ``_set_default_time_log()`` via one shared context manager: only when the
+  user has NO employee record in the current active company, it looks for
+  one HR already linked to this same user in another company
+  (``hr.employee.user_id``), and lets that employee be used for the call.
+  This deliberately does NOT grant ``res.users.company_ids`` (multi-company
+  access): that would also expose every other record of that company the
+  user's groups can read, and show the company switcher in the top bar,
+  neither of which this needs -- the only fact that authorizes this is that
+  HR already linked that employee record to this user. It also warms that
+  employee's own ``active`` field into the ORM cache via a scoped ``sudo()``
+  read, so ``hr.employee``'s standard multi-company record rule doesn't
+  reject the very next (non-sudo) read core code makes on that same record.
 * Relaxes the "Allowed Employees" field domain on the Work Center form
   (``mrp.workcenter.employee_ids``), which otherwise only lets you pick
   employees from the work center's own company, for work centers that use
@@ -56,3 +61,4 @@ it.
     'auto_install': False,
     'application': False,
 }
+

@@ -17,6 +17,15 @@ class TestMrpWorkorderCrossCompanyEmployee(TransactionCase):
         super().setUpClass()
         cls.company_other = cls.env['res.company'].create({'name': 'Cross Company Employee Co'})
         groups = cls.env.ref('mrp.group_mrp_user') + cls.env.ref('stock.group_stock_user')
+        # This local database has a custom hr.employee field
+        # ("device_id", from a biometric-attendance integration) that is
+        # NOT mirrored onto hr.employee.public -- confirmed NOT the case in
+        # production (checked via ir.model.fields there). Without hr access,
+        # core's own "public employee profile" prefetch fallback then trips
+        # on that stale local field when button_start()/action_mark_as_done()
+        # read employee_ids. Real production operators don't have HR access
+        # either, but don't hit this because production has no such gap.
+        groups += cls.env.ref('hr.group_hr_user')
         # This local database also has econovo_user_warehouse_restriction
         # installed, which needs its own explicit bypass group; this module
         # does not depend on it, so only add it when actually present.
@@ -100,3 +109,22 @@ class TestMrpWorkorderCrossCompanyEmployee(TransactionCase):
         self.assertIn(
             self.employee_other_company, workorder.employee_ids,
             "The workorder should record the operator's employee from the other company.")
+
+    def test_action_mark_as_done_finds_employee_in_another_allowed_company(self):
+        """ action_mark_as_done() (the "Mark as Done"/finish action) does its
+        own, separate active-company employee lookup -- not covered by
+        fixing button_start() alone -- and must also work for the operator's
+        employee from the other company. """
+        workorder = self.production.workorder_ids[0]
+        wo_as_operator = workorder.with_user(self.operator)
+        with patch('odoo.addons.mrp_workorder.models.mrp_workorder.request', new=object()):
+            wo_as_operator.button_start()
+            wo_as_operator.action_mark_as_done()
+        self.assertEqual(workorder.state, 'done')
+        productivity = self.env['mrp.workcenter.productivity'].search([
+            ('workorder_id', '=', workorder.id),
+            ('employee_id', '=', self.employee_other_company.id),
+        ])
+        self.assertTrue(
+            productivity,
+            "The time log should record the operator's employee from the other company.")
