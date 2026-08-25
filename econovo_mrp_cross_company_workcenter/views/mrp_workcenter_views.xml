@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="mrp_workcenter_view_form_cross_company_employee" model="ir.ui.view">
+        <field name="name">mrp.workcenter.view.form.inherit.econovo_mrp_cross_company_workcenter</field>
+        <field name="model">mrp.workcenter</field>
+        <field name="inherit_id" ref="mrp_workorder.mrp_workcenter_form_view_inherit"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='employee_ids']" position="attributes">
+                <attribute name="domain">[]</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>
