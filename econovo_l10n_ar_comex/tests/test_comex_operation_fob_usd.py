@@ -67,6 +67,23 @@ class TestComexOperationFobUsd(TransactionCase):
         self.assertEqual(line.price_subtotal, 100.0)
         self.assertEqual(line.price_subtotal_usd, 100.0)
 
+    def test_price_subtotal_is_tagged_with_the_order_currency_not_the_operation(self):
+        """Regression: a EUR purchase order under a USD operation must show EUR.
+
+        price_subtotal used to be tagged with the operation's currency, so an
+        operation in USD with a purchase order in EUR displayed "USD 730.00" for
+        an amount that was genuinely 730 EUR, silently misreporting the FOB
+        subtotal (production case: IMP/OSEYS/00852).
+        """
+        operation = self._create_operation(self.usd)
+        self._create_confirmed_purchase_order(operation, self.eur, qty=20.0, price_unit=36.5)
+
+        line = operation.product_line_ids
+        self.assertEqual(line.origin_currency_id, self.eur)
+        self.assertEqual(line.price_subtotal, 730.0)
+        self.assertNotEqual(line.price_subtotal, line.price_subtotal_usd)
+        self.assertAlmostEqual(line.price_subtotal_usd, 730.0 * (0.001 / 0.0009), places=2)
+
     def test_price_subtotal_usd_converts_from_the_order_currency(self):
         """A EUR purchase order line is converted to USD using its own rate."""
         operation = self._create_operation(self.eur)

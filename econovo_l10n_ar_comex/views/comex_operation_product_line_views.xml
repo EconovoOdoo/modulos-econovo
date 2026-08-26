@@ -16,6 +16,7 @@
                 <field name="qty_delivered" optional="show" sum="Total Delivered"/>
                 <field name="price_unit" optional="show"/>
                 <field name="currency_id" column_invisible="1"/>
+                <field name="origin_currency_id" column_invisible="1"/>
                 <field name="price_subtotal" sum="Total Amount"/>
                 <field name="currency_usd_id" column_invisible="1"/>
                 <field name="price_subtotal_usd" sum="Total Amount (USD)" optional="show"/>
@@ -98,6 +99,7 @@
                         <group name="price_info">
                             <field name="currency_id" invisible="1"/>
                             <field name="price_unit"/>
+                            <field name="origin_currency_id" invisible="1"/>
                             <field name="price_subtotal"/>
                             <field name="currency_usd_id" invisible="1"/>
                             <field name="price_subtotal_usd"/>

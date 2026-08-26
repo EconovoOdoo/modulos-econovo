@@ -16,6 +16,7 @@
                 <field name="currency_id" column_invisible="1"/>
                 <field name="currency_ars_id" column_invisible="1"/>
                 <field name="currency_usd_id" column_invisible="1"/>
+                <field name="origin_currency_id" column_invisible="1"/>
                 <field name="company_currency_id" column_invisible="1"/>
                 <field name="color" widget="color_picker" string=" " optional="show"/>
                 <field name="operation_id" string="COMEX Reference" optional="show"/>

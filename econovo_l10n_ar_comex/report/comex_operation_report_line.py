@@ -31,9 +31,9 @@ class ComexOperationReportLine(models.Model):
         'comex.operation.product.line': [
             'operation_id', 'sequence', 'product_id', 'product_tmpl_id',
             'product_uom', 'product_qty', 'qty_received', 'qty_delivered',
-            'price_unit', 'price_subtotal', 'price_subtotal_usd', 'origin_type',
-            'purchase_order_id', 'sale_order_id', 'current_location_display',
-            'lot_name_display', 'last_delivery_partner_id',
+            'price_unit', 'price_subtotal', 'price_subtotal_usd', 'origin_currency_id',
+            'origin_type', 'purchase_order_id', 'sale_order_id',
+            'current_location_display', 'lot_name_display', 'last_delivery_partner_id',
         ],
         'comex.shipment': ['operation_id', 'name', 'active'],
         'res.company': ['currency_id'],
@@ -254,6 +254,11 @@ class ComexOperationReportLine(models.Model):
         string="USD Currency",
         readonly=True,
     )
+    origin_currency_id = fields.Many2one(
+        'res.currency',
+        string="Origin Currency",
+        readonly=True,
+    )
     company_currency_id = fields.Many2one(
         'res.currency',
         string="Company Currency",
@@ -299,12 +304,13 @@ class ComexOperationReportLine(models.Model):
     )
     price_subtotal = fields.Monetary(
         string="FOB Subtotal",
-        currency_field='currency_id',
+        currency_field='origin_currency_id',
         readonly=True,
         group_operator=None,
-        help="Line subtotal in the operation currency. Not aggregated, because "
-             "operations may use different currencies. Use Subtotal (Company Currency) "
-             "to add up amounts.",
+        help="Line subtotal in the currency of the purchase/sale order it comes from. "
+             "Not aggregated, because operations may combine lines in different "
+             "currencies. Use FOB Subtotal (USD) or Subtotal (Company Currency) to add "
+             "up amounts.",
     )
     price_subtotal_usd = fields.Monetary(
         string="FOB Subtotal (USD)",
@@ -502,6 +508,7 @@ class ComexOperationReportLine(models.Model):
                 line.qty_delivered AS qty_delivered,
                 line.price_unit AS price_unit,
                 line.price_subtotal AS price_subtotal,
+                line.origin_currency_id AS origin_currency_id,
                 line.price_subtotal_usd AS price_subtotal_usd,
                 {price_subtotal_company} AS price_subtotal_company,
                 line.origin_type AS origin_type,
@@ -574,6 +581,7 @@ class ComexOperationReportLine(models.Model):
                 0.0::numeric AS qty_delivered,
                 0.0::numeric AS price_unit,
                 0.0::numeric AS price_subtotal,
+                operation.currency_id AS origin_currency_id,
                 0.0::numeric AS price_subtotal_usd,
                 0.0::numeric AS price_subtotal_company,
                 NULL::varchar AS origin_type,

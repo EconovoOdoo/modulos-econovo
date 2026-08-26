@@ -108,6 +108,14 @@ class ComexOperationProductLine(models.Model):
         related='operation_id.currency_usd_id',
         store=True,
     )
+    origin_currency_id = fields.Many2one(
+        'res.currency',
+        string="Origin Currency",
+        compute='_compute_origin_currency_id',
+        store=True,
+        help="Currency of the purchase/sale order this line comes from. Manual lines "
+             "fall back to the operation's currency, since they have no such order.",
+    )
     price_unit = fields.Float(
         string="Unit Price",
         required=True,
@@ -117,7 +125,7 @@ class ComexOperationProductLine(models.Model):
         string="FOB Subtotal",
         compute='_compute_price_subtotal',
         store=True,
-        currency_field='currency_id',
+        currency_field='origin_currency_id',
         help="Mirrors the subtotal of the purchase/sale order line this comes from, "
              "in that document's own currency.",
     )
@@ -255,10 +263,19 @@ class ComexOperationProductLine(models.Model):
         for line in self:
             line.price_subtotal = line.product_qty * line.price_unit
 
+    @api.depends('purchase_line_id.order_id.currency_id', 'sale_line_id.order_id.currency_id',
+                 'currency_id')
+    def _compute_origin_currency_id(self):
+        """The line's amounts are copied verbatim from the origin document, so its
+        currency must be the document's own, not the operation's.
+        """
+        for line in self:
+            origin_order = line.purchase_line_id.order_id or line.sale_line_id.order_id
+            line.origin_currency_id = origin_order.currency_id if origin_order else line.currency_id
+
     @api.depends(
-        'price_subtotal', 'company_id',
-        'purchase_line_id.order_id.currency_id', 'purchase_line_id.order_id.date_order',
-        'sale_line_id.order_id.currency_id', 'sale_line_id.order_id.date_order',
+        'price_subtotal', 'company_id', 'origin_currency_id',
+        'purchase_line_id.order_id.date_order', 'sale_line_id.order_id.date_order',
         'operation_id.date_operation',
     )
     def _compute_price_subtotal_usd(self):
@@ -275,9 +292,8 @@ class ComexOperationProductLine(models.Model):
         """
         self.ensure_one()
         origin_order = self.purchase_line_id.order_id or self.sale_line_id.order_id
-        if origin_order:
-            return origin_order.currency_id, origin_order.date_order
-        return self.currency_id, self.operation_id.date_operation
+        origin_date = origin_order.date_order if origin_order else self.operation_id.date_operation
+        return self.origin_currency_id, origin_date
 
     def _convert_price_subtotal(self, target_currency):
         """Convert price_subtotal from its origin document's currency and date."""
