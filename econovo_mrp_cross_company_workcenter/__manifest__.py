@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'MRP Cross-Company Workcenter Employee',
-    'version': '17.0.1.2.0',
+    'version': '17.0.2.0.0',
     'category': 'Manufacturing/Manufacturing',
     'summary': "Let an employee whose HR record lives in another company start a work order, without duplicating their employee record.",
     'description': """
@@ -47,16 +47,29 @@ it.
   (``mrp.workcenter.employee_ids``), which otherwise only lets you pick
   employees from the work center's own company, for work centers that use
   that optional restriction.
+* Widens ``hr``'s own multi-company employee record rules
+  (``hr_employee_comp_rule`` and ``hr_employee_public_comp_rule``) so an
+  employee explicitly listed on a work center of one of the reader's
+  companies stays readable. Without this, EVERY other user of that company
+  (planners, supervisors) hits an ``AccessError`` merely by opening a
+  manufacturing order or work order that shows who is allowed on / working
+  at that work center. Both rules are global, so they are ANDed into every
+  check on their model and a new rule could only restrict further -- editing
+  their domain is the only way to allow this, and it is reverted on
+  uninstall. This grants strictly what the work center configuration already
+  authorizes, and no access to any other record of the other company.
 """,
     'author': 'Jose D. Leonett',
     'website': 'https://github.com/josedleonett',
     'license': 'AGPL-3',
     'depends': [
+        'hr',
         'mrp_workorder',
     ],
     'data': [
         'views/mrp_workcenter_views.xml',
     ],
+    'uninstall_hook': 'uninstall_hook',
     'installable': True,
     'auto_install': False,
     'application': False,

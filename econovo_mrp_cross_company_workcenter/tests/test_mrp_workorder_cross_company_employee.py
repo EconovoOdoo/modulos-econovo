@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from unittest.mock import patch
 
+from odoo.exceptions import AccessError
 from odoo.tests import TransactionCase, tagged
 
 
@@ -50,6 +51,7 @@ class TestMrpWorkorderCrossCompanyEmployee(TransactionCase):
         })
 
         workcenter = cls.env['mrp.workcenter'].create({'name': 'Cross Company Employee Workcenter'})
+        cls.workcenter = workcenter
         product = cls.env['product.product'].create({
             'name': 'Cross Company Employee Test Product',
             'type': 'product',
@@ -128,3 +130,53 @@ class TestMrpWorkorderCrossCompanyEmployee(TransactionCase):
         self.assertTrue(
             productivity,
             "The time log should record the operator's employee from the other company.")
+
+    def test_planner_reads_employee_allowed_on_its_own_company_workcenter(self):
+        """ Any OTHER user of the work center's company (a planner creating a
+        manufacturing order, a supervisor opening a work order) must be able to
+        read an employee listed on that work center, even though the employee
+        belongs to another company and the planner has no access to it. """
+        planner = self.env['res.users'].create({
+            'name': 'Cross Company Planner',
+            'login': 'cross_company_planner',
+            'company_id': self.env.company.id,
+            'groups_id': [(6, 0, (self.env.ref('mrp.group_mrp_user') + self.env.ref('stock.group_stock_user')).ids)],
+        })
+        self.assertEqual(
+            planner.company_ids, self.env.company,
+            "The planner must not be granted access to the employee's company.")
+        self.workcenter.employee_ids = [(4, self.employee_other_company.id)]
+
+        # read() rather than attribute access: the latter prefetches every
+        # field of the same group, which on this local database includes a
+        # biometric-integration field missing from hr.employee.public (a local
+        # data quirk, verified absent in production). The record rule, which
+        # is what this asserts, is applied either way.
+        [employee_data] = self.employee_other_company.with_user(planner).read(['name'])
+        self.assertEqual(employee_data['name'], self.employee_other_company.name)
+        for model in ('hr.employee', 'hr.employee.public'):
+            self.assertEqual(
+                self.env[model].with_user(planner).search([('id', '=', self.employee_other_company.id)]).id,
+                self.employee_other_company.id,
+                "%s should be readable: the employee is allowed on a work center of the planner's company." % model)
+
+    def test_employee_not_on_any_workcenter_stays_unreadable(self):
+        """ The widened rule must grant no more than the work center
+        configuration itself authorizes. """
+        unrelated_employee = self.env['hr.employee'].create({
+            'name': 'Unrelated Other Company Employee',
+            'company_id': self.company_other.id,
+        })
+        planner = self.env['res.users'].create({
+            'name': 'Cross Company Planner Negative',
+            'login': 'cross_company_planner_negative',
+            'company_id': self.env.company.id,
+            'groups_id': [(6, 0, (self.env.ref('mrp.group_mrp_user') + self.env.ref('stock.group_stock_user')).ids)],
+        })
+        with self.assertRaises(AccessError):
+            unrelated_employee.with_user(planner).read(['name'])
+        for model in ('hr.employee', 'hr.employee.public'):
+            self.assertFalse(
+                self.env[model].with_user(planner).search([('id', '=', unrelated_employee.id)]),
+                "%s of another company must stay hidden when not allowed on any work center." % model)
+

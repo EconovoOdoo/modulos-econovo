@@ -62,10 +62,48 @@ reports) for no real reason — this module exists specifically to avoid it.
 * Relaxes the "Allowed Employees" domain on the Work Center form
   (`mrp.workcenter.employee_ids`, otherwise restricted to the work center's
   own company), for work centers that use that optional restriction.
+* Widens `hr`'s own multi-company employee record rules so an employee
+  explicitly listed on a work center of one of the reader's companies stays
+  readable — see below.
+
+## Reading a work center's cross-company employees
+
+Once a work center lists an employee of another company, **every** user of
+the work center's own company needs to be able to read that employee's
+name: creating a manufacturing order, opening a work order, seeing who is
+currently working, the assigned operators or the time logs all render it.
+Otherwise they get:
+
+```
+Perea, Esteban ... doesn't have 'read' access to:
+- Public Employee (hr.employee.public: 1005)
+Rules: Employee multi company rule
+```
+
+Both `hr.employee` and `hr.employee.public` carry a **global** multi-company
+record rule. Global rules are ANDed into every access check, so an extra
+rule could only restrict further, never widen: editing their domain is the
+only way. This module adds the reverse of `mrp.workcenter.employee_ids`
+(`hr.employee.workcenter_ids`, reusing the existing relation table, no new
+data) and widens both domains to:
+
+```python
+['|', ('company_id', 'in', company_ids + [False]),
+      ('workcenter_ids.company_id', 'in', company_ids)]
+```
+
+That grants strictly what the work center configuration already authorizes
+and nothing else: no access to any other record of the other company, and
+the access disappears by itself as soon as the employee is removed from the
+work center.
+
+`hr` ships those rules as `noupdate`, so a data record here would be
+silently skipped on upgrade; they are applied from `_register_hook` (every
+registry load, so it also self-heals) and reverted to their original core
+domain by the module's `uninstall_hook`.
 
 ## Scope
 
-* Depends only on `mrp_workorder` (Enterprise Shop Floor).
-* No new models, fields, security rules or data. No `hr.employee` records
-  are created, merged or modified.
+* Depends only on `hr` and `mrp_workorder` (Enterprise Shop Floor).
+* No `hr.employee` records are created, merged or modified.
 
