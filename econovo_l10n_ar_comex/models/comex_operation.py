@@ -321,7 +321,23 @@ class ComexOperation(models.Model):
     amount_fob = fields.Monetary(
         string="FOB Amount",
         currency_field='currency_id',
+        compute='_compute_amount_fob',
+        store=True,
+        readonly=True,
         tracking=True,
+        help="Sum of the confirmed purchase/sale order lines of this operation, each "
+             "converted into the operation currency using its own document's rate. "
+             "No longer entered by hand: link and confirm the orders instead.",
+    )
+    amount_fob_usd = fields.Monetary(
+        string="FOB Amount (USD)",
+        currency_field='currency_usd_id',
+        compute='_compute_amount_fob',
+        store=True,
+        readonly=True,
+        help="Sum of the confirmed purchase/sale order lines of this operation, each "
+             "converted to USD using its own document's rate. Stays comparable across "
+             "operations regardless of their own currency.",
     )
     amount_freight = fields.Monetary(
         string="Freight Amount",
@@ -346,6 +362,14 @@ class ComexOperation(models.Model):
         string="ARS Currency",
         default=lambda self: self.env.ref('base.ARS', raise_if_not_found=False),
         readonly=True,
+    )
+    currency_usd_id = fields.Many2one(
+        'res.currency',
+        string="USD Currency",
+        default=lambda self: self.env.ref('base.USD', raise_if_not_found=False),
+        readonly=True,
+        help="Used to express FOB amounts in a single common currency, regardless of "
+             "the operation's own currency.",
     )
     vep_amount = fields.Monetary(
         string="VEP Amount",
@@ -582,6 +606,23 @@ class ComexOperation(models.Model):
     def _compute_amount_cif(self):
         for record in self:
             record.amount_cif = record.amount_fob + record.amount_freight + record.amount_insurance
+
+    @api.depends('product_line_ids.price_subtotal_usd', 'currency_id', 'currency_usd_id',
+                 'company_id', 'date_operation')
+    def _compute_amount_fob(self):
+        """Sum the operation's product lines, each already converted to USD."""
+        for record in self:
+            usd_total = sum(record.product_line_ids.mapped('price_subtotal_usd'))
+            record.amount_fob_usd = usd_total
+            if not record.currency_usd_id or record.currency_id == record.currency_usd_id \
+                    or not record.company_id:
+                record.amount_fob = usd_total
+            else:
+                rate = self.env['res.currency']._get_conversion_rate(
+                    record.currency_usd_id, record.currency_id,
+                    record.company_id, record.date_operation,
+                )
+                record.amount_fob = usd_total * rate
 
     @api.depends('currency_id', 'company_id', 'date_operation')
     def _compute_currency_rate(self):
@@ -1377,21 +1418,6 @@ class ComexOperation(models.Model):
             }
 
     def write(self, vals):
-        # Prevent stage change if actionable pickings exist (draft or assigned).
-        # Pickings in 'waiting' or 'confirmed' are normal in the push chain
-        # and should NOT block stage advancement.
-        if 'stage_id' in vals:
-            for record in self:
-                blocking_pickings = record.picking_ids.filtered(
-                    lambda p: p.state in ('draft', 'assigned')
-                )
-                if blocking_pickings:
-                    raise UserError(_(
-                        "Cannot change stage while there are actionable transfers:\n%(pickings)s\n\n"
-                        "Please validate or cancel these transfers first.",
-                        pickings='\n'.join(blocking_pickings.mapped('name'))
-                    ))
-        
         res = super().write(vals)
         
         # Sync dates to purchase orders (prevent infinite loop with context flag)

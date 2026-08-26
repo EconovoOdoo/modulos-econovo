@@ -17,6 +17,8 @@
                 <field name="price_unit" optional="show"/>
                 <field name="currency_id" column_invisible="1"/>
                 <field name="price_subtotal" sum="Total Amount"/>
+                <field name="currency_usd_id" column_invisible="1"/>
+                <field name="price_subtotal_usd" sum="Total Amount (USD)" optional="show"/>
                 <field name="origin_type" optional="show"/>
                 <field name="purchase_order_id" optional="show"/>
                 <field name="sale_order_id" optional="show"/>
@@ -97,6 +99,8 @@
                             <field name="currency_id" invisible="1"/>
                             <field name="price_unit"/>
                             <field name="price_subtotal"/>
+                            <field name="currency_usd_id" invisible="1"/>
+                            <field name="price_subtotal_usd"/>
                         </group>
                         <group name="origin_info">
                             <field name="origin_type"/>

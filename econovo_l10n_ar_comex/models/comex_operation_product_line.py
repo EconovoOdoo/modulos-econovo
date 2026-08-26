@@ -102,16 +102,33 @@ class ComexOperationProductLine(models.Model):
         related='operation_id.currency_id',
         store=True,
     )
+    currency_usd_id = fields.Many2one(
+        'res.currency',
+        string="USD Currency",
+        related='operation_id.currency_usd_id',
+        store=True,
+    )
     price_unit = fields.Float(
         string="Unit Price",
         required=True,
         digits='Product Price',
     )
     price_subtotal = fields.Monetary(
-        string="Subtotal",
+        string="FOB Subtotal",
         compute='_compute_price_subtotal',
         store=True,
         currency_field='currency_id',
+        help="Mirrors the subtotal of the purchase/sale order line this comes from, "
+             "in that document's own currency.",
+    )
+    price_subtotal_usd = fields.Monetary(
+        string="FOB Subtotal (USD)",
+        compute='_compute_price_subtotal_usd',
+        store=True,
+        currency_field='currency_usd_id',
+        help="price_subtotal converted to USD using the exchange rate of the purchase/"
+             "sale order this line comes from: that document's own currency and date, "
+             "not the operation's.",
     )
     
     # Origin tracking
@@ -237,6 +254,41 @@ class ComexOperationProductLine(models.Model):
         """Calculate subtotal as quantity * unit price."""
         for line in self:
             line.price_subtotal = line.product_qty * line.price_unit
+
+    @api.depends(
+        'price_subtotal', 'company_id',
+        'purchase_line_id.order_id.currency_id', 'purchase_line_id.order_id.date_order',
+        'sale_line_id.order_id.currency_id', 'sale_line_id.order_id.date_order',
+        'operation_id.date_operation',
+    )
+    def _compute_price_subtotal_usd(self):
+        """Convert the subtotal to USD using the origin document's own rate."""
+        usd = self.env.ref('base.USD', raise_if_not_found=False)
+        for line in self:
+            line.price_subtotal_usd = line._convert_price_subtotal(usd) if usd else line.price_subtotal
+
+    def _get_origin_currency_date(self):
+        """Return the (currency, date) of the document this line's amount is in.
+
+        Manual lines have no purchase/sale order to read from: fall back to the
+        operation's own currency and date as the best available reference.
+        """
+        self.ensure_one()
+        origin_order = self.purchase_line_id.order_id or self.sale_line_id.order_id
+        if origin_order:
+            return origin_order.currency_id, origin_order.date_order
+        return self.currency_id, self.operation_id.date_operation
+
+    def _convert_price_subtotal(self, target_currency):
+        """Convert price_subtotal from its origin document's currency and date."""
+        self.ensure_one()
+        origin_currency, origin_date = self._get_origin_currency_date()
+        if not origin_currency or not target_currency or not self.company_id:
+            return self.price_subtotal
+        rate = self.env['res.currency']._get_conversion_rate(
+            origin_currency, target_currency, self.company_id, origin_date,
+        )
+        return self.price_subtotal * rate
 
     def _compute_package_id(self):
         """Find which container has this product (via stock.quant)."""

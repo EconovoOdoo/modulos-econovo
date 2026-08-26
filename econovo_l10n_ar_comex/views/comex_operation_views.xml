@@ -275,6 +275,8 @@
                                 </group>
                                 <group name="amounts">
                                     <field name="amount_fob"/>
+                                    <field name="currency_usd_id" invisible="1"/>
+                                    <field name="amount_fob_usd"/>
                                     <field name="amount_freight"/>
                                     <field name="amount_insurance"/>
                                     <field name="amount_cif"/>

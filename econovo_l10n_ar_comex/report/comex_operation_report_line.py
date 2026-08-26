@@ -25,15 +25,15 @@ class ComexOperationReportLine(models.Model):
             'payment_terms_display', 'nominated_bank_id',
             'commercial_payment_status', 'customs_payment_status',
             'purchase_order_payment_status', 'sale_order_payment_status',
-            'company_id', 'currency_id', 'currency_ars_id', 'currency_rate',
-            'vep_amount', 'amount_fob', 'amount_cif',
+            'company_id', 'currency_id', 'currency_ars_id', 'currency_usd_id',
+            'currency_rate', 'vep_amount', 'amount_fob', 'amount_fob_usd', 'amount_cif',
         ],
         'comex.operation.product.line': [
             'operation_id', 'sequence', 'product_id', 'product_tmpl_id',
             'product_uom', 'product_qty', 'qty_received', 'qty_delivered',
-            'price_unit', 'price_subtotal', 'origin_type', 'purchase_order_id',
-            'sale_order_id', 'current_location_display', 'lot_name_display',
-            'last_delivery_partner_id',
+            'price_unit', 'price_subtotal', 'price_subtotal_usd', 'origin_type',
+            'purchase_order_id', 'sale_order_id', 'current_location_display',
+            'lot_name_display', 'last_delivery_partner_id',
         ],
         'comex.shipment': ['operation_id', 'name', 'active'],
         'res.company': ['currency_id'],
@@ -249,6 +249,11 @@ class ComexOperationReportLine(models.Model):
         string="ARS Currency",
         readonly=True,
     )
+    currency_usd_id = fields.Many2one(
+        'res.currency',
+        string="USD Currency",
+        readonly=True,
+    )
     company_currency_id = fields.Many2one(
         'res.currency',
         string="Company Currency",
@@ -293,13 +298,21 @@ class ComexOperationReportLine(models.Model):
         group_operator=None,
     )
     price_subtotal = fields.Monetary(
-        string="Subtotal",
+        string="FOB Subtotal",
         currency_field='currency_id',
         readonly=True,
         group_operator=None,
         help="Line subtotal in the operation currency. Not aggregated, because "
              "operations may use different currencies. Use Subtotal (Company Currency) "
              "to add up amounts.",
+    )
+    price_subtotal_usd = fields.Monetary(
+        string="FOB Subtotal (USD)",
+        currency_field='currency_usd_id',
+        readonly=True,
+        help="Formula: price_subtotal converted to USD using the exchange rate of the "
+             "purchase/sale order this line comes from (its own currency and date). "
+             "Always in USD, so it can be safely summed.",
     )
     price_subtotal_company = fields.Monetary(
         string="Subtotal (Company Currency)",
@@ -367,6 +380,15 @@ class ComexOperationReportLine(models.Model):
         help="FOB amount of the parent operation, repeated on every line of that "
              "operation. Not aggregated, since summing it would multiply it by the "
              "number of lines. Use FOB Prorated (Company Currency) to add up amounts.",
+    )
+    amount_fob_usd = fields.Monetary(
+        string="FOB Amount (USD)",
+        currency_field='currency_usd_id',
+        readonly=True,
+        group_operator=None,
+        help="FOB amount of the parent operation expressed in USD, repeated on every "
+             "line of that operation. Not aggregated, since summing it would multiply "
+             "it by the number of lines.",
     )
     amount_cif = fields.Monetary(
         string="CIF Amount",
@@ -470,6 +492,7 @@ class ComexOperationReportLine(models.Model):
                 operation.company_id AS company_id,
                 operation.currency_id AS currency_id,
                 operation.currency_ars_id AS currency_ars_id,
+                operation.currency_usd_id AS currency_usd_id,
                 company.currency_id AS company_currency_id,
                 line.product_id AS product_id,
                 line.product_tmpl_id AS product_tmpl_id,
@@ -479,6 +502,7 @@ class ComexOperationReportLine(models.Model):
                 line.qty_delivered AS qty_delivered,
                 line.price_unit AS price_unit,
                 line.price_subtotal AS price_subtotal,
+                line.price_subtotal_usd AS price_subtotal_usd,
                 {price_subtotal_company} AS price_subtotal_company,
                 line.origin_type AS origin_type,
                 line.purchase_order_id AS purchase_order_id,
@@ -490,6 +514,7 @@ class ComexOperationReportLine(models.Model):
                 operation.vep_amount AS vep_amount,
                 operation.vep_amount * {share} AS vep_amount_share,
                 operation.amount_fob AS amount_fob,
+                operation.amount_fob_usd AS amount_fob_usd,
                 operation.amount_cif AS amount_cif,
                 {amount_fob_share_company} AS amount_fob_share_company,
                 {amount_cif_share_company} AS amount_cif_share_company
@@ -539,6 +564,7 @@ class ComexOperationReportLine(models.Model):
                 operation.company_id AS company_id,
                 operation.currency_id AS currency_id,
                 operation.currency_ars_id AS currency_ars_id,
+                operation.currency_usd_id AS currency_usd_id,
                 company.currency_id AS company_currency_id,
                 NULL::integer AS product_id,
                 NULL::integer AS product_tmpl_id,
@@ -548,6 +574,7 @@ class ComexOperationReportLine(models.Model):
                 0.0::numeric AS qty_delivered,
                 0.0::numeric AS price_unit,
                 0.0::numeric AS price_subtotal,
+                0.0::numeric AS price_subtotal_usd,
                 0.0::numeric AS price_subtotal_company,
                 NULL::varchar AS origin_type,
                 NULL::integer AS purchase_order_id,
@@ -559,6 +586,7 @@ class ComexOperationReportLine(models.Model):
                 operation.vep_amount AS vep_amount,
                 operation.vep_amount AS vep_amount_share,
                 operation.amount_fob AS amount_fob,
+                operation.amount_fob_usd AS amount_fob_usd,
                 operation.amount_cif AS amount_cif,
                 {amount_fob_share_company} AS amount_fob_share_company,
                 {amount_cif_share_company} AS amount_cif_share_company
