@@ -607,22 +607,28 @@ class ComexOperation(models.Model):
         for record in self:
             record.amount_cif = record.amount_fob + record.amount_freight + record.amount_insurance
 
-    @api.depends('product_line_ids.price_subtotal_usd', 'currency_id', 'currency_usd_id',
-                 'company_id', 'date_operation')
+    @api.depends(
+        'product_line_ids.price_subtotal', 'product_line_ids.price_subtotal_usd',
+        'product_line_ids.origin_currency_id', 'product_line_ids.company_id',
+        'product_line_ids.purchase_line_id.order_id.date_order',
+        'product_line_ids.sale_line_id.order_id.date_order',
+        'currency_id', 'company_id', 'date_operation',
+    )
     def _compute_amount_fob(self):
-        """Sum the operation's product lines, each already converted to USD."""
+        """Sum the operation's product lines, each converted independently.
+
+        Each line is converted straight from its own origin currency and date,
+        both to the operation currency and to USD. Round-tripping the USD total
+        back through the operation's own date would apply a second, unrelated
+        exchange rate on top of the line's own one, drifting away from the
+        source documents whenever their date differs from the operation's.
+        """
         for record in self:
-            usd_total = sum(record.product_line_ids.mapped('price_subtotal_usd'))
-            record.amount_fob_usd = usd_total
-            if not record.currency_usd_id or record.currency_id == record.currency_usd_id \
-                    or not record.company_id:
-                record.amount_fob = usd_total
-            else:
-                rate = self.env['res.currency']._get_conversion_rate(
-                    record.currency_usd_id, record.currency_id,
-                    record.company_id, record.date_operation,
-                )
-                record.amount_fob = usd_total * rate
+            record.amount_fob_usd = sum(record.product_line_ids.mapped('price_subtotal_usd'))
+            record.amount_fob = sum(
+                line._convert_price_subtotal(record.currency_id)
+                for line in record.product_line_ids
+            )
 
     @api.depends('currency_id', 'company_id', 'date_operation')
     def _compute_currency_rate(self):

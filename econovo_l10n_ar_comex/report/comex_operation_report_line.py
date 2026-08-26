@@ -321,7 +321,7 @@ class ComexOperationReportLine(models.Model):
              "Always in USD, so it can be safely summed.",
     )
     price_subtotal_company = fields.Monetary(
-        string="Subtotal (Company Currency)",
+        string="FOB Subtotal (Company Currency)",
         currency_field='company_currency_id',
         readonly=True,
         help="Formula: price_subtotal / operation currency rate. Expressed in the "

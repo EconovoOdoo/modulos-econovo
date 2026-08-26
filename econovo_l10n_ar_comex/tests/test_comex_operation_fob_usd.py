@@ -113,6 +113,47 @@ class TestComexOperationFobUsd(TransactionCase):
         # Converting the USD total back into EUR must recover the original amount.
         self.assertAlmostEqual(operation.amount_fob, 100.0, places=2)
 
+    def test_amount_fob_does_not_drift_when_the_order_date_differs(self):
+        """Regression: a same-currency line must not round-trip through USD.
+
+        Production case (operation IMP/OSEYS/00835): the operation and its
+        single purchase order line were both in EUR, but the order was dated
+        after the operation. Converting to USD at the order's date and back to
+        EUR at the operation's date applied two different EUR rates, drifting
+        the FOB amount away from the source document (EUR 107,879.00 became
+        EUR 106,890.89).
+        """
+        # A second EUR rate, so the order's date and the operation's date
+        # resolve to genuinely different rates, exactly like production.
+        self.env['res.currency.rate'].create({
+            'name': fields.Date.to_date('2026-03-01'),
+            'currency_id': self.eur.id,
+            'company_id': self.company.id,
+            'rate': 0.00097,
+        })
+        operation = self.env['comex.operation'].create({
+            'operation_type': 'import',
+            'partner_id': self.partner.id,
+            'date_operation': fields.Date.to_date('2026-03-10'),
+            'currency_id': self.eur.id,
+            'company_id': self.company.id,
+        })
+        order = self.env['purchase.order'].create({
+            'partner_id': self.partner.id,
+            'currency_id': self.eur.id,
+            'date_order': fields.Datetime.to_datetime('2026-02-15 00:00:00'),
+            'comex_operation_id': operation.id,
+            'order_line': [(0, 0, {
+                'product_id': self.product.id,
+                'product_qty': 1.0,
+                'price_unit': 107879.0,
+            })],
+        })
+        order.write({'state': 'purchase'})
+
+        self.assertEqual(operation.product_line_ids.price_subtotal, 107879.0)
+        self.assertEqual(operation.amount_fob, 107879.0)
+
     def test_amount_fob_cannot_be_written_manually(self):
         """amount_fob is a stored compute: writing it directly has no effect."""
         operation = self._create_operation(self.usd)
