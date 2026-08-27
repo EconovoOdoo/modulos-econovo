@@ -268,8 +268,14 @@ class ComexOperation(models.Model):
     currency_id = fields.Many2one(
         'res.currency',
         string="Currency",
+        compute='_compute_currency_id',
+        readonly=False,
+        store=True,
         default=lambda self: self.env.ref('base.USD', raise_if_not_found=False),
         tracking=True,
+        help="Automatically set to the currency of the linked purchase/sale orders "
+             "when they all share a single one. Left exactly as entered while there "
+             "are none yet, or while they use more than one currency.",
     )
     currency_rate = fields.Float(
         string="Currency Rate",
@@ -639,6 +645,19 @@ class ComexOperation(models.Model):
                 line._convert_price_subtotal(record.currency_id)
                 for line in record.product_line_ids
             )
+
+    @api.depends('product_line_ids.origin_currency_id')
+    def _compute_currency_id(self):
+        """Adopt the linked orders' currency when it is unambiguous.
+
+        Left untouched (manual) while there are no confirmed lines yet, or while
+        they span more than one currency: in neither case is there a single
+        correct value to adopt automatically.
+        """
+        for record in self:
+            origins = record.product_line_ids.mapped('origin_currency_id')
+            if len(origins) == 1:
+                record.currency_id = origins
 
     @api.depends('currency_id', 'product_line_ids.origin_currency_id')
     def _compute_currency_mismatch(self):

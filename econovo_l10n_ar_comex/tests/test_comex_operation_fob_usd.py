@@ -68,21 +68,24 @@ class TestComexOperationFobUsd(TransactionCase):
         self.assertEqual(line.price_subtotal_usd, 100.0)
 
     def test_price_subtotal_is_tagged_with_the_order_currency_not_the_operation(self):
-        """Regression: a EUR purchase order under a USD operation must show EUR.
+        """Regression: each line keeps its own order's currency, not the operation's.
 
-        price_subtotal used to be tagged with the operation's currency, so an
-        operation in USD with a purchase order in EUR displayed "USD 730.00" for
-        an amount that was genuinely 730 EUR, silently misreporting the FOB
-        subtotal (production case: IMP/OSEYS/00852).
+        price_subtotal used to be tagged with the operation's currency, so a EUR
+        purchase order line under an operation that stayed in USD (because a
+        second order in USD keeps the currency genuinely mixed, so it is not
+        auto-inferred) displayed "USD 730.00" for an amount that was genuinely
+        730 EUR, silently misreporting the FOB subtotal (production case:
+        IMP/OSEYS/00852).
         """
         operation = self._create_operation(self.usd)
         self._create_confirmed_purchase_order(operation, self.eur, qty=20.0, price_unit=36.5)
+        self._create_confirmed_purchase_order(operation, self.usd, qty=1.0, price_unit=1.0)
 
-        line = operation.product_line_ids
-        self.assertEqual(line.origin_currency_id, self.eur)
-        self.assertEqual(line.price_subtotal, 730.0)
-        self.assertNotEqual(line.price_subtotal, line.price_subtotal_usd)
-        self.assertAlmostEqual(line.price_subtotal_usd, 730.0 * (0.001 / 0.0009), places=2)
+        self.assertEqual(operation.currency_id, self.usd)
+        eur_line = operation.product_line_ids.filtered(lambda l: l.origin_currency_id == self.eur)
+        self.assertEqual(eur_line.price_subtotal, 730.0)
+        self.assertNotEqual(eur_line.price_subtotal, eur_line.price_subtotal_usd)
+        self.assertAlmostEqual(eur_line.price_subtotal_usd, 730.0 * (0.001 / 0.0009), places=2)
 
     def test_price_subtotal_usd_converts_from_the_order_currency(self):
         """A EUR purchase order line is converted to USD using its own rate."""
@@ -103,18 +106,42 @@ class TestComexOperationFobUsd(TransactionCase):
         self.assertEqual(operation.amount_fob, 130.0)
         self.assertEqual(operation.amount_fob_usd, 130.0)
 
-    def test_currency_mismatch_is_flagged_but_does_not_affect_fob(self):
-        """Regression: operation.currency_id defaults to USD and is never
-        inferred from its orders, so an operation left at the default USD
-        with a EUR order must be flagged, while its FOB amounts stay correct
+    def test_currency_id_is_inferred_from_a_single_currency_order(self):
+        """A lone confirmed order in another currency corrects the USD default."""
+        operation = self._create_operation(self.usd)
+        self._create_confirmed_purchase_order(operation, self.eur, qty=1.0, price_unit=100.0)
+
+        self.assertEqual(operation.currency_id, self.eur)
+        self.assertFalse(operation.currency_mismatch)
+
+    def test_currency_id_stays_manual_without_any_order(self):
+        """With nothing to infer from, the field is left exactly as set."""
+        operation = self._create_operation(self.eur)
+
+        self.assertEqual(operation.currency_id, self.eur)
+
+    def test_currency_id_stays_manual_with_mixed_currency_orders(self):
+        """Mixed currencies among the orders have no single correct value to
+        adopt, so the operation's own currency is left untouched.
+        """
+        operation = self._create_operation(self.usd)
+        self._create_confirmed_purchase_order(operation, self.eur, qty=1.0, price_unit=100.0)
+        self._create_confirmed_purchase_order(operation, self.usd, qty=1.0, price_unit=1.0)
+
+        self.assertEqual(operation.currency_id, self.usd)
+
+    def test_currency_mismatch_is_flagged_for_mixed_currency_orders(self):
+        """Regression: a genuine currency mix cannot be resolved to one value,
+        so it must stay flagged, while FOB amounts stay correct per line
         (production case: IMP/OSEYS/00850).
         """
         operation = self._create_operation(self.usd)
         self._create_confirmed_purchase_order(operation, self.eur, qty=1.0, price_unit=100.0)
+        self._create_confirmed_purchase_order(operation, self.usd, qty=1.0, price_unit=1.0)
 
         self.assertTrue(operation.currency_mismatch)
-        self.assertAlmostEqual(operation.amount_fob, 100.0 * (0.001 / 0.0009), places=2)
-        self.assertAlmostEqual(operation.amount_fob_usd, 100.0 * (0.001 / 0.0009), places=2)
+        expected_usd = 100.0 * (0.001 / 0.0009) + 1.0
+        self.assertAlmostEqual(operation.amount_fob_usd, expected_usd, places=2)
 
     def test_currency_mismatch_is_false_when_currencies_agree(self):
         """No warning when the operation's currency matches its orders."""
