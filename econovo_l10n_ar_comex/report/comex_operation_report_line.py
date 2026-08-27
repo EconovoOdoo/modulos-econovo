@@ -32,8 +32,8 @@ class ComexOperationReportLine(models.Model):
         'comex.operation.product.line': [
             'operation_id', 'sequence', 'product_id', 'product_tmpl_id',
             'product_uom', 'product_qty', 'qty_received', 'qty_delivered',
-            'price_unit', 'price_subtotal', 'price_subtotal_usd', 'origin_currency_id',
-            'origin_type', 'purchase_order_id', 'sale_order_id',
+            'price_unit', 'price_unit_usd', 'price_subtotal', 'price_subtotal_usd',
+            'origin_currency_id', 'origin_type', 'purchase_order_id', 'sale_order_id',
             'current_location_display', 'lot_name_display', 'last_delivery_partner_id',
         ],
         'comex.shipment': ['operation_id', 'name', 'active'],
@@ -304,11 +304,30 @@ class ComexOperationReportLine(models.Model):
         digits='Product Unit of Measure',
         readonly=True,
     )
-    price_unit = fields.Float(
-        string="Unit Price",
-        digits='Product Price',
+    price_unit = fields.Monetary(
+        string="FOB Unit Price",
+        currency_field='origin_currency_id',
         readonly=True,
         group_operator=None,
+        help="Unit price in the currency of the purchase/sale order it comes from. "
+             "Not aggregated: a sum of unit prices has no business meaning. Use "
+             "FOB Unit Price (USD) or (Company Currency) to compare across lines.",
+    )
+    price_unit_usd = fields.Monetary(
+        string="FOB Unit Price (USD)",
+        currency_field='currency_usd_id',
+        readonly=True,
+        group_operator=None,
+        help="Formula: price_unit converted to USD using the exchange rate of the "
+             "purchase/sale order this line comes from (its own currency and date).",
+    )
+    price_unit_company = fields.Monetary(
+        string="FOB Unit Price (Company Currency)",
+        currency_field='company_currency_id',
+        readonly=True,
+        group_operator=None,
+        help="Formula: price_unit / operation currency rate. Expressed in the "
+             "currency of the operation company.",
     )
     price_subtotal = fields.Monetary(
         string="FOB Subtotal",
@@ -516,6 +535,8 @@ class ComexOperationReportLine(models.Model):
                 line.qty_received AS qty_received,
                 line.qty_delivered AS qty_delivered,
                 line.price_unit AS price_unit,
+                line.price_unit_usd AS price_unit_usd,
+                {price_unit_company} AS price_unit_company,
                 line.price_subtotal AS price_subtotal,
                 line.origin_currency_id AS origin_currency_id,
                 line.price_subtotal_usd AS price_subtotal_usd,
@@ -541,6 +562,7 @@ class ComexOperationReportLine(models.Model):
         """.format(
             bl_numbers=self._bl_numbers_expression(),
             share=share,
+            price_unit_company=self._to_company_currency('line.price_unit'),
             price_subtotal_company=self._to_company_currency('line.price_subtotal'),
             amount_fob_share_company=self._to_company_currency('operation.amount_fob * %s' % share),
             amount_cif_share_company=self._to_company_currency('operation.amount_cif * %s' % share),
@@ -590,6 +612,8 @@ class ComexOperationReportLine(models.Model):
                 0.0::numeric AS qty_received,
                 0.0::numeric AS qty_delivered,
                 0.0::numeric AS price_unit,
+                0.0::numeric AS price_unit_usd,
+                0.0::numeric AS price_unit_company,
                 0.0::numeric AS price_subtotal,
                 operation.currency_id AS origin_currency_id,
                 0.0::numeric AS price_subtotal_usd,

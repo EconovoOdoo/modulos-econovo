@@ -34,6 +34,8 @@
                 <field name="qty_received" sum="Total Received" optional="hide"/>
                 <field name="qty_delivered" sum="Total Delivered" optional="hide"/>
                 <field name="price_unit" optional="hide"/>
+                <field name="price_unit_usd" optional="hide"/>
+                <field name="price_unit_company" optional="hide"/>
                 <field name="price_subtotal" optional="hide"/>
                 <field name="price_subtotal_usd" sum="Total FOB Subtotal (USD)" optional="show"/>
                 <field name="price_subtotal_company" sum="Total Subtotal" optional="show"/>

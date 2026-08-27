@@ -97,6 +97,37 @@ class TestComexOperationFobUsd(TransactionCase):
         # 100 EUR -> USD at (rate_usd / rate_eur) = 0.001 / 0.0009.
         self.assertAlmostEqual(line.price_subtotal_usd, 100.0 * (0.001 / 0.0009), places=2)
 
+    def test_price_unit_usd_same_currency_is_a_no_op(self):
+        """A line already in USD is not altered by the conversion."""
+        operation = self._create_operation(self.usd)
+        self._create_confirmed_purchase_order(operation, self.usd, qty=2.0, price_unit=50.0)
+
+        line = operation.product_line_ids
+        self.assertEqual(line.price_unit, 50.0)
+        self.assertEqual(line.price_unit_usd, 50.0)
+
+    def test_price_unit_is_tagged_with_the_order_currency_not_the_operation(self):
+        """A EUR purchase order line's unit price must show EUR, mirroring the
+        same fix already applied to price_subtotal.
+        """
+        operation = self._create_operation(self.usd)
+        self._create_confirmed_purchase_order(operation, self.eur, qty=20.0, price_unit=36.5)
+        self._create_confirmed_purchase_order(operation, self.usd, qty=1.0, price_unit=1.0)
+
+        eur_line = operation.product_line_ids.filtered(lambda l: l.origin_currency_id == self.eur)
+        self.assertEqual(eur_line.price_unit, 36.5)
+        self.assertNotEqual(eur_line.price_unit, eur_line.price_unit_usd)
+        self.assertAlmostEqual(eur_line.price_unit_usd, 36.5 * (0.001 / 0.0009), places=2)
+
+    def test_price_unit_usd_converts_from_the_order_currency(self):
+        """A EUR purchase order line's unit price is converted using its own rate."""
+        operation = self._create_operation(self.eur)
+        self._create_confirmed_purchase_order(operation, self.eur, qty=1.0, price_unit=100.0)
+
+        line = operation.product_line_ids
+        self.assertEqual(line.price_unit, 100.0)
+        self.assertAlmostEqual(line.price_unit_usd, 100.0 * (0.001 / 0.0009), places=2)
+
     def test_amount_fob_is_computed_not_manual(self):
         """The operation FOB amount is the sum of its confirmed order lines."""
         operation = self._create_operation(self.usd)

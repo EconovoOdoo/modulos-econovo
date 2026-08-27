@@ -116,10 +116,21 @@ class ComexOperationProductLine(models.Model):
         help="Currency of the purchase/sale order this line comes from. Manual lines "
              "fall back to the operation's currency, since they have no such order.",
     )
-    price_unit = fields.Float(
-        string="Unit Price",
+    price_unit = fields.Monetary(
+        string="FOB Unit Price",
         required=True,
-        digits='Product Price',
+        currency_field='origin_currency_id',
+        help="Mirrors the unit price of the purchase/sale order line this comes from, "
+             "in that document's own currency.",
+    )
+    price_unit_usd = fields.Monetary(
+        string="FOB Unit Price (USD)",
+        compute='_compute_price_unit_usd',
+        store=True,
+        currency_field='currency_usd_id',
+        help="price_unit converted to USD using the exchange rate of the purchase/"
+             "sale order this line comes from: that document's own currency and date, "
+             "not the operation's.",
     )
     price_subtotal = fields.Monetary(
         string="FOB Subtotal",
@@ -284,6 +295,17 @@ class ComexOperationProductLine(models.Model):
         for line in self:
             line.price_subtotal_usd = line._convert_price_subtotal(usd) if usd else line.price_subtotal
 
+    @api.depends(
+        'price_unit', 'company_id', 'origin_currency_id',
+        'purchase_line_id.order_id.date_order', 'sale_line_id.order_id.date_order',
+        'operation_id.date_operation',
+    )
+    def _compute_price_unit_usd(self):
+        """Convert the unit price to USD using the origin document's own rate."""
+        usd = self.env.ref('base.USD', raise_if_not_found=False)
+        for line in self:
+            line.price_unit_usd = line._convert_price_unit(usd) if usd else line.price_unit
+
     def _get_origin_currency_date(self):
         """Return the (currency, date) of the document this line's amount is in.
 
@@ -297,14 +319,22 @@ class ComexOperationProductLine(models.Model):
 
     def _convert_price_subtotal(self, target_currency):
         """Convert price_subtotal from its origin document's currency and date."""
+        return self._convert_amount(self.price_subtotal, target_currency)
+
+    def _convert_price_unit(self, target_currency):
+        """Convert price_unit from its origin document's currency and date."""
+        return self._convert_amount(self.price_unit, target_currency)
+
+    def _convert_amount(self, amount, target_currency):
+        """Convert an amount expressed in this line's origin currency/date."""
         self.ensure_one()
         origin_currency, origin_date = self._get_origin_currency_date()
         if not origin_currency or not target_currency or not self.company_id:
-            return self.price_subtotal
+            return amount
         rate = self.env['res.currency']._get_conversion_rate(
             origin_currency, target_currency, self.company_id, origin_date,
         )
-        return self.price_subtotal * rate
+        return amount * rate
 
     def _compute_package_id(self):
         """Find which container has this product (via stock.quant)."""
@@ -815,7 +845,7 @@ class ComexOperationProductLine(models.Model):
             current = self[field_name]
             if field.type == 'many2one':
                 current = current.id
-            if field.type == 'float':
+            if field.type in ('float', 'monetary'):
                 if float_compare(current or 0.0, value or 0.0, precision_digits=6):
                     changes[field_name] = value
             elif current != value:
