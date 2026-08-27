@@ -103,6 +103,26 @@ class TestComexOperationFobUsd(TransactionCase):
         self.assertEqual(operation.amount_fob, 130.0)
         self.assertEqual(operation.amount_fob_usd, 130.0)
 
+    def test_currency_mismatch_is_flagged_but_does_not_affect_fob(self):
+        """Regression: operation.currency_id defaults to USD and is never
+        inferred from its orders, so an operation left at the default USD
+        with a EUR order must be flagged, while its FOB amounts stay correct
+        (production case: IMP/OSEYS/00850).
+        """
+        operation = self._create_operation(self.usd)
+        self._create_confirmed_purchase_order(operation, self.eur, qty=1.0, price_unit=100.0)
+
+        self.assertTrue(operation.currency_mismatch)
+        self.assertAlmostEqual(operation.amount_fob, 100.0 * (0.001 / 0.0009), places=2)
+        self.assertAlmostEqual(operation.amount_fob_usd, 100.0 * (0.001 / 0.0009), places=2)
+
+    def test_currency_mismatch_is_false_when_currencies_agree(self):
+        """No warning when the operation's currency matches its orders."""
+        operation = self._create_operation(self.usd)
+        self._create_confirmed_purchase_order(operation, self.usd, qty=1.0, price_unit=100.0)
+
+        self.assertFalse(operation.currency_mismatch)
+
     def test_amount_fob_usd_is_stable_across_operation_currencies(self):
         """amount_fob_usd does not depend on the operation's own currency."""
         operation = self._create_operation(self.eur)
@@ -112,6 +132,7 @@ class TestComexOperationFobUsd(TransactionCase):
         self.assertAlmostEqual(operation.amount_fob_usd, expected_usd, places=2)
         # Converting the USD total back into EUR must recover the original amount.
         self.assertAlmostEqual(operation.amount_fob, 100.0, places=2)
+        self.assertFalse(operation.currency_mismatch)
 
     def test_amount_fob_does_not_drift_when_the_order_date_differs(self):
         """Regression: a same-currency line must not round-trip through USD.

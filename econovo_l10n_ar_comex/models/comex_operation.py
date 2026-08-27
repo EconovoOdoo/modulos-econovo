@@ -280,6 +280,16 @@ class ComexOperation(models.Model):
         digits=(12, 6),
         help="Ratio between the operation currency and the company currency.",
     )
+    currency_mismatch = fields.Boolean(
+        string="Currency Mismatch",
+        compute='_compute_currency_mismatch',
+        store=True,
+        help="At least one confirmed purchase/sale order line comes from a document "
+             "in a different currency than this operation's own. amount_fob and the "
+             "FOB analysis columns are still correct (each line is converted from its "
+             "own document), but amount_freight/amount_insurance/amount_cif are "
+             "entered by hand in the operation's currency, so double-check them.",
+    )
     
     # Payment Terms (COMEX-specific: Instrument + Timing)
     payment_instrument_id = fields.Many2one(
@@ -629,6 +639,20 @@ class ComexOperation(models.Model):
                 line._convert_price_subtotal(record.currency_id)
                 for line in record.product_line_ids
             )
+
+    @api.depends('currency_id', 'product_line_ids.origin_currency_id')
+    def _compute_currency_mismatch(self):
+        """Flag operations whose own currency differs from a linked document's.
+
+        currency_id defaults to USD and is only ever changed by hand, so it can
+        silently stay wrong once a purchase/sale order in another currency gets
+        linked. This does not affect amount_fob (each line already converts from
+        its own document), only the manually entered amount_freight/
+        amount_insurance/amount_cif, which are in whatever currency_id says.
+        """
+        for record in self:
+            origins = record.product_line_ids.mapped('origin_currency_id')
+            record.currency_mismatch = bool(origins - record.currency_id)
 
     @api.depends('currency_id', 'company_id', 'date_operation')
     def _compute_currency_rate(self):

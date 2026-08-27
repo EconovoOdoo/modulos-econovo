@@ -26,7 +26,8 @@ class ComexOperationReportLine(models.Model):
             'commercial_payment_status', 'customs_payment_status',
             'purchase_order_payment_status', 'sale_order_payment_status',
             'company_id', 'currency_id', 'currency_ars_id', 'currency_usd_id',
-            'currency_rate', 'vep_amount', 'amount_fob', 'amount_fob_usd', 'amount_cif',
+            'currency_rate', 'currency_mismatch', 'vep_amount', 'amount_fob',
+            'amount_fob_usd', 'amount_cif',
         ],
         'comex.operation.product.line': [
             'operation_id', 'sequence', 'product_id', 'product_tmpl_id',
@@ -186,6 +187,13 @@ class ComexOperationReportLine(models.Model):
         'res.company',
         string="Company",
         readonly=True,
+    )
+    currency_mismatch = fields.Boolean(
+        string="Currency Mismatch",
+        readonly=True,
+        help="At least one line of this operation comes from a document in a "
+             "different currency than the operation's own. FOB amounts are still "
+             "correct; Freight/Insurance/CIF are manual and may need a look.",
     )
 
     # Operation header (not available as SQL columns)
@@ -496,6 +504,7 @@ class ComexOperationReportLine(models.Model):
                 operation.purchase_order_payment_status AS purchase_order_payment_status,
                 operation.sale_order_payment_status AS sale_order_payment_status,
                 operation.company_id AS company_id,
+                operation.currency_mismatch AS currency_mismatch,
                 operation.currency_id AS currency_id,
                 operation.currency_ars_id AS currency_ars_id,
                 operation.currency_usd_id AS currency_usd_id,
@@ -569,6 +578,7 @@ class ComexOperationReportLine(models.Model):
                 operation.purchase_order_payment_status AS purchase_order_payment_status,
                 operation.sale_order_payment_status AS sale_order_payment_status,
                 operation.company_id AS company_id,
+                operation.currency_mismatch AS currency_mismatch,
                 operation.currency_id AS currency_id,
                 operation.currency_ars_id AS currency_ars_id,
                 operation.currency_usd_id AS currency_usd_id,

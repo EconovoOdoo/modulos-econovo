@@ -223,6 +223,14 @@
                         </button>
                     </div>
                     <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <field name="currency_mismatch" invisible="1"/>
+                    <div class="alert alert-warning" role="alert" invisible="not currency_mismatch">
+                        At least one linked purchase/sale order is in a different currency than
+                        this operation (<field name="currency_id" readonly="1" nolabel="1"/>).
+                        FOB amounts are still correct, each line converts from its own document,
+                        but Freight/Insurance/CIF are entered by hand in the operation's currency:
+                        double-check them.
+                    </div>
                     <div class="oe_title">
                         <label for="name"/>
                         <h1>

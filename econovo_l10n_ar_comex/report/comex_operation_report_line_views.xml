@@ -10,8 +10,10 @@
                   create="false"
                   edit="false"
                   delete="false"
-                  decoration-muted="not has_product_line">
+                  decoration-muted="not has_product_line"
+                  decoration-warning="currency_mismatch">
                 <field name="has_product_line" column_invisible="1"/>
+                <field name="currency_mismatch" column_invisible="1"/>
                 <field name="operation_type" column_invisible="1"/>
                 <field name="currency_id" column_invisible="1"/>
                 <field name="currency_ars_id" column_invisible="1"/>
@@ -146,6 +148,8 @@
                         domain="[('origin_type', '=', 'sale')]"/>
                 <filter name="filter_without_lines" string="Without Product Lines"
                         domain="[('has_product_line', '=', False)]"/>
+                <filter name="filter_currency_mismatch" string="Currency Mismatch"
+                        domain="[('currency_mismatch', '=', True)]"/>
                 <separator/>
                 <filter name="filter_eta_this_month" string="ETA This Month"
                         domain="[('date_eta', '&gt;=', (context_today() + relativedelta(day=1)).strftime('%Y-%m-%d')),
