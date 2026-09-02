@@ -37,8 +37,8 @@
                 <field name="price_unit_usd" optional="hide"/>
                 <field name="price_unit_company" optional="hide"/>
                 <field name="price_subtotal" optional="hide"/>
-                <field name="price_subtotal_usd" sum="Total FOB Subtotal (USD)" optional="show"/>
-                <field name="price_subtotal_company" sum="Total Subtotal" optional="show"/>
+                <field name="price_subtotal_usd" sum="Total FOB Subtotal (USD)" optional="hide"/>
+                <field name="price_subtotal_company" sum="Total Subtotal" optional="hide"/>
                 <field name="origin_type" optional="hide"/>
                 <field name="purchase_order_id" optional="hide"/>
                 <field name="sale_order_id" optional="hide"/>
@@ -47,27 +47,27 @@
                        options="{'no_create': True}"
                        optional="show"/>
                 <field name="current_location_display" optional="hide"/>
-                <field name="stock_status" widget="badge" optional="show"
+                <field name="stock_status" widget="badge" optional="hide"
                        decoration-info="stock_status == 'internal'"
                        decoration-success="stock_status == 'delivered'"
                        decoration-warning="stock_status in ('partial', 'returned')"
                        decoration-muted="stock_status in ('pending', 'unknown')"/>
                 <field name="lot_name_display" optional="show"/>
-                <field name="last_delivery_partner_id" optional="show"/>
+                <field name="last_delivery_partner_id" optional="hide"/>
                 <field name="lot_ids"
                        widget="many2many_tags"
                        options="{'no_create': True}"
                        optional="hide"/>
                 <field name="partner_id"/>
                 <field name="stage_id" widget="badge" optional="show"/>
-                <field name="date_operation" optional="show"/>
+                <field name="date_operation" optional="hide"/>
                 <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}" optional="show"/>
                 <field name="date_etd" optional="show"/>
                 <field name="date_eta" optional="show"/>
-                <field name="date_arrival" optional="show"/>
+                <field name="date_arrival" optional="hide"/>
                 <field name="transport_mode" optional="show"/>
                 <field name="origin_country_id" optional="show"/>
-                <field name="container_total_count" optional="show"/>
+                <field name="container_total_count" optional="hide"/>
                 <field name="shipment_ids"
                        widget="many2many_tags"
                        string="BL Numbers"
@@ -77,7 +77,7 @@
                 <field name="payment_terms_display" optional="show"/>
                 <field name="nominated_bank_id" optional="show"/>
                 <field name="dispatch_invoice_numbers" optional="show"/>
-                <field name="vep_amount" optional="show"/>
+                <field name="vep_amount" optional="hide"/>
                 <field name="vep_amount_share" sum="Total VEP" optional="hide"/>
                 <field name="amount_fob" optional="hide"/>
                 <field name="amount_fob_usd" optional="show"/>
@@ -87,21 +87,21 @@
                 <field name="line_share" optional="hide"/>
                 <field name="commercial_payment_status"
                        widget="badge"
-                       optional="show"
+                       optional="hide"
                        decoration-success="commercial_payment_status == 'paid'"
                        decoration-info="commercial_payment_status == 'in_payment'"
                        decoration-warning="commercial_payment_status == 'partial'"
                        decoration-danger="commercial_payment_status == 'not_paid'"/>
                 <field name="customs_payment_status"
                        widget="badge"
-                       optional="show"
+                       optional="hide"
                        decoration-success="customs_payment_status == 'paid'"
                        decoration-info="customs_payment_status == 'in_payment'"
                        decoration-warning="customs_payment_status == 'partial'"
                        decoration-danger="customs_payment_status == 'not_paid'"/>
                 <field name="purchase_order_payment_status"
                        widget="badge"
-                       optional="show"
+                       optional="hide"
                        invisible="operation_type != 'import'"
                        decoration-success="purchase_order_payment_status == 'paid'"
                        decoration-info="purchase_order_payment_status == 'in_payment'"
@@ -109,7 +109,7 @@
                        decoration-danger="purchase_order_payment_status == 'not_paid'"/>
                 <field name="sale_order_payment_status"
                        widget="badge"
-                       optional="show"
+                       optional="hide"
                        invisible="operation_type != 'export'"
                        decoration-success="sale_order_payment_status == 'paid'"
                        decoration-info="sale_order_payment_status == 'in_payment'"
