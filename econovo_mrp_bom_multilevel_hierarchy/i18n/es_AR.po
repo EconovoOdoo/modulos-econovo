@@ -1,0 +1,32 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* econovo_mrp_bom_multilevel_hierarchy
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 17.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-04 00:00+0000\n"
+"PO-Revision-Date: 2026-09-04 00:00+0000\n"
+"Last-Translator: \n"
+"Language-Team: Spanish\n"
+"Language: es_AR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: econovo_mrp_bom_multilevel_hierarchy
+#: model:ir.model.fields,field_description:econovo_mrp_bom_multilevel_hierarchy.field_mrp_bom__has_sub_bom
+msgid "Has Sub-BOMs"
+msgstr "Tiene Sub-LdM"
+
+#. module: econovo_mrp_bom_multilevel_hierarchy
+#: model:ir.model.fields,help:econovo_mrp_bom_multilevel_hierarchy.field_mrp_bom__has_sub_bom
+msgid "Whether this BOM has at least one component with its own Bill of Materials."
+msgstr "Indica si esta LdM tiene al menos un componente con su propia Lista de Materiales."
+
+#. module: econovo_mrp_bom_multilevel_hierarchy
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_bom_multilevel_hierarchy.mrp_bom_tree_view_inherit_hierarchy_cascade
+msgid "View full BOM hierarchy (this BOM and every sub-BOM, at any depth)"
+msgstr "Ver jerarquía completa de LdM (esta LdM y todas sus sub-LdM, en cualquier nivel)"

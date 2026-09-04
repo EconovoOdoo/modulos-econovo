@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Adds a fa-sitemap button to the BOM list: opens this BOM plus every -->
+    <!-- sub-BOM used by its components, at any depth, unlike a direct-children-only view. -->
+    <record id="mrp_bom_tree_view_inherit_hierarchy_cascade" model="ir.ui.view">
+        <field name="name">mrp.bom.tree.hierarchy.cascade</field>
+        <field name="model">mrp.bom</field>
+        <field name="inherit_id" ref="mrp.mrp_bom_tree_view"/>
+        <field name="arch" type="xml">
+            <field name="active" position="before">
+                <field name="has_sub_bom" column_invisible="1"/>
+                <button title="View full BOM hierarchy (this BOM and every sub-BOM, at any depth)"
+                        name="action_view_bom_hierarchy_cascade"
+                        type="object"
+                        class="btn btn-link"
+                        icon="fa-sitemap"
+                        invisible="not has_sub_bom"/>
+            </field>
+        </field>
+    </record>
+</odoo>
