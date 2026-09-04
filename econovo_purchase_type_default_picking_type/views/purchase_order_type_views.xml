@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="purchase_order_type_view_form" model="ir.ui.view">
+        <field name="name">purchase.order.type.view.form.inherit.econovo_purchase_type_default_picking_type</field>
+        <field name="model">purchase.order.type</field>
+        <field name="inherit_id" ref="purchase_order_type.view_purchase_order_type_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='incoterm_id']" position="after">
+                <field name="picking_type_id" groups="base.group_multi_company"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="purchase_order_type_view_tree" model="ir.ui.view">
+        <field name="name">purchase.order.type.view.tree.inherit.econovo_purchase_type_default_picking_type</field>
+        <field name="model">purchase.order.type</field>
+        <field name="inherit_id" ref="purchase_order_type.view_purchase_order_type_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='incoterm_id']" position="after">
+                <field name="picking_type_id" optional="show" groups="base.group_multi_company"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
