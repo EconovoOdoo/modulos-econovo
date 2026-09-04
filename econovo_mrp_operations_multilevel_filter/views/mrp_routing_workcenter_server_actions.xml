@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Contextual action shown in the Operations list "Actions" menu: reopens the -->
+    <!-- same list filtered to the selected BOM(s) and every sub-BOM at any depth. -->
+    <record id="action_multilevel_operations_server" model="ir.actions.server">
+        <field name="name">Multi-level Operations</field>
+        <field name="model_id" ref="mrp.model_mrp_routing_workcenter"/>
+        <field name="binding_model_id" ref="mrp.model_mrp_routing_workcenter"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+if records:
+    action = records.action_view_multilevel_operations()
+    result = action
+        </field>
+    </record>
+</odoo>
