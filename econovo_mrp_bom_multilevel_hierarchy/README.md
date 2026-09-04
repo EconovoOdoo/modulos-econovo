@@ -17,30 +17,35 @@ sub-assemblies, their own sub-assemblies, and so on) in a single filtered
 list.
 
 Example: clicking this button on "Bicycle" opens the Bills of Materials list
-filtered to Bicycle's own BOM, plus the Wheel BOM, plus any other
-sub-assembly BOM used anywhere in that tree.
+filtered to the Wheel BOM, plus any other sub-assembly BOM used anywhere in
+that tree - Bicycle's own BOM is not repeated in the result. The breadcrumb
+trail shows "Sub-BOMs of Bicycle", so it's clear which BOM the cascade came
+from.
 
 ## Usage
 
 1. Go to **Manufacturing > Products > Bills of Materials**.
 2. Any row whose BOM has at least one component with its own BOM shows a
    sitemap icon button.
-3. Click it to reopen the list filtered to that BOM and every sub-BOM found
-   at any depth.
+3. Click it to reopen the list filtered to every sub-BOM found at any depth
+   (the BOM you clicked from is excluded, so it isn't shown as its own
+   child). The breadcrumb trail shows "Sub-BOMs of <that BOM>", so you can
+   navigate back to where you came from.
 
 ## Technical Details
 
 ### Models
 
 * `mrp.bom` (inherited): adds `has_sub_bom` (computed, gates the button so it
-  only shows for BOMs that actually have a sub-assembly) and
-  `action_view_bom_hierarchy_cascade()`, which reopens the native `mrp.
-  mrp_bom_form_action` ("Bills of Materials") action with a `bom_id in (...)`
-  domain.
-* Depends on `econovo_mrp_operations_multilevel_filter` to reuse its
-  `mrp.bom._get_multilevel_bom_ids()` helper (the same recursive BOM
-  explosion, walking `mrp.bom.line.child_bom_id`, already used by that
-  module's "Multi-level Operations" action) instead of duplicating it.
+  only shows for BOMs that actually have a sub-assembly), `_get_descendant_bom_ids()`
+  (a self-contained recursive helper, walking `mrp.bom.line.child_bom_id` at
+  any depth, that deliberately excludes the BOM it is called on - only its
+  descendants), and `action_view_bom_hierarchy_cascade()`, which reopens the
+  native `mrp.mrp_bom_form_action` ("Bills of Materials") action with an
+  `id in (...)` domain built from that helper, and sets the action's `name`
+  to "Sub-BOMs of <BOM>" so the breadcrumb trail shows which BOM the cascade
+  came from.
+* Self-contained: no dependency on any other Econovo module.
 
 ### Multi-company
 
@@ -51,8 +56,6 @@ rules, exactly as they are on the native Bills of Materials list.
 ## Dependencies
 
 * `mrp`: Manufacturing module
-* `econovo_mrp_operations_multilevel_filter`: provides the recursive BOM
-  explosion helper this module reuses
 
 ## License
 

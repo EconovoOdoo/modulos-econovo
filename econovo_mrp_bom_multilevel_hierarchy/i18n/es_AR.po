@@ -28,5 +28,12 @@ msgstr "Indica si esta LdM tiene al menos un componente con su propia Lista de M
 
 #. module: econovo_mrp_bom_multilevel_hierarchy
 #: model_terms:ir.ui.view,arch_db:econovo_mrp_bom_multilevel_hierarchy.mrp_bom_tree_view_inherit_hierarchy_cascade
-msgid "View full BOM hierarchy (this BOM and every sub-BOM, at any depth)"
-msgstr "Ver jerarquía completa de LdM (esta LdM y todas sus sub-LdM, en cualquier nivel)"
+msgid "View full BOM hierarchy (every sub-BOM used by this BOM, at any depth)"
+msgstr "Ver jerarquía completa de LdM (todas las sub-LdM de esta LdM, en cualquier nivel)"
+
+#. module: econovo_mrp_bom_multilevel_hierarchy
+#. odoo-python
+#: code:addons/econovo_mrp_bom_multilevel_hierarchy/models/mrp_bom.py:0
+#, python-format
+msgid "Sub-BOMs of %s"
+msgstr "Sub-LdM de %s"
