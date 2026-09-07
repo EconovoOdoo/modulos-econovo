@@ -1271,7 +1271,7 @@ def _flatten_usages(cs):
         yield from _walk(root_node, [])
 
 
-def _build_detail_sheet(ws, cs, cur, usd, show_lead_times):
+def _build_detail_sheet(ws, cs, cur, usd, show_costs, show_lead_times):
     """
     Write Sheet 2: flat, pivot-ready component usage list.
     One data row per usage (component × parent-product pair).
@@ -1291,13 +1291,14 @@ def _build_detail_sheet(ws, cs, cur, usd, show_lead_times):
         "Quantity",
         "UoM",
         "% of Components",
-        "BOM Cost (%s)" % cur,
     ]
-    if has_usd:
-        cols.append("BOM Cost (%s)" % usd)
-    cols.append("Product Cost (%s)" % cur)
-    if has_usd:
-        cols.append("Product Cost (%s)" % usd)
+    if show_costs:
+        cols.append("BOM Cost (%s)" % cur)
+        if has_usd:
+            cols.append("BOM Cost (%s)" % usd)
+        cols.append("Product Cost (%s)" % cur)
+        if has_usd:
+            cols.append("Product Cost (%s)" % usd)
     if show_lead_times:
         cols += ["Lead Time (days)", "Route", "Route Detail", "Route Type"]
     cols += ["Free to Use", "On Hand", "Availability"]
@@ -1406,12 +1407,13 @@ def _build_detail_sheet(ws, cs, cur, usd, show_lead_times):
         vals[ci["Quantity"] - 1] = item["quantity"]
         vals[ci["UoM"] - 1] = item["uom_name"]
         vals[ci["% of Components"] - 1] = item["percentage"]
-        vals[ci["BOM Cost (%s)" % cur] - 1] = item["bom_cost"]
-        if has_usd and "BOM Cost (%s)" % usd in ci:
-            vals[ci["BOM Cost (%s)" % usd] - 1] = item["bom_cost_usd"]
-        vals[ci["Product Cost (%s)" % cur] - 1] = item["prod_cost"]
-        if has_usd and "Product Cost (%s)" % usd in ci:
-            vals[ci["Product Cost (%s)" % usd] - 1] = item["prod_cost_usd"]
+        if show_costs:
+            vals[ci["BOM Cost (%s)" % cur] - 1] = item["bom_cost"]
+            if has_usd and "BOM Cost (%s)" % usd in ci:
+                vals[ci["BOM Cost (%s)" % usd] - 1] = item["bom_cost_usd"]
+            vals[ci["Product Cost (%s)" % cur] - 1] = item["prod_cost"]
+            if has_usd and "Product Cost (%s)" % usd in ci:
+                vals[ci["Product Cost (%s)" % usd] - 1] = item["prod_cost_usd"]
         if show_lead_times:
             lt = item.get("lead_time")
             vals[ci["Lead Time (days)"] - 1] = lt if lt is not False and lt is not None else ""
@@ -1458,10 +1460,6 @@ class BomCostSummaryXlsxController(http.Controller):
         report_model = request.env[
             "report.econovo_mrp_bom_cost_summary.report_cost_summary"
         ]
-        if not report_model._can_show_costs():
-            return request.make_response(
-                "You are not allowed to see product costs.", status=403
-            )
 
         try:
             from openpyxl import Workbook  # noqa: PLC0415
@@ -1490,7 +1488,13 @@ class BomCostSummaryXlsxController(http.Controller):
             if quantity and quantity not in ("false", "null")
             else (bom.product_qty or 1.0)
         )
-        show_costs = str(costs).lower() not in ("false", "0")
+        # Costs are hidden when the user asked to (display option) OR lacks
+        # the "Show Product Cost" group - same rule as the interactive UI, so
+        # the export never shows a user data they cannot already see on screen.
+        show_costs = (
+            str(costs).lower() not in ("false", "0")
+            and report_model._can_show_costs()
+        )
         show_operations = str(operations).lower() not in ("false", "0")
         show_lead_times = str(lead_times).lower() not in ("false", "0")
 
@@ -1555,7 +1559,7 @@ class BomCostSummaryXlsxController(http.Controller):
         # Sheet 3: Components Detail (flat pivot-ready list)
         ws2 = wb.create_sheet("Components Detail")
         _build_detail_sheet(
-            ws2, cost_summary, currency_name, usd_name, show_lead_times,
+            ws2, cost_summary, currency_name, usd_name, show_costs, show_lead_times,
         )
 
         # ── Serialize ─────────────────────────────────────────────────────────
