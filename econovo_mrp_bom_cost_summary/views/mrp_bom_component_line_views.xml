@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- =====================================================
+         Tree view — flat, one row per component usage.
+         Numeric columns show a labelled sum when grouped.
+         ===================================================== -->
+    <record id="mrp_bom_component_line_view_tree" model="ir.ui.view">
+        <field name="name">mrp.bom.component.line.view.tree</field>
+        <field name="model">mrp.bom.component.line</field>
+        <field name="arch" type="xml">
+            <tree string="Components Detail" create="0" edit="0" delete="0"
+                  default_order="bom_cost desc">
+                <field name="categ_id"/>
+                <field name="product_id"/>
+                <field name="parent_product_id"/>
+                <field name="quantity" sum="Quantity"/>
+                <field name="uom_name" optional="show"/>
+                <field name="percentage" sum="% of Components" widget="float"/>
+                <field name="bom_cost" sum="BOM Cost"/>
+                <field name="bom_cost_usd" sum="BOM Cost (Secondary)" optional="hide"/>
+                <field name="prod_cost" sum="Product Cost"/>
+                <field name="prod_cost_usd" sum="Product Cost (Secondary)" optional="hide"/>
+                <field name="lead_time" sum="Lead Time (days)" optional="show"/>
+                <field name="route_name" optional="show"/>
+                <field name="route_detail" optional="hide"/>
+                <field name="route_type" optional="hide"/>
+                <field name="quantity_available" sum="Free to Use" optional="show"/>
+                <field name="quantity_on_hand" sum="On Hand" optional="show"/>
+                <field name="availability_display" optional="show"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="secondary_currency_id" column_invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- =====================================================
+         Search view — filter / group by, native.
+         ===================================================== -->
+    <record id="mrp_bom_component_line_view_search" model="ir.ui.view">
+        <field name="name">mrp.bom.component.line.view.search</field>
+        <field name="model">mrp.bom.component.line</field>
+        <field name="arch" type="xml">
+            <search string="Components Detail">
+                <field name="product_id"/>
+                <field name="parent_product_id"/>
+                <field name="categ_id"/>
+                <field name="route_name"/>
+                <filter string="Available" name="filter_available"
+                        domain="[('availability_display', '=', 'Disponible')]"/>
+                <filter string="Not Available" name="filter_not_available"
+                        domain="[('availability_display', 'not in', ('Disponible', False))]"/>
+                <separator/>
+                <group expand="1" string="Group By">
+                    <filter string="Category" name="group_by_categ_id"
+                            context="{'group_by': 'categ_id'}"/>
+                    <filter string="Component" name="group_by_product_id"
+                            context="{'group_by': 'product_id'}"/>
+                    <filter string="Used In (Parent)" name="group_by_parent_product_id"
+                            context="{'group_by': 'parent_product_id'}"/>
+                    <filter string="Route" name="group_by_route_name"
+                            context="{'group_by': 'route_name'}"/>
+                    <filter string="Availability" name="group_by_availability"
+                            context="{'group_by': 'availability_display'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- =====================================================
+         Action — opened by mrp.bom.action_open_component_detail
+         ===================================================== -->
+    <record id="action_mrp_bom_component_line" model="ir.actions.act_window">
+        <field name="name">Components Detail</field>
+        <field name="res_model">mrp.bom.component.line</field>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="mrp_bom_component_line_view_tree"/>
+        <field name="search_view_id" ref="mrp_bom_component_line_view_search"/>
+        <field name="context">{'search_default_group_by_categ_id': 1}</field>
+    </record>
+
+    <!-- =====================================================
+         Inherit mrp.bom form view — add Components Detail button
+         Must be loaded AFTER action_mrp_bom_component_line above.
+         ===================================================== -->
+    <record id="mrp_bom_form_view_component_detail_button" model="ir.ui.view">
+        <field name="name">mrp.bom.view.form.inherit.component.detail</field>
+        <field name="model">mrp.bom</field>
+        <field name="inherit_id" ref="mrp.mrp_bom_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_open_component_detail"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-list">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">Components Detail</span>
+                    </div>
+                </button>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

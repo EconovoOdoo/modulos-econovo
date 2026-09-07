@@ -771,3 +771,57 @@ class ReportEconovoBomCostSummary(models.AbstractModel):
                         usage["prod_cost"] * rate if rate else False
                     )
             self._enrich_category_tree(node["children"], rate, total_components)
+
+    # ------------------------------------------------------------------
+    # Flat usage iteration (shared by the Excel export and the Component
+    # Detail wizard, so both surfaces walk the exact same tree once).
+    # ------------------------------------------------------------------
+
+    @api.model
+    def _iter_component_usages(self, cs):
+        """Return one raw dict per component usage (component x immediate
+        parent) from the category tree, including record ids so callers can
+        create real ORM records or navigate to the actual product/BOM.
+
+        Values are the unrounded, unformatted numbers straight from the cost
+        summary; callers decide their own presentation (Excel formatting,
+        ORM field values, etc.). Returns a materialised list, not a
+        generator: an ``@api.model`` method must run to completion within
+        the call that dispatches it, it cannot be lazily resumed later.
+        """
+        def _walk(node, path_parts):
+            path_parts = path_parts + [node["name"]]
+            cat_path = " > ".join(path_parts)
+            for child in node.get("children", []):
+                yield from _walk(child, path_parts)
+            for prod in node.get("products", []):
+                for usage in prod.get("usages", []):
+                    yield {
+                        "categ_id": node["id"],
+                        "category_path": cat_path,
+                        "product_id": prod.get("product_id"),
+                        "product_name": prod.get("name", ""),
+                        "parent_product_id": usage.get("parent_product_id"),
+                        "parent_name": usage.get("parent_name"),
+                        "quantity": usage.get("quantity"),
+                        "uom_name": usage.get("uom_name"),
+                        "percentage": usage.get("percentage"),
+                        "bom_cost": usage.get("total"),
+                        "bom_cost_usd": usage.get("total_usd"),
+                        "prod_cost": usage.get("prod_cost"),
+                        "prod_cost_usd": usage.get("prod_cost_usd"),
+                        "lead_time": usage.get("lead_time"),
+                        "route_name": usage.get("route_name"),
+                        "route_detail": usage.get("route_detail"),
+                        "route_type": usage.get("route_type"),
+                        "quantity_available": prod.get("quantity_available"),
+                        "quantity_on_hand": prod.get("quantity_on_hand"),
+                        "availability_display": prod.get("availability_display"),
+                    }
+
+        rows = []
+        for root_node in cs.get("categories", []):
+            rows.extend(_walk(root_node, []))
+        return rows
+
+

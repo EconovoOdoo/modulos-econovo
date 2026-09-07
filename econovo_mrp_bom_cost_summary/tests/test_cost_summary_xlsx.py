@@ -88,7 +88,9 @@ class TestBomCostSummaryXlsxCostGating(TransactionCase):
             show_costs, True, True, self.bom.display_name, 1,
         )
         detail_ws = wb.create_sheet("Components Detail")
-        _build_detail_sheet(detail_ws, cost_summary, "ARS", "", show_costs, True)
+        _build_detail_sheet(
+            detail_ws, cost_summary, "ARS", "", show_costs, True, self.env,
+        )
         return tree_ws, summary_ws, detail_ws
 
     def test_with_group_includes_cost_columns(self):

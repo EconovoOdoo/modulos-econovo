@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_mrp_bom_component_line,mrp.bom.component.line,model_mrp_bom_component_line,base.group_user,1,0,1,0

@@ -1,6 +1,6 @@
 {
     'name': 'Econovo MRP BOM Cost Summary',
-    'version': '17.0.1.4.0',
+    'version': '17.0.1.5.0',
     'category': 'Manufacturing',
     'summary': 'Collapsible cost breakdown summary in BOM Overview report',
     'description': """
@@ -20,8 +20,10 @@ exports are denied outright.
     'website': 'https://github.com/josedleonett',
     'license': 'AGPL-3',
     'data': [
+        'security/ir.model.access.csv',
         'report/report_cost_summary.xml',
         'views/mrp_bom_views.xml',
+        'views/mrp_bom_component_line_views.xml',
     ],
     'assets': {
         'web.assets_backend': [

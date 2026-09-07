@@ -1226,52 +1226,51 @@ def _build_summary_sheet(ws, cs, cur, usd,
 
 # ════════════════════════════ Sheet 2: Components Detail ═════════════════════
 
-def _flatten_usages(cs):
+def _flatten_usages(cs, env):
     """
-    Walk the category tree and yield one dict per component usage.
+    Walk the category tree and yield one dict per component usage,
+    formatted for the Excel sheet.
+
+    Delegates the walk itself to ``report_cost_summary._iter_component_usages``
+    (shared with the Component Detail wizard) so both surfaces read the exact
+    same values; this layer only applies Excel-specific rounding/formatting.
+
+    :param env: Odoo environment, explicit rather than the global ``request``
+        proxy so this also works when called outside an HTTP request (tests).
 
     :returns generator of dicts with keys:
         category_path, product_name, parent_name,
         quantity, uom_name, percentage,
         bom_cost, bom_cost_usd, prod_cost, prod_cost_usd,
         lead_time, route_name, route_detail, route_type,
-        quantity_available, quantity_on_hand, availability_state, availability_display
+        quantity_available, quantity_on_hand, availability_display
     """
-    def _walk(node, path_parts):
-        path_parts = path_parts + [node["name"]]
-        cat_path = " > ".join(path_parts)
-
-        # Recurse into children first so rows are ordered depth-first
-        for child in node.get("children", []):
-            yield from _walk(child, path_parts)
-
-        for prod in node.get("products", []):
-            for usage in prod.get("usages", []):
-                yield {
-                    "category_path":       cat_path,
-                    "product_name":        prod.get("name", ""),
-                    "parent_name":         _str(usage.get("parent_name")),
-                    "quantity":            _flt(usage.get("quantity")),
-                    "uom_name":            _str(usage.get("uom_name")),
-                    "percentage":          _pct(usage.get("percentage")),
-                    "bom_cost":            _flt(usage.get("total")),
-                    "bom_cost_usd":        _flt(usage.get("total_usd")),
-                    "prod_cost":           _flt(usage.get("prod_cost")),
-                    "prod_cost_usd":       _flt(usage.get("prod_cost_usd")),
-                    "lead_time":           usage.get("lead_time"),
-                    "route_name":          _str(usage.get("route_name")),
-                    "route_detail":        _str(usage.get("route_detail")),
-                    "route_type":          _str(usage.get("route_type")),
-                    "quantity_available":  prod.get("quantity_available"),
-                    "quantity_on_hand":    prod.get("quantity_on_hand"),
-                    "availability_display": _str(prod.get("availability_display")),
-                }
-
-    for root_node in cs.get("categories", []):
-        yield from _walk(root_node, [])
+    report_model = env[
+        "report.econovo_mrp_bom_cost_summary.report_cost_summary"
+    ]
+    for row in report_model._iter_component_usages(cs):
+        yield {
+            "category_path":        row["category_path"],
+            "product_name":         row["product_name"],
+            "parent_name":          _str(row["parent_name"]),
+            "quantity":             _flt(row["quantity"]),
+            "uom_name":             _str(row["uom_name"]),
+            "percentage":           _pct(row["percentage"]),
+            "bom_cost":             _flt(row["bom_cost"]),
+            "bom_cost_usd":         _flt(row["bom_cost_usd"]),
+            "prod_cost":            _flt(row["prod_cost"]),
+            "prod_cost_usd":        _flt(row["prod_cost_usd"]),
+            "lead_time":            row["lead_time"],
+            "route_name":           _str(row["route_name"]),
+            "route_detail":         _str(row["route_detail"]),
+            "route_type":           _str(row["route_type"]),
+            "quantity_available":   row["quantity_available"],
+            "quantity_on_hand":     row["quantity_on_hand"],
+            "availability_display": _str(row["availability_display"]),
+        }
 
 
-def _build_detail_sheet(ws, cs, cur, usd, show_costs, show_lead_times):
+def _build_detail_sheet(ws, cs, cur, usd, show_costs, show_lead_times, env):
     """
     Write Sheet 2: flat, pivot-ready component usage list.
     One data row per usage (component × parent-product pair).
@@ -1399,7 +1398,7 @@ def _build_detail_sheet(ws, cs, cur, usd, show_costs, show_lead_times):
 
     # ── Data rows ─────────────────────────────────────────────────────────────
     row = header_row + 1
-    for item in _flatten_usages(cs):
+    for item in _flatten_usages(cs, env):
         vals = [""] * col_count
         vals[ci["Category"] - 1] = item["category_path"]
         vals[ci["Product"] - 1] = item["product_name"]
@@ -1559,7 +1558,8 @@ class BomCostSummaryXlsxController(http.Controller):
         # Sheet 3: Components Detail (flat pivot-ready list)
         ws2 = wb.create_sheet("Components Detail")
         _build_detail_sheet(
-            ws2, cost_summary, currency_name, usd_name, show_costs, show_lead_times,
+            ws2, cost_summary, currency_name, usd_name, show_costs,
+            show_lead_times, request.env,
         )
 
         # ── Serialize ─────────────────────────────────────────────────────────
