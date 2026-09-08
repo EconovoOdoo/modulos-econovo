@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- plan_id already exists (gg_automatic_mrp_schedule) but was never exposed in the
+         form view; add it here alongside the new reason_id, right after Responsible. -->
+    <record id="mrp_production_view_form_inherit_pcp" model="ir.ui.view">
+        <field name="name">mrp.production.view.form.inherit.pcp</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+        <field name="arch" type="xml">
+            <field name="user_id" position="after">
+                <field name="plan_id"/>
+                <field name="reason_id"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>

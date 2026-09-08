@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_pcp_dashboard" model="ir.actions.client">
+        <field name="name">Dashboard</field>
+        <field name="tag">pcp_production_dashboard</field>
+    </record>
+
+    <menuitem id="menu_pcp_root"
+        name="PCP"
+        sequence="55"
+        web_icon="econovo_mrp_pcp,static/description/icon.png"/>
+
+    <menuitem id="menu_pcp_dashboard"
+        name="Dashboard"
+        parent="menu_pcp_root"
+        action="econovo_mrp_pcp.action_pcp_dashboard"
+        sequence="10"
+        groups="econovo_mrp_pcp.group_pcp_user"/>
+
+    <menuitem id="menu_pcp_plans"
+        name="Plans"
+        parent="menu_pcp_root"
+        action="econovo_mrp_pcp.mrp_plan_action"
+        sequence="20"
+        groups="econovo_mrp_pcp.group_pcp_user"/>
+
+    <menuitem id="menu_pcp_configuration"
+        name="Configuration"
+        parent="menu_pcp_root"
+        sequence="90"
+        groups="econovo_mrp_pcp.group_pcp_manager"/>
+
+    <menuitem id="menu_pcp_priority"
+        name="Priorities"
+        parent="menu_pcp_configuration"
+        action="econovo_mrp_pcp.pcp_priority_action"
+        sequence="10"/>
+
+    <menuitem id="menu_pcp_reason"
+        name="Manufacturing Reasons"
+        parent="menu_pcp_configuration"
+        action="econovo_mrp_pcp.pcp_reason_action"
+        sequence="20"/>
+
+</odoo>

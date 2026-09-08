@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <record id="reason_lost_parts_replacement" model="pcp.reason">
+            <field name="name">Replacement for Lost Parts</field>
+            <field name="sequence">10</field>
+        </record>
+        <record id="reason_test_pieces" model="pcp.reason">
+            <field name="name">Test Pieces</field>
+            <field name="sequence">20</field>
+        </record>
+        <record id="reason_design_error_rework" model="pcp.reason">
+            <field name="name">Design Error Rework</field>
+            <field name="sequence">30</field>
+        </record>
+
+    </data>
+</odoo>

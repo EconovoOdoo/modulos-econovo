@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="econovo_mrp_pcp.PcpProductionDashboard">
+        <div class="o_pcp_dashboard p-4">
+            <div class="d-flex flex-wrap gap-3 mb-4">
+                <div class="o_pcp_kpi_card">
+                    <span class="o_pcp_kpi_value" t-esc="kpis.totalPlans"/>
+                    <span class="o_pcp_kpi_label">Plans</span>
+                </div>
+                <div class="o_pcp_kpi_card">
+                    <span class="o_pcp_kpi_value" t-esc="kpis.totalProduced"/>
+                    <span class="o_pcp_kpi_label">Produced</span>
+                </div>
+                <div class="o_pcp_kpi_card">
+                    <span class="o_pcp_kpi_value" t-esc="kpis.totalProduction"/>
+                    <span class="o_pcp_kpi_label">Planned</span>
+                </div>
+                <div class="o_pcp_kpi_card">
+                    <span class="o_pcp_kpi_value"><t t-esc="kpis.globalProgress"/>%</span>
+                    <span class="o_pcp_kpi_label">Progress</span>
+                </div>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
+                <select class="form-select w-auto" t-on-change="onProcessFilterChange">
+                    <option value="ALL">All processes</option>
+                    <t t-foreach="state.processes" t-as="process" t-key="process">
+                        <option t-att-value="process" t-esc="process"/>
+                    </t>
+                </select>
+                <select class="form-select w-auto" t-on-change="onStatusFilterChange">
+                    <option value="ALL">All</option>
+                    <option value="PENDING">Pending</option>
+                    <option value="COMPLETED">Completed</option>
+                </select>
+                <input type="text" class="form-control w-auto" placeholder="Search..." t-on-input="onSearchInput"/>
+                <button class="btn btn-outline-secondary" t-on-click="onToggleArchived">
+                    <t t-if="state.includeArchived">Hide archived</t>
+                    <t t-else="">Show archived</t>
+                </button>
+                <button class="btn btn-primary ms-auto" t-on-click="onExportExcel">Export to Excel</button>
+            </div>
+
+            <div t-if="state.loading" class="text-center p-5">
+                <i class="fa fa-spin fa-spinner fa-2x"/>
+            </div>
+            <table t-else="" class="table table-bordered table-sm o_pcp_dashboard_table">
+                <thead>
+                    <tr>
+                        <th>Priority</th>
+                        <th>Plan</th>
+                        <th>Progress</th>
+                        <t t-foreach="state.displayProcesses" t-as="process" t-key="process">
+                            <th t-esc="process"/>
+                        </t>
+                        <th t-if="state.isManager">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="filteredPlans" t-as="plan" t-key="plan.plan_id">
+                        <tr>
+                            <td>
+                                <select t-if="state.isManager and plan.plan_id" class="form-select form-select-sm"
+                                        t-on-change="(ev) => this.onPriorityChange(plan.plan_id, ev)">
+                                    <option value="">-</option>
+                                    <t t-foreach="state.priorities" t-as="priority" t-key="priority.id">
+                                        <option t-att-value="priority.id" t-att-selected="priority.id === plan.priority_id" t-esc="priority.name"/>
+                                    </t>
+                                </select>
+                                <span t-else="" t-esc="plan.priority or '-'"/>
+                            </td>
+                            <td t-esc="plan.plan_name"/>
+                            <td>
+                                <div class="progress" style="height: 6px;">
+                                    <div class="progress-bar" t-attf-style="width: {{plan.progress}}%"/>
+                                </div>
+                                <t t-esc="plan.progress"/>%
+                            </td>
+                            <t t-foreach="state.displayProcesses" t-as="process" t-key="process">
+                                <td>
+                                    <t t-if="plan.by_process[process]">
+                                        <t t-esc="plan.by_process[process].qty_produced"/> / <t t-esc="plan.by_process[process].qty_production"/>
+                                        (<t t-esc="plan.by_process[process].progress"/>%)
+                                    </t>
+                                    <t t-else="">-</t>
+                                </td>
+                            </t>
+                            <td t-if="state.isManager">
+                                <button t-if="plan.plan_id" class="btn btn-sm btn-outline-secondary"
+                                        t-on-click="() => this.onToggleActive(plan)">
+                                    <t t-if="plan.active">Archive</t>
+                                    <t t-else="">Restore</t>
+                                </button>
+                            </td>
+                        </tr>
+                    </t>
+                </tbody>
+            </table>
+        </div>
+    </t>
+
+</templates>

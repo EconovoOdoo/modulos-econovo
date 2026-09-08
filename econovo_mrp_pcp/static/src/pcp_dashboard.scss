@@ -1,0 +1,27 @@
+.o_pcp_dashboard {
+    .o_pcp_kpi_card {
+        display: flex;
+        flex-direction: column;
+        min-width: 140px;
+        padding: 12px 16px;
+        border-radius: 8px;
+        background-color: #fff;
+        border: 1px solid #dee2e6;
+
+        .o_pcp_kpi_value {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .o_pcp_kpi_label {
+            font-size: 0.75rem;
+            color: #6c757d;
+            text-transform: uppercase;
+        }
+    }
+
+    .o_pcp_dashboard_table td,
+    .o_pcp_dashboard_table th {
+        vertical-align: middle;
+    }
+}

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="pcp_reason_view_tree" model="ir.ui.view">
+        <field name="name">pcp.reason.view.tree</field>
+        <field name="model">pcp.reason</field>
+        <field name="arch" type="xml">
+            <tree string="Manufacturing Reasons" editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="active" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="pcp_reason_view_search" model="ir.ui.view">
+        <field name="name">pcp.reason.view.search</field>
+        <field name="model">pcp.reason</field>
+        <field name="arch" type="xml">
+            <search string="Manufacturing Reasons">
+                <field name="name"/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="pcp_reason_action" model="ir.actions.act_window">
+        <field name="name">Manufacturing Reasons</field>
+        <field name="res_model">pcp.reason</field>
+        <field name="view_mode">tree</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create a Manufacturing Reason</p>
+            <p>Manufacturing Reasons explain why a Manufacturing Order was created
+                (e.g. Replacement for Lost Parts, Test Pieces, Design Error Rework).</p>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Operators only see workorders whose workcenter either has no employee
+         restriction, or explicitly allows one of their linked hr.employee records. -->
+    <record id="mrp_workorder_rule_pcp_operator" model="ir.rule">
+        <field name="name">PCP: workorder restricted to allowed workcenters</field>
+        <field name="model_id" ref="mrp.model_mrp_workorder"/>
+        <field name="domain_force">['|', ('workcenter_id.employee_ids', '=', False), ('workcenter_id.employee_ids.user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('group_pcp_user'))]"/>
+    </record>
+
+    <!-- Managers imply group_pcp_user, so without this OR-widening rule they would
+         also be caught by the restrictive rule above. -->
+    <record id="mrp_workorder_rule_pcp_manager" model="ir.rule">
+        <field name="name">PCP: manager sees every workorder</field>
+        <field name="model_id" ref="mrp.model_mrp_workorder"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_pcp_manager'))]"/>
+    </record>
+
+</odoo>

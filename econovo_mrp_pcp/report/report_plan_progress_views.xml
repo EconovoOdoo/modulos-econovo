@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_report_plan_progress" model="ir.actions.report">
+        <field name="name">Production Progress (XLSX)</field>
+        <field name="model">mrp.plan</field>
+        <field name="report_type">xlsx</field>
+        <field name="report_name">econovo_mrp_pcp.report_plan_progress</field>
+        <field name="report_file">econovo_mrp_pcp.report_plan_progress</field>
+        <field name="binding_model_id" ref="gg_automatic_mrp_schedule.model_mrp_plan"/>
+        <field name="binding_type">report</field>
+    </record>
+
+</odoo>
