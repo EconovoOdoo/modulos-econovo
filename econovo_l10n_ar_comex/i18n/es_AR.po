@@ -2167,6 +2167,11 @@ msgid "Ends With"
 msgstr "Termina con"
 
 #. module: econovo_l10n_ar_comex
+#: model_terms:ir.ui.view,arch_db:econovo_l10n_ar_comex.comex_operation_report_line_view_search
+msgid "Equipment Only"
+msgstr "Mostrar solo equipos"
+
+#. module: econovo_l10n_ar_comex
 #: model:ir.model.fields,help:econovo_l10n_ar_comex.field_comex_operation__date_eta
 msgid "Estimated arrival date at destination port."
 msgstr "Fecha estimada de llegada al puerto de destino."

@@ -139,6 +139,9 @@
                 <field name="last_delivery_partner_id"/>
                 <field name="lot_ids"/>
 
+                <filter name="filter_equipment_only" string="Equipment Only"
+                        domain="[('product_id.categ_id', 'ilike', 'equipo')]"/>
+                <separator/>
                 <filter name="filter_import" string="Imports"
                         domain="[('operation_type', '=', 'import')]"/>
                 <filter name="filter_export" string="Exports"
