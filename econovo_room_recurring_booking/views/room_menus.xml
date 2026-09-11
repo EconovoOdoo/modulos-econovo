@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem
+        id="room_booking_recurrence_menu"
+        name="Recurrences"
+        action="room_booking_recurrence_action"
+        parent="room.room_menu_root"
+        sequence="3"/>
+
+</odoo>

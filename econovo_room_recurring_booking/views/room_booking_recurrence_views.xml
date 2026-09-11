@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="room_booking_recurrence_view_search" model="ir.ui.view">
+        <field name="name">room.booking.recurrence.view.search</field>
+        <field name="model">room.booking.recurrence</field>
+        <field name="arch" type="xml">
+            <search string="Recurrences">
+                <field name="name"/>
+                <field name="room_id"/>
+                <field name="office_id"/>
+                <field name="organizer_id"/>
+                <filter name="inactive" string="Stopped" domain="[('active', '=', False)]"/>
+                <filter name="group_by_room_id" string="Room" context="{'group_by': 'room_id'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="room_booking_recurrence_view_list" model="ir.ui.view">
+        <field name="name">room.booking.recurrence.view.list</field>
+        <field name="model">room.booking.recurrence</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="room_id"/>
+                <field name="start_datetime"/>
+                <field name="interval"/>
+                <field name="rule_type"/>
+                <field name="end_type"/>
+                <field name="booking_count"/>
+                <field name="active" widget="boolean_toggle"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="room_booking_recurrence_view_form" model="ir.ui.view">
+        <field name="name">room.booking.recurrence.view.form</field>
+        <field name="model">room.booking.recurrence</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_stop" type="object" string="Stop Recurrence" class="btn-secondary" invisible="not active"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Stopped" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_bookings" type="object" class="oe_stat_button" icon="fa-calendar">
+                            <field name="booking_count" widget="statinfo" string="Bookings"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="E.g. Weekly General Meeting"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="room_id"/>
+                            <field name="organizer_id" widget="many2one_avatar_user"/>
+                        </group>
+                        <group>
+                            <field name="stop_datetime" invisible="1"/>
+                            <field name="start_datetime" string="First Occurrence" widget="daterange" options="{'end_date_field': 'stop_datetime'}" readonly="booking_ids"/>
+                        </group>
+                    </group>
+                    <group string="Repeat">
+                        <group>
+                            <label for="interval" string="Repeat Every"/>
+                            <div class="o_row">
+                                <field name="interval" readonly="booking_ids"/>
+                                <field name="rule_type" readonly="booking_ids"/>
+                            </div>
+                        </group>
+                        <group>
+                            <label for="end_type" string="Ends"/>
+                            <div>
+                                <field name="end_type" class="oe_inline"/>
+                                <field name="count" class="oe_inline" invisible="end_type != 'count'"/>
+                                <field name="end_date" class="oe_inline" invisible="end_type != 'end_date'"/>
+                                <field name="horizon_weeks" class="oe_inline" invisible="end_type != 'forever'"/>
+                                <span class="text-muted" invisible="end_type != 'forever'"> weeks always kept generated</span>
+                            </div>
+                        </group>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="room_booking_recurrence_action" model="ir.actions.act_window">
+        <field name="name">Recurrences</field>
+        <field name="res_model">room.booking.recurrence</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create your first recurring booking</p>
+            <p>
+                Recurrences keep a room permanently reserved on a fixed schedule
+                (e.g. every Monday from 8:30 to 9:30), generating the individual
+                bookings automatically.
+            </p>
+        </field>
+    </record>
+
+</odoo>

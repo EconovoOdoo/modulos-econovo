@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="room_booking_view_form_inherit_recurrence" model="ir.ui.view">
+        <field name="name">room.booking.view.form.inherit.econovo.room.recurring.booking</field>
+        <field name="model">room.booking</field>
+        <field name="inherit_id" ref="room.room_booking_view_form"/>
+        <field name="arch" type="xml">
+            <field name="organizer_id" position="after">
+                <field name="recurrence_id" invisible="not recurrence_id"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>
