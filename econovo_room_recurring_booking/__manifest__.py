@@ -19,7 +19,7 @@ Recurrences without an end date keep a rolling horizon of upcoming
 occurrences generated automatically via a scheduled action.
 """,
     'category': 'Services/Room',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     'depends': ['room'],
     'data': [
         'security/ir.model.access.csv',

@@ -43,6 +43,8 @@
                 </header>
                 <sheet>
                     <widget name="web_ribbon" title="Stopped" bg_color="text-bg-danger" invisible="active"/>
+                    <field name="active" invisible="1"/>
+                    <field name="booking_ids" invisible="1"/>
                     <div class="oe_button_box" name="button_box">
                         <button name="action_view_bookings" type="object" class="oe_stat_button" icon="fa-calendar">
                             <field name="booking_count" widget="statinfo" string="Bookings"/>
