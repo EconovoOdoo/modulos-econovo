@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Room Office Multi-Company',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.2',
     'category': 'Services/Room',
     'summary': "Let a Room Office (and its rooms) be shared across every company instead of a single one",
     'description': """
@@ -32,11 +32,20 @@ double-booked independently of the other.
   way today regardless of company, since its controller uses ``sudo()``
   throughout -- this module extends the same company-agnostic behavior to
   the regular backend Room app menus and views.
+* Ensures that the Room kiosk loads the official ``room`` web translations
+  before mounting its public OWL component. Odoo 17's lightweight Room page
+  uses Website's translation endpoint, which excludes the Enterprise
+  ``room`` module and leaves the interface in English.
 """,
     'author': 'Jose D. Leonett',
     'website': 'https://github.com/josedleonett',
     'license': 'AGPL-3',
     'depends': ['room'],
+    'assets': {
+      'room.assets_room_booking': [
+        'econovo_room_office_multi_company/static/src/js/room_translation_service.js',
+      ],
+    },
     'uninstall_hook': 'uninstall_hook',
     'installable': True,
     'auto_install': False,
