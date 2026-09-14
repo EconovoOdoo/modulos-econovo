@@ -27,6 +27,9 @@ The field is shown:
 * On the transfers list view, as an optional (hideable) column
 * On the transfers search view, as a directly searchable field and as a
   "Group By" option
+* On the Moves and Moves History report list views (``stock.move`` and
+  ``stock.move.line``), as an optional (hideable) column, via a related
+  field that follows the transfer's value
     """,
     'author': "Jose D. Leonett",
     'website': 'https://github.com/josedleonett',
@@ -38,6 +41,8 @@ The field is shown:
     ],
     'data': [
         'views/stock_picking_views.xml',
+        'views/stock_move_views.xml',
+        'views/stock_move_line_views.xml',
     ],
     'installable': True,
     'auto_install': False,

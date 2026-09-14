@@ -33,3 +33,6 @@ The field is shown:
 * On the transfers list view, as an optional (hideable) column
 * On the transfers search view, as a directly searchable field and as a
   "Group By" option
+* On the "Moves" and "Moves History" report list views (`stock.move` and
+  `stock.move.line`), as an optional (hideable) column, via a `related`
+  field that follows the transfer's own value
