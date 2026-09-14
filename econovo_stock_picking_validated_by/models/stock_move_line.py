@@ -9,5 +9,5 @@ class StockMoveLine(models.Model):
     _inherit = 'stock.move.line'
 
     validation_user_id = fields.Many2one(
-        related='picking_id.validation_user_id', store=True,
+        related='move_id.validation_user_id', store=True,
         string='Validated By')

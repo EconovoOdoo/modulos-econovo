@@ -28,13 +28,19 @@ The field is shown:
 * On the transfers search view, as a directly searchable field and as a
   "Group By" option
 * On the Moves and Moves History report list views (``stock.move`` and
-  ``stock.move.line``), as an optional (hideable) column, via a related
-  field that follows the transfer's value
+  ``stock.move.line``), as an optional (hideable) column. ``stock.move``
+  is stamped independently (covers moves with no transfer at all, such as
+  inventory adjustments or quant relocations); ``stock.move.line``
+  follows its move's value.
+
+A migration script backfills the field on historical ``done`` records
+(transfers, via their tracking history; picking-less moves, via their
+creating user) so past data is not left empty.
     """,
     'author': "Jose D. Leonett",
     'website': 'https://github.com/josedleonett',
     'category': 'Inventory/Inventory',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     'license': 'AGPL-3',
     'depends': [
         'stock',
