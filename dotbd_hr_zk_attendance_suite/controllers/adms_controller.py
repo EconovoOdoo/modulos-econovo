@@ -1300,6 +1300,29 @@ class ADMSController(http.Controller):
 
     # ─────────────────────────── Device Options ───────────────────────────
 
+    def _store_device_capabilities(self, device, params, raw_body):
+        """Persist biometric capability flags reported by the device (Section
+        8 'Pushing Configuration Information', or an on-demand INFO command
+        reply) so we have an objective, device-reported record of what it
+        actually supports — instead of reading it off the device's own menu.
+        """
+        upper_params = {k.upper(): v for k, v in params.items()}
+        device_vals = {}
+        if raw_body:
+            device_vals['adms_options_raw'] = raw_body[:2000]
+        if 'BIODATAFUN' in upper_params:
+            device_vals['adms_bio_data_fun'] = upper_params['BIODATAFUN'] == '1'
+        if 'BIOPHOTOFUN' in upper_params:
+            device_vals['adms_bio_photo_fun'] = upper_params['BIOPHOTOFUN'] == '1'
+        if 'VISILIGHTFUN' in upper_params:
+            device_vals['adms_visilight_fun'] = upper_params['VISILIGHTFUN'] == '1'
+        if 'MULTIBIODATASUPPORT' in upper_params:
+            device_vals['adms_multi_bio_data_support'] = upper_params['MULTIBIODATASUPPORT']
+        if 'MULTIBIOPHOTOSUPPORT' in upper_params:
+            device_vals['adms_multi_bio_photo_support'] = upper_params['MULTIBIOPHOTOSUPPORT']
+        if device_vals:
+            device.write(device_vals)
+
     def _process_device_options(self, serial, body):
         """Handle table=options POST — device reports its own capabilities.
 
@@ -1324,6 +1347,7 @@ class ADMSController(http.Controller):
                             params[k.strip()] = v.strip()
 
                 _logger.info("ADMS OPTIONS SN=%s capabilities: %s", serial, params)
+                self._store_device_capabilities(device, params, body)
             except Exception as e:
                 _logger.warning("ADMS OPTIONS parse error SN=%s: %s", serial, e)
 
@@ -1447,6 +1471,12 @@ class ADMSController(http.Controller):
                         'done_time': fields.Datetime.now(),
                         'result': f'Return={return_code}',
                     })
+                    # An INFO command's reply carries the same kind of
+                    # capability key=value pairs as a table=options push —
+                    # capture them so 'Request Info' gives an on-demand answer
+                    # instead of waiting for the device's next proactive push.
+                    if command.command_type == 'info' and return_code == 0:
+                        self._store_device_capabilities(device, params, body)
         except Exception as e:
             _logger.error("ADMS devicecmd parse error: %s", e)
 

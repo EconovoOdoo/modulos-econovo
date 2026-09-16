@@ -589,6 +589,15 @@
                                                string="Server IP"
                                                help="Use ONLY if the device firmware cannot accept a domain name. IP-based devices cannot send a database path and auto-register as INACTIVE for safety."/>
                                     </group>
+                                    <group string="Device-Reported Capabilities">
+                                        <field name="adms_visilight_fun" readonly="1"/>
+                                        <field name="adms_bio_data_fun" readonly="1"/>
+                                        <field name="adms_bio_photo_fun" readonly="1"/>
+                                        <field name="adms_multi_bio_data_support" readonly="1"
+                                               help="Appendix 10 index order: position 9 (0-indexed) = Visible light face."/>
+                                        <field name="adms_multi_bio_photo_support" readonly="1"/>
+                                        <field name="adms_options_raw" readonly="1"/>
+                                    </group>
                                     <!-- Port reachability checker -->
                                     <div class="mt-2">
                                         <button name="action_check_server_ports"

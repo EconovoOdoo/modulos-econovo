@@ -394,6 +394,34 @@ class BiometricDeviceDetails(models.Model):
         string='OPERLOG Stamp', readonly=True, default=0, copy=False,
         help='Last acknowledged OPERLOG stamp sent back to the device.')
 
+    # Device-reported biometric capability flags (Section 8 "Pushing
+    # Configuration Information" of the PUSH SDK protocol, or an on-demand
+    # INFO command reply) — captured directly from the device instead of
+    # having to read them off its local menu.
+    adms_bio_data_fun = fields.Boolean(
+        string='Device Reports BioDataFun', readonly=True,
+        help='Device-reported BioDataFun flag: face template support (protocol V3.3+).')
+    adms_bio_photo_fun = fields.Boolean(
+        string='Device Reports BioPhotoFun', readonly=True,
+        help='Device-reported BioPhotoFun flag: comparison photo support (protocol V3.3+).')
+    adms_visilight_fun = fields.Boolean(
+        string='Device Reports VisilightFun', readonly=True,
+        help='Device-reported VisilightFun flag: visible-light camera support (protocol V3.3+).')
+    adms_multi_bio_data_support = fields.Char(
+        string='MultiBioDataSupport (raw)', readonly=True,
+        help="Device-reported bitmask (Appendix 10 index order, position 9 = "
+             "Visible light face) of which unified biometric template types "
+             "it can send/store. '1' = supported at that position.")
+    adms_multi_bio_photo_support = fields.Char(
+        string='MultiBioPhotoSupport (raw)', readonly=True,
+        help='Same as MultiBioDataSupport, for comparison photos instead of templates.')
+    adms_options_raw = fields.Text(
+        string='Last Raw Capabilities Push', readonly=True,
+        help="Full, unparsed table=options body (or INFO command reply) last "
+             "received from this device (Section 8) — kept so any field we "
+             "don't parse yet can still be inspected without reading the "
+             "device's own menu.")
+
     @api.depends('adms_last_heartbeat', 'adms_offline_threshold')
     def _compute_adms_status(self):
         now = fields.Datetime.now()
