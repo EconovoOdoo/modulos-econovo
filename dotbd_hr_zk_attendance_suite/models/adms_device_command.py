@@ -8,6 +8,8 @@
 ################################################################################
 
 import logging
+import re
+
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
@@ -26,6 +28,38 @@ class ADMSDeviceCommand(models.Model):
     _STALE_SENT_MINUTES = 10
     # After this many dispatch attempts with no acknowledgement, give up (failed).
     _MAX_DISPATCH_ATTEMPTS = 5
+
+    # Appendix 1 "Error Code Description" of the PUSH SDK protocol — applies to
+    # any command's 'Return=' code.
+    _RETURN_CODE_MEANINGS = {
+        0: 'Successful',
+        -1: 'The parameter is incorrect.',
+        -2: 'The transmitted user photo data does not match the given size.',
+        -3: 'Reading or writing is incorrect.',
+        -9: 'The transmitted template data does not match the given size.',
+        -10: 'The user specified by PIN does not exist in the equipment.',
+        -11: 'The fingerprint template format is illegal.',
+        -12: 'The fingerprint template is illegal.',
+        -30: "The integrated template algorithm's version is inconsistent.",
+        -1001: 'Limited capacity.',
+        -1002: 'Not supported by the equipment.',
+        -1003: 'Command execution timeout.',
+        -1004: 'The data and equipment configuration are inconsistent.',
+        -1005: 'The equipment is busy.',
+        -1006: 'The data is too long.',
+        -1007: 'Memory error.',
+        -1008: 'Failed to get server data.',
+    }
+    # Appendix 1's ENROLL_FP/ENROLL_BIO-specific override table — these
+    # positive codes only mean this when the command being replied to is an
+    # enrollment (they are not part of the generic table above).
+    _ENROLL_RETURN_CODE_MEANINGS = {
+        2: 'Enrollment: this biometric already exists for the user.',
+        4: 'Enrollment failed (poor capture quality or inconsistent captures).',
+        5: 'Enrollment: this biometric is already registered to another user.',
+        6: 'Enrollment cancelled on the device.',
+        7: 'Enrollment could not proceed — device busy.',
+    }
 
     device_id = fields.Many2one(
         'biometric.device.details', string='Device',
@@ -56,6 +90,9 @@ class ADMSDeviceCommand(models.Model):
         ('failed', 'Failed'),
     ], string='Status', default='pending', required=True)
     result = fields.Text(string='Device Response')
+    result_meaning = fields.Char(string='Result Meaning', compute='_compute_result_meaning', store=True,
+        help="Human-readable meaning of the 'Return=' code in Result, per "
+             "Appendix 1 of the PUSH SDK protocol.")
     sent_time = fields.Datetime(string='Sent Time')
     done_time = fields.Datetime(string='Completed Time')
     dispatch_attempts = fields.Integer(
@@ -75,6 +112,17 @@ class ADMSDeviceCommand(models.Model):
         help='Capture attempts before enrollment fails (RETRY param, ENROLL_FP/ENROLL_BIO).')
     overwrite = fields.Boolean(string='Overwrite Existing', default=True,
         help='Overwrite the biometric template if one already exists for this user (OVERWRITE param).')
+    bio_type = fields.Selection([
+        ('9', 'Visible Light Face (default)'),
+        ('2', 'Near-Infrared Face (try if TYPE=9 fails on this device)'),
+        ('8', 'Palm Vein'),
+        ('6', 'Palmprint'),
+        ('10', 'Visible Light Palm'),
+    ], string='Biometric Type (ENROLL_BIO)', default='9',
+        help="Sent as ENROLL_BIO's TYPE= parameter (Appendix 10). Some device "
+             "firmwares only correctly implement TYPE=9 or TYPE=2 for face "
+             "enrollment — if one fails (e.g. it opens the wrong capture screen "
+             "or times out), try the other.")
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -90,6 +138,26 @@ class ADMSDeviceCommand(models.Model):
             if not vals.get('command_body'):
                 vals['command_body'] = self._build_command_body(vals)
         return super().create(vals_list)
+
+    @api.depends('result', 'command_type')
+    def _compute_result_meaning(self):
+        for rec in self:
+            rec.result_meaning = rec._get_return_code_meaning()
+
+    def _get_return_code_meaning(self):
+        """Human-readable meaning of this record's 'Return=' code, per
+        Appendix 1 (and its ENROLL_FP/ENROLL_BIO override table) of the PUSH
+        SDK protocol. Returns False if 'result' has no parseable code."""
+        self.ensure_one()
+        if not self.result:
+            return False
+        match = re.search(r'Return=(-?\d+)', self.result)
+        if not match:
+            return False
+        code = int(match.group(1))
+        if self.command_type in ('enroll_fp', 'enroll_bio') and code in self._ENROLL_RETURN_CODE_MEANINGS:
+            return self._ENROLL_RETURN_CODE_MEANINGS[code]
+        return self._RETURN_CODE_MEANINGS.get(code, f'Undocumented code ({code}).')
 
     def _build_command_body(self, vals):
         """Generate the raw command string from type and parameters."""
@@ -148,7 +216,8 @@ class ADMSDeviceCommand(models.Model):
             card_no = vals.get('card_no') or ''
             retry = vals.get('retry_count', 3) or 3
             overwrite = 1 if vals.get('overwrite', True) else 0
-            return f'ENROLL_BIO TYPE=9\tPIN={pin}\tCardNo={card_no}\tRETRY={retry}\tOVERWRITE={overwrite}'
+            bio_type = vals.get('bio_type') or '9'
+            return f'ENROLL_BIO TYPE={bio_type}\tPIN={pin}\tCardNo={card_no}\tRETRY={retry}\tOVERWRITE={overwrite}'
         elif cmd_type == 'sync_user':
             employee = self.env['hr.employee'].browse(vals.get('employee_id', 0))
             if employee:

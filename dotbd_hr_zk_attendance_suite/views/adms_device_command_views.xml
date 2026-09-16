@@ -23,6 +23,7 @@
                 <field name="sent_time" optional="show"/>
                 <field name="done_time" optional="show"/>
                 <field name="result" optional="hide"/>
+                <field name="result_meaning" optional="show"/>
             </tree>
         </field>
     </record>
@@ -48,6 +49,8 @@
                                    invisible="command_type not in ('enroll_fp', 'enroll_bio', 'sync_user', 'delete_user')"/>
                             <field name="finger_index"
                                    invisible="command_type != 'enroll_fp'"/>
+                            <field name="bio_type"
+                                   invisible="command_type != 'enroll_bio'"/>
                             <field name="card_no"
                                    invisible="command_type != 'enroll_bio'"/>
                             <field name="retry_count"
@@ -61,6 +64,7 @@
                     </group>
                     <group string="Result" invisible="status not in ('done', 'failed')">
                         <field name="result" nolabel="1" colspan="2"/>
+                        <field name="result_meaning"/>
                         <field name="sent_time"/>
                         <field name="done_time"/>
                     </group>
