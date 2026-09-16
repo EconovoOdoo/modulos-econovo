@@ -17,14 +17,22 @@ exactly like a manual booking would.
 
 Recurrences without an end date keep a rolling horizon of upcoming
 occurrences generated automatically via a scheduled action.
+
+Also fixes the Rooms kanban card, which otherwise labels a room "Busy until"
+the START of the NEXT booking even when that next booking is days away and
+the room is actually free in between (a gap easily created by a weekly
+recurrence). Adds room.room.busy_until (end of the CURRENTLY ongoing
+booking, if any) and uses it instead of Next Booking Start while the room is
+actually busy.
 """,
     'category': 'Services/Room',
-    'version': '17.0.1.0.1',
+    'version': '17.0.1.0.2',
     'depends': ['room'],
     'data': [
         'security/ir.model.access.csv',
         'views/room_booking_recurrence_views.xml',
         'views/room_booking_views.xml',
+        'views/room_room_views.xml',
         'views/room_menus.xml',
         'data/ir_cron_data.xml',
     ],

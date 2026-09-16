@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="room_room_view_kanban_inherit_recurring_booking" model="ir.ui.view">
+        <field name="name">room.room.view.kanban.inherit.econovo.room.recurring.booking</field>
+        <field name="model">room.room</field>
+        <field name="inherit_id" ref="room.room_room_view_kanban"/>
+        <field name="arch" type="xml">
+            <field name="next_booking_start" position="after">
+                <field name="busy_until"/>
+            </field>
+            <xpath expr="//t[@t-if='record.next_booking_start.value']" position="replace">
+                <t t-if="record.is_available.raw_value ? record.next_booking_start.value : record.busy_until.value">
+                    <t t-set="until_datetime"
+                        t-value="luxon.DateTime.fromISO(record.is_available.raw_value ? record.next_booking_start.raw_value : record.busy_until.raw_value)"/>
+                    Until
+                    <t t-if="until_datetime.hasSame(luxon.DateTime.now(), 'day')"
+                        t-out="until_datetime.toLocaleString(luxon.DateTime.TIME_SIMPLE)"/>
+                    <t t-else="" t-out="until_datetime.toLocaleString(luxon.DateTime.DATE_SHORT)"/>
+                </t>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

@@ -31,6 +31,16 @@ Room > Recurrences > New. Access is read-only for regular users and full for
 the existing "Manage Rooms" (`room.group_room_manager`) group, matching the
 same split already used for Offices/Rooms in the base app.
 
+## Rooms kanban "Busy until" fix
+Core's Rooms kanban card labels a busy room "Busy until <Next Booking
+Start>", which is the start of the next FUTURE booking, not the end of the
+current one -- misleading as soon as there is a free gap before that next
+booking (exactly what a weekly recurrence creates). Adds `room.room.
+busy_until` (end of the booking currently in progress, computed the same way
+core computes `is_available`) and overrides the kanban card to show it while
+the room is busy, keeping `next_booking_start` for the "Available until"
+case, which was already correct.
+
 ## Scope
 Depends only on `room`. Independent from `econovo_room_office_multi_company`
 (no hard dependency either way) -- combine both if you need a recurring
