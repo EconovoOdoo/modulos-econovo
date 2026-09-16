@@ -8,7 +8,8 @@
 ################################################################################
 
 import logging
-from odoo import api, fields, models
+from odoo import _, api, fields, models
+from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
 
@@ -39,6 +40,7 @@ class ADMSDeviceCommand(models.Model):
         ('sync_user', 'Sync User'),
         ('delete_user', 'Delete User'),
         ('enroll_fp', 'Enroll Fingerprint'),
+        ('enroll_bio', 'Enroll Face (Unified Template)'),
         ('clear_data', 'Clear Data'),
         ('sync_template', 'Sync Biometric Template'),
         ('custom', 'Custom Command'),
@@ -64,8 +66,15 @@ class ADMSDeviceCommand(models.Model):
     # For fingerprint enrollment
     employee_id = fields.Many2one('hr.employee', string='Employee')
     finger_index = fields.Integer(string='Biometric Index/FID', default=0,
-        help='0-9 for fingers, 50 for Face, etc.')
+        help='0-9 for fingers (FID param, ENROLL_FP only). Not used by '
+             'ENROLL_BIO, which has no FID/Index parameter.')
     template_id = fields.Many2one('biometric.fp.template', string='Biometric Template to Sync')
+    card_no = fields.Char(string='Card Number',
+        help='Optional card number for ENROLL_BIO (CardNo param). Leave empty if not using a card.')
+    retry_count = fields.Integer(string='Retry Count', default=3,
+        help='Capture attempts before enrollment fails (RETRY param, ENROLL_FP/ENROLL_BIO).')
+    overwrite = fields.Boolean(string='Overwrite Existing', default=True,
+        help='Overwrite the biometric template if one already exists for this user (OVERWRITE param).')
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -113,9 +122,33 @@ class ADMSDeviceCommand(models.Model):
         elif cmd_type == 'enroll_fp':
             # PIN from employee's zk_user_id, finger index
             employee = self.env['hr.employee'].browse(vals.get('employee_id', 0))
-            pin = employee.device_id_num if employee else '0'
+            if not employee or not employee.device_id_num:
+                # Without this guard, a falsy device_id_num renders as the
+                # literal text 'PIN=False' — the device then rejects it.
+                raise UserError(_(
+                    "Set the 'ZK Device User ID' on employee %s before enrolling.",
+                    employee.name if employee else vals.get('employee_id')))
+            pin = employee.device_id_num
             fid = vals.get('finger_index', 0)
-            return f'ENROLL_FP PIN={pin}\tFID={fid}'
+            retry = vals.get('retry_count', 3) or 3
+            overwrite = 1 if vals.get('overwrite', True) else 0
+            return f'ENROLL_FP PIN={pin}\tFID={fid}\tRETRY={retry}\tOVERWRITE={overwrite}'
+        elif cmd_type == 'enroll_bio':
+            # Remote face enrollment (Section 12.6.3 "Enrolling Face, Palm
+            # Print (Unified Templates)"). This is a Remote Enrollment
+            # Command, NOT a Data Command: no 'DATA' prefix, and no FID/Index
+            # param (that only exists on ENROLL_FP). Type=9 = Visible light
+            # face per Appendix 10 "Biometric Type Index Definition".
+            employee = self.env['hr.employee'].browse(vals.get('employee_id', 0))
+            if not employee or not employee.device_id_num:
+                raise UserError(_(
+                    "Set the 'ZK Device User ID' on employee %s before enrolling.",
+                    employee.name if employee else vals.get('employee_id')))
+            pin = employee.device_id_num
+            card_no = vals.get('card_no') or ''
+            retry = vals.get('retry_count', 3) or 3
+            overwrite = 1 if vals.get('overwrite', True) else 0
+            return f'ENROLL_BIO TYPE=9\tPIN={pin}\tCardNo={card_no}\tRETRY={retry}\tOVERWRITE={overwrite}'
         elif cmd_type == 'sync_user':
             employee = self.env['hr.employee'].browse(vals.get('employee_id', 0))
             if employee:
@@ -135,11 +168,16 @@ class ADMSDeviceCommand(models.Model):
                 pin = template.employee_id.device_id_num
                 valid = 1
                 fid = template.finger_index or 0
+                no = template.bio_no or 0
+                duress = 1 if template.duress else 0
+                major_ver = template.algorithm_major_version or 0
+                minor_ver = template.algorithm_minor_version or 0
+                tmpl_format = template.template_format or 0
                 temp_data = template.template_data
-                size = template.template_size or len(temp_data)
                 
-                # Biometric types mapping in ADMS:
-                # Type=1 (Finger), Type=2 (Face legacy), Type=8 (Palm), Type=9 (Face Visible Light)
+                # Biometric types mapping in ADMS (Appendix 10 "Biometric
+                # Type Index Definition"): Type=1 (Finger), Type=9 (Visible
+                # light face), Type=8 (Palm vein).
                 if template.template_type == 'face':
                     bio_type = 9
                 elif template.template_type == 'palm':
@@ -147,9 +185,12 @@ class ADMSDeviceCommand(models.Model):
                 else:
                     bio_type = 1
                     
-                # Format: DATA UPDATE BIODATA PIN=XXX No=0 Index=FID Valid=1 Type=9 Size=SZ TMP=...
-                # Note: 'No=0' usually represents Face 0 or Finger 0 map, Index is FID.
-                return f'DATA UPDATE BIODATA PIN={pin}\tNo=0\tIndex={fid}\tValid={valid}\tType={bio_type}\tSize={size}\tTMP={temp_data}'
+                # Field names/order per Section 12.1.1.6 "Unified Templates" —
+                # there is no 'Size' field in this schema (that belongs to the
+                # old, non-unified FP/FACE upload commands, 12.1.1.3/12.1.1.4).
+                return (f'DATA UPDATE BIODATA PIN={pin}\tNo={no}\tIndex={fid}\tValid={valid}'
+                        f'\tDuress={duress}\tType={bio_type}\tMajorVer={major_ver}'
+                        f'\tMinorVer={minor_ver}\tFormat={tmpl_format}\tTMP={temp_data}')
             return ''
         return vals.get('command_body', '')
 
@@ -209,7 +250,20 @@ class BiometricFpTemplate(models.Model):
         ('palm', 'Palm Print'),
     ], string='Biometric Type', default='finger', required=True)
     finger_index = fields.Integer(string='Index / FID', default=0,
-        help='0=Right Thumb... For Face usually 50 or 0.')
+        help="Maps to the protocol's 'Index=' field (Section 11.12). For "
+             "face this is normally 0 (a single template per user).")
+    bio_no = fields.Integer(string='Bio No.', default=0,
+        help="Maps to the protocol's 'No=' field — sub-identifier for the "
+             "biometric type (e.g. 0=left/1=right for palm; always 0 for face).")
+    duress = fields.Boolean(string='Duress Template',
+        help="Maps to the protocol's 'Duress=' field — True if this template "
+             "is registered as a duress/panic template.")
+    algorithm_major_version = fields.Integer(string='Algorithm Major Version',
+        help="Maps to the protocol's 'MajorVer=' field.")
+    algorithm_minor_version = fields.Integer(string='Algorithm Minor Version',
+        help="Maps to the protocol's 'MinorVer=' field.")
+    template_format = fields.Integer(string='Template Format', default=0,
+        help="Maps to the protocol's 'Format=' field (0=ZK for all biometric types).")
     template_data = fields.Text(string='Template Data',
         help='Base64-encoded biometric template from device')
     template_size = fields.Integer(string='Template Size')

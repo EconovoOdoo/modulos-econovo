@@ -178,6 +178,35 @@ class HrEmployee(models.Model):
             },
         }
 
+    def action_enroll_face(self):
+        """Trigger visible-light face enrollment (ENROLL_BIO, Type=9) on an
+        ADMS device. User selects which device to enroll on."""
+        self.ensure_one()
+        if not self.device_id_num:
+            raise UserError(_(
+                'Please set the ZK Device User ID first before enrolling face.'))
+
+        adms_devices = self.env['biometric.device.details'].search([
+            ('connection_mode', 'in', ['adms', 'hybrid']),
+        ])
+        if not adms_devices:
+            raise UserError(_(
+                'No ADMS or Hybrid devices configured. '
+                'Face enrollment from Odoo requires a device in Cloud (ADMS) or Hybrid mode.'))
+
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Enroll Face'),
+            'res_model': 'adms.device.command',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_command_type': 'enroll_bio',
+                'default_employee_id': self.id,
+                'default_device_id': adms_devices[0].id if len(adms_devices) == 1 else False,
+            },
+        }
+
     def _dotbd_mandatory_dates(self, date_from, date_to):
         """Return the set of dates in [date_from, date_to] on which THIS employee
         must work per Odoo's Mandatory Days (``hr.leave.mandatory.day``), scoped

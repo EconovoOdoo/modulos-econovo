@@ -521,6 +521,12 @@ class ADMSController(http.Controller):
             'Realtime=1',
             'ServerVer=2.4.1',
             'PushProtVer=2.4.1',
+            # Hybrid Identification Protocol negotiation (Section 3.1): without
+            # this, the device has no confirmation the server understands
+            # unified BIODATA templates (Type=9 visible-light face included)
+            # and may never push them. Bit order = Appendix 10 index 0-10.
+            'MultiBioDataSupport=0:1:1:0:0:0:1:0:1:1:1',
+            'MultiBioPhotoSupport=0:0:0:0:0:0:0:0:0:0:0',
         ]
 
         utc_now_dt = datetime.now(pytz.utc)
@@ -1168,10 +1174,13 @@ class ADMSController(http.Controller):
     # ─────────────────────────── Biometric Templates ───────────────────────────
 
     def _process_biometric_template(self, serial, body):
-        """Process BIODATA — fingerprint/face templates pushed from device.
+        """Process BIODATA — unified biometric templates pushed from device
+        (Section 11.12 "Uploading Unified Templates" of the PUSH SDK protocol).
 
-        Called when device completes fingerprint enrollment or syncs templates.
-        Format: PIN=1\\tFID=0\\tTMP=<base64>\\tSZ=1024\\tValid=1
+        Real wire format per line: 'BIODATA Pin=1\\tNo=0\\tIndex=0\\tValid=1
+        \\tDuress=0\\tType=9\\tMajorVer=..\\tMinorVer=..\\tFormat=0\\tTmp=<base64>'
+        — the leading 'BIODATA' keyword is separated from 'Pin=' by a SPACE
+        (not a tab), so it must be stripped before splitting the rest on tabs.
         """
         device = self._find_device_by_serial(serial, remote_ip=request.httprequest.remote_addr)
         if not device:
@@ -1191,6 +1200,12 @@ class ADMSController(http.Controller):
                 continue
 
             try:
+                # Strip the leading table keyword ('BIODATA'/'BIOTEMPLATE') and
+                # the space before the first key=value pair (Section 11.12) —
+                # without this, splitting on '\t' alone fuses it into the
+                # first field and 'PIN' can never be recovered.
+                line = re.sub(r'^(BIODATA|BIOTEMPLATE)\s+', '', line, flags=re.IGNORECASE)
+
                 # Parse key=value pairs separated by tabs
                 params = {}
                 for part in line.split('\t'):
@@ -1199,24 +1214,28 @@ class ADMSController(http.Controller):
                         params[key.strip().upper()] = value.strip()
 
                 pin = params.get('PIN', '')
-                fid = int(params.get('FID', '0'))
-                
-                # Biometric type heuristics from ADMS:
-                # 'TYPE' is usually sent for faces and palms. If missing, assume finger.
-                bio_type_id = int(params.get('VALID', '1'))  # sometimes used
-                bio_type_param = int(params.get('TYPE', '1'))
-                
-                if bio_type_param == 9 or bio_type_param == 2 or fid == 50:
+                index = int(params.get('INDEX', '0') or '0')
+                no = int(params.get('NO', '0') or '0')
+                valid = params.get('VALID', '1')
+                duress = params.get('DURESS', '0') == '1'
+                bio_type_param = int(params.get('TYPE', '1') or '1')
+                major_ver = int(params.get('MAJORVER', '0') or '0')
+                minor_ver = int(params.get('MINORVER', '0') or '0')
+                tmpl_format = int(params.get('FORMAT', '0') or '0')
+                tmp_data = params.get('TMP', '')
+
+                # Biometric type per Appendix 10 "Biometric Type Index
+                # Definition": 2/9 = near-infrared / visible-light FACE;
+                # 6/8/10 = palm family. (The old, undocumented FID==50
+                # heuristic has been removed.)
+                if bio_type_param in (2, 9):
                     template_type = 'face'
-                elif bio_type_param == 8:
+                elif bio_type_param in (6, 8, 10):
                     template_type = 'palm'
                 else:
                     template_type = 'finger'
-                    
-                tmp_data = params.get('TMP', '')
-                tmp_size = int(params.get('SZ', '0'))
 
-                if not pin or not tmp_data:
+                if not pin or not tmp_data or valid == '0':
                     continue
 
                 # Find employee
@@ -1228,36 +1247,42 @@ class ADMSController(http.Controller):
                     _logger.info("ADMS BIODATA: No employee for PIN=%s", pin)
                     continue
 
-                # Check if template already exists for this type and finger
+                # Check if template already exists for this type and index
                 existing = fp_template_model.search([
                     ('employee_id', '=', employee.id),
                     ('template_type', '=', template_type),
-                    ('finger_index', '=', fid),
+                    ('finger_index', '=', index),
                 ], limit=1)
 
                 template_vals = {
                     'employee_id': employee.id,
                     'device_id': device.id,
                     'template_type': template_type,
-                    'finger_index': fid,
+                    'finger_index': index,
+                    'bio_no': no,
+                    'duress': duress,
+                    'algorithm_major_version': major_ver,
+                    'algorithm_minor_version': minor_ver,
+                    'template_format': tmpl_format,
+                    'template_version': f'{major_ver}.{minor_ver}',
                     'template_data': tmp_data,
-                    'template_size': tmp_size,
+                    'template_size': len(tmp_data),
                     'capture_time': fields.Datetime.now(),
                 }
 
                 if existing:
                     existing.write(template_vals)
-                    _logger.info("ADMS BIODATA: Updated %s template for %s (FID %d)",
-                                 template_type, employee.name, fid)
+                    _logger.info("ADMS BIODATA: Updated %s template for %s (Index %d)",
+                                 template_type, employee.name, index)
                 else:
                     fp_template_model.create(template_vals)
-                    _logger.info("ADMS BIODATA: Saved new %s template for %s (FID %d)",
-                                 template_type, employee.name, fid)
+                    _logger.info("ADMS BIODATA: Saved new %s template for %s (Index %d)",
+                                 template_type, employee.name, index)
 
-                # Mark enrollment command as done
+                # Mark enrollment command as done (fingerprint or face)
                 pending_cmd = env['adms.device.command'].search([
                     ('device_id', '=', device.id),
-                    ('command_type', '=', 'enroll_fp'),
+                    ('command_type', 'in', ['enroll_fp', 'enroll_bio']),
                     ('employee_id', '=', employee.id),
                     ('status', 'in', ['pending', 'sent']),
                 ], limit=1)
@@ -1265,7 +1290,7 @@ class ADMSController(http.Controller):
                     pending_cmd.write({
                         'status': 'done',
                         'done_time': fields.Datetime.now(),
-                        'result': f'{template_type.capitalize()} received: FID {fid}, size {tmp_size}',
+                        'result': f'{template_type.capitalize()} received: Index {index}, size {len(tmp_data)}',
                     })
 
             except Exception as e:

@@ -37,6 +37,12 @@
                                     class="btn-primary"
                                     icon="fa-fingerprint"
                                     help="Trigger fingerprint enrollment on an ADMS-connected device"/>
+                            <button name="action_enroll_face"
+                                    string="Enroll Face (ADMS)"
+                                    type="object"
+                                    class="btn-primary"
+                                    icon="fa-user-circle-o"
+                                    help="Trigger visible-light face enrollment (Type=9) on an ADMS-connected device"/>
                         </group>
                     </group>
 

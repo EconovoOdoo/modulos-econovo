@@ -133,6 +133,14 @@
                             invisible="connection_mode == 'direct'"
                             help="Send an enroll-fingerprint command to this device via ADMS"/>
 
+                    <button name="action_adms_enroll_face"
+                            string="Enroll Face"
+                            type="object"
+                            class="oe_highlight"
+                            icon="fa-user-circle-o"
+                            invisible="connection_mode == 'direct'"
+                            help="Send an enroll-face command (visible light, Type=9) to this device via ADMS"/>
+
                     <button name="action_adms_sync_users"
                             string="Sync Users"
                             type="object"

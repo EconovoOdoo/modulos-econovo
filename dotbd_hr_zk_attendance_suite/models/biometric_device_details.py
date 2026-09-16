@@ -4476,6 +4476,26 @@ class BiometricDeviceDetails(models.Model):
             },
         }
 
+    def action_adms_enroll_face(self):
+        """Trigger visible-light face enrollment (ENROLL_BIO, Type=9) on an
+        ADMS-connected device. Queues an ENROLL_BIO command for the device to
+        pick up (Section 12.6.3 of the PUSH SDK protocol)."""
+        self.ensure_one()
+        if self.connection_mode not in ('adms', 'hybrid'):
+            raise UserError(_('Face enrollment via ADMS is only available '
+                             'in Cloud (ADMS) or Hybrid connection mode.'))
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Enroll Face'),
+            'res_model': 'adms.device.command',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_device_id': self.id,
+                'default_command_type': 'enroll_bio',
+            },
+        }
+
     def action_adms_reboot(self):
         """Queue a REBOOT command for ADMS device."""
         self.ensure_one()
