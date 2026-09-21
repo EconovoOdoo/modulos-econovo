@@ -26,7 +26,7 @@ booking, if any) and uses it instead of Next Booking Start while the room is
 actually busy.
 """,
     'category': 'Services/Room',
-    'version': '17.0.1.0.2',
+    'version': '17.0.1.0.3',
     'depends': ['room'],
     'data': [
         'security/ir.model.access.csv',
