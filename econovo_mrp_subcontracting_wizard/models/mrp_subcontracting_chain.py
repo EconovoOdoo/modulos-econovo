@@ -383,9 +383,12 @@ class MrpSubcontractingChain(models.Model):
 
     @api.model
     def _add_component_line(self, bom, product_tmpl, quantity):
+        # While an ECO is pending the intermediate product is still archived, so its variant
+        # has to be resolved explicitly.
+        variant = product_tmpl.with_context(active_test=False).product_variant_id
         self.env['mrp.bom.line'].create({
             'bom_id': bom.id,
-            'product_id': product_tmpl.product_variant_id.id,
+            'product_id': variant.id,
             'product_qty': quantity,
             'product_uom_id': product_tmpl.uom_id.id,
         })
@@ -431,7 +434,8 @@ class MrpSubcontractingChain(models.Model):
         final_bom = self._get_final_bom()
         target = target_bom or final_bom
         source_boms = self.bom_ids - final_bom - target
-        phantom_products = self.phantom_product_tmpl_ids.product_variant_ids
+        phantom_products = self.phantom_product_tmpl_ids.with_context(
+            active_test=False).product_variant_ids
         return {
             'final_bom': final_bom,
             'target_bom': target,

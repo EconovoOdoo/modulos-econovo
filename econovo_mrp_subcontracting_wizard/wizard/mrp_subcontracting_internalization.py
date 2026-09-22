@@ -86,8 +86,7 @@ class MrpSubcontractingInternalization(models.TransientModel):
                       operation=self.chain_id.operation_name or _('the subcontracted stage'),
                       product=self.chain_id.final_product_tmpl_id.display_name),
             'type_id': self.eco_type_id.id,
-            'stage_id': self.env['mrp.eco.stage'].search(
-                [('type_ids', 'in', self.eco_type_id.ids)], order='sequence, id', limit=1).id,
+            'stage_id': self._get_initial_stage().id,
             'type': 'bom',
             'product_tmpl_id': self.chain_id.final_product_tmpl_id.id,
             'bom_id': final_bom.id,
@@ -106,7 +105,6 @@ class MrpSubcontractingInternalization(models.TransientModel):
             activate=False,
         )
         if self.eco_handling == 'validated':
-            eco.stage_id = self._get_apply_stage().id
             eco.action_apply()
             self.chain_id.write({
                 'validated_by_id': self.env.user.id,
@@ -129,6 +127,18 @@ class MrpSubcontractingInternalization(models.TransientModel):
             ('allow_apply_change', '=', True),
             ('type_ids', 'in', self.eco_type_id.ids),
         ], order='sequence, id', limit=1)
+
+    def _get_initial_stage(self):
+        """Return the stage the ECO must be created in.
+
+        An ECO meant to be applied right away is created directly in a stage allowing it,
+        because ``mrp.eco.write()`` refuses to move an ECO across a blocking stage.
+        """
+        self.ensure_one()
+        if self.eco_handling == 'validated':
+            return self._get_apply_stage()
+        return self.env['mrp.eco.stage'].search(
+            [('type_ids', 'in', self.eco_type_id.ids)], order='sequence, id', limit=1)
 
     def _reopen(self):
         self.ensure_one()
