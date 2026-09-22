@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+
+    <record id="mrp_subcontracting_externalization_view_form" model="ir.ui.view">
+        <field name="name">mrp.subcontracting.externalization.view.form</field>
+        <field name="model">mrp.subcontracting.externalization</field>
+        <field name="arch" type="xml">
+            <form string="Externalize an Operation">
+                <field name="state" invisible="1" />
+                <field name="company_id" invisible="1" />
+                <group invisible="state != 'setup'">
+                    <group string="What to externalize">
+                        <field name="bom_id" options="{'no_create': True}" />
+                        <field
+                            name="operation_id"
+                            options="{'no_create': True}"
+                            placeholder="Leave empty to subcontract the whole product"
+                        />
+                    </group>
+                    <group string="To whom">
+                        <field name="subcontractor_id" />
+                        <field name="warehouse_id" options="{'no_create': True}" />
+                        <field name="seller_price" />
+                        <field name="add_mto_route" />
+                    </group>
+                    <group string="Engineering Change Order" colspan="2">
+                        <field name="eco_type_id" options="{'no_create': True}" />
+                        <field name="eco_handling" widget="radio" />
+                    </group>
+                </group>
+                <div invisible="state != 'review'">
+                    <field name="precheck_html" nolabel="1" readonly="1" />
+                    <field name="preview_html" nolabel="1" readonly="1" />
+                    <separator string="Components delivered to the subcontractor" />
+                    <div class="alert alert-info" role="alert">
+                        Rows without the resupply route will get it added. Without that route
+                        Odoo never generates the delivery to the subcontractor, and it fails
+                        silently.
+                    </div>
+                    <field name="line_ids" nolabel="1">
+                        <tree editable="bottom" decoration-warning="not has_resupply_route">
+                            <field name="product_tmpl_id" readonly="1" />
+                            <field name="has_resupply_route" readonly="1" />
+                            <field name="apply_route" />
+                        </tree>
+                    </field>
+                </div>
+                <footer>
+                    <button
+                        name="action_next"
+                        type="object"
+                        string="Next"
+                        class="btn-primary"
+                        invisible="state != 'setup'"
+                    />
+                    <button
+                        name="action_confirm"
+                        type="object"
+                        string="Externalize"
+                        class="btn-primary"
+                        invisible="state != 'review'"
+                    />
+                    <button
+                        name="action_previous"
+                        type="object"
+                        string="Back"
+                        invisible="state != 'review'"
+                    />
+                    <button string="Cancel" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="mrp_subcontracting_externalization_action" model="ir.actions.act_window">
+        <field name="name">Externalize an Operation</field>
+        <field name="res_model">mrp.subcontracting.externalization</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

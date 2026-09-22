@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+
+    <record id="mrp_routing_operation_category_view_tree" model="ir.ui.view">
+        <field name="name">mrp.routing.operation.category.view.tree</field>
+        <field name="model">mrp.routing.operation.category</field>
+        <field name="arch" type="xml">
+            <tree string="Operation Categories" editable="bottom">
+                <field name="code" />
+                <field name="name" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="mrp_routing_operation_category_view_form" model="ir.ui.view">
+        <field name="name">mrp.routing.operation.category.view.form</field>
+        <field name="model">mrp.routing.operation.category</field>
+        <field name="arch" type="xml">
+            <form string="Operation Category">
+                <sheet>
+                    <widget
+                        name="web_ribbon"
+                        title="Archived"
+                        bg_color="text-bg-danger"
+                        invisible="active"
+                    />
+                    <field name="active" invisible="1" />
+                    <group>
+                        <field name="name" placeholder="e.g. Zinc Plating" />
+                        <field name="code" placeholder="e.g. ZN" />
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="mrp_routing_operation_category_action" model="ir.actions.act_window">
+        <field name="name">Operation Categories</field>
+        <field name="res_model">mrp.routing.operation.category</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Define your first operation category</p>
+            <p>
+                An operation category gives a short code (ZN, PL, CL...) to a manufacturing
+                operation. That code names the intermediate products generated when the
+                operation is externalized to a subcontractor.
+            </p>
+        </field>
+    </record>
+
+</odoo>

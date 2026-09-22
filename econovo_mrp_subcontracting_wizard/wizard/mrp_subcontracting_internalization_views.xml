@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+
+    <record id="mrp_subcontracting_internalization_view_form" model="ir.ui.view">
+        <field name="name">mrp.subcontracting.internalization.view.form</field>
+        <field name="model">mrp.subcontracting.internalization</field>
+        <field name="arch" type="xml">
+            <form string="Internalize an Operation">
+                <field name="state" invisible="1" />
+                <field name="company_id" invisible="1" />
+                <group invisible="state != 'setup'">
+                    <group>
+                        <field name="chain_id" readonly="1" />
+                        <field name="workcenter_id" options="{'no_create': True}" />
+                    </group>
+                    <group string="Engineering Change Order">
+                        <field name="eco_type_id" options="{'no_create': True}" />
+                        <field name="eco_handling" widget="radio" />
+                    </group>
+                </group>
+                <div invisible="state != 'review'">
+                    <div class="alert alert-info" role="alert">
+                        This is the in-house route that will replace the chain. It keeps the
+                        components as they are today, including anything added while the
+                        operation was subcontracted. Review it before applying.
+                    </div>
+                    <separator string="Resulting operations" />
+                    <field name="operation_line_ids" nolabel="1">
+                        <tree editable="bottom" decoration-success="is_restored">
+                            <field name="sequence" />
+                            <field name="display_operation" readonly="1" />
+                            <field name="is_restored" readonly="1" string="Back In-House" />
+                            <field name="operation_id" column_invisible="True" />
+                        </tree>
+                    </field>
+                    <separator string="Resulting components" />
+                    <field name="component_line_ids" nolabel="1">
+                        <tree editable="bottom">
+                            <field name="product_id" readonly="1" />
+                            <field name="product_qty" readonly="1" />
+                            <field name="source_bom_id" readonly="1" />
+                            <field name="keep" />
+                            <field name="bom_line_id" column_invisible="True" />
+                        </tree>
+                    </field>
+                </div>
+                <footer>
+                    <button
+                        name="action_next"
+                        type="object"
+                        string="Preview"
+                        class="btn-primary"
+                        invisible="state != 'setup'"
+                    />
+                    <button
+                        name="action_confirm"
+                        type="object"
+                        string="Internalize"
+                        class="btn-primary"
+                        invisible="state != 'review'"
+                    />
+                    <button
+                        name="action_previous"
+                        type="object"
+                        string="Back"
+                        invisible="state != 'review'"
+                    />
+                    <button string="Cancel" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

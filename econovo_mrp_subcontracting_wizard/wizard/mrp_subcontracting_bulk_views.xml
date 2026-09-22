@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+
+    <record id="mrp_subcontracting_bulk_view_form" model="ir.ui.view">
+        <field name="name">mrp.subcontracting.bulk.view.form</field>
+        <field name="model">mrp.subcontracting.bulk</field>
+        <field name="arch" type="xml">
+            <form string="Bulk Subcontracting">
+                <field name="state" invisible="1" />
+                <div class="alert alert-warning" role="alert" invisible="state != 'setup'">
+                    Bulk mode applies the changes directly, without creating an Engineering
+                    Change Order. Use the individual assistant when the change has to go
+                    through the PLM approval circuit.
+                </div>
+                <group invisible="state != 'setup'">
+                    <group>
+                        <field name="mode" widget="radio" />
+                        <field name="company_id" />
+                        <field name="operation_category_id" options="{'no_create': True}" />
+                        <field name="chunk_size" />
+                    </group>
+                    <group invisible="mode != 'externalize'">
+                        <field
+                            name="subcontractor_id"
+                            required="mode == 'externalize'"
+                        />
+                        <field
+                            name="warehouse_id"
+                            options="{'no_create': True}"
+                            required="mode == 'externalize'"
+                        />
+                        <field name="seller_price" />
+                        <field name="add_mto_route" />
+                    </group>
+                </group>
+                <div invisible="state == 'setup'">
+                    <group>
+                        <group>
+                            <field name="total_count" />
+                            <field name="done_count" />
+                        </group>
+                        <group>
+                            <field name="pending_count" />
+                            <field name="error_count" />
+                        </group>
+                    </group>
+                    <field name="progress" widget="progressbar" />
+                    <field name="line_ids" nolabel="1" readonly="1">
+                        <tree
+                            decoration-danger="state == 'error'"
+                            decoration-success="state == 'done'"
+                        >
+                            <field name="bom_id" />
+                            <field name="operation_id" />
+                            <field name="chain_id" />
+                            <field name="state" widget="badge" />
+                            <field name="error_message" />
+                        </tree>
+                    </field>
+                </div>
+                <footer>
+                    <button
+                        name="action_load"
+                        type="object"
+                        string="Select Records"
+                        class="btn-primary"
+                        invisible="state != 'setup'"
+                    />
+                    <button
+                        name="action_process_chunk"
+                        type="object"
+                        string="Process Next Batch"
+                        class="btn-primary"
+                        invisible="state != 'running'"
+                    />
+                    <button
+                        name="action_retry_errors"
+                        type="object"
+                        string="Retry Errors"
+                        invisible="error_count == 0"
+                    />
+                    <button string="Close" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="mrp_subcontracting_bulk_action" model="ir.actions.act_window">
+        <field name="name">Bulk Externalization / Internalization</field>
+        <field name="res_model">mrp.subcontracting.bulk</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+
+    <record id="mrp_subcontracting_chain_view_tree" model="ir.ui.view">
+        <field name="name">mrp.subcontracting.chain.view.tree</field>
+        <field name="model">mrp.subcontracting.chain</field>
+        <field name="arch" type="xml">
+            <tree string="Subcontracting Chains" decoration-warning="warning_count &gt; 0">
+                <field name="name" />
+                <field name="final_product_tmpl_id" />
+                <field name="operation_name" />
+                <field name="subcontractor_id" />
+                <field name="warehouse_id" optional="show" />
+                <field name="warning_count" string="Missing Routes" />
+                <field name="applied_without_eco" optional="hide" />
+                <field name="state" widget="badge" />
+                <field name="company_id" groups="base.group_multi_company" optional="hide" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="mrp_subcontracting_chain_view_form" model="ir.ui.view">
+        <field name="name">mrp.subcontracting.chain.view.form</field>
+        <field name="model">mrp.subcontracting.chain</field>
+        <field name="arch" type="xml">
+            <form string="Subcontracting Chain">
+                <header>
+                    <button
+                        name="action_verify"
+                        type="object"
+                        string="Re-check Components"
+                        class="btn-secondary"
+                    />
+                    <button
+                        name="action_open_internalization_wizard"
+                        type="object"
+                        string="Internalize Operation"
+                        class="btn-primary"
+                        invisible="state != 'externalized'"
+                    />
+                    <field name="state" widget="statusbar" />
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button
+                            name="action_view_purchase_orders"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-shopping-cart"
+                        >
+                            <field name="purchase_count" widget="statinfo" string="Purchases" />
+                        </button>
+                        <button
+                            name="action_view_receipts"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-truck"
+                        >
+                            <field name="receipt_count" widget="statinfo" string="Receipts" />
+                        </button>
+                        <button
+                            name="action_view_resupplies"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-arrow-right"
+                        >
+                            <field name="resupply_count" widget="statinfo" string="Resupplies" />
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1" /></h1>
+                    </div>
+                    <div
+                        class="alert alert-warning"
+                        role="alert"
+                        invisible="warning_count == 0"
+                    >
+                        <field name="warning_count" class="oe_inline" /> component(s) are missing
+                        the subcontractor resupply route. Odoo will not deliver them to the
+                        subcontractor and it fails silently.
+                    </div>
+                    <group>
+                        <group>
+                            <field name="final_product_tmpl_id" readonly="1" />
+                            <field name="anchor_product_tmpl_id" readonly="1" />
+                            <field name="subcontractor_id" readonly="1" />
+                            <field name="operation_name" readonly="1" />
+                            <field name="operation_category_id" readonly="1" />
+                        </group>
+                        <group>
+                            <field
+                                name="company_id"
+                                groups="base.group_multi_company"
+                                readonly="1"
+                            />
+                            <field name="warehouse_id" readonly="1" />
+                            <field name="original_workcenter_id" readonly="1" />
+                            <field name="last_verified_date" readonly="1" />
+                            <field name="applied_without_eco" readonly="1" />
+                            <field
+                                name="validated_by_id"
+                                readonly="1"
+                                invisible="not validated_by_id"
+                            />
+                            <field
+                                name="validated_date"
+                                readonly="1"
+                                invisible="not validated_by_id"
+                            />
+                            <field
+                                name="internalized_bom_id"
+                                readonly="1"
+                                invisible="state != 'internalized'"
+                            />
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Bills of Materials" name="boms">
+                            <field name="bom_ids" readonly="1">
+                                <tree>
+                                    <field name="display_name" string="Bill of Materials" />
+                                    <field name="product_tmpl_id" />
+                                    <field name="type" />
+                                    <field name="active" />
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Components" name="components">
+                            <field name="component_line_ids" readonly="1">
+                                <tree decoration-warning="state == 'warning'">
+                                    <field name="product_tmpl_id" />
+                                    <field name="has_resupply_route" />
+                                    <field name="state" widget="badge" />
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Intermediate Products" name="phantoms">
+                            <field name="phantom_product_tmpl_ids" readonly="1">
+                                <tree>
+                                    <field name="default_code" />
+                                    <field name="name" />
+                                    <field name="active" />
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Engineering Change Orders" name="ecos">
+                            <field name="eco_ids" readonly="1">
+                                <tree>
+                                    <field name="name" />
+                                    <field name="type_id" />
+                                    <field name="stage_id" />
+                                    <field name="state" />
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" />
+                    <field name="message_ids" />
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="mrp_subcontracting_chain_view_search" model="ir.ui.view">
+        <field name="name">mrp.subcontracting.chain.view.search</field>
+        <field name="model">mrp.subcontracting.chain</field>
+        <field name="arch" type="xml">
+            <search string="Subcontracting Chains">
+                <field name="name" />
+                <field name="final_product_tmpl_id" />
+                <field name="subcontractor_id" />
+                <filter
+                    name="filter_externalized"
+                    string="Externalized"
+                    domain="[('state', '=', 'externalized')]"
+                />
+                <filter
+                    name="filter_internalized"
+                    string="Internalized"
+                    domain="[('state', '=', 'internalized')]"
+                />
+                <group expand="0" string="Group By">
+                    <filter
+                        name="group_subcontractor"
+                        string="Subcontractor"
+                        context="{'group_by': 'subcontractor_id'}"
+                    />
+                    <filter
+                        name="group_category"
+                        string="Operation Category"
+                        context="{'group_by': 'operation_category_id'}"
+                    />
+                    <filter
+                        name="group_state"
+                        string="Status"
+                        context="{'group_by': 'state'}"
+                    />
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="mrp_subcontracting_chain_action" model="ir.actions.act_window">
+        <field name="name">Subcontracting Chains</field>
+        <field name="res_model">mrp.subcontracting.chain</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No subcontracting chain yet</p>
+            <p>
+                A chain records everything generated when an operation is externalized: the
+                Bills of Materials, the intermediate products and the components that must be
+                delivered to the subcontractor.
+            </p>
+        </field>
+    </record>
+
+</odoo>

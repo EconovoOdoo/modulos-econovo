@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+
+    <record id="seq_mrp_subcontracting_chain" model="ir.sequence">
+        <field name="name">Subcontracting Chain</field>
+        <field name="code">mrp.subcontracting.chain</field>
+        <field name="prefix">SCH/%(year)s/</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False" />
+    </record>
+
+    <record id="product_category_subcontracting_phantom" model="product.category">
+        <field name="name">Subcontracting Intermediate Products</field>
+    </record>
+
+</odoo>

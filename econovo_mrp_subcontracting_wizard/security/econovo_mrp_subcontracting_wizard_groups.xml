@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+
+    <record id="group_subcontracting_operation_manager" model="res.groups">
+        <field name="name">Operation Subcontracting / Manager</field>
+        <field name="category_id" ref="base.module_category_manufacturing_manufacturing" />
+        <field name="implied_ids" eval="[(4, ref('mrp.group_mrp_user'))]" />
+        <field
+            name="comment"
+        >Run the operation externalization and internalization assistants, manage the operation
+            category catalog and the subcontracting chains dashboard.
+
+            Members of this group are also authorized to run the bulk mode, which applies the
+            structural changes directly (without an Engineering Change Order) and therefore
+            bypasses the PLM lock on Bills of Materials already used by Manufacturing Orders.</field>
+    </record>
+
+</odoo>

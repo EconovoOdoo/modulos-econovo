@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+
+    <menuitem
+        id="menu_mrp_subcontracting_root"
+        name="Operation Subcontracting"
+        parent="mrp.menu_mrp_manufacturing"
+        groups="group_subcontracting_operation_manager"
+        sequence="60"
+    />
+
+    <menuitem
+        id="menu_mrp_subcontracting_externalization"
+        name="Externalize an Operation"
+        parent="menu_mrp_subcontracting_root"
+        action="mrp_subcontracting_externalization_action"
+        sequence="10"
+    />
+
+    <menuitem
+        id="menu_mrp_subcontracting_bulk"
+        name="Bulk Externalization / Internalization"
+        parent="menu_mrp_subcontracting_root"
+        action="mrp_subcontracting_bulk_action"
+        sequence="20"
+    />
+
+    <menuitem
+        id="menu_mrp_subcontracting_chain"
+        name="Subcontracting Chains"
+        parent="menu_mrp_subcontracting_root"
+        action="mrp_subcontracting_chain_action"
+        sequence="30"
+    />
+
+    <menuitem
+        id="menu_mrp_routing_operation_category"
+        name="Operation Categories"
+        parent="mrp.menu_mrp_configuration"
+        action="mrp_routing_operation_category_action"
+        groups="group_subcontracting_operation_manager"
+        sequence="55"
+    />
+
+</odoo>
