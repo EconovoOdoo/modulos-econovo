@@ -61,6 +61,75 @@ bent) and what comes back is the real final product `CODE`, with no suffix.
 2. Assign the category on the operations of the Bills of Materials.
 3. Give the users who will run the assistants the *Operation Subcontracting / Manager* group.
 
+## Usage
+
+### Where the menus are
+
+Everything lives under the **Manufacturing** app. The whole *Operation Subcontracting* menu and
+the *Operation Categories* menu are only visible to members of the *Operation Subcontracting /
+Manager* group — if you do not see them, the group is missing.
+
+| What | Menu |
+|---|---|
+| Operation categories | Manufacturing > Configuration > **Operation Categories** |
+| Externalization assistant | Manufacturing > Operations > Operation Subcontracting > **Externalize an Operation** |
+| Bulk mode | Manufacturing > Operations > Operation Subcontracting > **Bulk Externalization / Internalization** |
+| Chains dashboard | Manufacturing > Operations > Operation Subcontracting > **Subcontracting Chains** |
+| Internalization assistant | No menu of its own — **Internalize Operation** button in the header of a chain |
+
+A Bill of Materials that belongs to a chain also shows a **Subcontracting Chain** smart button
+that opens the chain directly.
+
+### Externalizing one operation
+
+1. Open Manufacturing > Operations > Operation Subcontracting > **Externalize an Operation**.
+2. *What to externalize*: pick the **Bill of Materials**, then the **Operation to Externalize**.
+   Leaving the operation empty subcontracts the whole product instead of a single step.
+3. *To whom*: pick the **Subcontractor**, the **Warehouse** whose resupply route will be applied,
+   and optionally the **Subcontracting Price** and *Replenish on Order (MTO)*.
+4. Choose the **ECO Type** and the **PLM Registration** mode (see *PLM integration* below).
+5. Press **Next**. The assistant shows the prechecks, a preview of the resulting Bills of
+   Materials and intermediate products, and the list of components that will be delivered to the
+   subcontractor with their resupply route status. Correct anything and press **Back** if needed.
+6. Press **Externalize**. The chain record opens.
+
+If a precheck fails — typically an operation without an operation category, or a warehouse
+without *Resupply Subcontractors* — the assistant blocks and tells you exactly what to fix.
+
+### Internalizing it back
+
+1. Open the chain from Manufacturing > Operations > Operation Subcontracting > **Subcontracting
+   Chains** (or from the smart button on the Bill of Materials).
+2. Press **Internalize Operation** in the header.
+3. Pick the **Work Center** where the operation will be performed again, the **ECO Type** and the
+   **PLM Registration** mode, then press **Next**.
+4. Review the merged route: the resulting operations (including the one coming back in-house) and
+   the resulting components. Untick **Keep** on any component that should not survive the merge.
+5. Press **Internalize**.
+
+The merge preserves the **current** content of the chain: components added while the operation
+was outsourced are kept.
+
+### Bulk mode
+
+1. Open Manufacturing > Operations > Operation Subcontracting > **Bulk Externalization /
+   Internalization**.
+2. Choose the **Mode**, the **Company**, and the filters (operation category, subcontractor,
+   warehouse...), then press **Select Records** to load the matching Bills of Materials or chains.
+3. Set **Records per Run** (default 25) and press **Process Next Batch** repeatedly until the
+   progress bar reaches 100%. Each batch is a separate transaction and each record is isolated,
+   so one failure does not abort the run.
+4. Failed records keep their error message; fix the cause and press **Retry Errors**.
+
+Bulk mode applies the changes directly, **without** creating Engineering Change Orders. Use the
+individual assistants when the change has to go through the PLM approval circuit.
+
+### Maintenance
+
+The chain form has a **Re-check Components** button that refreshes the resupply route checklist.
+Chains with components missing that route are flagged in the list view — fix them, because
+without the route Odoo silently never delivers the component to the subcontractor.
+
 ## PLM integration
 
 Every individual externalization and internalization is registered as a real Engineering Change
