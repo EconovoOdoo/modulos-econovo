@@ -16,13 +16,29 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: econovo_mrp_subcontracting_wizard
+#. odoo-python
+#: code:addons/econovo_mrp_subcontracting_wizard/wizard/mrp_subcontracting_externalization.py:0
+#, python-format
+msgid ""
+"%s is not flagged as a vendor yet. Odoo will flag it automatically on the "
+"first purchase order."
+msgstr "%s todavía no está marcado como proveedor. Odoo lo va a marcar automáticamente en la primera orden de compra."
+
+#. module: econovo_mrp_subcontracting_wizard
+#. odoo-python
+#: code:addons/econovo_mrp_subcontracting_wizard/wizard/mrp_subcontracting_externalization.py:0
+#, python-format
+msgid ""
+"<p><strong>%(stages)s Bill(s) of Materials</strong> and <strong>%(phantoms)s"
+" intermediate product(s)</strong> will result from this change.</p>"
+msgstr "<p>De este cambio van a resultar <strong>%(stages)s lista(s) de materiales</strong> y <strong>%(phantoms)s producto(s) intermedio(s)</strong>.</p>"
+
+#. module: econovo_mrp_subcontracting_wizard
 #: model_terms:ir.ui.view,arch_db:econovo_mrp_subcontracting_wizard.mrp_bom_view_form_inherit_subcontracting_chain
 msgid ""
 "<span class=\"o_stat_text\">Subcontracting</span>\n"
 "                        <span class=\"o_stat_text\">Chain</span>"
-msgstr ""
-"<span class=\"o_stat_text\">Cadena de</span>\n"
-"                        <span class=\"o_stat_text\">Subcontratación</span>"
+msgstr "<span class=\"o_stat_text\">Cadena de</span>\n                        <span class=\"o_stat_text\">Subcontratación</span>"
 
 #. module: econovo_mrp_subcontracting_wizard
 #: model_terms:ir.actions.act_window,help:econovo_mrp_subcontracting_wizard.mrp_subcontracting_chain_action
@@ -30,10 +46,7 @@ msgid ""
 "A chain records everything generated when an operation is externalized: the\n"
 "                Bills of Materials, the intermediate products and the components that must be\n"
 "                delivered to the subcontractor."
-msgstr ""
-"Una cadena registra todo lo que se genera al externalizar una operación: las\n"
-"                listas de materiales, los productos intermedios y los componentes que hay que\n"
-"                entregarle al subcontratista."
+msgstr "Una cadena registra todo lo que se genera al externalizar una operación: las\n                listas de materiales, los productos intermedios y los componentes que hay que\n                entregarle al subcontratista."
 
 #. module: econovo_mrp_subcontracting_wizard
 #: model:ir.model.fields,field_description:econovo_mrp_subcontracting_wizard.field_mrp_subcontracting_chain__message_needaction
@@ -55,9 +68,14 @@ msgstr "Agregar ruta de reabastecimiento"
 msgid ""
 "Also add the MTO route so that confirming a sale triggers the purchase "
 "order."
-msgstr ""
-"Agregar también la ruta MTO para que al confirmar una venta se genere la "
-"orden de compra."
+msgstr "Agregar también la ruta MTO para que al confirmar una venta se genere la orden de compra."
+
+#. module: econovo_mrp_subcontracting_wizard
+#. odoo-python
+#: code:addons/econovo_mrp_subcontracting_wizard/models/mrp_routing_workcenter.py:0
+#, python-format
+msgid "An operation can only be externalized from a Bill of Materials."
+msgstr "Una operación sólo se puede externalizar desde una lista de materiales."
 
 #. module: econovo_mrp_subcontracting_wizard
 #: model_terms:ir.actions.act_window,help:econovo_mrp_subcontracting_wizard.mrp_routing_operation_category_action
@@ -65,10 +83,7 @@ msgid ""
 "An operation category gives a short code (ZN, PL, CL...) to a manufacturing\n"
 "                operation. That code names the intermediate products generated when the\n"
 "                operation is externalized to a subcontractor."
-msgstr ""
-"Una categoría de operación le da un código corto (ZN, PL, CL...) a una operación\n"
-"                de fabricación. Ese código nombra los productos intermedios que se generan\n"
-"                cuando la operación se externaliza a un subcontratista."
+msgstr "Una categoría de operación le da un código corto (ZN, PL, CL...) a una operación\n                de fabricación. Ese código nombra los productos intermedios que se generan\n                cuando la operación se externaliza a un subcontratista."
 
 #. module: econovo_mrp_subcontracting_wizard
 #: model:ir.model.constraint,message:econovo_mrp_subcontracting_wizard.constraint_mrp_routing_operation_category_code_uniq
@@ -84,6 +99,16 @@ msgstr "Aplicado sin aprobación por"
 #: model:ir.model.fields,field_description:econovo_mrp_subcontracting_wizard.field_mrp_subcontracting_chain__applied_without_eco
 msgid "Applied Without ECO"
 msgstr "Aplicado sin ECO"
+
+#. module: econovo_mrp_subcontracting_wizard
+#. odoo-python
+#: code:addons/econovo_mrp_subcontracting_wizard/wizard/mrp_subcontracting_externalization.py:0
+#: code:addons/econovo_mrp_subcontracting_wizard/wizard/mrp_subcontracting_internalization.py:0
+#, python-format
+msgid ""
+"Applied automatically by the operation subcontracting assistant, without "
+"going through the manual approval circuit."
+msgstr "Aplicada automáticamente por el asistente de subcontratación de operaciones, sin pasar por el circuito de aprobación manual."
 
 #. module: econovo_mrp_subcontracting_wizard
 #: model_terms:ir.ui.view,arch_db:econovo_mrp_subcontracting_wizard.mrp_routing_operation_category_view_form
@@ -124,9 +149,7 @@ msgstr "Lista de materiales"
 msgid ""
 "Bill of Materials revision holding the merged in-house route, waiting for "
 "its Engineering Change Order to be applied."
-msgstr ""
-"Revisión de lista de materiales que contiene la ruta interna fusionada, a la "
-"espera de que se aplique su orden de cambio de ingeniería."
+msgstr "Revisión de lista de materiales que contiene la ruta interna fusionada, a la espera de que se aplique su orden de cambio de ingeniería."
 
 #. module: econovo_mrp_subcontracting_wizard
 #: model:ir.model.fields,field_description:econovo_mrp_subcontracting_wizard.field_mrp_subcontracting_chain__bom_ids
@@ -156,15 +179,22 @@ msgid "Bulk Subcontracting Record"
 msgstr "Registro de subcontratación masiva"
 
 #. module: econovo_mrp_subcontracting_wizard
+#. odoo-python
+#: code:addons/econovo_mrp_subcontracting_wizard/wizard/mrp_subcontracting_bulk.py:0
+#, python-format
+msgid ""
+"Bulk mode applies Bill of Materials changes directly, without an Engineering"
+" Change Order. Only members of \"Operation Subcontracting / Manager\" can "
+"run it."
+msgstr "El modo masivo aplica los cambios en las listas de materiales directamente, sin orden de cambio de ingeniería. Sólo pueden ejecutarlo los miembros de \"Subcontratación de operaciones / Gestor\"."
+
+#. module: econovo_mrp_subcontracting_wizard
 #: model_terms:ir.ui.view,arch_db:econovo_mrp_subcontracting_wizard.mrp_subcontracting_bulk_view_form
 msgid ""
 "Bulk mode applies the changes directly, without creating an Engineering\n"
 "                    Change Order. Use the individual assistant when the change has to go\n"
 "                    through the PLM approval circuit."
-msgstr ""
-"El modo masivo aplica los cambios directamente, sin crear una orden de cambio\n"
-"                    de ingeniería. Usá el asistente individual cuando el cambio tenga que pasar\n"
-"                    por el circuito de aprobación de PLM."
+msgstr "El modo masivo aplica los cambios directamente, sin crear una orden de cambio\n                    de ingeniería. Usá el asistente individual cuando el cambio tenga que pasar\n                    por el circuito de aprobación de PLM."
 
 #. module: econovo_mrp_subcontracting_wizard
 #: model_terms:ir.ui.view,arch_db:econovo_mrp_subcontracting_wizard.mrp_subcontracting_externalization_view_form
@@ -182,9 +212,7 @@ msgstr "Cadena"
 msgid ""
 "Chain whose externalization or internalization is registered by this "
 "Engineering Change Order."
-msgstr ""
-"Cadena cuya externalización o internalización queda registrada por esta "
-"orden de cambio de ingeniería."
+msgstr "Cadena cuya externalización o internalización queda registrada por esta orden de cambio de ingeniería."
 
 #. module: econovo_mrp_subcontracting_wizard
 #: model_terms:ir.ui.view,arch_db:econovo_mrp_subcontracting_wizard.mrp_subcontracting_bulk_view_form
@@ -299,9 +327,7 @@ msgstr "Definí tu primera categoría de operación"
 msgid ""
 "Determines the suffix of the intermediate products generated when this "
 "operation is externalized to a subcontractor."
-msgstr ""
-"Determina el sufijo de los productos intermedios que se generan cuando esta "
-"operación se externaliza a un subcontratista."
+msgstr "Determina el sufijo de los productos intermedios que se generan cuando esta operación se externaliza a un subcontratista."
 
 #. module: econovo_mrp_subcontracting_wizard
 #: model:ir.model.fields,field_description:econovo_mrp_subcontracting_wizard.field_mrp_routing_operation_category__display_name
@@ -378,9 +404,7 @@ msgstr "Mensaje de error"
 #: model:ir.model.fields,help:econovo_mrp_subcontracting_wizard.field_mrp_subcontracting_bulk__operation_category_id
 msgid ""
 "Every Bill of Materials having an operation of this category is selected."
-msgstr ""
-"Se selecciona toda lista de materiales que tenga una operación de esta "
-"categoría."
+msgstr "Se selecciona toda lista de materiales que tenga una operación de esta categoría."
 
 #. module: econovo_mrp_subcontracting_wizard
 #: model:ir.model.fields,field_description:econovo_mrp_subcontracting_wizard.field_mrp_subcontracting_internalization_operation__operation_id
@@ -388,9 +412,23 @@ msgid "Existing Operation"
 msgstr "Operación existente"
 
 #. module: econovo_mrp_subcontracting_wizard
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_subcontracting_wizard.mrp_routing_workcenter_view_tree_inherit_category
 #: model_terms:ir.ui.view,arch_db:econovo_mrp_subcontracting_wizard.mrp_subcontracting_externalization_view_form
 msgid "Externalize"
 msgstr "Externalizar"
+
+#. module: econovo_mrp_subcontracting_wizard
+#. odoo-python
+#: code:addons/econovo_mrp_subcontracting_wizard/wizard/mrp_subcontracting_externalization.py:0
+#, python-format
+msgid "Externalize %(operation)s of %(product)s"
+msgstr "Externalizar %(operation)s de %(product)s"
+
+#. module: econovo_mrp_subcontracting_wizard
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_subcontracting_wizard.mrp_routing_workcenter_view_bom_tree_inherit_subcontracting
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_subcontracting_wizard.mrp_routing_workcenter_view_form_inherit_category
+msgid "Externalize Operation"
+msgstr "Externalizar operación"
 
 #. module: econovo_mrp_subcontracting_wizard
 #: model:ir.model,name:econovo_mrp_subcontracting_wizard.model_mrp_subcontracting_externalization
@@ -398,9 +436,12 @@ msgid "Externalize a Manufacturing Operation"
 msgstr "Externalizar una operación de fabricación"
 
 #. module: econovo_mrp_subcontracting_wizard
+#. odoo-python
+#: code:addons/econovo_mrp_subcontracting_wizard/models/mrp_routing_workcenter.py:0
 #: model:ir.actions.act_window,name:econovo_mrp_subcontracting_wizard.mrp_subcontracting_externalization_action
 #: model:ir.ui.menu,name:econovo_mrp_subcontracting_wizard.menu_mrp_subcontracting_externalization
 #: model_terms:ir.ui.view,arch_db:econovo_mrp_subcontracting_wizard.mrp_subcontracting_externalization_view_form
+#, python-format
 msgid "Externalize an Operation"
 msgstr "Externalizar una operación"
 
@@ -455,10 +496,7 @@ msgstr "Tiene mensaje"
 msgid ""
 "How many records are processed each time you press Process. Keep it low "
 "enough to stay well below the server request timeout."
-msgstr ""
-"Cuántos registros se procesan cada vez que apretás Procesar. Mantenelo lo "
-"bastante bajo como para quedar holgadamente por debajo del tiempo máximo de "
-"respuesta del servidor."
+msgstr "Cuántos registros se procesan cada vez que apretás Procesar. Mantenelo lo bastante bajo como para quedar holgadamente por debajo del tiempo máximo de respuesta del servidor."
 
 #. module: econovo_mrp_subcontracting_wizard
 #: model:ir.model.fields,field_description:econovo_mrp_subcontracting_wizard.field_mrp_routing_operation_category__id
@@ -486,18 +524,37 @@ msgid "If checked, some messages have a delivery error."
 msgstr "Si está marcado, algunos mensajes tienen error de entrega."
 
 #. module: econovo_mrp_subcontracting_wizard
+#. odoo-python
+#: code:addons/econovo_mrp_subcontracting_wizard/wizard/mrp_subcontracting_externalization.py:0
+#: code:addons/econovo_mrp_subcontracting_wizard/wizard/mrp_subcontracting_externalization.py:0
+#, python-format
+msgid "In-house: %s"
+msgstr "En planta: %s"
+
+#. module: econovo_mrp_subcontracting_wizard
 #: model:ir.model.fields,field_description:econovo_mrp_subcontracting_wizard.field_mrp_subcontracting_chain__phantom_product_tmpl_ids
 #: model_terms:ir.ui.view,arch_db:econovo_mrp_subcontracting_wizard.mrp_subcontracting_chain_view_form
 msgid "Intermediate Products"
 msgstr "Productos intermedios"
 
 #. module: econovo_mrp_subcontracting_wizard
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_subcontracting_wizard.mrp_routing_workcenter_view_tree_inherit_category
 #: model_terms:ir.ui.view,arch_db:econovo_mrp_subcontracting_wizard.mrp_subcontracting_internalization_view_form
 msgid "Internalize"
 msgstr "Internalizar"
 
 #. module: econovo_mrp_subcontracting_wizard
+#. odoo-python
+#: code:addons/econovo_mrp_subcontracting_wizard/wizard/mrp_subcontracting_internalization.py:0
+#, python-format
+msgid "Internalize %(operation)s of %(product)s"
+msgstr "Internalizar %(operation)s de %(product)s"
+
+#. module: econovo_mrp_subcontracting_wizard
+#. odoo-python
+#: code:addons/econovo_mrp_subcontracting_wizard/models/mrp_subcontracting_chain.py:0
 #: model_terms:ir.ui.view,arch_db:econovo_mrp_subcontracting_wizard.mrp_subcontracting_chain_view_form
+#, python-format
 msgid "Internalize Operation"
 msgstr "Internalizar operación"
 
@@ -579,9 +636,7 @@ msgstr "Dejalo vacío para subcontratar el producto completo"
 #: model:ir.model.fields,help:econovo_mrp_subcontracting_wizard.field_mrp_subcontracting_externalization__operation_id
 msgid ""
 "Leave empty to subcontract the whole product instead of a single operation."
-msgstr ""
-"Dejalo vacío para subcontratar el producto completo en lugar de una sola "
-"operación."
+msgstr "Dejalo vacío para subcontratar el producto completo en lugar de una sola operación."
 
 #. module: econovo_mrp_subcontracting_wizard
 #: model:ir.model,name:econovo_mrp_subcontracting_wizard.model_mrp_routing_operation_category
@@ -622,8 +677,17 @@ msgstr "Nombre"
 #. module: econovo_mrp_subcontracting_wizard
 #: model:ir.model.fields,help:econovo_mrp_subcontracting_wizard.field_mrp_subcontracting_chain__operation_name
 msgid "Name of the operation that was externalized, as it was at that moment."
-msgstr ""
-"Nombre de la operación que se externalizó, tal como estaba en ese momento."
+msgstr "Nombre de la operación que se externalizó, tal como estaba en ese momento."
+
+#. module: econovo_mrp_subcontracting_wizard
+#. odoo-python
+#: code:addons/econovo_mrp_subcontracting_wizard/models/mrp_subcontracting_chain.py:0
+#: code:addons/econovo_mrp_subcontracting_wizard/models/mrp_subcontracting_chain.py:0
+#: code:addons/econovo_mrp_subcontracting_wizard/models/mrp_subcontracting_chain.py:0
+#: code:addons/econovo_mrp_subcontracting_wizard/models/mrp_subcontracting_chain.py:0
+#, python-format
+msgid "New"
+msgstr "Nuevo"
 
 #. module: econovo_mrp_subcontracting_wizard
 #: model_terms:ir.ui.view,arch_db:econovo_mrp_subcontracting_wizard.mrp_subcontracting_externalization_view_form
@@ -631,9 +695,25 @@ msgid "Next"
 msgstr "Siguiente"
 
 #. module: econovo_mrp_subcontracting_wizard
+#. odoo-python
+#: code:addons/econovo_mrp_subcontracting_wizard/wizard/mrp_subcontracting_bulk.py:0
+#, python-format
+msgid "No record matches these criteria."
+msgstr "Ningún registro coincide con estos criterios."
+
+#. module: econovo_mrp_subcontracting_wizard
 #: model_terms:ir.actions.act_window,help:econovo_mrp_subcontracting_wizard.mrp_subcontracting_chain_action
 msgid "No subcontracting chain yet"
 msgstr "Todavía no hay ninguna cadena de subcontratación"
+
+#. module: econovo_mrp_subcontracting_wizard
+#. odoo-python
+#: code:addons/econovo_mrp_subcontracting_wizard/models/mrp_routing_workcenter.py:0
+#, python-format
+msgid ""
+"None of the selected operations belongs to a Bill of Materials that is "
+"currently subcontracted."
+msgstr "Ninguna de las operaciones seleccionadas pertenece a una lista de materiales actualmente subcontratada."
 
 #. module: econovo_mrp_subcontracting_wizard
 #: model:ir.model.fields,field_description:econovo_mrp_subcontracting_wizard.field_mrp_subcontracting_chain__message_needaction_counter
@@ -654,6 +734,14 @@ msgstr "Cantidad de mensajes que requieren una acción"
 #: model:ir.model.fields,help:econovo_mrp_subcontracting_wizard.field_mrp_subcontracting_chain__message_has_error_counter
 msgid "Number of messages with delivery error"
 msgstr "Cantidad de mensajes con error de entrega"
+
+#. module: econovo_mrp_subcontracting_wizard
+#. odoo-python
+#: code:addons/econovo_mrp_subcontracting_wizard/models/mrp_subcontracting_chain.py:0
+#: code:addons/econovo_mrp_subcontracting_wizard/wizard/mrp_subcontracting_internalization.py:0
+#, python-format
+msgid "Only an externalized chain can be internalized."
+msgstr "Sólo se puede internalizar una cadena externalizada."
 
 #. module: econovo_mrp_subcontracting_wizard
 #: model:ir.model.fields,field_description:econovo_mrp_subcontracting_wizard.field_mrp_subcontracting_bulk_line__operation_id
@@ -678,6 +766,11 @@ msgid "Operation Category"
 msgstr "Categoría de operación"
 
 #. module: econovo_mrp_subcontracting_wizard
+#: model:ir.model.fields,field_description:econovo_mrp_subcontracting_wizard.field_mrp_routing_operation_category__operation_count
+msgid "Operation Count"
+msgstr "Cantidad de operaciones"
+
+#. module: econovo_mrp_subcontracting_wizard
 #: model:ir.ui.menu,name:econovo_mrp_subcontracting_wizard.menu_mrp_subcontracting_root
 msgid "Operation Subcontracting"
 msgstr "Subcontratación de operaciones"
@@ -698,7 +791,12 @@ msgid "Operation to Externalize"
 msgstr "Operación a externalizar"
 
 #. module: econovo_mrp_subcontracting_wizard
+#. odoo-python
+#: code:addons/econovo_mrp_subcontracting_wizard/models/mrp_routing_operation_category.py:0
 #: model:ir.model.fields,field_description:econovo_mrp_subcontracting_wizard.field_mrp_subcontracting_internalization__operation_line_ids
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_subcontracting_wizard.mrp_routing_operation_category_view_form
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_subcontracting_wizard.mrp_routing_operation_category_view_tree
+#, python-format
 msgid "Operations"
 msgstr "Operaciones"
 
@@ -744,6 +842,21 @@ msgid "Pending Internalization"
 msgstr "Internalización pendiente"
 
 #. module: econovo_mrp_subcontracting_wizard
+#. odoo-python
+#: code:addons/econovo_mrp_subcontracting_wizard/wizard/mrp_subcontracting_bulk.py:0
+#: code:addons/econovo_mrp_subcontracting_wizard/wizard/mrp_subcontracting_bulk.py:0
+#, python-format
+msgid "Pick a subcontractor and a warehouse first."
+msgstr "Primero elegí un subcontratista y un almacén."
+
+#. module: econovo_mrp_subcontracting_wizard
+#. odoo-python
+#: code:addons/econovo_mrp_subcontracting_wizard/wizard/mrp_subcontracting_bulk.py:0
+#, python-format
+msgid "Pick an operation category to select the records to process."
+msgstr "Elegí una categoría de operación para seleccionar los registros a procesar."
+
+#. module: econovo_mrp_subcontracting_wizard
 #: model:ir.model.fields,field_description:econovo_mrp_subcontracting_wizard.field_mrp_subcontracting_externalization__precheck_html
 msgid "Precheck Html"
 msgstr "Validaciones previas"
@@ -777,6 +890,13 @@ msgstr "Progreso (%)"
 #: model:ir.model.fields,field_description:econovo_mrp_subcontracting_wizard.field_mrp_subcontracting_chain__purchase_count
 msgid "Purchase Count"
 msgstr "Cantidad de compras"
+
+#. module: econovo_mrp_subcontracting_wizard
+#. odoo-python
+#: code:addons/econovo_mrp_subcontracting_wizard/models/mrp_subcontracting_chain.py:0
+#, python-format
+msgid "Purchase Orders"
+msgstr "Órdenes de compra"
 
 #. module: econovo_mrp_subcontracting_wizard
 #: model:ir.model.fields,field_description:econovo_mrp_subcontracting_wizard.field_mrp_subcontracting_chain__anchor_product_tmpl_id
@@ -814,7 +934,10 @@ msgid "Receipt Count"
 msgstr "Cantidad de recepciones"
 
 #. module: econovo_mrp_subcontracting_wizard
+#. odoo-python
+#: code:addons/econovo_mrp_subcontracting_wizard/models/mrp_subcontracting_chain.py:0
 #: model_terms:ir.ui.view,arch_db:econovo_mrp_subcontracting_wizard.mrp_subcontracting_chain_view_form
+#, python-format
 msgid "Receipts"
 msgstr "Recepciones"
 
@@ -865,6 +988,13 @@ msgid "Resupply Route Set"
 msgstr "Ruta de reabastecimiento puesta"
 
 #. module: econovo_mrp_subcontracting_wizard
+#. odoo-python
+#: code:addons/econovo_mrp_subcontracting_wizard/models/mrp_subcontracting_chain.py:0
+#, python-format
+msgid "Resupply Subcontractor on Order"
+msgstr "Reabastecer al subcontratista al ordenar"
+
+#. module: econovo_mrp_subcontracting_wizard
 #: model_terms:ir.ui.view,arch_db:econovo_mrp_subcontracting_wizard.mrp_subcontracting_bulk_view_form
 msgid "Retry Errors"
 msgstr "Reintentar los errores"
@@ -886,10 +1016,7 @@ msgid ""
 "Rows without the resupply route will get it added. Without that route\n"
 "                        Odoo never generates the delivery to the subcontractor, and it fails\n"
 "                        silently."
-msgstr ""
-"A las filas que no tengan la ruta de reabastecimiento se les va a agregar. Sin\n"
-"                        esa ruta Odoo nunca genera la entrega al subcontratista, y falla de\n"
-"                        forma silenciosa."
+msgstr "A las filas que no tengan la ruta de reabastecimiento se les va a agregar. Sin\n                        esa ruta Odoo nunca genera la entrega al subcontratista, y falla de\n                        forma silenciosa."
 
 #. module: econovo_mrp_subcontracting_wizard
 #: model:res.groups,comment:econovo_mrp_subcontracting_wizard.group_subcontracting_operation_manager
@@ -900,14 +1027,7 @@ msgid ""
 "            Members of this group are also authorized to run the bulk mode, which applies the\n"
 "            structural changes directly (without an Engineering Change Order) and therefore\n"
 "            bypasses the PLM lock on Bills of Materials already used by Manufacturing Orders."
-msgstr ""
-"Ejecutar los asistentes de externalización e internalización de operaciones, administrar\n"
-"            el catálogo de categorías de operación y el tablero de cadenas de subcontratación.\n"
-"\n"
-"            Los miembros de este grupo también están autorizados a usar el modo masivo, que\n"
-"            aplica los cambios estructurales directamente (sin orden de cambio de ingeniería) y\n"
-"            por lo tanto saltea el bloqueo de PLM sobre listas de materiales que ya tienen\n"
-"            órdenes de fabricación."
+msgstr "Ejecutar los asistentes de externalización e internalización de operaciones, administrar\n            el catálogo de categorías de operación y el tablero de cadenas de subcontratación.\n\n            Los miembros de este grupo también están autorizados a usar el modo masivo, que\n            aplica los cambios estructurales directamente (sin orden de cambio de ingeniería) y\n            por lo tanto saltea el bloqueo de PLM sobre listas de materiales que ya tienen\n            órdenes de fabricación."
 
 #. module: econovo_mrp_subcontracting_wizard
 #: model:ir.model.fields.selection,name:econovo_mrp_subcontracting_wizard.selection__mrp_subcontracting_bulk__state__running
@@ -925,6 +1045,20 @@ msgid "Select Records"
 msgstr "Seleccionar registros"
 
 #. module: econovo_mrp_subcontracting_wizard
+#. odoo-python
+#: code:addons/econovo_mrp_subcontracting_wizard/models/mrp_routing_workcenter.py:0
+#, python-format
+msgid "Select at least one operation to externalize."
+msgstr "Seleccioná al menos una operación para externalizar."
+
+#. module: econovo_mrp_subcontracting_wizard
+#. odoo-python
+#: code:addons/econovo_mrp_subcontracting_wizard/models/mrp_routing_workcenter.py:0
+#, python-format
+msgid "Select operations belonging to a single company."
+msgstr "Seleccioná operaciones de una sola compañía."
+
+#. module: econovo_mrp_subcontracting_wizard
 #: model:ir.model.fields,field_description:econovo_mrp_subcontracting_wizard.field_mrp_subcontracting_internalization_operation__sequence
 msgid "Sequence"
 msgstr "Secuencia"
@@ -939,9 +1073,7 @@ msgstr "Definir la duración manualmente"
 msgid ""
 "Set when the change was applied through the bulk mode, which does not create"
 " an Engineering Change Order."
-msgstr ""
-"Se marca cuando el cambio se aplicó por el modo masivo, que no crea una "
-"orden de cambio de ingeniería."
+msgstr "Se marca cuando el cambio se aplicó por el modo masivo, que no crea una orden de cambio de ingeniería."
 
 #. module: econovo_mrp_subcontracting_wizard
 #: model:ir.model.fields.selection,name:econovo_mrp_subcontracting_wizard.selection__mrp_subcontracting_bulk__state__setup
@@ -955,18 +1087,14 @@ msgstr "Configuración"
 msgid ""
 "Short code used as the suffix of the intermediate products generated when an"
 " operation of this category is externalized."
-msgstr ""
-"Código corto que se usa como sufijo de los productos intermedios que se "
-"generan cuando se externaliza una operación de esta categoría."
+msgstr "Código corto que se usa como sufijo de los productos intermedios que se generan cuando se externaliza una operación de esta categoría."
 
 #. module: econovo_mrp_subcontracting_wizard
 #: model:ir.model.fields,help:econovo_mrp_subcontracting_wizard.field_mrp_subcontracting_chain__internalized_bom_id
 msgid ""
 "Single Bill of Materials resulting from merging the chain back into an in-"
 "house manufacturing route."
-msgstr ""
-"Lista de materiales única que resulta de fusionar la cadena de vuelta en una "
-"ruta de fabricación interna."
+msgstr "Lista de materiales única que resulta de fusionar la cadena de vuelta en una ruta de fabricación interna."
 
 #. module: econovo_mrp_subcontracting_wizard
 #: model:ir.model.fields,field_description:econovo_mrp_subcontracting_wizard.field_mrp_subcontracting_bulk__state
@@ -984,12 +1112,24 @@ msgid "Status"
 msgstr "Estado"
 
 #. module: econovo_mrp_subcontracting_wizard
+#. odoo-python
+#: code:addons/econovo_mrp_subcontracting_wizard/wizard/mrp_subcontracting_externalization.py:0
+#, python-format
+msgid "Subcontracted at %s: %s"
+msgstr "Subcontratado en %s: %s"
+
+#. module: econovo_mrp_subcontracting_wizard
+#. odoo-python
+#: code:addons/econovo_mrp_subcontracting_wizard/models/mrp_bom.py:0
+#: code:addons/econovo_mrp_subcontracting_wizard/wizard/mrp_subcontracting_externalization.py:0
+#: code:addons/econovo_mrp_subcontracting_wizard/wizard/mrp_subcontracting_internalization.py:0
 #: model:ir.model,name:econovo_mrp_subcontracting_wizard.model_mrp_subcontracting_chain
 #: model:ir.model.fields,field_description:econovo_mrp_subcontracting_wizard.field_mrp_bom__subcontracting_chain_id
 #: model:ir.model.fields,field_description:econovo_mrp_subcontracting_wizard.field_mrp_eco__subcontracting_chain_id
 #: model:ir.model.fields,field_description:econovo_mrp_subcontracting_wizard.field_mrp_subcontracting_bulk_line__chain_id
 #: model:ir.model.fields,field_description:econovo_mrp_subcontracting_wizard.field_mrp_subcontracting_internalization__chain_id
 #: model_terms:ir.ui.view,arch_db:econovo_mrp_subcontracting_wizard.mrp_subcontracting_chain_view_form
+#, python-format
 msgid "Subcontracting Chain"
 msgstr "Cadena de subcontratación"
 
@@ -1032,16 +1172,63 @@ msgid "Subcontractor"
 msgstr "Subcontratista"
 
 #. module: econovo_mrp_subcontracting_wizard
+#. odoo-python
+#: code:addons/econovo_mrp_subcontracting_wizard/models/mrp_subcontracting_chain.py:0
+#, python-format
+msgid "Subcontractor Resupplies"
+msgstr "Reabastecimientos al subcontratista"
+
+#. module: econovo_mrp_subcontracting_wizard
 #: model:ir.model.fields,help:econovo_mrp_subcontracting_wizard.field_product_product__is_subcontracting_phantom
 #: model:ir.model.fields,help:econovo_mrp_subcontracting_wizard.field_product_template__is_subcontracting_phantom
 msgid ""
 "Technical product generated to represent the state of a part between two "
 "stages of its manufacturing route when one of its operations is "
 "externalized."
-msgstr ""
-"Producto técnico generado para representar el estado de una pieza entre dos "
-"etapas de su ruta de fabricación cuando una de sus operaciones se "
-"externaliza."
+msgstr "Producto técnico generado para representar el estado de una pieza entre dos etapas de su ruta de fabricación cuando una de sus operaciones se externaliza."
+
+#. module: econovo_mrp_subcontracting_wizard
+#. odoo-python
+#: code:addons/econovo_mrp_subcontracting_wizard/models/mrp_subcontracting_chain.py:0
+#, python-format
+msgid "The Bill of Materials producing %s is no longer part of this chain."
+msgstr "La lista de materiales que produce %s ya no forma parte de esta cadena."
+
+#. module: econovo_mrp_subcontracting_wizard
+#. odoo-python
+#: code:addons/econovo_mrp_subcontracting_wizard/wizard/mrp_subcontracting_externalization.py:0
+#: code:addons/econovo_mrp_subcontracting_wizard/wizard/mrp_subcontracting_internalization.py:0
+#, python-format
+msgid ""
+"The ECO type \"%s\" has no stage allowing changes to be applied. Pick "
+"another type or choose to follow the approval circuit."
+msgstr "El tipo de ECO \"%s\" no tiene ninguna etapa que permita aplicar cambios. Elegí otro tipo o seguí el circuito de aprobación."
+
+#. module: econovo_mrp_subcontracting_wizard
+#. odoo-python
+#: code:addons/econovo_mrp_subcontracting_wizard/models/mrp_subcontracting_chain.py:0
+#, python-format
+msgid ""
+"The following operations need an Operation Category before they can be used to name the intermediate products:\n"
+"%s"
+msgstr "Las siguientes operaciones necesitan una categoría de operación para poder nombrar los productos intermedios:\n%s"
+
+#. module: econovo_mrp_subcontracting_wizard
+#. odoo-python
+#: code:addons/econovo_mrp_subcontracting_wizard/wizard/mrp_subcontracting_externalization.py:0
+#, python-format
+msgid ""
+"The operation %s could not be located on the Bill of Materials revision."
+msgstr "No se pudo ubicar la operación %s en la revisión de la lista de materiales."
+
+#. module: econovo_mrp_subcontracting_wizard
+#. odoo-python
+#: code:addons/econovo_mrp_subcontracting_wizard/models/mrp_routing_operation_category.py:0
+#, python-format
+msgid ""
+"The operation category code must only contain uppercase letters and digits "
+"(no spaces or symbols): %s"
+msgstr "El código de la categoría de operación sólo puede tener letras mayúsculas y dígitos (sin espacios ni símbolos): %s"
 
 #. module: econovo_mrp_subcontracting_wizard
 #: model:ir.model.fields,help:econovo_mrp_subcontracting_wizard.field_mrp_subcontracting_internalization_operation__is_restored
@@ -1049,21 +1236,52 @@ msgid "The operation that was being performed by the subcontractor."
 msgstr "La operación que venía realizando el subcontratista."
 
 #. module: econovo_mrp_subcontracting_wizard
+#. odoo-python
+#: code:addons/econovo_mrp_subcontracting_wizard/wizard/mrp_subcontracting_bulk.py:0
+#, python-format
+msgid ""
+"The original work center of chain %s is missing or archived, so this record "
+"needs the individual assistant."
+msgstr "El centro de trabajo original de la cadena %s no existe o está archivado, así que este registro necesita el asistente individual."
+
+#. module: econovo_mrp_subcontracting_wizard
 #: model:ir.model.fields,help:econovo_mrp_subcontracting_wizard.field_mrp_subcontracting_chain__anchor_product_tmpl_id
 msgid ""
 "The product that appears on the purchase order sent to the subcontractor."
-msgstr ""
-"El producto que aparece en la orden de compra que se le envía al "
-"subcontratista."
+msgstr "El producto que aparece en la orden de compra que se le envía al subcontratista."
 
 #. module: econovo_mrp_subcontracting_wizard
 #: model:ir.model.fields,help:econovo_mrp_subcontracting_wizard.field_mrp_subcontracting_chain__final_product_tmpl_id
 msgid ""
 "The real product at the end of the manufacturing route. Never an "
 "intermediate product generated by this module."
-msgstr ""
-"El producto real al final de la ruta de fabricación. Nunca un producto "
-"intermedio generado por este módulo."
+msgstr "El producto real al final de la ruta de fabricación. Nunca un producto intermedio generado por este módulo."
+
+#. module: econovo_mrp_subcontracting_wizard
+#. odoo-python
+#: code:addons/econovo_mrp_subcontracting_wizard/wizard/mrp_subcontracting_externalization.py:0
+#, python-format
+msgid ""
+"The selected operation does not belong to the selected Bill of Materials."
+msgstr "La operación seleccionada no pertenece a la lista de materiales seleccionada."
+
+#. module: econovo_mrp_subcontracting_wizard
+#. odoo-python
+#: code:addons/econovo_mrp_subcontracting_wizard/models/mrp_routing_workcenter.py:0
+#, python-format
+msgid ""
+"These Bills of Materials are already subcontracted, internalize them first:\n"
+"%s"
+msgstr "Estas listas de materiales ya están subcontratadas, internalizalas primero:\n%s"
+
+#. module: econovo_mrp_subcontracting_wizard
+#. odoo-python
+#: code:addons/econovo_mrp_subcontracting_wizard/wizard/mrp_subcontracting_externalization.py:0
+#, python-format
+msgid ""
+"This Bill of Materials is already subcontracted through the chain %s. "
+"Internalize it before externalizing it again."
+msgstr "Esta lista de materiales ya está subcontratada a través de la cadena %s. Internalizala antes de volver a externalizarla."
 
 #. module: econovo_mrp_subcontracting_wizard
 #: model_terms:ir.ui.view,arch_db:econovo_mrp_subcontracting_wizard.mrp_subcontracting_internalization_view_form
@@ -1071,10 +1289,7 @@ msgid ""
 "This is the in-house route that will replace the chain. It keeps the\n"
 "                        components as they are today, including anything added while the\n"
 "                        operation was subcontracted. Review it before applying."
-msgstr ""
-"Esta es la ruta interna que va a reemplazar a la cadena. Mantiene los\n"
-"                        componentes tal como están hoy, incluido todo lo que se haya agregado\n"
-"                        mientras la operación estuvo subcontratada. Revisala antes de aplicar."
+msgstr "Esta es la ruta interna que va a reemplazar a la cadena. Mantiene los\n                        componentes tal como están hoy, incluido todo lo que se haya agregado\n                        mientras la operación estuvo subcontratada. Revisala antes de aplicar."
 
 #. module: econovo_mrp_subcontracting_wizard
 #: model_terms:ir.ui.view,arch_db:econovo_mrp_subcontracting_wizard.mrp_subcontracting_externalization_view_form
@@ -1090,24 +1305,19 @@ msgstr "Cantidad total"
 #: model:ir.model.fields,help:econovo_mrp_subcontracting_wizard.field_mrp_subcontracting_externalization__eco_type_id
 #: model:ir.model.fields,help:econovo_mrp_subcontracting_wizard.field_mrp_subcontracting_internalization__eco_type_id
 msgid "Type of Engineering Change Order created to register this change."
-msgstr ""
-"Tipo de orden de cambio de ingeniería que se crea para registrar este cambio."
+msgstr "Tipo de orden de cambio de ingeniería que se crea para registrar este cambio."
 
 #. module: econovo_mrp_subcontracting_wizard
 #: model:ir.model.fields,help:econovo_mrp_subcontracting_wizard.field_mrp_subcontracting_internalization_component__keep
 msgid "Uncheck to leave this component out of the merged Bill of Materials."
-msgstr ""
-"Destildalo para dejar este componente fuera de la lista de materiales "
-"fusionada."
+msgstr "Destildalo para dejar este componente fuera de la lista de materiales fusionada."
 
 #. module: econovo_mrp_subcontracting_wizard
 #: model:ir.model.fields,help:econovo_mrp_subcontracting_wizard.field_mrp_subcontracting_chain__validated_by_id
 msgid ""
 "User who chose to apply the Engineering Change Order immediately, skipping "
 "the manual approval circuit."
-msgstr ""
-"Usuario que eligió aplicar la orden de cambio de ingeniería de inmediato, "
-"salteando el circuito de aprobación manual."
+msgstr "Usuario que eligió aplicar la orden de cambio de ingeniería de inmediato, salteando el circuito de aprobación manual."
 
 #. module: econovo_mrp_subcontracting_wizard
 #: model:ir.model.fields,field_description:econovo_mrp_subcontracting_wizard.field_mrp_subcontracting_chain__validated_date
@@ -1122,13 +1332,20 @@ msgid "Warehouse"
 msgstr "Almacén"
 
 #. module: econovo_mrp_subcontracting_wizard
+#. odoo-python
+#: code:addons/econovo_mrp_subcontracting_wizard/wizard/mrp_subcontracting_externalization.py:0
+#, python-format
+msgid ""
+"Warehouse %s does not resupply subcontractors, so no resupply route exists "
+"and the components will never be sent automatically."
+msgstr "El almacén %s no reabastece subcontratistas, así que no existe ruta de reabastecimiento y los componentes nunca se van a enviar automáticamente."
+
+#. module: econovo_mrp_subcontracting_wizard
 #: model:ir.model.fields,help:econovo_mrp_subcontracting_wizard.field_mrp_subcontracting_chain__warehouse_id
 msgid ""
 "Warehouse whose resupply route was applied to the components sent to the "
 "subcontractor."
-msgstr ""
-"Almacén cuya ruta de reabastecimiento se aplicó a los componentes que se le "
-"envían al subcontratista."
+msgstr "Almacén cuya ruta de reabastecimiento se aplicó a los componentes que se le envían al subcontratista."
 
 #. module: econovo_mrp_subcontracting_wizard
 #: model:ir.model.fields,field_description:econovo_mrp_subcontracting_wizard.field_mrp_subcontracting_chain__warning_count
@@ -1161,9 +1378,7 @@ msgstr "Dónde se va a volver a realizar la operación en planta."
 msgid ""
 "Without this route Odoo never generates the delivery of this component to "
 "the subcontractor, and it fails silently."
-msgstr ""
-"Sin esta ruta Odoo nunca genera la entrega de este componente al "
-"subcontratista, y falla de forma silenciosa."
+msgstr "Sin esta ruta Odoo nunca genera la entrega de este componente al subcontratista, y falla de forma silenciosa."
 
 #. module: econovo_mrp_subcontracting_wizard
 #: model:ir.model.fields,field_description:econovo_mrp_subcontracting_wizard.field_mrp_subcontracting_bulk_line__wizard_id
@@ -1188,9 +1403,7 @@ msgstr "Uso del centro de trabajo"
 msgid ""
 "Work center where the operation was performed before being externalized. "
 "Used to restore it on internalization."
-msgstr ""
-"Centro de trabajo donde se realizaba la operación antes de externalizarla. "
-"Se usa para restaurarla al internalizar."
+msgstr "Centro de trabajo donde se realizaba la operación antes de externalizarla. Se usa para restaurarla al internalizar."
 
 #. module: econovo_mrp_subcontracting_wizard
 #: model_terms:ir.ui.view,arch_db:econovo_mrp_subcontracting_wizard.mrp_subcontracting_chain_view_form
@@ -1198,10 +1411,7 @@ msgid ""
 "component(s) are missing\n"
 "                        the subcontractor resupply route. Odoo will not deliver them to the\n"
 "                        subcontractor and it fails silently."
-msgstr ""
-"componente(s) no tienen la ruta de\n"
-"                        reabastecimiento al subcontratista. Odoo no se los va a entregar al\n"
-"                        subcontratista y falla de forma silenciosa."
+msgstr "componente(s) no tienen la ruta de\n                        reabastecimiento al subcontratista. Odoo no se los va a entregar al\n                        subcontratista y falla de forma silenciosa."
 
 #. module: econovo_mrp_subcontracting_wizard
 #: model_terms:ir.ui.view,arch_db:econovo_mrp_subcontracting_wizard.mrp_routing_operation_category_view_form
@@ -1212,3 +1422,31 @@ msgstr "ej. ZN"
 #: model_terms:ir.ui.view,arch_db:econovo_mrp_subcontracting_wizard.mrp_routing_operation_category_view_form
 msgid "e.g. Zinc Plating"
 msgstr "ej. Zincado"
+
+#. module: econovo_mrp_subcontracting_wizard
+#: model_terms:ir.ui.view,arch_db:econovo_mrp_subcontracting_wizard.mrp_subcontracting_bulk_view_form
+msgid ""
+"record(s) preselected. Fill\n"
+"                    in the settings below and press Select Records to start."
+msgstr "registro(s) preseleccionados. Completá la configuración de abajo y apretá Seleccionar registros para empezar."
+
+#. module: econovo_mrp_subcontracting_wizard
+#. odoo-python
+#: code:addons/econovo_mrp_subcontracting_wizard/wizard/mrp_subcontracting_internalization.py:0
+#, python-format
+msgid "the subcontracted stage"
+msgstr "la etapa subcontratada"
+
+#. module: econovo_mrp_subcontracting_wizard
+#. odoo-python
+#: code:addons/econovo_mrp_subcontracting_wizard/wizard/mrp_subcontracting_externalization.py:0
+#, python-format
+msgid "the whole product"
+msgstr "el producto completo"
+
+#. module: econovo_mrp_subcontracting_wizard
+#. odoo-python
+#: code:addons/econovo_mrp_subcontracting_wizard/wizard/mrp_subcontracting_externalization.py:0
+#, python-format
+msgid "whole product"
+msgstr "producto completo"

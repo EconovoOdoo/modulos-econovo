@@ -1,6 +1,6 @@
 # Copyright 2026 Jose D. Leonett
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl-3.0).
-from odoo.exceptions import ValidationError
+from odoo.exceptions import UserError, ValidationError
 from odoo.tests import TransactionCase, tagged
 
 
@@ -134,12 +134,82 @@ class TestSubcontractingChain(TransactionCase):
         chain = self.env['mrp.subcontracting.chain']._externalize(
             bom, operations[1], self.subcontractor, self.warehouse)
 
-        route = self.warehouse.subcontracting_route_id
-        self.assertTrue(route, 'The warehouse must expose a subcontractor resupply route.')
+        route = self.env['mrp.subcontracting.chain']._get_resupply_route()
+        self.assertTrue(route, 'The global subcontractor resupply route must exist.')
+        self.assertTrue(
+            route.product_selectable,
+            'Only a product selectable route is visible in product.template.route_ids.')
         self.assertTrue(chain.component_line_ids)
         for line in chain.component_line_ids:
             self.assertIn(route, line.product_tmpl_id.route_ids)
             self.assertEqual(line.state, 'ok')
+        self.assertEqual(chain.warning_count, 0)
+
+    def test_warehouse_resupply_route_is_never_written_on_a_component(self):
+        # It is created with product_selectable=False, so it can never be read back and the
+        # checklist would stay red forever.
+        product = self._create_product('Part WH Route', 'PARTWHROUTE')
+        bom, operations = self._create_bom(
+            product, operation_categories=[self.category_laser, self.category_bending])
+        chain = self.env['mrp.subcontracting.chain']._externalize(
+            bom, operations[1], self.subcontractor, self.warehouse)
+
+        products = chain.component_line_ids.product_tmpl_id
+        self.assertFalse(self.env['product.template'].with_context(active_test=False).search([
+            ('id', 'in', products.ids),
+            ('route_ids', 'in', self.warehouse.subcontracting_route_id.ids),
+        ]))
+
+    def test_anchor_product_becomes_purchasable(self):
+        product = self._create_product('Part Buy', 'PARTBUY')
+        product.purchase_ok = False
+        bom, operations = self._create_bom(
+            product, operation_categories=[self.category_laser, self.category_bending])
+        chain = self.env['mrp.subcontracting.chain']._externalize(
+            bom, operations[1], self.subcontractor, self.warehouse)
+
+        self.assertTrue(
+            chain.anchor_product_tmpl_id.purchase_ok,
+            'A purchase order line can only carry a purchasable product.')
+
+    def test_internalized_chain_reports_no_missing_route(self):
+        product = self._create_product('Part Quiet', 'PARTQUIET')
+        bom, operations = self._create_bom(
+            product, operation_categories=[self.category_laser, self.category_bending])
+        chain = self.env['mrp.subcontracting.chain']._externalize(
+            bom, operations[1], self.subcontractor, self.warehouse)
+        chain.component_line_ids.product_tmpl_id.write({
+            'route_ids': [(3, self.env['mrp.subcontracting.chain']._get_resupply_route().id)],
+        })
+        self.assertTrue(chain.warning_count)
+
+        chain._internalize(self.workcenter)
+
+        self.assertEqual(chain.state, 'internalized')
+        self.assertEqual(
+            chain.warning_count, 0,
+            'Nothing is delivered any more, the checklist must stop warning.')
+
+    def test_a_product_can_be_externalized_again_after_being_internalized(self):
+        product = self._create_product('Part Again', 'PARTAGAIN')
+        bom, operations = self._create_bom(
+            product, operation_categories=[self.category_laser, self.category_bending])
+        first_chain = self.env['mrp.subcontracting.chain']._externalize(
+            bom, operations[1], self.subcontractor, self.warehouse)
+        merged_bom = first_chain._internalize(self.workcenter)
+
+        restored = merged_bom.operation_ids.filtered(
+            lambda op: op.operation_category_id == self.category_bending)
+        second_chain = self.env['mrp.subcontracting.chain']._externalize(
+            merged_bom, restored, self.subcontractor, self.warehouse)
+
+        self.assertNotEqual(second_chain, first_chain)
+        self.assertEqual(first_chain.state, 'internalized')
+        self.assertEqual(second_chain.state, 'externalized')
+        self.assertEqual(
+            second_chain.phantom_product_tmpl_ids, first_chain.phantom_product_tmpl_ids,
+            'The intermediate product must be reused, never duplicated.')
+        self.assertTrue(second_chain.phantom_product_tmpl_ids.active)
 
     def test_internalize_merges_everything_back_into_a_single_bom(self):
         product = self._create_product('Part Back', 'PARTBACK')
@@ -186,3 +256,64 @@ class TestSubcontractingChain(TransactionCase):
             late_component.product_variant_id,
             merged_bom.bom_line_ids.product_id,
             'Internalization must preserve the current content, not roll back to a snapshot.')
+
+    def test_externalize_button_on_one_operation_opens_the_individual_assistant(self):
+        product = self._create_product('Part Entry One', 'PARTENTRY1')
+        bom, operations = self._create_bom(
+            product, operation_categories=[self.category_laser, self.category_bending])
+
+        action = operations[1].action_externalize_operation()
+
+        self.assertEqual(action['res_model'], 'mrp.subcontracting.externalization')
+        self.assertEqual(action['context']['default_bom_id'], bom.id)
+        self.assertEqual(action['context']['default_operation_id'], operations[1].id)
+
+    def test_externalize_button_on_many_operations_opens_the_bulk_assistant(self):
+        first, dummy = self._create_bom(
+            self._create_product('Part Entry A', 'PARTENTRYA'),
+            operation_categories=[self.category_bending])
+        second, dummy2 = self._create_bom(
+            self._create_product('Part Entry B', 'PARTENTRYB'),
+            operation_categories=[self.category_bending])
+        operations = first.operation_ids | second.operation_ids
+
+        action = operations.action_externalize_operation()
+
+        self.assertEqual(action['res_model'], 'mrp.subcontracting.bulk')
+        wizard = self.env['mrp.subcontracting.bulk'].browse(action['res_id'])
+        self.assertEqual(wizard.mode, 'externalize')
+        self.assertEqual(wizard.total_count, 2)
+        self.assertEqual(wizard.line_ids.operation_id, operations)
+
+    def test_externalize_button_refuses_a_bom_already_subcontracted(self):
+        product = self._create_product('Part Busy', 'PARTBUSY')
+        bom, operations = self._create_bom(
+            product, operation_categories=[self.category_laser, self.category_bending])
+        chain = self.env['mrp.subcontracting.chain']._externalize(
+            bom, operations[1], self.subcontractor, self.warehouse)
+
+        # The externalized operation no longer exists; what the user sees in the list is the
+        # one that stayed in-house, and it belongs to a chain that is still live.
+        with self.assertRaises(UserError):
+            chain.bom_ids.operation_ids.action_externalize_operation()
+
+    def test_internalize_button_finds_the_chain_from_the_operation(self):
+        product = self._create_product('Part Return', 'PARTRETURN')
+        bom, operations = self._create_bom(
+            product, operation_categories=[self.category_laser, self.category_bending])
+        chain = self.env['mrp.subcontracting.chain']._externalize(
+            bom, operations[1], self.subcontractor, self.warehouse)
+
+        action = chain.bom_ids.operation_ids.action_internalize_operation()
+
+        self.assertEqual(action['res_model'], 'mrp.subcontracting.internalization')
+        self.assertEqual(action['context']['default_chain_id'], chain.id)
+
+    def test_operation_category_counts_its_operations(self):
+        self._create_bom(
+            self._create_product('Part Counted', 'PARTCOUNTED'),
+            operation_categories=[self.category_plating])
+
+        self.assertEqual(self.category_plating.operation_count, 1)
+        action = self.category_plating.action_view_operations()
+        self.assertEqual(action['res_model'], 'mrp.routing.workcenter')

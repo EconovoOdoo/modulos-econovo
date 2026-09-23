@@ -20,11 +20,21 @@ class MrpRoutingOperationCategory(models.Model):
              'when an operation of this category is externalized.',
     )
     active = fields.Boolean(default=True)
+    operation_count = fields.Integer(compute='_compute_operation_count')
 
     _sql_constraints = [
         ('code_uniq', 'unique(code)',
          'An operation category with this code already exists.'),
     ]
+
+    def _compute_operation_count(self):
+        counts = dict(self.env['mrp.routing.workcenter']._read_group(
+            [('operation_category_id', 'in', self.ids)],
+            groupby=['operation_category_id'],
+            aggregates=['__count'],
+        ))
+        for category in self:
+            category.operation_count = counts.get(category, 0)
 
     @api.depends('name', 'code')
     def _compute_display_name(self):
@@ -40,3 +50,14 @@ class MrpRoutingOperationCategory(models.Model):
                     'The operation category code must only contain uppercase letters '
                     'and digits (no spaces or symbols): %s', category.code,
                 ))
+
+    def action_view_operations(self):
+        self.ensure_one()
+        return {
+            'name': _('Operations'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'mrp.routing.workcenter',
+            'view_mode': 'tree,form',
+            'domain': [('operation_category_id', '=', self.id)],
+            'context': {'default_operation_category_id': self.id},
+        }

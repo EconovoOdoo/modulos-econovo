@@ -24,9 +24,9 @@ class MrpSubcontractingChainComponent(models.Model):
         compute='_compute_has_resupply_route',
     )
 
-    @api.depends('product_tmpl_id.route_ids', 'chain_id.warehouse_id')
+    @api.depends('product_tmpl_id.route_ids')
     def _compute_has_resupply_route(self):
+        route = self.env['mrp.subcontracting.chain']._get_resupply_route()
         for line in self:
-            route = line.chain_id.warehouse_id.subcontracting_route_id
             line.has_resupply_route = bool(route) and route in line.product_tmpl_id.route_ids
             line.state = 'ok' if line.has_resupply_route else 'warning'

@@ -12,11 +12,24 @@
                     Change Order. Use the individual assistant when the change has to go
                     through the PLM approval circuit.
                 </div>
+                <div
+                    class="alert alert-info"
+                    role="alert"
+                    invisible="state != 'setup' or total_count == 0"
+                >
+                    <field name="total_count" class="oe_inline" /> record(s) preselected. Fill
+                    in the settings below and press Select Records to start.
+                </div>
                 <group invisible="state != 'setup'">
                     <group>
-                        <field name="mode" widget="radio" />
-                        <field name="company_id" />
-                        <field name="operation_category_id" options="{'no_create': True}" />
+                        <field name="mode" widget="radio" readonly="total_count &gt; 0" />
+                        <field name="company_id" readonly="total_count &gt; 0" />
+                        <field
+                            name="operation_category_id"
+                            options="{'no_create': True}"
+                            required="total_count == 0"
+                            invisible="total_count &gt; 0"
+                        />
                         <field name="chunk_size" />
                     </group>
                     <group invisible="mode != 'externalize'">

@@ -3,6 +3,8 @@
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
+RESUPPLY_ROUTE_XMLID = 'mrp_subcontracting.route_resupply_subcontractor_mto'
+
 
 class MrpSubcontractingChain(models.Model):
     _name = 'mrp.subcontracting.chain'
@@ -97,9 +99,13 @@ class MrpSubcontractingChain(models.Model):
     receipt_count = fields.Integer(compute='_compute_document_counts')
     resupply_count = fields.Integer(compute='_compute_document_counts')
 
-    @api.depends('component_line_ids.state')
+    @api.depends('state', 'component_line_ids.state')
     def _compute_warning_count(self):
         for chain in self:
+            if chain.state != 'externalized':
+                # Nothing is delivered to the subcontractor any more, the checklist is history.
+                chain.warning_count = 0
+                continue
             chain.warning_count = len(
                 chain.component_line_ids.filtered(lambda line: line.state == 'warning')
             )
@@ -198,6 +204,9 @@ class MrpSubcontractingChain(models.Model):
         existing = self.env['product.template'].with_context(active_test=False).search(
             [('default_code', '=', default_code)], limit=1)
         if existing:
+            if activate and not existing.active:
+                # A previous cycle archived it on internalization; this one needs it back.
+                existing.write({'active': True})
             return existing
         return self.env['product.template'].create({
             'name': '%s - %s' % (source_tmpl.name, category.name),
@@ -255,10 +264,23 @@ class MrpSubcontractingChain(models.Model):
             vals['subcontractor_ids'] = [(6, 0, subcontractor.ids)]
         return vals
 
+    @api.model
+    def _get_resupply_route(self):
+        """Return the global route that resupplies subcontractors.
+
+        Resolved through Odoo's own helper, which looks the record up by XML id and only
+        falls back to its name, so no database id is ever hardcoded. The per-warehouse
+        ``subcontracting_route_id`` is deliberately not used: it is created with
+        ``product_selectable=False``, which means it carries no meaning on a product and is
+        filtered out of ``product.template.route_ids`` on read.
+        """
+        return self.env['stock.warehouse']._find_or_create_global_route(
+            RESUPPLY_ROUTE_XMLID, _('Resupply Subcontractor on Order'))
+
     def _apply_resupply_route(self, product_tmpls):
-        """Add the warehouse resupply route to every component sent to the subcontractor."""
+        """Add the resupply route to every component sent to the subcontractor."""
         self.ensure_one()
-        route = self.warehouse_id.subcontracting_route_id
+        route = self._get_resupply_route()
         if not route:
             return self.env['product.template']
         updated = self.env['product.template']
@@ -275,7 +297,9 @@ class MrpSubcontractingChain(models.Model):
         routes = [(4, self.env.ref('purchase_stock.route_warehouse0_buy').id)]
         if add_mto_route:
             routes.append((4, self.env.ref('stock.route_warehouse0_mto').id))
-        anchor.write({'route_ids': routes})
+        # The whole native flow starts with a purchase order line, which Odoo only accepts
+        # for purchasable products.
+        anchor.write({'purchase_ok': True, 'route_ids': routes})
         existing_seller = anchor.seller_ids.filtered(
             lambda seller: seller.partner_id == self.subcontractor_id)
         if not existing_seller:

@@ -27,7 +27,7 @@ class MrpSubcontractingBulk(models.TransientModel):
         'res.company', required=True, default=lambda self: self.env.company,
     )
     operation_category_id = fields.Many2one(
-        'mrp.routing.operation.category', string='Operation Category', required=True,
+        'mrp.routing.operation.category', string='Operation Category',
         help='Every Bill of Materials having an operation of this category is selected.',
     )
     subcontractor_id = fields.Many2one(
@@ -70,6 +70,14 @@ class MrpSubcontractingBulk(models.TransientModel):
         """Select the records matching the criteria without changing anything yet."""
         self.ensure_one()
         self._check_bulk_allowed()
+        if self.line_ids:
+            # Records were preselected from a list view, only the settings are missing.
+            if self.mode == 'externalize' and not (self.subcontractor_id and self.warehouse_id):
+                raise UserError(_('Pick a subcontractor and a warehouse first.'))
+            self.state = 'running'
+            return self._reopen()
+        if not self.operation_category_id:
+            raise UserError(_('Pick an operation category to select the records to process.'))
         if self.mode == 'externalize':
             if not self.subcontractor_id or not self.warehouse_id:
                 raise UserError(_('Pick a subcontractor and a warehouse first.'))
@@ -77,7 +85,9 @@ class MrpSubcontractingBulk(models.TransientModel):
                 ('operation_category_id', '=', self.operation_category_id.id),
                 ('bom_id.type', '=', 'normal'),
                 ('bom_id.company_id', '=', self.company_id.id),
+                '|',
                 ('bom_id.subcontracting_chain_id', '=', False),
+                ('bom_id.subcontracting_chain_id.state', '!=', 'externalized'),
             ])
             values = [
                 (0, 0, {'bom_id': operation.bom_id.id, 'operation_id': operation.id})

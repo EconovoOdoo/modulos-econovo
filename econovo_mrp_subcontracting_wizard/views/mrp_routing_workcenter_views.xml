@@ -6,6 +6,18 @@
         <field name="model">mrp.routing.workcenter</field>
         <field name="inherit_id" ref="mrp.mrp_routing_workcenter_form_view" />
         <field name="arch" type="xml">
+            <xpath expr="//sheet" position="before">
+                <header>
+                    <button
+                        name="action_externalize_operation"
+                        type="object"
+                        string="Externalize Operation"
+                        class="btn-primary"
+                        invisible="not bom_id"
+                        groups="econovo_mrp_subcontracting_wizard.group_subcontracting_operation_manager"
+                    />
+                </header>
+            </xpath>
             <xpath expr="//field[@name='workcenter_id']" position="after">
                 <field name="operation_category_id" />
             </xpath>
@@ -17,8 +29,44 @@
         <field name="model">mrp.routing.workcenter</field>
         <field name="inherit_id" ref="mrp.mrp_routing_workcenter_tree_view" />
         <field name="arch" type="xml">
+            <!-- Header buttons are rendered by the list controller only, so they stay out of
+                 the operations list embedded in the Bill of Materials form. -->
+            <xpath expr="//field[@name='name']" position="before">
+                <header>
+                    <button
+                        name="action_externalize_operation"
+                        type="object"
+                        string="Externalize"
+                        groups="econovo_mrp_subcontracting_wizard.group_subcontracting_operation_manager"
+                    />
+                    <button
+                        name="action_internalize_operation"
+                        type="object"
+                        string="Internalize"
+                        groups="econovo_mrp_subcontracting_wizard.group_subcontracting_operation_manager"
+                    />
+                </header>
+            </xpath>
             <xpath expr="//field[@name='workcenter_id']" position="after">
                 <field name="operation_category_id" optional="show" />
+            </xpath>
+        </field>
+    </record>
+
+    <record id="mrp_routing_workcenter_view_bom_tree_inherit_subcontracting" model="ir.ui.view">
+        <field name="name">mrp.routing.workcenter.view.bom.tree.inherit.subcontracting</field>
+        <field name="model">mrp.routing.workcenter</field>
+        <field name="inherit_id" ref="mrp.mrp_routing_workcenter_bom_tree_view" />
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_archive']" position="after">
+                <button
+                    name="action_externalize_operation"
+                    class="float-end"
+                    type="object"
+                    string="Externalize Operation"
+                    invisible="context.get('parent_production_id')"
+                    groups="econovo_mrp_subcontracting_wizard.group_subcontracting_operation_manager"
+                />
             </xpath>
         </field>
     </record>

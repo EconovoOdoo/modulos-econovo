@@ -5,9 +5,10 @@
         <field name="name">mrp.routing.operation.category.view.tree</field>
         <field name="model">mrp.routing.operation.category</field>
         <field name="arch" type="xml">
-            <tree string="Operation Categories" editable="bottom">
+            <tree string="Operation Categories">
                 <field name="code" />
                 <field name="name" />
+                <field name="operation_count" string="Operations" />
             </tree>
         </field>
     </record>
@@ -24,6 +25,16 @@
                         bg_color="text-bg-danger"
                         invisible="active"
                     />
+                    <div class="oe_button_box" name="button_box">
+                        <button
+                            name="action_view_operations"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-cogs"
+                        >
+                            <field name="operation_count" widget="statinfo" string="Operations" />
+                        </button>
+                    </div>
                     <field name="active" invisible="1" />
                     <group>
                         <field name="name" placeholder="e.g. Zinc Plating" />

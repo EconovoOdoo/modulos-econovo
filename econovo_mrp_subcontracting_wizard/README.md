@@ -21,7 +21,8 @@ invoicing / valuation flow completely untouched.
   to name the generated intermediate products consistently.
 - **Externalization assistant**: splits a route around the chosen operation, generating only the
   intermediate products that are actually needed, configuring the vendor and the purchase route,
-  and applying the subcontractor resupply route to every component delivered to the vendor.
+  and applying Odoo's *Resupply Subcontractor on Order* route to every component delivered to the
+  vendor.
 - **Internalization assistant**: merges the chain back into a single in-house Bill of Materials,
   preserving the **current** content — components added while the operation was outsourced are
   kept, not rolled back.
@@ -80,13 +81,32 @@ Manager* group — if you do not see them, the group is missing.
 A Bill of Materials that belongs to a chain also shows a **Subcontracting Chain** smart button
 that opens the chain directly.
 
+### Shortcuts from the operations themselves
+
+The assistants do not have to be reached from the menu. The same wizards are available wherever
+an operation is visible, so that planners can act without leaving what they are looking at:
+
+| From | What you get |
+|---|---|
+| Operation form (Manufacturing > Operations > Operations) | **Externalize Operation** button in the header, prefilled with that Bill of Materials and operation |
+| Operations list, with records ticked | **Externalize** / **Internalize** buttons in the list header — one record opens the individual assistant, several open the bulk one already loaded |
+| Bill of Materials form, *Operations* tab | **Externalize Operation** button on each row, next to *Archive Operation* |
+| Operation category form | **Operations** smart button listing every operation of that category, ready to be ticked and processed |
+
+Because an externalized operation is removed from the Bill of Materials (Odoo forbids operations
+on a subcontracted one), **Internalize** works on the operations that stayed in-house: it resolves
+the chain they belong to and internalizes that chain.
+
+Selections spanning several companies are refused, and so are operations whose Bill of Materials
+is already subcontracted — internalize it first.
+
 ### Externalizing one operation
 
 1. Open Manufacturing > Operations > Operation Subcontracting > **Externalize an Operation**.
 2. *What to externalize*: pick the **Bill of Materials**, then the **Operation to Externalize**.
    Leaving the operation empty subcontracts the whole product instead of a single step.
-3. *To whom*: pick the **Subcontractor**, the **Warehouse** whose resupply route will be applied,
-   and optionally the **Subcontracting Price** and *Replenish on Order (MTO)*.
+3. *To whom*: pick the **Subcontractor**, the **Warehouse** that will ship the components, and
+   optionally the **Subcontracting Price** and *Replenish on Order (MTO)*.
 4. Choose the **ECO Type** and the **PLM Registration** mode (see *PLM integration* below).
 5. Press **Next**. The assistant shows the prechecks, a preview of the resulting Bills of
    Materials and intermediate products, and the list of components that will be delivered to the
@@ -95,6 +115,16 @@ that opens the chain directly.
 
 If a precheck fails — typically an operation without an operation category, or a warehouse
 without *Resupply Subcontractors* — the assistant blocks and tells you exactly what to fix.
+
+### Externalizing the same product again
+
+A chain covers **one** outsourcing cycle and is never reused. Once it has been internalized it
+becomes a read-only record of what happened, and externalizing the same operation again creates a
+new chain.
+
+Nothing has to be looked up to do so: the shortcuts above already act on the live Bill of
+Materials, and intermediate products are reused by internal reference instead of being duplicated,
+so the second cycle produces the same `CODE-XX` part as the first one.
 
 ### Internalizing it back
 

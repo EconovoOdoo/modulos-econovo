@@ -52,6 +52,18 @@ class MrpSubcontractingExternalization(models.TransientModel):
     precheck_html = fields.Html(compute='_compute_precheck_html')
     preview_html = fields.Html(compute='_compute_preview_html')
 
+    @api.model
+    def default_get(self, fields_list):
+        """Derive the company and the warehouse when opened straight from an operation."""
+        values = super().default_get(fields_list)
+        bom = self.env['mrp.bom'].browse(values.get('bom_id'))
+        if bom:
+            values['company_id'] = bom.company_id.id
+            if not values.get('warehouse_id'):
+                values['warehouse_id'] = self.env['stock.warehouse'].search(
+                    [('company_id', '=', bom.company_id.id)], limit=1).id
+        return values
+
     @api.depends('subcontractor_id', 'warehouse_id', 'eco_type_id', 'eco_handling')
     def _compute_precheck_html(self):
         for wizard in self:
@@ -181,10 +193,12 @@ class MrpSubcontractingExternalization(models.TransientModel):
         if self.operation_id and self.operation_id.bom_id != self.bom_id:
             raise UserError(_('The selected operation does not belong to the selected '
                               'Bill of Materials.'))
-        if self.bom_id.subcontracting_chain_id:
+        chain = self.bom_id.subcontracting_chain_id
+        if chain.state == 'externalized':
             raise UserError(_(
-                'This Bill of Materials already belongs to the subcontracting chain %s.',
-                self.bom_id.subcontracting_chain_id.display_name,
+                'This Bill of Materials is already subcontracted through the chain %s. '
+                'Internalize it before externalizing it again.',
+                chain.display_name,
             ))
 
     def _run_with_eco(self):
@@ -263,8 +277,8 @@ class MrpSubcontractingExternalizationLine(models.TransientModel):
              'subcontractor, and it fails silently.',
     )
 
-    @api.depends('product_tmpl_id.route_ids', 'wizard_id.warehouse_id')
+    @api.depends('product_tmpl_id.route_ids')
     def _compute_has_resupply_route(self):
+        route = self.env['mrp.subcontracting.chain']._get_resupply_route()
         for line in self:
-            route = line.wizard_id.warehouse_id.subcontracting_route_id
             line.has_resupply_route = bool(route) and route in line.product_tmpl_id.route_ids
