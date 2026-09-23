@@ -54,6 +54,18 @@ class TestProjectTaskFromNonServiceProduct(TransactionCase):
         self.assertTrue(tracked_line.is_service)
         self.assertFalse(untracked_line.is_service)
 
+    def test_qty_delivered_method_manual_for_tracked_non_service_product(self):
+        """A tracked non-service line is kept on 'manual' delivered-qty
+        tracking, not forced to 'stock_move' by sale_stock just because the
+        product is consu/storable. That extra, unneeded dependency on stock
+        moves is what let qty_to_invoice/invoice_status intermittently
+        freeze at 0 on already-confirmed orders in production."""
+        order, line = self._create_order(self.product_task_in_project)
+        order.action_confirm()
+        self.assertEqual(line.qty_delivered_method, 'manual')
+        self.assertEqual(line.invoice_status, 'to invoice')
+        self.assertEqual(line.qty_to_invoice, 2)
+
     def test_task_generated_in_existing_project(self):
         """Confirming the order creates a task in the product's configured
         project (task_global_project), like it does for real services."""
