@@ -36,18 +36,28 @@ Features:
 * Once a project/task has been generated, the product can no longer be
   swapped on the confirmed line (same safeguard already applied to
   services)
+* ``sale_stock`` forces "Stock Moves" as the delivered-quantity method for
+  every Consumable/Storable product regardless of tracking; kept on a tracked
+  non-service line, this adds a wide, pointless recompute-trigger surface to
+  ``qty_to_invoice``/``invoice_status`` (any change on the line's stock moves
+  re-dirties them) that interacts badly with their own related-field
+  recompute cascade, causing "Amount to invoice" to intermittently freeze at
+  0. Tracked non-service lines are now kept on "Manual" instead, exactly like
+  a real service, removing that extra trigger surface
 
 Requirements:
 -------------
 * Module ``sale_project`` (core)
+* Module ``sale_stock`` (core)
     """,
     'author': "Jose D. Leonett",
     'website': 'https://github.com/josedleonett',
     'category': 'Sales/Sales',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.1.0',
     'license': 'AGPL-3',
     'depends': [
         'sale_project',
+        'sale_stock',
     ],
     'data': [
         'views/product_views.xml',

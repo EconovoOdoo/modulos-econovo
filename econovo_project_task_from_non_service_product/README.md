@@ -30,6 +30,14 @@ have no way to trigger that same tracking.
 * Once a project/task has been generated, the product can no longer be
   swapped on the confirmed line, mirroring the safeguard already applied to
   services.
+* `sale_stock` forces `qty_delivered_method='stock_move'` on every
+  consu/storable line regardless of tracking. On a tracked line this adds a
+  wide recompute-trigger surface to `qty_to_invoice`/`invoice_status` (any
+  change on the line's stock moves re-dirties them) that could leave
+  "Amount to invoice" stuck at 0 on an already-confirmed, order-invoiced
+  line. Tracked non-service lines are kept on `'manual'` instead, exactly
+  like a real service. A `17.0.1.1.0` migration recomputes this for
+  pre-existing lines when the module is upgraded.
 
 ## Features
 
@@ -61,3 +69,4 @@ have no way to trigger that same tracking.
 ## Requirements
 
 * Module `sale_project` (core)
+* Module `sale_stock` (core)

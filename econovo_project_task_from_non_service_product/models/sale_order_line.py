@@ -18,6 +18,21 @@ class SaleOrderLine(models.Model):
                 # pipeline as real services (sale_project keys everything off is_service).
                 line.is_service = True
 
+    @api.depends('product_id.type', 'product_id.service_tracking')
+    def _compute_qty_delivered_method(self):
+        super()._compute_qty_delivered_method()
+        for line in self:
+            if not line.is_expense and line.product_id.type != 'service' \
+                    and line.product_id.service_tracking != 'no':
+                # sale_stock unconditionally forces 'stock_move' for every
+                # consu/product-typed line, tracked or not. A tracked line is
+                # already routed through the full sale_project pipeline like a
+                # real service (see _compute_is_service above): keep it on
+                # 'manual' too, exactly like a real service, instead of also
+                # wiring it to the stock-move delivery mechanism it doesn't
+                # need (invoicing here is order-based, not delivery-based).
+                line.qty_delivered_method = 'manual'
+
     @api.depends('product_id.service_tracking')
     def _compute_product_updatable(self):
         super()._compute_product_updatable()
