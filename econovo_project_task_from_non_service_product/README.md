@@ -38,6 +38,35 @@ have no way to trigger that same tracking.
   line. Tracked non-service lines are kept on `'manual'` instead, exactly
   like a real service. A `17.0.1.1.0` migration recomputes this for
   pre-existing lines when the module is upgraded.
+* Zero-priced lines that generated their own Field Service task stay
+  invoiceable. See "Field Service interaction" below.
+
+## Field Service interaction
+
+`industry_fsm_sale` forces `qty_to_invoice = 0` on **every** zero-priced sale
+order line linked to a Field Service task, so that free materials consumed
+during an intervention never reach the customer invoice. Because
+`sale.order._get_invoiceable_lines()` drops any line whose `qty_to_invoice` is
+zero, such a line silently disappears from the generated invoice.
+
+That guard cannot tell apart the two kinds of line it catches:
+
+| Line | `task_id.sale_line_id` | Guard is |
+|---|---|---|
+| Material added from inside the FSM task | empty | correct, kept |
+| Sales Order line that **generated** the task | the line itself | wrong, skipped |
+
+This module creates the second kind for non-service products, and warranty
+labour is billed at 0 on purpose, so those lines must still be invoiced. The
+override therefore skips the guard for them only, resuming the MRO right after
+`industry_fsm_sale` so every other implementation still runs.
+
+A `17.0.1.2.0` migration reopens invoicing on pre-existing lines of that kind.
+
+> When upgrading Odoo, re-check `industry_fsm_sale`'s `_compute_qty_to_invoice`
+> and `_compute_invoice_status`. Note its `_compute_invoice_status` filters on
+> `invoice_status in (None, 'to_invoice')` while the real selection value is
+> `'to invoice'` (with a space), so upstream that branch is currently dead code.
 
 ## Features
 

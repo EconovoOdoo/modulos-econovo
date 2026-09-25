@@ -44,20 +44,33 @@ Features:
   recompute cascade, causing "Amount to invoice" to intermittently freeze at
   0. Tracked non-service lines are now kept on "Manual" instead, exactly like
   a real service, removing that extra trigger surface
+* Zero-priced lines that generated their own Field Service task still reach the
+  customer invoice. ``industry_fsm_sale`` zeroes ``qty_to_invoice`` on any
+  zero-priced line linked to an FSM task so that free materials consumed during
+  an intervention are not billed. That guard also caught the Sales Order line
+  that generated the task, which is a different concept: warranty labour is
+  billed at 0 on purpose and must still appear on the invoice. The guard is now
+  skipped for those lines only, and is left untouched for materials added from
+  inside the task
 
 Requirements:
 -------------
 * Module ``sale_project`` (core)
 * Module ``sale_stock`` (core)
+* Module ``industry_fsm_sale`` (Enterprise, Field Service)
     """,
     'author': "Jose D. Leonett",
     'website': 'https://github.com/josedleonett',
     'category': 'Sales/Sales',
-    'version': '17.0.1.1.0',
+    'version': '17.0.1.2.0',
     'license': 'AGPL-3',
     'depends': [
         'sale_project',
         'sale_stock',
+        # Hard dependency on purpose: this module has to override
+        # industry_fsm_sale's qty_to_invoice guard, which only works if it is
+        # loaded after it.
+        'industry_fsm_sale',
     ],
     'data': [
         'views/product_views.xml',
