@@ -76,7 +76,10 @@ class MrpSubcontractingExternalization(models.TransientModel):
 
     @api.onchange('bom_id')
     def _onchange_bom_id(self):
-        self.operation_id = False
+        # Odoo replays every onchange against the defaults when the wizard is opened, so a
+        # plain reset here would wipe an operation_id preloaded via default_operation_id.
+        if self.operation_id.bom_id != self.bom_id:
+            self.operation_id = False
         if self.bom_id:
             self.company_id = self.bom_id.company_id
 

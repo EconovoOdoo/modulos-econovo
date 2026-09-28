@@ -1,7 +1,7 @@
 # Copyright 2026 Jose D. Leonett
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl-3.0).
 from odoo.exceptions import UserError, ValidationError
-from odoo.tests import TransactionCase, tagged
+from odoo.tests import Form, TransactionCase, tagged
 
 
 @tagged('post_install', '-at_install')
@@ -256,6 +256,19 @@ class TestSubcontractingChain(TransactionCase):
             late_component.product_variant_id,
             merged_bom.bom_line_ids.product_id,
             'Internalization must preserve the current content, not roll back to a snapshot.')
+
+    def test_externalization_wizard_preloads_the_operation_from_context(self):
+        product = self._create_product('Part Preload', 'PARTPRELOAD')
+        bom, operations = self._create_bom(
+            product, operation_categories=[self.category_laser, self.category_bending])
+
+        # Odoo replays every onchange against the defaults on open, this is what actually
+        # exercises that bootstrap sequence instead of only checking the action's context.
+        wizard_form = Form(self.env['mrp.subcontracting.externalization'].with_context(
+            default_bom_id=bom.id, default_operation_id=operations[1].id))
+
+        self.assertEqual(wizard_form.bom_id, bom)
+        self.assertEqual(wizard_form.operation_id, operations[1])
 
     def test_externalize_button_on_one_operation_opens_the_individual_assistant(self):
         product = self._create_product('Part Entry One', 'PARTENTRY1')
