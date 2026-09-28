@@ -35,6 +35,17 @@ class MrpSubcontractingExternalization(models.TransientModel):
         string='Replenish on Order (MTO)',
         help='Also add the MTO route so that confirming a sale triggers the purchase order.',
     )
+    bom_strategy = fields.Selection(
+        [
+            ('replace', 'Replace the in-house route'),
+            ('parallel', 'Keep both routes side by side'),
+        ],
+        default='replace', required=True,
+        help='Replace turns the selected Bill of Materials into the subcontracted chain. '
+             'Keep both leaves it untouched and builds the chain as a separate Bill of '
+             'Materials, so a later replenishment can go through either the Manufacture or '
+             'the Buy route.',
+    )
     eco_type_id = fields.Many2one(
         'mrp.eco.type', string='ECO Type', required=True,
         help='Type of Engineering Change Order created to register this change.',
@@ -69,7 +80,7 @@ class MrpSubcontractingExternalization(models.TransientModel):
         for wizard in self:
             wizard.precheck_html = wizard._render_messages(wizard._collect_prechecks())
 
-    @api.depends('bom_id', 'operation_id', 'subcontractor_id')
+    @api.depends('bom_id', 'operation_id', 'subcontractor_id', 'bom_strategy')
     def _compute_preview_html(self):
         for wizard in self:
             wizard.preview_html = wizard._render_preview()
@@ -154,6 +165,12 @@ class MrpSubcontractingExternalization(models.TransientModel):
             '<strong>%(phantoms)s intermediate product(s)</strong> will result from this change.</p>',
             stages=len(stages), phantoms=phantom_count,
         )
+        if self.bom_strategy == 'parallel':
+            summary += _(
+                '<p><strong>%s</strong> is left untouched and keeps producing the final '
+                'product in-house; the chain above is built as an independent Bill of '
+                'Materials.</p>', self.bom_id.display_name,
+            )
         return summary + '<ol>%s</ol>' % ''.join('<li>%s</li>' % stage for stage in stages)
 
     def action_next(self):
@@ -219,6 +236,11 @@ class MrpSubcontractingExternalization(models.TransientModel):
             'company_id': self.company_id.id,
         })
         eco.action_new_revision()
+        keep_original = self.bom_strategy == 'parallel'
+        if keep_original:
+            # apply_new_version() always archives previous_bom_id: clearing it is what keeps
+            # the original Bill of Materials alive once this ECO is applied.
+            eco.new_bom_id.previous_bom_id = False
         revision_operation = self.env['mrp.routing.workcenter']
         if self.operation_id:
             revision_operation = eco.new_bom_id.operation_ids.filtered(
@@ -239,6 +261,7 @@ class MrpSubcontractingExternalization(models.TransientModel):
             add_mto_route=self.add_mto_route,
             resupply_product_tmpls=self.line_ids.filtered('apply_route').product_tmpl_id,
             activate=False,
+            sibling_bom=self.bom_id if keep_original else None,
         )
         eco.subcontracting_chain_id = chain.id
         if self.eco_handling == 'validated':

@@ -16,8 +16,9 @@ class MrpSubcontractingInternalization(models.TransientModel):
     )
     company_id = fields.Many2one(related='chain_id.company_id')
     workcenter_id = fields.Many2one(
-        'mrp.workcenter', string='Work Center', required=True, check_company=True,
-        help='Where the operation will be performed again in-house.',
+        'mrp.workcenter', string='Work Center', check_company=True,
+        help='Where the operation will be performed again in-house. Not needed when the '
+             'chain was built alongside a Bill of Materials that never stopped producing it.',
     )
     eco_type_id = fields.Many2one(
         'mrp.eco.type', string='ECO Type', required=True,
@@ -36,6 +37,14 @@ class MrpSubcontractingInternalization(models.TransientModel):
     component_line_ids = fields.One2many(
         'mrp.subcontracting.internalization.component', 'wizard_id', string='Components',
     )
+    has_sibling_bom = fields.Boolean(compute='_compute_sibling_bom_info')
+    sibling_bom_display_name = fields.Char(compute='_compute_sibling_bom_info')
+
+    @api.depends('chain_id.sibling_bom_id')
+    def _compute_sibling_bom_info(self):
+        for wizard in self:
+            wizard.has_sibling_bom = bool(wizard.chain_id.sibling_bom_id)
+            wizard.sibling_bom_display_name = wizard.chain_id.sibling_bom_id.display_name
 
     @api.onchange('chain_id')
     def _onchange_chain_id(self):
@@ -45,6 +54,13 @@ class MrpSubcontractingInternalization(models.TransientModel):
     def action_next(self):
         """Build the editable preview of the merged Bill of Materials."""
         self.ensure_one()
+        if self.chain_id.sibling_bom_id:
+            # Nothing to merge: the sibling never stopped producing the final product.
+            self.state = 'review'
+            return self._reopen()
+        if not self.workcenter_id:
+            raise UserError(_(
+                'Pick the work center where the operation will be performed again.'))
         plan = self.chain_id._build_internalization_plan()
         restored_sequence = self.chain_id.original_sequence
         operations = [
@@ -80,6 +96,8 @@ class MrpSubcontractingInternalization(models.TransientModel):
             raise UserError(_(
                 'The ECO type "%s" has no stage allowing changes to be applied. Pick another '
                 'type or choose to follow the approval circuit.', self.eco_type_id.display_name))
+        if self.chain_id.sibling_bom_id:
+            return self._confirm_parallel()
         final_bom = self.chain_id._get_final_bom()
         eco = self.env['mrp.eco'].create({
             'name': _('Internalize %(operation)s of %(product)s',
@@ -104,6 +122,44 @@ class MrpSubcontractingInternalization(models.TransientModel):
             },
             activate=False,
         )
+        if self.eco_handling == 'validated':
+            eco.action_apply()
+            self.chain_id.write({
+                'validated_by_id': self.env.user.id,
+                'validated_date': fields.Datetime.now(),
+            })
+            eco.message_post(body=_(
+                'Applied automatically by the operation subcontracting assistant, without '
+                'going through the manual approval circuit.'))
+        return {
+            'name': _('Subcontracting Chain'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'mrp.subcontracting.chain',
+            'view_mode': 'form',
+            'res_id': self.chain_id.id,
+        }
+
+    def _confirm_parallel(self):
+        """Register the archival of a chain built alongside a sibling through an ECO.
+
+        There is no revision to build: the sibling already produces the final product, so
+        the ECO exists purely to keep this change under the same approval governance as
+        every other one, not to replace anything.
+        """
+        self.ensure_one()
+        eco = self.env['mrp.eco'].create({
+            'name': _('Internalize %(operation)s of %(product)s',
+                      operation=self.chain_id.operation_name or _('the subcontracted stage'),
+                      product=self.chain_id.final_product_tmpl_id.display_name),
+            'type_id': self.eco_type_id.id,
+            'stage_id': self._get_initial_stage().id,
+            'type': 'bom',
+            'product_tmpl_id': self.chain_id.final_product_tmpl_id.id,
+            'bom_id': self.chain_id._get_final_bom().id,
+            'company_id': self.company_id.id,
+            'subcontracting_chain_id': self.chain_id.id,
+        })
+        self.chain_id._internalize_parallel(activate=False)
         if self.eco_handling == 'validated':
             eco.action_apply()
             self.chain_id.write({

@@ -66,6 +66,16 @@
                         >
                             <field name="resupply_count" widget="statinfo" string="Resupplies" />
                         </button>
+                        <button
+                            name="action_view_sibling_bom"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-industry"
+                            invisible="not sibling_bom_id"
+                        >
+                            <span class="o_stat_text">In-house</span>
+                            <span class="o_stat_text">Bill of Materials</span>
+                        </button>
                     </div>
                     <div class="oe_title">
                         <h1><field name="name" readonly="1" /></h1>
@@ -111,6 +121,11 @@
                                 name="internalized_bom_id"
                                 readonly="1"
                                 invisible="state != 'internalized'"
+                            />
+                            <field
+                                name="sibling_bom_id"
+                                readonly="1"
+                                invisible="not sibling_bom_id"
                             />
                         </group>
                     </group>

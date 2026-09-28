@@ -72,7 +72,7 @@ class TestSubcontractingEco(TransactionCase):
         })
         return bom, operations
 
-    def _externalize(self, bom, operation, eco_handling):
+    def _externalize(self, bom, operation, eco_handling, bom_strategy='replace'):
         wizard = self.env['mrp.subcontracting.externalization'].create({
             'company_id': self.company.id,
             'bom_id': bom.id,
@@ -81,6 +81,7 @@ class TestSubcontractingEco(TransactionCase):
             'warehouse_id': self.warehouse.id,
             'eco_type_id': self.eco_type.id,
             'eco_handling': eco_handling,
+            'bom_strategy': bom_strategy,
         })
         wizard.action_next()
         action = wizard.action_confirm()
@@ -152,5 +153,53 @@ class TestSubcontractingEco(TransactionCase):
         self.assertTrue(merged_bom.active)
         self.assertEqual(merged_bom.type, 'normal')
         self.assertEqual(len(merged_bom.operation_ids), 3)
+        self.assertFalse(chain.phantom_product_tmpl_ids.filtered('active'))
+        self.assertEqual(len(chain.eco_ids), 2)
+
+    def test_parallel_strategy_leaves_the_original_bom_untouched(self):
+        bom, operations = self._create_bom_with_route('ECOPAR')
+        chain = self._externalize(bom, operations[1], 'validated', bom_strategy='parallel')
+
+        # The sibling never stopped producing the final product.
+        self.assertEqual(bom.type, 'normal')
+        self.assertTrue(bom.active)
+        self.assertEqual(len(bom.operation_ids), 3)
+        self.assertNotIn(bom, chain.bom_ids)
+        self.assertEqual(chain.sibling_bom_id, bom)
+        # The chain built alongside it is fully live.
+        self.assertTrue(chain.bom_ids.filtered(lambda b: b.type == 'subcontract'))
+        self.assertTrue(all(chain.bom_ids.mapped('active')))
+        action = chain.action_view_sibling_bom()
+        self.assertEqual(action['res_id'], bom.id)
+
+    def test_parallel_strategy_pending_eco_keeps_both_sides_untouched(self):
+        bom, operations = self._create_bom_with_route('ECOPARPEND')
+        chain = self._externalize(bom, operations[1], 'auto', bom_strategy='parallel')
+
+        # A pending ECO must not activate the parallel chain, nor touch the sibling.
+        self.assertEqual(bom.type, 'normal')
+        self.assertTrue(bom.active)
+        self.assertEqual(len(bom.operation_ids), 3)
+        self.assertFalse(chain.bom_ids.filtered('active'))
+        self.assertEqual(chain.sibling_bom_id, bom)
+
+    def test_internalizing_a_parallel_chain_only_archives_the_subcontracted_branch(self):
+        bom, operations = self._create_bom_with_route('ECOPARBACK')
+        chain = self._externalize(bom, operations[1], 'validated', bom_strategy='parallel')
+
+        wizard = self.env['mrp.subcontracting.internalization'].create({
+            'chain_id': chain.id,
+            'eco_type_id': self.eco_type.id,
+            'eco_handling': 'validated',
+        })
+        self.assertTrue(wizard.has_sibling_bom)
+        wizard.action_next()
+        wizard.action_confirm()
+
+        self.assertEqual(chain.state, 'internalized')
+        self.assertEqual(chain.internalized_bom_id, bom)
+        self.assertTrue(bom.active)
+        self.assertEqual(len(bom.operation_ids), 3, 'The sibling must never be touched.')
+        self.assertFalse(chain.bom_ids.filtered('active'))
         self.assertFalse(chain.phantom_product_tmpl_ids.filtered('active'))
         self.assertEqual(len(chain.eco_ids), 2)

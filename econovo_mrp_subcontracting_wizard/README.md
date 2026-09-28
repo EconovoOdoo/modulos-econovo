@@ -104,7 +104,9 @@ is already subcontracted — internalize it first.
 
 1. Open Manufacturing > Operations > Operation Subcontracting > **Externalize an Operation**.
 2. *What to externalize*: pick the **Bill of Materials**, then the **Operation to Externalize**.
-   Leaving the operation empty subcontracts the whole product instead of a single step.
+   Leaving the operation empty subcontracts the whole product instead of a single step. Choose
+   the **Strategy**: *Replace* turns that Bill of Materials into the chain, *Keep both* leaves it
+   untouched and builds the chain as a separate one — see *Replace vs. keep both* below.
 3. *To whom*: pick the **Subcontractor**, the **Warehouse** that will ship the components, and
    optionally the **Subcontracting Price** and *Replenish on Order (MTO)*.
 4. Choose the **ECO Type** and the **PLM Registration** mode (see *PLM integration* below).
@@ -131,14 +133,35 @@ so the second cycle produces the same `CODE-XX` part as the first one.
 1. Open the chain from Manufacturing > Operations > Operation Subcontracting > **Subcontracting
    Chains** (or from the smart button on the Bill of Materials).
 2. Press **Internalize Operation** in the header.
-3. Pick the **Work Center** where the operation will be performed again, the **ECO Type** and the
-   **PLM Registration** mode, then press **Next**.
-4. Review the merged route: the resulting operations (including the one coming back in-house) and
-   the resulting components. Untick **Keep** on any component that should not survive the merge.
-5. Press **Internalize**.
+3. For a chain created with *Replace*: pick the **Work Center** where the operation will be
+   performed again, the **ECO Type** and the **PLM Registration** mode, then press **Next**, and
+   review the merged route (the resulting operations, including the one coming back in-house, and
+   the resulting components — untick **Keep** on any component that should not survive the
+   merge). For a chain created with *Keep both*: there is nothing to review, only the **ECO
+   Type** and **PLM Registration** mode are asked.
+4. Press **Internalize**.
 
 The merge preserves the **current** content of the chain: components added while the operation
-was outsourced are kept.
+was outsourced are kept. A chain created with *Keep both* has nothing to merge — internalizing it
+only archives its own Bills of Materials and intermediate products; the sibling was never touched
+and keeps producing the final product exactly as it always did.
+
+### Replace vs. keep both
+
+- **Replace** (default) is what every earlier section on this page describes: the selected Bill
+  of Materials becomes the chain, and it is the only route left to produce that product.
+- **Keep both** leaves the selected Bill of Materials exactly as it is and builds the chain as an
+  independent one, with its own Bill(s) of Materials and intermediate product(s). The product ends
+  up with both a Manufacture route (the untouched Bill of Materials) and a Buy route (the
+  subcontractor, through the chain) active at the same time — which one a given replenishment
+  uses is decided the native Odoo way, by the route picked on that replenishment (the *Replenish*
+  wizard lets you choose), not by anything this module adds. The chain's **In-house Bill of
+  Materials** smart button opens the untouched sibling.
+- The two routes are **independent from the moment they are created**: editing one does not
+  update the other. Keep that in mind if a component is added to either route later on.
+- **Keep both** still goes through an Engineering Change Order like every other change in this
+  module, for the same governance/audit trail, even though the PLM lock never applies to it (it
+  never writes on the Bill of Materials it leaves untouched).
 
 ### Bulk mode
 

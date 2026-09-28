@@ -70,6 +70,13 @@ class MrpSubcontractingChain(models.Model):
         help='Bill of Materials revision holding the merged in-house route, waiting for its '
              'Engineering Change Order to be applied.',
     )
+    sibling_bom_id = fields.Many2one(
+        'mrp.bom', string='In-house Bill of Materials', readonly=True, copy=False,
+        help='Untouched Bill of Materials left in place to keep producing the final product '
+             'in-house. Only set when this chain was built alongside it instead of replacing '
+             'it, so a later replenishment can go through either the Manufacture or the Buy '
+             'route.',
+    )
     original_workcenter_id = fields.Many2one(
         'mrp.workcenter', string='Original Work Center', readonly=True,
         help='Work center where the operation was performed before being externalized. '
@@ -313,12 +320,15 @@ class MrpSubcontractingChain(models.Model):
     @api.model
     def _externalize(self, bom, operation, subcontractor, warehouse,
                      seller_price=0.0, add_mto_route=False,
-                     resupply_product_tmpls=None, activate=True):
+                     resupply_product_tmpls=None, activate=True, sibling_bom=None):
         """Split *bom* so that *operation* is performed by *subcontractor*.
 
         The original Bill of Materials is always kept as the one producing the final product,
         so that its manufacturing history stays reachable. When *activate* is False the
-        generated records stay archived until the related ECO is applied. Returns the chain.
+        generated records stay archived until the related ECO is applied. *sibling_bom*, when
+        given, is a separate, untouched Bill of Materials that keeps producing the final
+        product in-house alongside this chain (the "keep both routes" strategy). Returns the
+        chain.
         """
         operations_before, operations_after = self._split_route(bom, operation)
         self._check_operation_categories(operation, operations_before, operations_after)
@@ -338,6 +348,7 @@ class MrpSubcontractingChain(models.Model):
             'original_time_mode': operation.time_mode,
             'original_time_cycle_manual': operation.time_cycle_manual,
             'state': 'externalized',
+            'sibling_bom_id': sibling_bom.id if sibling_bom else False,
         })
 
         phantoms = self.env['product.template']
@@ -530,6 +541,19 @@ class MrpSubcontractingChain(models.Model):
             'pending_internalization_bom_id': False,
         })
 
+    def _internalize_parallel(self, activate=True):
+        """Archive the chain built alongside the sibling; the sibling was never touched.
+
+        Unlike a plain merge, there is nothing to build: the sibling already produces the
+        final product exactly as it always did, so becoming the chain's Bill of Materials of
+        record is just a matter of bookkeeping once the related ECO is applied.
+        """
+        self.ensure_one()
+        if activate:
+            self._finalize_internalization(self.sibling_bom_id)
+        else:
+            self.pending_internalization_bom_id = self.sibling_bom_id.id
+
     def _on_eco_applied(self):
         """Make the records prepared on a BoM revision live."""
         for chain in self:
@@ -588,6 +612,16 @@ class MrpSubcontractingChain(models.Model):
     def action_verify(self):
         self._sync_component_lines()
         return True
+
+    def action_view_sibling_bom(self):
+        self.ensure_one()
+        return {
+            'name': _('In-house Bill of Materials'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'mrp.bom',
+            'view_mode': 'form',
+            'res_id': self.sibling_bom_id.id,
+        }
 
     def action_open_internalization_wizard(self):
         self.ensure_one()

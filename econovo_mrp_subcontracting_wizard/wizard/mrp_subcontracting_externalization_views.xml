@@ -16,6 +16,7 @@
                             options="{'no_create': True}"
                             placeholder="Leave empty to subcontract the whole product"
                         />
+                        <field name="bom_strategy" widget="radio" />
                     </group>
                     <group string="To whom">
                         <field name="subcontractor_id" />
