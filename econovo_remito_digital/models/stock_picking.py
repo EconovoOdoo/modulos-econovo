@@ -10,6 +10,7 @@ from markupsafe import Markup
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 from odoo.tools import format_date, html_escape, is_html_empty
+from odoo.tools.safe_eval import safe_eval
 
 
 class StockPicking(models.Model):
@@ -102,6 +103,23 @@ class StockPicking(models.Model):
         """Return True when observations HTML has meaningful content."""
         self.ensure_one()
         return bool(self.observations and not is_html_empty(self.observations))
+
+    def _get_remito_footer_text(self):
+        """Return the book footer text if the configured domain matches."""
+        self.ensure_one()
+        book = self.book_id
+        if not book or not book.remito_footer_active or not book.remito_footer_text:
+            return ''
+
+        domain = book.remito_footer_domain or '[]'
+        try:
+            evaluated_domain = safe_eval(domain, {})
+        except Exception:
+            return ''
+
+        if self.filtered_domain(evaluated_domain):
+            return book.remito_footer_text
+        return ''
 
     def do_print_voucher(self):
         """Override: when the book is digital, validate CAI, auto-assign one
