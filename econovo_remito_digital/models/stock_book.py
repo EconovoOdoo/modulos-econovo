@@ -96,6 +96,25 @@ class StockBook(models.Model):
         string='Fecha de Impresión (texto)',
         compute='_compute_print_date_display',
     )
+    remito_footer_active = fields.Boolean(
+        string='Pie de remito activo',
+        default=False,
+        help='Si está activo, el texto configurado se imprime en el pie del PDF '
+             'del remito digital cuando el dominio coincide con el picking.',
+    )
+    remito_footer_text = fields.Html(
+        string='Texto del pie de remito',
+        sanitize=False,
+        help='Texto HTML o plano que se mostrará en el pie del remito digital al '
+             'imprimir, solo cuando aplique el dominio configurado.',
+    )
+    remito_footer_domain = fields.Text(
+        string='Dominio de aplicación',
+        default='[]',
+        help='Dominio de Odoo evaluado sobre el picking. Si coincide, se imprime '
+             'el texto del pie. Ejemplo: [("partner_id.country_id.code", "=", '
+             '"AR")]',
+    )
 
     @api.depends('print_date')
     def _compute_print_date_display(self):

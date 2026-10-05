@@ -111,6 +111,16 @@
                 <field name="copies_mode" invisible="not is_digital" readonly="not active"/>
                 <field name="printer_id" invisible="not is_digital" readonly="not active"/>
                 <field name="print_date" invisible="not is_digital" readonly="not active"/>
+                <field name="remito_footer_active"
+                       widget="boolean_toggle"
+                       invisible="not is_digital"
+                       readonly="not active"/>
+                <field name="remito_footer_domain"
+                       invisible="not is_digital or not remito_footer_active"
+                       readonly="not active"/>
+                <field name="remito_footer_text"
+                       invisible="not is_digital or not remito_footer_active"
+                       readonly="not active"/>
             </field>
         </field>
     </record>
