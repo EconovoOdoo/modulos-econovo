@@ -10,6 +10,7 @@
         <t t-set="has_lots" t-value="any(bool(line['lots_text']) for page in pages for line in page)"/>
         <t t-set="remito_primary_color" t-value="company.primary_color or '#2e7d32'"/>
         <t t-set="copy_labels" t-value="book._get_remito_copies_labels()"/>
+        <t t-set="remito_footer_text" t-value="o._get_remito_footer_text()"/>
         <t t-foreach="copy_labels" t-as="copy_label">
         <t t-foreach="pages" t-as="page_lines">
             <t t-set="page_num" t-value="page_lines_index + 1"/>
@@ -290,6 +291,10 @@
             <!-- ============================================================ -->
             <div class="footer">
                 <div class="remito-page-footer">
+
+                <t t-if="remito_footer_text">
+                    <div class="remito-custom-footer-note" t-raw="remito_footer_text"/>
+                </t>
 
                 <!-- ============================================================ -->
                 <!-- FOOTER: TRASLADO + FIRMA                                      -->

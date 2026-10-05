@@ -3,7 +3,9 @@
 # directory
 ##############################################################################
 from odoo import _, api, fields, models
+from odoo.exceptions import ValidationError
 from odoo.tools import format_date
+from odoo.tools.safe_eval import safe_eval
 
 
 class StockBookPrinter(models.Model):
@@ -96,6 +98,37 @@ class StockBook(models.Model):
         string='Fecha de Impresión (texto)',
         compute='_compute_print_date_display',
     )
+    remito_footer_active = fields.Boolean(
+        string='Pie de remito activo',
+        default=False,
+        help='Si está activo, el texto configurado se imprime en el pie del PDF '
+             'del remito digital cuando el dominio coincide con el picking.',
+    )
+    remito_footer_text = fields.Html(
+        string='Texto del pie de remito',
+        sanitize=False,
+        help='Texto HTML o plano que se mostrará en el pie del remito digital al '
+             'imprimir, solo cuando aplique el dominio configurado.',
+    )
+    remito_footer_domain = fields.Char(
+        string='Dominio de aplicación',
+        default='[]',
+        help='Dominio de Odoo evaluado sobre el picking. Si coincide, se imprime '
+             'el texto del pie. Ejemplo: [("partner_id.country_id.code", "=", '
+             '"AR")]',
+    )
+
+    @api.constrains('remito_footer_domain')
+    def _check_remito_footer_domain(self):
+        for record in self:
+            if not record.remito_footer_domain:
+                continue
+            try:
+                safe_eval(record.remito_footer_domain, mode='eval')
+            except Exception as exc:
+                raise ValidationError(_(
+                    'Dominio del pie del remito inválido: %s', exc,
+                )) from exc
 
     @api.depends('print_date')
     def _compute_print_date_display(self):
