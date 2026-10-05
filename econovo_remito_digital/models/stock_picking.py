@@ -99,6 +99,14 @@ class StockPicking(models.Model):
         )
         return True
 
+    def copy(self, default=None):
+        """Keep the native Odoo duplicate naming pattern for remitos."""
+        self.ensure_one()
+        default = dict(default or {})
+        if 'name' not in default:
+            default['name'] = _('%s (copy)', self.name)
+        return super().copy(default=default)
+
     def _has_remito_observations(self):
         """Return True when observations HTML has meaningful content."""
         self.ensure_one()
