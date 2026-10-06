@@ -143,6 +143,13 @@ class StockBook(models.Model):
         if self.is_digital:
             self.autoprinted = True
 
+    def copy(self, default=None):
+        self.ensure_one()
+        default = dict(default or {})
+        if 'name' not in default:
+            default['name'] = _('%s (copy)', self.name)
+        return super().copy(default=default)
+
     def _get_remito_copies_labels(self):
         """Return the ordered list of copy legends to print in the PDF.
 
