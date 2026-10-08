@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Catégorie de privilège -->
+    <record id="privilege_sunu_login_log_user" model="res.groups.privilege">
+        <field name="name">Journal de Connexion</field>
+        <field name="category_id" ref="base.module_category_administration"/>
+    </record>
+
+    <!-- Groupe : Utilisateur (lecture seule) -->
+    <record id="group_sunu_login_log_user" model="res.groups">
+        <field name="name">Utilisateur</field>
+        <field name="privilege_id" ref="privilege_sunu_login_log_user"/>
+        <field name="comment">Consulter les journaux de connexion.</field>
+    </record>
+
+    <!-- Groupe : Gestionnaire (lecture + suppression) -->
+    <record id="group_sunu_login_log_manager" model="res.groups">
+        <field name="name">Gestionnaire</field>
+        <field name="privilege_id" ref="privilege_sunu_login_log_user"/>
+        <field name="implied_ids" eval="[(4, ref('group_sunu_login_log_user'))]"/>
+        <field name="comment">Accès complet : consultation et gestion des journaux de connexion.</field>
+    </record>
+</odoo>
