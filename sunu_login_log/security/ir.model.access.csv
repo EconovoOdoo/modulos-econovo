@@ -1,3 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-sunu_login_log.access_sunu_login_log_user,access_sunu_login_log_user,sunu_login_log.model_sunu_login_log,sunu_login_log.group_sunu_login_log_user,1,0,0,0
-sunu_login_log.access_sunu_login_log_manager,access_sunu_login_log_manager,sunu_login_log.model_sunu_login_log,sunu_login_log.group_sunu_login_log_manager,1,0,0,1
