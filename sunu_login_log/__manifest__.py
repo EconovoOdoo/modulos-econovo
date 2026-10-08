@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Sunu Login Log — User Connection Tracker & Geolocation',
-    'version': '19.0.1.0.0',
+    'version': '17.0.1.0.0',
     'category': 'Technical/Security',
     'summary': 'Track every Odoo login: IP address, GPS geolocation, city, country, browser, device type — with Google Maps link. Free.',
     'description': """
-Sunu Login Log — User Connection Tracker for Odoo 19
+Sunu Login Log — User Connection Tracker for Odoo 17
 =====================================================
 
 Know exactly WHO connects to your Odoo, FROM WHERE and WITH WHAT device.
