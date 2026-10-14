@@ -7,6 +7,9 @@ application's picking detail view, and the production context (Production
 Plan + workcenter) of each line, on both regular transfers and Batch
 Transfers.
 
+The Batch Transfers kanban in the Barcode app also shows the batch's
+Production Plan when every transfer in that batch has the same plan.
+
 ## Features
 
 - Shows the workcenter name in a subtle info bar below the picking reference
@@ -17,6 +20,8 @@ Transfers.
   (below the origin transfer reference, above the destination location),
   each hidden independently when not set. In a Batch Transfer, lines can
   belong to different transfers and show different values accordingly.
+- Shows the Production Plan in the Barcode Batch Transfers kanban when it is
+  common to all transfers in the batch.
 
 ## Requirements
 

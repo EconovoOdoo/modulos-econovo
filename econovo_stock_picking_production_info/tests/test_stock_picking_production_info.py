@@ -2,6 +2,7 @@
 # Copyright 2026 Jose D. Leonett
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+from odoo import Command
 from odoo.tests import tagged, TransactionCase
 
 
@@ -70,4 +71,74 @@ class TestStockPickingProductionInfo(TransactionCase):
 
         self.assertEqual(supply_picking.production_plan_id, self.plan)
         self.assertEqual(supply_picking.workcenter_id, self.workcenter)
+        batch = self.env['stock.picking.batch'].create({
+            'company_id': supply_picking.company_id.id,
+            'picking_type_id': supply_picking.picking_type_id.id,
+            'picking_ids': [Command.set(supply_picking.ids)],
+        })
+        self.assertEqual(batch.production_plan_id, self.plan)
+
+    def test_batch_plan_is_empty_when_transfers_have_different_plans(self):
+        stock_location = self.env.ref('stock.stock_location_stock')
+        picking_type = self.env.ref('stock.picking_type_internal')
+        plans = self.env['mrp.plan'].create([
+            {'name': 'First Batch Plan'},
+            {'name': 'Second Batch Plan'},
+        ])
+        pickings = self.env['stock.picking']
+        for plan in plans:
+            production = self.env['mrp.production'].create({
+                'product_id': self.bom_product.id,
+                'product_qty': 1.0,
+                'plan_id': plan.id,
+                'location_src_id': stock_location.id,
+                'location_dest_id': stock_location.id,
+            })
+            production.action_confirm()
+            pickings |= self.env['stock.picking'].create({
+                'location_id': stock_location.id,
+                'location_dest_id': stock_location.id,
+                'picking_type_id': picking_type.id,
+                'group_id': production.procurement_group_id.id,
+            })
+
+        batch = self.env['stock.picking.batch'].create({
+            'company_id': pickings[0].company_id.id,
+            'picking_type_id': picking_type.id,
+            'picking_ids': [Command.set(pickings.ids)],
+        })
+
+        self.assertFalse(batch.production_plan_id)
+
+    def test_batch_plan_is_empty_when_a_transfer_has_no_plan(self):
+        stock_location = self.env.ref('stock.stock_location_stock')
+        picking_type = self.env.ref('stock.picking_type_internal')
+        production = self.env['mrp.production'].create({
+            'product_id': self.bom_product.id,
+            'product_qty': 1.0,
+            'plan_id': self.plan.id,
+            'location_src_id': stock_location.id,
+            'location_dest_id': stock_location.id,
+        })
+        production.action_confirm()
+        pickings = self.env['stock.picking'].create([
+            {
+                'location_id': stock_location.id,
+                'location_dest_id': stock_location.id,
+                'picking_type_id': picking_type.id,
+                'group_id': production.procurement_group_id.id,
+            },
+            {
+                'location_id': stock_location.id,
+                'location_dest_id': stock_location.id,
+                'picking_type_id': picking_type.id,
+            },
+        ])
+        batch = self.env['stock.picking.batch'].create({
+            'company_id': pickings[0].company_id.id,
+            'picking_type_id': picking_type.id,
+            'picking_ids': [Command.set(pickings.ids)],
+        })
+
+        self.assertFalse(batch.production_plan_id)
 

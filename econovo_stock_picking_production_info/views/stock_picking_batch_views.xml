@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="stock_picking_batch_view_form" model="ir.ui.view">
+        <field name="name">stock.picking.batch.view.form.inherit.production.info</field>
+        <field name="model">stock.picking.batch</field>
+        <field name="inherit_id" ref="stock_picking_batch.stock_picking_batch_form"/>
+        <field name="arch" type="xml">
+            <field name="picking_type_id" position="after">
+                <field name="production_plan_id" readonly="1"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="stock_picking_batch_view_tree" model="ir.ui.view">
+        <field name="name">stock.picking.batch.view.tree.inherit.production.info</field>
+        <field name="model">stock.picking.batch</field>
+        <field name="inherit_id" ref="stock_picking_batch.stock_picking_batch_tree"/>
+        <field name="arch" type="xml">
+            <field name="scheduled_date" position="after">
+                <field name="production_plan_id" optional="show"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="stock_picking_batch_view_kanban" model="ir.ui.view">
+        <field name="name">stock.picking.batch.view.kanban.inherit.production.info</field>
+        <field name="model">stock.picking.batch</field>
+        <field name="inherit_id" ref="stock_picking_batch.stock_picking_batch_kanban"/>
+        <field name="arch" type="xml">
+            <field name="name" position="after">
+                <field name="production_plan_id"/>
+            </field>
+            <xpath expr="//div[hasclass('oe_kanban_bottom_left')]/field[@name='picking_type_id']" position="after">
+                <field name="production_plan_id"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

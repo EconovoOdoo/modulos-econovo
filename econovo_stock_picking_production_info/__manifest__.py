@@ -39,14 +39,16 @@ Requirements:
     'author': "Jose D. Leonett",
     'website': 'https://github.com/josedleonett',
     'category': 'Inventory/Inventory',
-    'version': '17.0.2.1.0',
+    'version': '17.0.2.1.1',
     'license': 'AGPL-3',
     'depends': [
         'mrp',
         'gg_automatic_mrp_schedule',
+        'stock_picking_batch',
     ],
     'data': [
         'views/stock_picking_views.xml',
+        'views/stock_picking_batch_views.xml',
     ],
     'installable': True,
     'auto_install': False,

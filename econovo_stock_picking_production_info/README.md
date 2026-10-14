@@ -37,8 +37,13 @@ Both fields are shown:
   own "Transfers" tab, which reuses that same list), as optional/hideable
   columns
 
+Batch transfers also show the unique Production Plan shared by their
+transfers on the form, list and kanban views. The field is empty when a batch
+contains transfers from multiple plans.
+
 ## Requirements
 
 * `mrp` (provides `mrp.workcenter`)
 * `gg_automatic_mrp_schedule` (provides `mrp.plan`)
+* `stock_picking_batch` (provides `stock.picking.batch`)
 

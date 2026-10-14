@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="stock_barcode_batch_picking_view_kanban" model="ir.ui.view">
+        <field name="name">stock.picking.batch.kanban.barcode.production.info</field>
+        <field name="model">stock.picking.batch</field>
+        <field name="inherit_id" ref="stock_barcode_picking_batch.stock_barcode_batch_picking_view_kanban"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('oe_kanban_bottom_left')]/field[@name='picking_type_id']" position="after">
+                <field name="production_plan_id"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

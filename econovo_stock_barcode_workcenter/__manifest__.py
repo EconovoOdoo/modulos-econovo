@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Econovo - Stock Barcode Workcenter Display",
-    "version": "17.0.2.1.0",
+    "version": "17.0.2.1.1",
     "category": "Inventory/Inventory",
     "summary": "Display the assigned workcenter in the Barcode app picking view",
     "description": """
@@ -15,6 +15,9 @@ When viewing a Batch Transfer, each line also shows its own transfer's
 Production Plan and workcenter (below the origin transfer reference, above the
 destination location), since a batch mixes lines from different transfers.
 The same is shown on a regular (non-batch) transfer's lines.
+
+The Batch Transfers kanban also shows the Production Plan when all transfers
+in the batch share the same plan.
     """,
     "author": "Jose D. Leonett",
     "website": "https://github.com/josedleonett",
@@ -25,7 +28,9 @@ The same is shown on a regular (non-batch) transfer's lines.
         "mrp",
         "econovo_stock_picking_production_info",
     ],
-    "data": [],
+    "data": [
+        "views/stock_picking_batch_views.xml",
+    ],
     "assets": {
         "web.assets_backend": [
             "econovo_stock_barcode_workcenter/static/src/**/*.js",
