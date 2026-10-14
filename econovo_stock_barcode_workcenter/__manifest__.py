@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Econovo - Stock Barcode Workcenter Display",
-    "version": "17.0.2.1.1",
+    "version": "17.0.2.1.2",
     "category": "Inventory/Inventory",
     "summary": "Display the assigned workcenter in the Barcode app picking view",
     "description": """

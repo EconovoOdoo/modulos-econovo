@@ -39,7 +39,7 @@ Requirements:
     'author': "Jose D. Leonett",
     'website': 'https://github.com/josedleonett',
     'category': 'Inventory/Inventory',
-    'version': '17.0.2.1.1',
+    'version': '17.0.2.1.2',
     'license': 'AGPL-3',
     'depends': [
         'mrp',

@@ -31,6 +31,9 @@
             <field name="name" position="after">
                 <field name="production_plan_id"/>
             </field>
+            <xpath expr="//div[hasclass('oe_kanban_bottom_left')]" position="attributes">
+                <attribute name="class" add="d-flex flex-column align-items-start" separator=" "/>
+            </xpath>
             <xpath expr="//div[hasclass('oe_kanban_bottom_left')]/field[@name='picking_type_id']" position="after">
                 <field name="production_plan_id"/>
             </xpath>

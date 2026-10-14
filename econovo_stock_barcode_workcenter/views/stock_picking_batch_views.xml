@@ -6,6 +6,9 @@
         <field name="model">stock.picking.batch</field>
         <field name="inherit_id" ref="stock_barcode_picking_batch.stock_barcode_batch_picking_view_kanban"/>
         <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('oe_kanban_bottom_left')]" position="attributes">
+                <attribute name="class" add="d-flex flex-column align-items-start" separator=" "/>
+            </xpath>
             <xpath expr="//div[hasclass('oe_kanban_bottom_left')]/field[@name='picking_type_id']" position="after">
                 <field name="production_plan_id"/>
             </xpath>
