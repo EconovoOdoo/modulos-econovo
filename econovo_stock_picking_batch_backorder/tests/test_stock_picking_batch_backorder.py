@@ -81,7 +81,65 @@ class TestStockPickingBatchBackorder(TransactionCase):
         self.assertEqual(new_batch.picking_type_id, batch.picking_type_id)
         self.assertEqual(new_batch.user_id, batch.user_id)
         self.assertFalse(new_batch.is_wave)
+        self.assertEqual(new_batch.picking_ids, backorders)
+        self.assertEqual(backorders.mapped('backorder_id'), pickings)
+        self.assertEqual(backorders.move_ids.mapped('product_uom_qty'), [6.0, 6.0])
         self.assertEqual(batch.backorder_batch_count, 1)
+
+    def test_backorder_batch_keeps_only_remaining_move_quantities(self):
+        picking = self._create_delivery(quantity=10.0)
+        complete_product = self.env['product.product'].create({
+            'name': 'Fully Delivered Product',
+            'type': 'product',
+        })
+        self.env['stock.quant']._update_available_quantity(
+            complete_product, self.stock_location, 100.0)
+        complete_move = self.env['stock.move'].create({
+            'location_dest_id': self.customer_location.id,
+            'location_id': self.stock_location.id,
+            'name': complete_product.name,
+            'picking_id': picking.id,
+            'product_id': complete_product.id,
+            'product_uom': complete_product.uom_id.id,
+            'product_uom_qty': 7.0,
+        })
+        picking.action_assign()
+        batch = self._create_batch(picking)
+        partial_move = picking.move_ids.filtered(
+            lambda move: move.product_id == self.product)
+        partial_move.quantity = 4.0
+        partial_move.picked = True
+        complete_move.quantity = 7.0
+        complete_move.picked = True
+
+        self._process_backorder_wizard(batch.action_done())
+
+        backorder = picking.backorder_ids
+        self.assertEqual(len(backorder), 1)
+        self.assertEqual(backorder.batch_id.origin_batch_id, batch)
+        self.assertEqual(backorder.move_ids.product_id, self.product)
+        self.assertEqual(backorder.move_ids.product_uom_qty, 6.0)
+        self.assertEqual(partial_move.quantity, 4.0)
+        self.assertEqual(complete_move.quantity, 7.0)
+
+    def test_backorder_batches_keep_distinct_origins(self):
+        first_picking = self._create_delivery(quantity=10.0)
+        second_picking = self._create_delivery(quantity=10.0)
+        first_batch = self._create_batch(first_picking)
+        second_batch = self._create_batch(second_picking)
+        self._pick_partially(first_picking, quantity=3.0)
+        self._pick_partially(second_picking, quantity=7.0)
+
+        self._process_backorder_wizard(
+            (first_picking | second_picking).button_validate())
+
+        first_backorder = first_picking.backorder_ids
+        second_backorder = second_picking.backorder_ids
+        self.assertEqual(first_backorder.batch_id.origin_batch_id, first_batch)
+        self.assertEqual(second_backorder.batch_id.origin_batch_id, second_batch)
+        self.assertNotEqual(first_backorder.batch_id, second_backorder.batch_id)
+        self.assertEqual(first_backorder.move_ids.product_uom_qty, 7.0)
+        self.assertEqual(second_backorder.move_ids.product_uom_qty, 3.0)
 
     def test_backorder_batch_includes_fully_untouched_pickings(self):
         """A transfer with literally nothing picked is detached from the batch
@@ -126,6 +184,19 @@ class TestStockPickingBatchBackorder(TransactionCase):
 
         self.assertEqual(picking.backorder_ids.batch_id.origin_batch_id, batch)
 
+    def test_fully_processed_batch_does_not_create_backorder_batch(self):
+        pickings = self._create_delivery() | self._create_delivery()
+        batch = self._create_batch(pickings)
+        for move in pickings.move_ids:
+            move.quantity = move.product_uom_qty
+            move.picked = True
+
+        batch.action_done()
+
+        self.assertTrue(all(picking.state == 'done' for picking in pickings))
+        self.assertFalse(pickings.backorder_ids)
+        self.assertFalse(batch.backorder_batch_ids)
+
     def test_backorder_batch_state_in_progress(self):
         """The operation type drives the status of the new batch."""
         pickings = self._create_delivery() | self._create_delivery()
@@ -153,6 +224,23 @@ class TestStockPickingBatchBackorder(TransactionCase):
         backorders = pickings.backorder_ids
         self.assertEqual(len(backorders.batch_id), 1)
         self.assertEqual(backorders.batch_id.origin_batch_id, batch)
+
+    def test_backorder_batch_does_not_absorb_unrelated_auto_batch_pickings(self):
+        pickings = self._create_delivery() | self._create_delivery()
+        unrelated_picking = self._create_delivery()
+        batch = self._create_batch(pickings)
+        self.picking_type_out.write({
+            'auto_batch': True,
+            'batch_group_by_partner': True,
+        })
+        self._pick_partially(pickings)
+
+        self._process_backorder_wizard(batch.action_done())
+
+        backorders = pickings.backorder_ids
+        self.assertEqual(len(backorders.batch_id), 1)
+        self.assertEqual(backorders.batch_id.origin_batch_id, batch)
+        self.assertFalse(unrelated_picking.batch_id)
 
     def test_backorder_of_unbatched_picking_is_not_batched(self):
         """Transfers outside of a batch are left untouched."""

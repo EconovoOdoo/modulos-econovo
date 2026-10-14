@@ -20,8 +20,9 @@ A checkbox is added to the native "Create Backorder?" wizard
 It is only displayed when at least one of the transfers being validated belongs
 to a batch, and its default value comes from the operation type.
 
-When ticked, `stock.picking._create_backorder` is extended to group the
-generated backorders by their origin batch and to create one new batch per
+When ticked, the origin batch of each transfer is captured before validation
+clears its `batch_id`. After validation, the generated backorders and transfers
+that were detached without validation are grouped into one new batch per
 origin.
 
 ## Configuration
@@ -38,6 +39,11 @@ Inventory > Configuration > Operation Types:
 * One new batch per origin batch when several batches are validated at once.
 * The new batch inherits `company_id`, `user_id` and `is_wave` from the origin.
 * A batch is created even when there is a single backorder.
+* Each backorder keeps only the remaining quantities; fully completed moves do
+  not appear in it.
+* Transfers from different origin batches are never combined.
+* No follow-up batch is created when validation produces no backorders or
+  detached transfers.
 * Backorders in a state not accepted by `stock.picking.batch._sanity_check` are
   skipped, so the validation can never be aborted by this feature.
 * Transfers that do not belong to a batch are ignored.
